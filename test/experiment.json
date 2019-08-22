@@ -1,0 +1,277 @@
+{
+  "title": "Everything Demo New",
+  "description": "",
+  "creator": "user1@example.com",
+  "contactEmail": "user1@example.com",
+  "id": 1,
+  "recordPhoneDetails": false,
+  "extraDataCollectionDeclarations": [],
+  "deleted": false,
+  "modifyDate": "2018/07/19",
+  "published": false,
+  "admins": [
+    "user1@example.com"
+  ],
+  "publishedUsers": [],
+  "version": 6,
+  "groups": [
+    {
+      "name": "default",
+      "groupType": "SURVEY",
+      "customRendering": false,
+      "fixedDuration": false,
+      "logActions": false,
+      "logShutdown": false,
+      "backgroundListen": false,
+      "accessibilityListen": false,
+      "actionTriggers": [
+        {
+          "type": "scheduleTrigger",
+          "actions": [
+            {
+              "actionCode": 1,
+              "id": 1,
+              "type": "pacoNotificationAction",
+              "snoozeCount": 0,
+              "snoozeTime": 1640220000,
+              "timeout": 59,
+              "delay": 5000,
+              "color": 0,
+              "dismissible": true,
+              "msgText": "Time to participate",
+              "snoozeTimeInMinutes": 27337,
+              "nameOfClass": "com.pacoapp.paco.shared.model2.PacoNotificationAction"
+            }
+          ],
+          "id": 1,
+          "schedules": [
+            {
+              "scheduleType": 0,
+              "esmFrequency": 3,
+              "esmPeriodInDays": 0,
+              "esmStartHour": 32400000,
+              "esmEndHour": 61200000,
+              "signalTimes": [
+                {
+                  "type": 0,
+                  "fixedTimeMillisFromMidnight": 43200000,
+                  "basis": 0,
+                  "offsetTimeMillis": 1800000,
+                  "missedBasisBehavior": 1,
+                  "nameOfClass": "com.pacoapp.paco.shared.model2.SignalTime"
+                }
+              ],
+              "repeatRate": 1,
+              "weekDaysScheduled": 0,
+              "nthOfMonth": 1,
+              "byDayOfMonth": true,
+              "dayOfMonth": 1,
+              "esmWeekends": false,
+              "minimumBuffer": 59,
+              "joinDateMillis": 0,
+              "id": 1,
+              "onlyEditableOnJoin": false,
+              "userEditable": true,
+              "nameOfClass": "com.pacoapp.paco.shared.model2.Schedule"
+            }
+          ],
+          "nameOfClass": "com.pacoapp.paco.shared.model2.ScheduleTrigger"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "smiley",
+          "required": false,
+          "conditional": false,
+          "responseType": "likert_smileys",
+          "text": "How happy are you?",
+          "multiselect": false,
+          "invisible": false,
+          "numeric": false,
+          "nameOfClass": "com.pacoapp.paco.shared.model2.Input2"
+        },
+        {
+          "name": "likert",
+          "required": false,
+          "conditional": false,
+          "responseType": "likert",
+          "text": "How frequently do you feel this way?",
+          "likertSteps": 5,
+          "leftSideLabel": "Never",
+          "rightSideLabel": "Always",
+          "multiselect": false,
+          "invisible": false,
+          "numeric": true,
+          "nameOfClass": "com.pacoapp.paco.shared.model2.Input2"
+        },
+        {
+          "name": "color",
+          "required": false,
+          "conditional": false,
+          "responseType": "open text",
+          "text": "What is your favorite color?",
+          "multiselect": false,
+          "invisible": false,
+          "numeric": false,
+          "nameOfClass": "com.pacoapp.paco.shared.model2.Input2"
+        },
+        {
+          "name": "slist",
+          "required": false,
+          "conditional": false,
+          "responseType": "list",
+          "text": "Choose one",
+          "listChoices": [
+            "Almond",
+            "Macadamia",
+            "Pecan"
+          ],
+          "multiselect": false,
+          "invisible": false,
+          "numeric": true,
+          "nameOfClass": "com.pacoapp.paco.shared.model2.Input2"
+        },
+        {
+          "name": "multi",
+          "required": false,
+          "conditional": false,
+          "responseType": "list",
+          "text": "Choose 1 or more",
+          "listChoices": [
+            "Vodka",
+            "Beer",
+            "Wine"
+          ],
+          "multiselect": true,
+          "invisible": false,
+          "numeric": true,
+          "nameOfClass": "com.pacoapp.paco.shared.model2.Input2"
+        },
+        {
+          "name": "num",
+          "required": false,
+          "conditional": false,
+          "responseType": "number",
+          "text": "Pick a number",
+          "multiselect": false,
+          "invisible": false,
+          "numeric": true,
+          "nameOfClass": "com.pacoapp.paco.shared.model2.Input2"
+        },
+        {
+          "name": "location",
+          "required": false,
+          "conditional": false,
+          "responseType": "location",
+          "text": "",
+          "multiselect": false,
+          "invisible": true,
+          "numeric": false,
+          "nameOfClass": "com.pacoapp.paco.shared.model2.Input2"
+        },
+        {
+          "name": "photo",
+          "required": false,
+          "conditional": false,
+          "responseType": "photo",
+          "text": "Take a photo",
+          "multiselect": false,
+          "invisible": true,
+          "numeric": false,
+          "nameOfClass": "com.pacoapp.paco.shared.model2.Input2"
+        },
+        {
+          "name": "scale_for_conditional",
+          "required": false,
+          "conditional": false,
+          "responseType": "likert",
+          "text": "This is a scale. Pick a value > 3 to trigger conditional question.",
+          "likertSteps": 5,
+          "leftSideLabel": "Not at all",
+          "rightSideLabel": "totally",
+          "multiselect": false,
+          "invisible": false,
+          "numeric": true,
+          "nameOfClass": "com.pacoapp.paco.shared.model2.Input2"
+        },
+        {
+          "name": "conditioned_on_scale",
+          "required": false,
+          "conditional": true,
+          "conditionExpression": "scale_for_conditional > 3",
+          "responseType": "open text",
+          "text": "Why did you pick a value greater than 3?",
+          "likertSteps": 5,
+          "multiselect": false,
+          "invisible": false,
+          "numeric": false,
+          "nameOfClass": "com.pacoapp.paco.shared.model2.Input2"
+        }
+      ],
+      "endOfDayGroup": false,
+      "feedback": {
+        "text": "Thanks for Participating!",
+        "type": 1,
+        "nameOfClass": "com.pacoapp.paco.shared.model2.Feedback"
+      },
+      "feedbackType": 1,
+      "rawDataAccess": true,
+      "logNotificationEvents": false,
+      "nameOfClass": "com.pacoapp.paco.shared.model2.ExperimentGroup",
+      "startDate": null,
+      "endDate": null
+    },
+    {
+      "name": "SYSTEM",
+      "groupType": "SYSTEM",
+      "customRendering": false,
+      "fixedDuration": false,
+      "logActions": false,
+      "logShutdown": false,
+      "backgroundListen": false,
+      "accessibilityListen": false,
+      "actionTriggers": [],
+      "inputs": [
+        {
+          "name": "joined",
+          "required": false,
+          "conditional": false,
+          "responseType": "open text",
+          "text": "joined",
+          "likertSteps": 0,
+          "multiselect": false,
+          "invisible": false,
+          "numeric": false,
+          "nameOfClass": "com.pacoapp.paco.shared.model2.Input2"
+        },
+        {
+          "name": "schedule",
+          "required": false,
+          "conditional": false,
+          "responseType": "open text",
+          "text": "schedule",
+          "likertSteps": 0,
+          "multiselect": false,
+          "invisible": false,
+          "numeric": false,
+          "nameOfClass": "com.pacoapp.paco.shared.model2.Input2"
+        }
+      ],
+      "endOfDayGroup": false,
+      "feedback": {
+        "text": "Thanks for Participating!",
+        "type": 0,
+        "nameOfClass": "com.pacoapp.paco.shared.model2.Feedback"
+      },
+      "feedbackType": 0,
+      "rawDataAccess": true,
+      "logNotificationEvents": false,
+      "nameOfClass": "com.pacoapp.paco.shared.model2.ExperimentGroup",
+      "startDate": null,
+      "endDate": null
+    }
+  ],
+  "postInstallInstructions": "<b>You have successfully joined the experiment!</b><br/><br/>No need to do anything else for now.<br/><br/>Paco will send you a notification when it is time to participate.<br/><br/>Be sure your ringer/buzzer is on so you will hear the notification.",
+  "visualizations": [],
+  "nameOfClass": "com.pacoapp.paco.shared.model2.ExperimentDAO"
+}
