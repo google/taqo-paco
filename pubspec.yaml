@@ -23,10 +23,10 @@ dependencies:
   googleapis_auth: ^0.2.7
   url_launcher: ^5.0.2
 #  flutter_secure_storage: ^3.2.1+1
-  flutter_html_view: "^0.3.1"
+  flutter_html_view: '>=0.5.12'
   numberpicker: ^1.0.0
   intl: ^0.15.8
-
+  cached_network_image: '>=0.7.0'
 
 dev_dependencies:
   flutter_test:
