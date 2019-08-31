@@ -72,11 +72,12 @@ class _InformedConsentPageState extends State<InformedConsentPage> {
   Widget buildInformedConsentRow(experiment) {
     var data = experiment.informedConsentForm != null ? "<div>" + experiment.informedConsentForm + "</div>" : "No statement provided";
 
-    return Column(
+    return Expanded(child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text("Informed Consent Statement from the Experiment Creator", style: TextStyle(fontWeight: FontWeight.bold),),
-          HtmlView(data: data),
-        ]);
+          Expanded(child: HtmlView(data: data)),
+        ]));
+
   }
 }
