@@ -43,16 +43,16 @@ class _PostJoinInstructionsPageState extends State<PostJoinInstructionsPage> {
 
 
   Widget buildinstructionsColumn(experiment) {
-    return Column(
+    return Expanded(child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-      Text("Post Join Instructions", style: TextStyle(fontWeight: FontWeight.bold),),
-      Divider(
-        height: 16.0,
-        color: Colors.black,
-      ),
-      HtmlView(data: experiment.postInstallInstructions != null ? experiment.postInstallInstructions : "No further instructions provided"),
-    ]);
+          Text("Post Join Instructions", style: TextStyle(fontWeight: FontWeight.bold),),
+          Divider(
+            height: 16.0,
+            color: Colors.black,
+          ),
+          Expanded(child: HtmlView(data: experiment.postInstallInstructions != null ? experiment.postInstallInstructions : "No further instructions provided")),
+        ]));
   }
 
 }
