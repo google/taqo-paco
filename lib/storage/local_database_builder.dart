@@ -16,8 +16,8 @@ class _Meta {
 class _TableHead {
   static const COLUMN_NAME = 'columnName';
   static const COLUMN_TYPE = 'columnType';
-  static const DEFAULT_HEAD = const MapLiteral(
-      {COLUMN_NAME: String, COLUMN_TYPE: SqlLiteDatatype});
+  static const DEFAULT_HEAD =
+      const MapLiteral({COLUMN_NAME: String, COLUMN_TYPE: SqlLiteDatatype});
 }
 
 //
@@ -66,9 +66,7 @@ String buildSqlCreateTable(String name, Table tableDescription,
 CREATE TABLE $name (
 ${prependIdColumn ? "_id INTEGER PRIMARY KEY AUTOINCREMENT,\n" : ""}'''
       '''
-${tableDescription.rowIterator.map((item) => "${item[_TableHead
-      .COLUMN_NAME]} ${getEnumName(item[_TableHead.COLUMN_TYPE])}").join(
-      ', \n')}
+${tableDescription.rowIterator.map((item) => "${item[_TableHead.COLUMN_NAME]} ${getEnumName(item[_TableHead.COLUMN_TYPE])}").join(', \n')}
   );
   ''';
 }
@@ -103,11 +101,7 @@ part of '$partOfFilename';
 
 var _dbVersion = ${dbDescription.meta[_Meta.VERSION]};
 Future<void> _onCreate(Database db, int version) async {
-${dbDescription.tableSpecifications.entries.map((
-        entry) => 'await db.execute(\'\'\'${buildSqlCreateTable(
-        entry.key, entry.value,
-        prependIdColumn: dbDescription.meta[_Meta.PREPEND_ID_COLUMN])}\'\'\');')
-        .join('\n')}
+${dbDescription.tableSpecifications.entries.map((entry) => 'await db.execute(\'\'\'${buildSqlCreateTable(entry.key, entry.value, prependIdColumn: dbDescription.meta[_Meta.PREPEND_ID_COLUMN])}\'\'\');').join('\n')}
 }
     ''');
 

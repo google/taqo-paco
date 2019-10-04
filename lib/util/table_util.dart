@@ -48,8 +48,7 @@ class Table {
         if (!(reflectType(body[rowBase + j].runtimeType)
             .isSubtypeOf(reflectType(_headTypes[j])))) {
           throw StateError('The table "body" is invalid. '
-              'body[${rowBase + j}]=${body[rowBase +
-              j]} should be of type $_headTypes[j], '
+              'body[${rowBase + j}]=${body[rowBase + j]} should be of type $_headTypes[j], '
               'instead of type ${body[rowBase + j].runtimeType}');
         }
       }

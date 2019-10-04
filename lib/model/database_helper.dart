@@ -17,9 +17,10 @@ class DatabaseDescription {
   /// A map from DB table name to [Table] object as the specification of that DB table
   Map<String, Table> tableSpecifications = {};
 
-  DatabaseDescription({this.defaultHead = const MapLiteral(
-      const {'columnName': String, 'columnType': SqlLiteDatatype}),
-    this.meta});
+  DatabaseDescription(
+      {this.defaultHead = const MapLiteral(
+          const {'columnName': String, 'columnType': SqlLiteDatatype}),
+      this.meta});
 
   void addTable({
     @required String name, // DB table name
@@ -38,8 +39,5 @@ enum SqlLiteDatatype { NULL, INTEGER, REAL, TEXT, BLOB }
 /// SqlLiteDatatype.TEXT.toString() gives you 'SqlLiteDatatype.TEXT' instead of
 /// 'TEXT', which is what we want here.
 String getEnumName(Object enumEntry) {
-  return enumEntry
-      ?.toString()
-      ?.split('.')
-      ?.last;
+  return enumEntry?.toString()?.split('.')?.last;
 }
