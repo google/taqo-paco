@@ -1,0 +1,16 @@
+builders:
+  database_inc:
+    import: "package:taqo_survey/storage/local_database_builder.dart"
+    builder_factories: ["localDatabaseBuilder"]
+    build_extensions:
+      $lib$:
+        - lib/storage/local_database.inc.dart
+    auto_apply: none
+    build_to: source
+
+
+targets:
+  $default:
+    builders:
+      taqo_survey|database_inc:
+        enabled: true
