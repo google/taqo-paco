@@ -1,7 +1,8 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:taqo_survey/model/database_helper.dart';
 import 'package:taqo_survey/storage/local_database_builder.dart';
+import 'package:taqo_survey/util/map_literal.dart';
 import 'package:taqo_survey/util/table_util.dart';
+import 'package:test/test.dart';
 
 void main() {
   test('buildQueryCreateTable() with prependIdColumn=true', () {
@@ -13,15 +14,15 @@ void main() {
     );
     ''';
     expect(
-        buildQueryCreateTable(
+        buildSqlCreateTable(
             'a_table',
-            Table(head: [
-              'columnName',
-              'columnType'
-            ], body: [
-              'column_first', SqlLiteDatatype.INTEGER, //
-              'column_second', SqlLiteDatatype.TEXT, //
-            ]),
+            Table(
+                head: MapLiteral(
+                    {'columnName': String, 'columnType': SqlLiteDatatype}),
+                body: [
+                  'column_first', SqlLiteDatatype.INTEGER, //
+                  'column_second', SqlLiteDatatype.TEXT, //
+                ]),
             prependIdColumn: true),
         equalsIgnoringWhitespace(results));
   });
@@ -33,15 +34,15 @@ void main() {
     );
     ''';
     expect(
-        buildQueryCreateTable(
+        buildSqlCreateTable(
             'a_table',
-            Table(head: [
-              'columnName',
-              'columnType'
-            ], body: [
-              'column_first', SqlLiteDatatype.INTEGER, //
-              'column_second', SqlLiteDatatype.TEXT, //
-            ]),
+            Table(
+                head: MapLiteral(
+                    {'columnName': String, 'columnType': SqlLiteDatatype}),
+                body: [
+                  'column_first', SqlLiteDatatype.INTEGER, //
+                  'column_second', SqlLiteDatatype.TEXT, //
+                ]),
             prependIdColumn: false),
         equalsIgnoringWhitespace(results));
   });

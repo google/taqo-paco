@@ -31,6 +31,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  test:
   build_runner: any
   json_serializable: ^2.0.0
   source_gen:
