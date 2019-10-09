@@ -1,0 +1,9 @@
+builders:
+  database_inc:
+    import: "package:data_binding_builder/builder.dart"
+    builder_factories: ["localDatabaseBuilder"]
+    build_extensions:
+      $lib$:
+        - lib/storage/local_database.inc.dart
+    auto_apply: none
+    build_to: source

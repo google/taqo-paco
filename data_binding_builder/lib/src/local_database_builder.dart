@@ -1,9 +1,10 @@
 import 'package:build/build.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:path/path.dart' as p;
-import 'package:taqo_client/model/database_helper.dart';
-import 'package:taqo_client/util/map_literal.dart';
-import 'package:taqo_client/util/table_util.dart';
+
+import 'database_helper.dart';
+import 'map_literal.dart';
+import 'table.dart';
 
 // Describe the database schema
 /// Predefined meta information fields
@@ -77,7 +78,7 @@ class LocalDatabaseBuilder implements Builder {
   static const outputFilename = 'local_database.inc.dart';
 
   static AssetId _output(BuildStep buildStep) {
-    return new AssetId(
+    return AssetId(
       buildStep.inputId.package,
       p.join('lib', 'storage', outputFilename),
     );
@@ -110,5 +111,4 @@ ${dbDescription.tableSpecifications.entries.map((entry) => 'await db.execute(\'\
   }
 }
 
-/// Builder factory
-Builder localDatabaseBuilder(BuilderOptions options) => LocalDatabaseBuilder();
+
