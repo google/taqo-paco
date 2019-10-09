@@ -11,9 +11,9 @@ Visualization _$VisualizationFromJson(Map<String, dynamic> json) {
     ..id = json['id'] as int
     ..experimentId = json['experimentId'] as int
     ..title = json['title'] as String
-//    ..modifyDate = json['modifyDate'] == null
-//        ? null
-//        : DateTime(json['modifyDate'] as int)
+    ..modifyDate = json['modifyDate'] == null
+        ? null
+        : DateTime.parse(json['modifyDate'] as String)
     ..question = json['question'] as String
     ..xAxisVariable = json['xAxisVariable'] == null
         ? null
@@ -28,10 +28,10 @@ Visualization _$VisualizationFromJson(Map<String, dynamic> json) {
     ..description = json['description'] as String
     ..startDatetime = json['startDatetime'] == null
         ? null
-        : DateTime(json['startDatetime'] as int)
+        : DateTime.parse(json['startDatetime'] as String)
     ..endDatetime = json['endDatetime'] == null
         ? null
-        : DateTime(json['endDatetime'] as int);
+        : DateTime.parse(json['endDatetime'] as String);
 }
 
 Map<String, dynamic> _$VisualizationToJson(Visualization instance) =>
