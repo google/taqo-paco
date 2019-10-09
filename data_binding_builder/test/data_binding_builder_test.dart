@@ -1,7 +1,7 @@
-import 'package:taqo_client/model/database_helper.dart';
-import 'package:taqo_client/storage/local_database_builder.dart';
-import 'package:taqo_client/util/map_literal.dart';
-import 'package:taqo_client/util/table_util.dart';
+import 'package:data_binding_builder/src/database_helper.dart';
+import 'package:data_binding_builder/src/local_database_builder.dart';
+import 'package:data_binding_builder/src/map_literal.dart';
+import 'package:data_binding_builder/src/table.dart';
 import 'package:test/test.dart';
 
 void main() {

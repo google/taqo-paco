@@ -1,6 +1,7 @@
 import 'package:meta/meta.dart';
-import 'package:taqo_client/util/map_literal.dart';
-import 'package:taqo_client/util/table_util.dart';
+
+import 'map_literal.dart';
+import 'table.dart';
 
 /// Description of a database
 /// We describe a database using meta information such as version and the

@@ -1,7 +1,8 @@
 import 'dart:mirrors';
 
 import 'package:meta/meta.dart';
-import 'package:taqo_client/util/map_literal.dart';
+
+import 'map_literal.dart';
 
 /// A table in traditional meaning, with rows and columns.
 class Table {
@@ -38,7 +39,7 @@ class Table {
         _headTypes = head.values.toList();
 
   /// Validate the table body
-  bool validateBody() {
+  void validateBody() {
     if (body.length % columnCount != 0) {
       throw StateError(
           'The table "body" is invalid. The size of "body" should be a multiple of the size of "head".');
