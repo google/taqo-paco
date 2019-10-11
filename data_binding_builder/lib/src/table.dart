@@ -15,54 +15,51 @@ class Table {
   /// A list storing the column types.
   final List<Type> _headTypes;
 
-  /// The number of columns in the table
-  int _columnCount;
+  /// The content of the table stored in a row major order, should be of size rowCount x columnCount.
+  final List<dynamic> body;
 
-  int get columnCount {
-    _columnCount ??= _headNames.length;
-    return _columnCount;
-  }
+  /// The number of columns in the table
+  final int columnCount;
+
+  /// The number of rows in the table
+  final int rowCount;
 
   /// A map from column name in the head to the column index (starting from 0)
-  Map<String, int> _headToIndexMap;
+  final Map<String, int> _headToIndexMap;
 
-  Map<String, int> get headToIndexMap {
-    _headToIndexMap ??= _headNames.asMap().map((k, v) => MapEntry(v, k));
-    return _headToIndexMap;
-  }
+  Table._(this.head, this._headNames, this._headTypes, this.body,
+      this.columnCount, this.rowCount, this._headToIndexMap);
 
-  /// The content of the table stored in a row major order, should be of size rowCount x columnCount.
-  List<dynamic> body;
-
-  Table({@required this.head, this.body})
-      : _headNames = head.keys.toList(),
-        _headTypes = head.values.toList();
-
-  /// Validate the table body
-  void validateBody() {
+  factory Table(
+      {@required MapLiteral<String, Type> head, @required List<dynamic> body}) {
+    final List<String> headNames = head.keys.toList();
+    final List<Type> headTypes = head.values.toList();
+    final int columnCount = headNames.length;
     if (body.length % columnCount != 0) {
       throw StateError(
           'The table "body" is invalid. The size of "body" should be a multiple of the size of "head".');
     }
-    var rowCount = body.length ~/ columnCount;
+    final int rowCount = body.length ~/ columnCount;
     for (var i = 0; i < rowCount; i++) {
       var rowBase = i * columnCount;
       for (var j = 0; j < columnCount; j++) {
         if (!(reflectType(body[rowBase + j].runtimeType)
-            .isSubtypeOf(reflectType(_headTypes[j])))) {
+            .isSubtypeOf(reflectType(headTypes[j])))) {
           throw StateError('The table "body" is invalid. '
-              'body[${rowBase + j}]=${body[rowBase + j]} should be of type $_headTypes[j], '
+              'body[${rowBase + j}]=${body[rowBase + j]} should be of type $headTypes[j], '
               'instead of type ${body[rowBase + j].runtimeType}');
         }
       }
     }
+    final Map<String, int> headToIndexMap =
+        headNames.asMap().map((k, v) => MapEntry(v, k));
+    return Table._(head, headNames, headTypes, body, columnCount, rowCount,
+        headToIndexMap);
   }
 
-  /// Get a row iterator, where each row is represented by a map with table
+  /// Get a rows iterator, where each row is represented by a map with table
   /// head/column name as key and the actual table entry as value.
-  Iterable<Map<String, dynamic>> get rowIterator sync* {
-    validateBody();
-    var rowCount = body.length ~/ columnCount;
+  Iterable<Map<String, dynamic>> get rows sync* {
     for (var i = 0; i < rowCount; i++) {
       Map<String, dynamic> map = {};
       var rowBase = i * columnCount;
@@ -70,6 +67,14 @@ class Table {
         map[_headNames[j]] = body[rowBase + j];
       }
       yield map;
+    }
+  }
+
+  /// Get an iterator for one column.
+  Iterable<dynamic> getColumn(String headName) sync* {
+    var j = _headToIndexMap[headName];
+    for (var i = 0; i < rowCount; i++) {
+      yield body[i * columnCount + j];
     }
   }
 }

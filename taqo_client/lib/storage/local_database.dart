@@ -1,5 +1,6 @@
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
+import 'package:taqo_client/model/event.dart';
 
 part 'local_database.inc.dart';
 
@@ -31,5 +32,10 @@ class LocalDatabase {
     var dbPrefix = await getDatabasesPath();
     String dbPath = p.join(dbPrefix, dbFilename);
     return await openDatabase(dbPath, version: _dbVersion, onCreate: _onCreate);
+  }
+
+  Future<void> insertEvent(Event event) async {
+    final db = await _db;
+    await _insertEvent(db, event);
   }
 }

@@ -1,5 +1,6 @@
 import 'package:build/build.dart';
 import 'package:dart_style/dart_style.dart';
+import 'package:data_binding_builder/src/util.dart';
 import 'package:path/path.dart' as p;
 
 import 'database_helper.dart';
@@ -61,14 +62,42 @@ DatabaseDescription buildDatabaseDescription() {
 /// How-tos
 ///
 /// How to create a table?
-String buildSqlCreateTable(String name, Table tableDescription,
-    {bool prependIdColumn = false}) {
+String buildSqlCreateTable(
+    DatabaseDescription dbDescription, String tableName) {
+  var tableSpecification = dbDescription.tableSpecifications[tableName];
+  if (tableSpecification == null) {
+    throw StateError(
+        'There is no specification for table $tableName in the database description.');
+  }
+  var prependIdColumn = dbDescription.meta[_Meta.PREPEND_ID_COLUMN] ?? false;
   return '''
-CREATE TABLE $name (
+CREATE TABLE $tableName (
 ${prependIdColumn ? "_id INTEGER PRIMARY KEY AUTOINCREMENT,\n" : ""}'''
       '''
-${tableDescription.rowIterator.map((item) => "${item[_TableHead.COLUMN_NAME]} ${getEnumName(item[_TableHead.COLUMN_TYPE])}").join(', \n')}
+${tableSpecification.rows.map((item) => "${item[_TableHead.COLUMN_NAME]} ${getEnumName(item[_TableHead.COLUMN_TYPE])}").join(', \n')}
   );
+  ''';
+}
+
+/// How to get all column fields (of a table) from an object?
+/// The returned string is the representation of a map that can be used by Database.insert()
+String buildDartFieldsMap(
+    DatabaseDescription dbDescription, String tableName, String objectName) {
+  var tableSpecification = dbDescription.tableSpecifications[tableName];
+  if (tableSpecification == null) {
+    throw StateError(
+        'There is no specification for table $tableName in the database description.');
+  }
+  var prependIdColumn = dbDescription.meta[_Meta.PREPEND_ID_COLUMN] ?? false;
+  if (prependIdColumn == false) {
+    throw UnimplementedError();
+  }
+
+  return '''
+{
+  '_id': ${objectName}.id,
+  ${tableSpecification.getColumn(_TableHead.COLUMN_NAME).map((columnName) => "'$columnName': ${objectName}.${snakeCaseToCamelCase(columnName)},").join('\n')}
+}
   ''';
 }
 
@@ -101,14 +130,22 @@ class LocalDatabaseBuilder implements Builder {
 part of '$partOfFilename';
 
 var _dbVersion = ${dbDescription.meta[_Meta.VERSION]};
+
 Future<void> _onCreate(Database db, int version) async {
-${dbDescription.tableSpecifications.entries.map((entry) => 'await db.execute(\'\'\'${buildSqlCreateTable(entry.key, entry.value, prependIdColumn: dbDescription.meta[_Meta.PREPEND_ID_COLUMN])}\'\'\');').join('\n')}
+${dbDescription.tableNames.map((tableName) => 'await db.execute(\'\'\'${buildSqlCreateTable(dbDescription, tableName)}\'\'\');').join('\n')}
 }
+
+Future<void> _insertEvent(Database db, Event event) async {
+  await db.insert(
+  'events',
+  ${buildDartFieldsMap(dbDescription, 'events', 'event')},
+  conflictAlgorithm: ConflictAlgorithm.replace,
+  );
+}
+
     ''');
 
     final output = _output(buildStep);
     await buildStep.writeAsString(output, content);
   }
 }
-
-

@@ -3,6 +3,7 @@
 part of 'local_database.dart';
 
 var _dbVersion = 1;
+
 Future<void> _onCreate(Database db, int version) async {
   await db.execute('''CREATE TABLE experiments (
 _id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,4 +36,25 @@ text TEXT,
 answer TEXT
   );
   ''');
+}
+
+Future<void> _insertEvent(Database db, Event event) async {
+  await db.insert(
+    'events',
+    {
+      '_id': event.id,
+      'experiment_id': event.experimentId,
+      'experiment_server_id': event.experimentServerId,
+      'experiment_name': event.experimentName,
+      'experiment_version': event.experimentVersion,
+      'schedule_time': event.scheduleTime,
+      'response_time': event.responseTime,
+      'uploaded': event.uploaded,
+      'group_name': event.groupName,
+      'action_trigger_id': event.actionTriggerId,
+      'action_trigger_spec_id': event.actionTriggerSpecId,
+      'action_id': event.actionId,
+    },
+    conflictAlgorithm: ConflictAlgorithm.replace,
+  );
 }

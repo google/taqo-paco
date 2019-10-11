@@ -18,6 +18,9 @@ class DatabaseDescription {
   /// A map from DB table name to [Table] object as the specification of that DB table
   Map<String, Table> tableSpecifications = {};
 
+  /// An iterator of table names
+  Iterable<String> get tableNames => tableSpecifications.keys;
+
   DatabaseDescription(
       {this.defaultHead = const MapLiteral(
           const {'columnName': String, 'columnType': SqlLiteDatatype}),
@@ -26,7 +29,8 @@ class DatabaseDescription {
   void addTable({
     @required String name, // DB table name
     MapLiteral<String, Type> withCustomHead, // Custom head of [Table] object
-    List<dynamic> specification, // The [body] of the specification table
+    @required
+        List<dynamic> specification, // The [body] of the specification table
   }) {
     tableSpecifications[name] =
         Table(head: withCustomHead ?? defaultHead, body: specification);
