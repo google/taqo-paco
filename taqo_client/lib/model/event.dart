@@ -4,8 +4,6 @@ import 'package:taqo_client/util/time_util.dart';
 part 'event.g.dart';
 
 @JsonSerializable()
-
-// TODO add the other properties of event here.
 class Event {
   // The following fields are serializable, their exported names should be recognizable by the Paco server
   // DON'T change their names unless
@@ -13,6 +11,7 @@ class Event {
   // or
   // (2) the correct exported name was specified in @JsonKey annotation
 
+  @JsonKey(fromJson: _responsesFromListOfMap, toJson: _responsesToListOfMap)
   Map<String, dynamic> responses = {};
 
   @JsonKey(name: 'experimentId')
@@ -20,10 +19,14 @@ class Event {
 
   String experimentName;
 
-  @JsonKey(name: 'scheduledTime', fromJson: TimeUtil.dateTimeFromString, toJson: TimeUtil.dateTimeToString)
+  @JsonKey(
+      name: 'scheduledTime',
+      fromJson: TimeUtil.dateTimeFromString,
+      toJson: TimeUtil.dateTimeToString)
   DateTime scheduleTime;
 
-  @JsonKey(fromJson: TimeUtil.dateTimeFromString, toJson: TimeUtil.dateTimeToString)
+  @JsonKey(
+      fromJson: TimeUtil.dateTimeFromString, toJson: TimeUtil.dateTimeToString)
   DateTime responseTime;
 
   int experimentVersion;
@@ -48,11 +51,20 @@ class Event {
   @JsonKey(ignore: true)
   bool uploaded;
 
-
   Event();
 
   factory Event.fromJson(Map<String, dynamic> json) => _$EventFromJson(json);
 
   Map<String, dynamic> toJson() => _$EventToJson(this);
 
+  static List<Map<String, dynamic>> _responsesToListOfMap(
+          Map<String, dynamic> responses) =>
+      responses.entries
+          .map((entry) => {'name': entry.key, 'answer': entry.value})
+          .toList();
+
+  static Map<String, dynamic> _responsesFromListOfMap(
+          List<Map<String, dynamic>> listOfMap) =>
+      Map.fromIterable(listOfMap,
+          key: (item) => item['name'], value: (item) => item['answer']);
 }
