@@ -3,27 +3,27 @@ import 'package:test/test.dart';
 import 'package:data_binding_builder/src/util.dart';
 
 void main() {
-  group('sentenceCase()', () {
-    test('sentenceCase() converts a string to sentence case', () {
-      expect(
-          sentenceCase('tHis Is A sEnTENCE. '), equals('This is a sentence. '));
+  group('toSentenceCase()', () {
+    test('toSentenceCase() converts a string to sentence case', () {
+      expect(toSentenceCase('tHis Is A sEnTENCE. '),
+          equals('This is a sentence. '));
     });
 
     test(
-        'when the first character is not a letter, sentenceCase() is the same as toLowerCase()',
+        'when the first character is not a letter, toSentenceCase() is the same as toLowerCase()',
         () {
-      expect(sentenceCase(' THis Is A sEnTENCE. '),
+      expect(toSentenceCase(' THis Is A sEnTENCE. '),
           equals(' this is a sentence. '));
-      expect(sentenceCase('_THis Is A sEnTENCE. '),
+      expect(toSentenceCase('_THis Is A sEnTENCE. '),
           equals('_this is a sentence. '));
-      expect(sentenceCase('6THis Is A sEnTENCE. '),
+      expect(toSentenceCase('6THis Is A sEnTENCE. '),
           equals('6this is a sentence. '));
     });
 
-    test('setnenceCase() corner cases', () {
-      expect(sentenceCase(null), equals(null));
-      expect(sentenceCase(''), equals(''));
-      expect(sentenceCase(' '), equals(' '));
+    test('toSetnenceCase() corner cases', () {
+      expect(toSentenceCase(null), equals(null));
+      expect(toSentenceCase(''), equals(''));
+      expect(toSentenceCase(' '), equals(' '));
     });
   });
 
@@ -45,6 +45,65 @@ void main() {
           equals('   AaaBbbCcc'));
       expect(snakeCaseToCamelCase('aaa_bbb ccc_ddd_ eee'),
           equals('aaaBbb cccDdd eee'));
+    });
+  });
+
+  group('templateFormat()', () {
+    test(
+        'templateFormat() replaces placeholders in a string with content specified by a map',
+        () {
+      expect(templateFormat('{{ replace me }}', {' replace me ': 'true value'}),
+          equals('true value'));
+      expect(templateFormat('Hello {{var}}!', {'var': 'world'}),
+          equals('Hello world!'));
+      expect(
+          templateFormat(
+              'AllWords{{Connected}}IsOK', {'Connected': 'WithoutSpace'}),
+          equals('AllWordsWithoutSpaceIsOK'));
+      expect(
+          templateFormat('Multiple {{replacements}} is also {{OK}}.',
+              {'replacements': 'placeholders', 'OK': 'good'}),
+          equals('Multiple placeholders is also good.'));
+    });
+
+    test('templateFormat() for unexpected input', () {
+      expect(templateFormat(null, null), equals(null));
+      expect(templateFormat(null, {}), equals(null));
+      expect(templateFormat('', null), equals(''));
+      expect(templateFormat('', {'unused placeholder': 'not replaced'}),
+          equals(''));
+      expect(
+          templateFormat(
+              'Single {brackets} does not work.', {'brackets': 'not replaced'}),
+          'Single {brackets} does not work.');
+      expect(
+          templateFormat('Empty double brackets {{}} are not replaced.', null),
+          equals('Empty double brackets {{}} are not replaced.'));
+      expect(
+          templateFormat(
+              'Be careful with brackets inside double brackets. Some will be {{{replaced}}}, and some will {{}not{}}.',
+              {
+                'replaced': 'REPLACED',
+                '}not{': 'not replaced'
+              }),
+          equals(
+              'Be careful with brackets inside double brackets. Some will be {REPLACED}, and some will {{}not{}}.'));
+      expect(
+          templateFormat('Be careful with {{\{escaped\}}} \{\{brackets\}\}.',
+              {'escaped': 'ESCAPED', 'brackets': 'BRACKETS'}),
+          equals('Be careful with {ESCAPED} BRACKETS.'));
+    });
+
+    test('templateFormat() for errors', () {
+      // It could be implemented in a slightly easier way so that undefined placeholders becomes 'null'
+      // But in this case throwing an error is more helpful.
+      expect(
+          () => templateFormat('Undefined {{placeholders}} cause errors.', {}),
+          throwsArgumentError);
+      expect(
+          () =>
+              templateFormat('Undefined {{placeholders}} cause errors.', null),
+          throwsArgumentError);
     });
   });
 }

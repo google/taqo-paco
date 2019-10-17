@@ -8,7 +8,10 @@ part of 'event.dart';
 
 Event _$EventFromJson(Map<String, dynamic> json) {
   return Event()
-    ..responses = json['responses'] as Map<String, dynamic>
+    ..responses = json['responses'] == null
+        ? null
+        : Event._responsesFromListOfMap(
+            json['responses'] as List<Map<String, dynamic>>)
     ..experimentServerId = json['experimentId'] as int
     ..experimentName = json['experimentName'] as String
     ..scheduleTime = json['scheduledTime'] == null
@@ -25,7 +28,9 @@ Event _$EventFromJson(Map<String, dynamic> json) {
 }
 
 Map<String, dynamic> _$EventToJson(Event instance) => <String, dynamic>{
-      'responses': instance.responses,
+      'responses': instance.responses == null
+          ? null
+          : Event._responsesToListOfMap(instance.responses),
       'experimentId': instance.experimentServerId,
       'experimentName': instance.experimentName,
       'scheduledTime': instance.scheduleTime == null

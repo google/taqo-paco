@@ -77,4 +77,15 @@ class Table {
       yield body[i * columnCount + j];
     }
   }
+
+  /// Get an MapEntry iterator using one column as key and another column as value
+  Iterable<MapEntry> getColumnAsMapEntries(
+      String keyColumn, String valueColumn) sync* {
+    var jKey = _headToIndexMap[keyColumn];
+    var jValue = _headToIndexMap[valueColumn];
+    for (var i = 0; i < rowCount; i++) {
+      yield MapEntry(
+          body[i * columnCount + jKey], body[i * columnCount + jValue]);
+    }
+  }
 }

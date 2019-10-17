@@ -39,22 +39,42 @@ answer TEXT
 }
 
 Future<void> _insertEvent(Database db, Event event) async {
-  await db.insert(
-    'events',
-    {
-      '_id': event.id,
-      'experiment_id': event.experimentId,
-      'experiment_server_id': event.experimentServerId,
-      'experiment_name': event.experimentName,
-      'experiment_version': event.experimentVersion,
-      'schedule_time': event.scheduleTime,
-      'response_time': event.responseTime,
-      'uploaded': event.uploaded,
-      'group_name': event.groupName,
-      'action_trigger_id': event.actionTriggerId,
-      'action_trigger_spec_id': event.actionTriggerSpecId,
-      'action_id': event.actionId,
-    },
-    conflictAlgorithm: ConflictAlgorithm.replace,
-  );
+  try {
+    db.transaction((txn) async {
+      event.id = await txn.insert(
+        'events',
+        {
+          'experiment_id': event.experimentId,
+          'experiment_server_id': event.experimentServerId,
+          'experiment_name': event.experimentName,
+          'experiment_version': event.experimentVersion,
+          'schedule_time': event.scheduleTime,
+          'response_time': event.responseTime,
+          'uploaded': event.uploaded,
+          'group_name': event.groupName,
+          'action_trigger_id': event.actionTriggerId,
+          'action_trigger_spec_id': event.actionTriggerSpecId,
+          'action_id': event.actionId,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      var batch = txn.batch();
+      for (var entry in event.responses.entries) {
+        batch.insert(
+          'outputs',
+          {
+            'event_id': event.id,
+            'input_server_id': null,
+            'text': entry.key,
+            'answer': entry.value,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+      await batch.commit(noResult: true);
+    });
+  } catch (e) {
+    event.id = null;
+    rethrow;
+  }
 }
