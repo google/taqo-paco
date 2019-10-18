@@ -31,12 +31,15 @@ DatabaseDescription buildDatabaseDescription() {
   // In the [db.addTable()] statements below we use an (probably empty) line comment to mark the end of a [Table] row, so that
   // (1) dartfmt won't auto split the rows into one item per line
   // (2) In the case one line is split due to its length, one can tell the difference from a line end and a [Table] row end.
-  db.addTable(name: 'experiments', specification: [
+
+  // The table 'experiments', which is used in Paco, is not used in Taqo currently.
+  /*db.addTable(name: 'experiments', specification: [
     'server_id', SqlLiteDatatype.INTEGER, //
     'title', SqlLiteDatatype.TEXT, //
     'join_date', SqlLiteDatatype.TEXT, //
     'json', SqlLiteDatatype.TEXT, //
-  ]);
+  ]);*/
+
   db.addTable(name: 'events', specification: [
     'experiment_id', SqlLiteDatatype.INTEGER, //
     'experiment_server_id', SqlLiteDatatype.INTEGER, //
@@ -59,7 +62,7 @@ DatabaseDescription buildDatabaseDescription() {
       }),
       specification: [
         'event_id', SqlLiteDatatype.INTEGER, '{{event}}.id', //
-        'input_server_id', SqlLiteDatatype.INTEGER, 'null', //
+        //'input_server_id', SqlLiteDatatype.INTEGER, 'null', // This column was from Paco, but no longer used.
         'text', SqlLiteDatatype.TEXT, '{{responses.entry}}.key', //
         'answer', SqlLiteDatatype.TEXT, '{{responses.entry}}.value' //
       ]);

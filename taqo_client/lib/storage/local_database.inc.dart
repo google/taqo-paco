@@ -5,14 +5,6 @@ part of 'local_database.dart';
 var _dbVersion = 1;
 
 Future<void> _onCreate(Database db, int version) async {
-  await db.execute('''CREATE TABLE experiments (
-_id INTEGER PRIMARY KEY AUTOINCREMENT,
-server_id INTEGER, 
-title TEXT, 
-join_date TEXT, 
-json TEXT
-  );
-  ''');
   await db.execute('''CREATE TABLE events (
 _id INTEGER PRIMARY KEY AUTOINCREMENT,
 experiment_id INTEGER, 
@@ -31,7 +23,6 @@ action_id INTEGER
   await db.execute('''CREATE TABLE outputs (
 _id INTEGER PRIMARY KEY AUTOINCREMENT,
 event_id INTEGER, 
-input_server_id INTEGER, 
 text TEXT, 
 answer TEXT
   );
@@ -64,7 +55,6 @@ Future<void> _insertEvent(Database db, Event event) async {
           'outputs',
           {
             'event_id': event.id,
-            'input_server_id': null,
             'text': entry.key,
             'answer': entry.value,
           },
