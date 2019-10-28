@@ -35,6 +35,8 @@ class DatabaseDescription {
     tableSpecifications[name] =
         Table(head: withCustomHead ?? defaultHead, body: specification);
   }
+
+  Table getTableSpecification(String tableName) => tableSpecifications[tableName] ?? (throw ArgumentError( 'There is no specification for table $tableName in the database description.'));
 }
 
 enum SqlLiteDatatype { NULL, INTEGER, REAL, TEXT, BLOB }

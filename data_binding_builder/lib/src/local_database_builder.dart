@@ -1,9 +1,9 @@
 import 'package:build/build.dart';
 import 'package:dart_style/dart_style.dart';
-import 'package:data_binding_builder/src/util.dart';
+import 'package:data_binding_builder/src/string_util.dart';
 import 'package:path/path.dart' as p;
 
-import 'database_helper.dart';
+import 'database_description.dart';
 import 'map_literal.dart';
 import 'table.dart';
 
@@ -25,22 +25,22 @@ class _TableHead {
 
 //
 DatabaseDescription buildDatabaseDescription() {
-  var db = DatabaseDescription(
+  var dbDescription = DatabaseDescription(
       defaultHead: _TableHead.DEFAULT_HEAD,
       meta: const {_Meta.PREPEND_ID_COLUMN: true, _Meta.VERSION: 1});
-  // In the [db.addTable()] statements below we use an (probably empty) line comment to mark the end of a [Table] row, so that
+  // In the [dbDescription.addTable()] statements below we use an (probably empty) line comment to mark the end of a [Table] row, so that
   // (1) dartfmt won't auto split the rows into one item per line
   // (2) In the case one line is split due to its length, one can tell the difference from a line end and a [Table] row end.
 
   // The table 'experiments', which is used in Paco, is not used in Taqo currently.
-  /*db.addTable(name: 'experiments', specification: [
+  /*dbDescription.addTable(name: 'experiments', specification: [
     'server_id', SqlLiteDatatype.INTEGER, //
     'title', SqlLiteDatatype.TEXT, //
     'join_date', SqlLiteDatatype.TEXT, //
     'json', SqlLiteDatatype.TEXT, //
   ]);*/
 
-  db.addTable(name: 'events', specification: [
+  dbDescription.addTable(name: 'events', specification: [
     'experiment_id', SqlLiteDatatype.INTEGER, //
     'experiment_server_id', SqlLiteDatatype.INTEGER, //
     'experiment_name', SqlLiteDatatype.TEXT, //
@@ -53,7 +53,7 @@ DatabaseDescription buildDatabaseDescription() {
     'action_trigger_spec_id', SqlLiteDatatype.INTEGER, //
     'action_id', SqlLiteDatatype.INTEGER, //
   ]);
-  db.addTable(
+  dbDescription.addTable(
       name: 'outputs',
       withCustomHead: MapLiteral({
         _TableHead.COLUMN_NAME: String,
@@ -62,12 +62,11 @@ DatabaseDescription buildDatabaseDescription() {
       }),
       specification: [
         'event_id', SqlLiteDatatype.INTEGER, '{{event}}.id', //
-        //'input_server_id', SqlLiteDatatype.INTEGER, 'null', // This column was from Paco, but no longer used.
         'text', SqlLiteDatatype.TEXT, '{{responses.entry}}.key', //
         'answer', SqlLiteDatatype.TEXT, '{{responses.entry}}.value' //
       ]);
 
-  return db;
+  return dbDescription;
 }
 
 /// How-tos
@@ -75,11 +74,7 @@ DatabaseDescription buildDatabaseDescription() {
 /// How to create a table?
 String buildSqlCreateTable(
     DatabaseDescription dbDescription, String tableName) {
-  var tableSpecification = dbDescription.tableSpecifications[tableName];
-  if (tableSpecification == null) {
-    throw ArgumentError(
-        'There is no specification for table $tableName in the database description.');
-  }
+  var tableSpecification = dbDescription.getTableSpecification(tableName);
   var prependIdColumn = dbDescription.meta[_Meta.PREPEND_ID_COLUMN] ?? false;
   return '''
 CREATE TABLE $tableName (
@@ -94,11 +89,7 @@ ${tableSpecification.rows.map((item) => "${item[_TableHead.COLUMN_NAME]} ${getEn
 /// The returned string is the representation of a map that can be used by Database.insert()
 String buildDartFieldsMap(
     DatabaseDescription dbDescription, String tableName, String objectName) {
-  var tableSpecification = dbDescription.tableSpecifications[tableName];
-  if (tableSpecification == null) {
-    throw ArgumentError(
-        'There is no specification for table $tableName in the database description.');
-  }
+  var tableSpecification = dbDescription.getTableSpecification(tableName);
   var prependIdColumn = dbDescription.meta[_Meta.PREPEND_ID_COLUMN] ?? false;
   if (prependIdColumn == false) {
     throw UnimplementedError();
@@ -119,11 +110,7 @@ String buildDartFieldsMapWithTranslationTemplate(
     DatabaseDescription dbDescription,
     String tableName,
     Map<String, String> placeholderMap) {
-  var tableSpecification = dbDescription.tableSpecifications[tableName];
-  if (tableSpecification == null) {
-    throw ArgumentError(
-        'There is no specification for table $tableName in the database description.');
-  }
+  var tableSpecification = dbDescription.getTableSpecification(tableName);
   var prependIdColumn = dbDescription.meta[_Meta.PREPEND_ID_COLUMN] ?? false;
   if (prependIdColumn == false) {
     throw UnimplementedError();

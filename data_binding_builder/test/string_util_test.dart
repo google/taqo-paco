@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 
-import 'package:data_binding_builder/src/util.dart';
+import 'package:data_binding_builder/src/string_util.dart';
 
 void main() {
   group('toSentenceCase()', () {
@@ -20,7 +20,7 @@ void main() {
           equals('6this is a sentence. '));
     });
 
-    test('toSetnenceCase() corner cases', () {
+    test('toSentenceCase() corner cases', () {
       expect(toSentenceCase(null), equals(null));
       expect(toSentenceCase(''), equals(''));
       expect(toSentenceCase(' '), equals(' '));
@@ -32,6 +32,7 @@ void main() {
       expect(
           snakeCaseToCamelCase('SnAke_cAse_STring'), equals('snakeCaseString'));
       expect(snakeCaseToCamelCase('SnAke'), equals('snake'));
+      expect(snakeCaseToCamelCase('_SnAke'), equals('snake'));
     });
 
     test('snakeCaseToCamelCase() for unexpected input', () {
@@ -40,7 +41,7 @@ void main() {
       expect(snakeCaseToCamelCase(' '), equals(' '));
       expect(snakeCaseToCamelCase('_'), equals(''));
       expect(snakeCaseToCamelCase('_____'), equals(''));
-      expect(snakeCaseToCamelCase('__aaa___bbb__ccc____'), equals('AaaBbbCcc'));
+      expect(snakeCaseToCamelCase('__aaa___bbb__ccc____'), equals('aaaBbbCcc'));
       expect(snakeCaseToCamelCase('   ___aaa___bbb__ccc____'),
           equals('   AaaBbbCcc'));
       expect(snakeCaseToCamelCase('aaa_bbb ccc_ddd_ eee'),

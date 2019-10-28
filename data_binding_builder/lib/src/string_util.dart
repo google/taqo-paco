@@ -1,9 +1,12 @@
 String snakeCaseToCamelCase(String string) {
-  var wordList = string?.split('_');
-  return wordList == null
-      ? null
-      : wordList[0].toLowerCase() +
-          wordList.sublist(1).map(toSentenceCase).join();
+  if (string == null) {
+    return null;
+  }
+  var wordList = string.split('_').skipWhile((s) => s.isEmpty);
+  return wordList.isEmpty
+      ? ''
+      : wordList.first.toLowerCase() +
+          wordList.skip(1).map(toSentenceCase).join();
 }
 
 String toSentenceCase(String string) => (string == null || string == '')
