@@ -1,42 +1,85 @@
 import 'package:meta/meta.dart';
 
+import 'database_description_base.dart';
 import 'map_literal.dart';
 import 'table.dart';
 
-/// Description of a database
-/// We describe a database using meta information such as version and the
-/// specification of each DB table. Each DB table is specified by a traditional
-/// table of type [Table]. The head of [Table] object decides what information
-/// of the DB table is provided.
-class DatabaseDescription {
-  /// Meta information
-  final Map<String, dynamic> meta;
+class DatabaseColumnSpecification {
+  final String specFormat;
+  final String name;
+  final SqlLiteDatatype type;
+  final String translation;
 
-  /// The default [Table] head, used by [.addTable()] if a custom head is not specified
-  final MapLiteral<String, Type> defaultHead;
+  String get typeAsString => getEnumName(type);
 
-  /// A map from DB table name to [Table] object as the specification of that DB table
-  Map<String, Table> tableSpecifications = {};
+  DatabaseColumnSpecification(
+      {@required this.specFormat,
+      @required this.name,
+      @required this.type,
+      @required this.translation});
+}
 
-  /// An iterator of table names
-  Iterable<String> get tableNames => tableSpecifications.keys;
+class DatabaseDescription extends DatabaseDescriptionBase {
+  // Predefined meta keys
+  static const META_VERSION = 'version';
+  static const META_PREPEND_ID_COLUMN = 'prependIdColumn';
 
-  DatabaseDescription(
-      {this.defaultHead = const MapLiteral(
-          const {'columnName': String, 'columnType': SqlLiteDatatype}),
-      this.meta});
+  // Predefined [Table] column names for DB table specifications
+  static const _SPEC_COLUMN_NAME = 'columnName';
+  static const _SPEC_COLUMN_TYPE = 'columnType';
+  static const _SPEC_TRANSLATION = 'translation';
 
-  void addTable({
-    @required String name, // DB table name
-    MapLiteral<String, Type> withCustomHead, // Custom head of [Table] object
-    @required
-        List<dynamic> specification, // The [body] of the specification table
-  }) {
-    tableSpecifications[name] =
-        Table(head: withCustomHead ?? defaultHead, body: specification);
+  DatabaseDescription({Map<String, dynamic> meta}) : super(meta: meta);
+
+  // Specification formats
+  static const SPEC_FMT_NT = 'columnName, columnType';
+  static const SPEC_FMT_NTTr = 'columnName, columnType, translation';
+
+  static const _SPEC_BY_FORMAT = {
+    SPEC_FMT_NT: MapLiteral(
+        {_SPEC_COLUMN_NAME: String, _SPEC_COLUMN_TYPE: SqlLiteDatatype}),
+    SPEC_FMT_NTTr: MapLiteral({
+      _SPEC_COLUMN_NAME: String,
+      _SPEC_COLUMN_TYPE: SqlLiteDatatype,
+      _SPEC_TRANSLATION: String
+    })
+  };
+
+  Map<String, String> tableSpecFormat = {};
+
+  void addTableSpecWithFormat(
+      {@required String name, // DB table name
+      @required String specFormat, // format of the specification
+      @required List<List<dynamic>> specContent // content of the specification
+      }) {
+    if (!_SPEC_BY_FORMAT.containsKey(specFormat)) {
+      throw ArgumentError('Unknow specFormat: ${specFormat}');
+    }
+    addTableSpecification(
+        name: name,
+        specification: Table(
+            columnSpec: _SPEC_BY_FORMAT[specFormat], content: specContent));
+    tableSpecFormat[name] = specFormat;
   }
 
-  Table getTableSpecification(String tableName) => tableSpecifications[tableName] ?? (throw ArgumentError( 'There is no specification for table $tableName in the database description.'));
+  String getTableSpecFormat(String tableName) =>
+      tableSpecFormat[tableName] ??
+      (throw ArgumentError(
+          'There is no specification for table $tableName in the database description.'));
+
+  Iterable<DatabaseColumnSpecification> getDatabaseColumnSpecifications(
+      String tableName) sync* {
+    final specFormat = getTableSpecFormat(tableName);
+    final tableSpec = getTableSpecification(tableName);
+
+    for (var row in tableSpec.rowsAsMaps) {
+      yield DatabaseColumnSpecification(
+          specFormat: specFormat,
+          name: row[_SPEC_COLUMN_NAME],
+          type: row[_SPEC_COLUMN_TYPE],
+          translation: row[_SPEC_TRANSLATION]);
+    }
+  }
 }
 
 enum SqlLiteDatatype { NULL, INTEGER, REAL, TEXT, BLOB }

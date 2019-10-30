@@ -1,71 +1,41 @@
 import 'package:build/build.dart';
 import 'package:dart_style/dart_style.dart';
-import 'package:data_binding_builder/src/string_util.dart';
 import 'package:path/path.dart' as p;
 
 import 'database_description.dart';
-import 'map_literal.dart';
-import 'table.dart';
+import 'string_util.dart';
 
 // Describe the database schema
-/// Predefined meta information fields
-class _Meta {
-  static const VERSION = 'version';
-  static const PREPEND_ID_COLUMN = 'prependIdColumn';
-}
-
-/// Predefined table head/column names
-class _TableHead {
-  static const COLUMN_NAME = 'columnName';
-  static const COLUMN_TYPE = 'columnType';
-  static const TRANSLATION = 'translation';
-  static const DEFAULT_HEAD =
-      const MapLiteral({COLUMN_NAME: String, COLUMN_TYPE: SqlLiteDatatype});
-}
-
-//
 DatabaseDescription buildDatabaseDescription() {
-  var dbDescription = DatabaseDescription(
-      defaultHead: _TableHead.DEFAULT_HEAD,
-      meta: const {_Meta.PREPEND_ID_COLUMN: true, _Meta.VERSION: 1});
-  // In the [dbDescription.addTable()] statements below we use an (probably empty) line comment to mark the end of a [Table] row, so that
-  // (1) dartfmt won't auto split the rows into one item per line
-  // (2) In the case one line is split due to its length, one can tell the difference from a line end and a [Table] row end.
+  var dbDescription = DatabaseDescription(meta: const {
+    DatabaseDescription.META_PREPEND_ID_COLUMN: true,
+    DatabaseDescription.META_VERSION: 1
+  });
 
-  // The table 'experiments', which is used in Paco, is not used in Taqo currently.
-  /*dbDescription.addTable(name: 'experiments', specification: [
-    'server_id', SqlLiteDatatype.INTEGER, //
-    'title', SqlLiteDatatype.TEXT, //
-    'join_date', SqlLiteDatatype.TEXT, //
-    'json', SqlLiteDatatype.TEXT, //
-  ]);*/
-
-  dbDescription.addTable(name: 'events', specification: [
-    'experiment_id', SqlLiteDatatype.INTEGER, //
-    'experiment_server_id', SqlLiteDatatype.INTEGER, //
-    'experiment_name', SqlLiteDatatype.TEXT, //
-    'experiment_version', SqlLiteDatatype.INTEGER, //
-    'schedule_time', SqlLiteDatatype.INTEGER, //
-    'response_time', SqlLiteDatatype.INTEGER, //
-    'uploaded', SqlLiteDatatype.INTEGER, //
-    'group_name', SqlLiteDatatype.TEXT, //
-    'action_trigger_id', SqlLiteDatatype.INTEGER, //
-    'action_trigger_spec_id', SqlLiteDatatype.INTEGER, //
-    'action_id', SqlLiteDatatype.INTEGER, //
-  ]);
-  dbDescription.addTable(
-      name: 'outputs',
-      withCustomHead: MapLiteral({
-        _TableHead.COLUMN_NAME: String,
-        _TableHead.COLUMN_TYPE: SqlLiteDatatype,
-        _TableHead.TRANSLATION: String
-      }),
-      specification: [
-        'event_id', SqlLiteDatatype.INTEGER, '{{event}}.id', //
-        'text', SqlLiteDatatype.TEXT, '{{responses.entry}}.key', //
-        'answer', SqlLiteDatatype.TEXT, '{{responses.entry}}.value' //
+  dbDescription.addTableSpecWithFormat(
+      name: 'events',
+      specFormat: DatabaseDescription.SPEC_FMT_NT,
+      specContent: [
+        ['experiment_id', SqlLiteDatatype.INTEGER],
+        ['experiment_server_id', SqlLiteDatatype.INTEGER],
+        ['experiment_name', SqlLiteDatatype.TEXT],
+        ['experiment_version', SqlLiteDatatype.INTEGER],
+        ['schedule_time', SqlLiteDatatype.INTEGER],
+        ['response_time', SqlLiteDatatype.INTEGER],
+        ['uploaded', SqlLiteDatatype.INTEGER],
+        ['group_name', SqlLiteDatatype.TEXT],
+        ['action_trigger_id', SqlLiteDatatype.INTEGER],
+        ['action_trigger_spec_id', SqlLiteDatatype.INTEGER],
+        ['action_id', SqlLiteDatatype.INTEGER],
       ]);
-
+  dbDescription.addTableSpecWithFormat(
+      name: 'outputs',
+      specFormat: DatabaseDescription.SPEC_FMT_NTTr,
+      specContent: [
+        ['event_id', SqlLiteDatatype.INTEGER, '{{event}}.id'],
+        ['text', SqlLiteDatatype.TEXT, '{{responses.entry}}.key'],
+        ['answer', SqlLiteDatatype.TEXT, '{{responses.entry}}.value']
+      ]);
   return dbDescription;
 }
 
@@ -74,13 +44,14 @@ DatabaseDescription buildDatabaseDescription() {
 /// How to create a table?
 String buildSqlCreateTable(
     DatabaseDescription dbDescription, String tableName) {
-  var tableSpecification = dbDescription.getTableSpecification(tableName);
-  var prependIdColumn = dbDescription.meta[_Meta.PREPEND_ID_COLUMN] ?? false;
+  var dbColumnSpecs = dbDescription.getDatabaseColumnSpecifications(tableName);
+  var prependIdColumn =
+      dbDescription.meta[DatabaseDescription.META_PREPEND_ID_COLUMN] ?? false;
   return '''
 CREATE TABLE $tableName (
 ${prependIdColumn ? "_id INTEGER PRIMARY KEY AUTOINCREMENT,\n" : ""}'''
       '''
-${tableSpecification.rows.map((item) => "${item[_TableHead.COLUMN_NAME]} ${getEnumName(item[_TableHead.COLUMN_TYPE])}").join(', \n')}
+${dbColumnSpecs.map((dbColumn) => "${dbColumn.name} ${dbColumn.typeAsString}").join(', \n')}
   );
   ''';
 }
@@ -89,17 +60,16 @@ ${tableSpecification.rows.map((item) => "${item[_TableHead.COLUMN_NAME]} ${getEn
 /// The returned string is the representation of a map that can be used by Database.insert()
 String buildDartFieldsMap(
     DatabaseDescription dbDescription, String tableName, String objectName) {
-  var tableSpecification = dbDescription.getTableSpecification(tableName);
-  var prependIdColumn = dbDescription.meta[_Meta.PREPEND_ID_COLUMN] ?? false;
+  var dbColumnSpecs = dbDescription.getDatabaseColumnSpecifications(tableName);
+  var prependIdColumn =
+      dbDescription.meta[DatabaseDescription.META_PREPEND_ID_COLUMN] ?? false;
   if (prependIdColumn == false) {
     throw UnimplementedError();
   }
   // We don't include the column '_id' in the returned map representation because it will be automatically generated by sqlite.
-  final iterSqlColumnName =
-      tableSpecification.getColumn(_TableHead.COLUMN_NAME);
   return '''
 {
-  ${iterSqlColumnName.map((columnName) => "'$columnName': ${objectName}.${snakeCaseToCamelCase(columnName)},").join('\n')}
+  ${dbColumnSpecs.map((dbColumn) => "'${dbColumn.name}': ${objectName}.${snakeCaseToCamelCase(dbColumn.name)},").join('\n')}
 }
   ''';
 }
@@ -110,17 +80,16 @@ String buildDartFieldsMapWithTranslationTemplate(
     DatabaseDescription dbDescription,
     String tableName,
     Map<String, String> placeholderMap) {
-  var tableSpecification = dbDescription.getTableSpecification(tableName);
-  var prependIdColumn = dbDescription.meta[_Meta.PREPEND_ID_COLUMN] ?? false;
+  var dbColumnSpecs = dbDescription.getDatabaseColumnSpecifications(tableName);
+  var prependIdColumn =
+      dbDescription.meta[DatabaseDescription.META_PREPEND_ID_COLUMN] ?? false;
   if (prependIdColumn == false) {
     throw UnimplementedError();
   }
 
-  final iterColumnNameTranslation = tableSpecification.getColumnAsMapEntries(
-      _TableHead.COLUMN_NAME, _TableHead.TRANSLATION);
   return '''
   {
-    ${iterColumnNameTranslation.map((entry) => "'${entry.key}': ${templateFormat(entry.value, placeholderMap)},").join('\n')}
+    ${dbColumnSpecs.map((dbColumn) => "'${dbColumn.name}': ${templateFormat(dbColumn.translation, placeholderMap)},").join('\n')}
   }
   ''';
 }
@@ -153,7 +122,7 @@ class LocalDatabaseBuilder implements Builder {
 
 part of '$partOfFilename';
 
-var _dbVersion = ${dbDescription.meta[_Meta.VERSION]};
+var _dbVersion = ${dbDescription.meta[DatabaseDescription.META_VERSION]};
 
 Future<void> _onCreate(Database db, int version) async {
 ${dbDescription.tableNames.map((tableName) => 'await db.execute(\'\'\'${buildSqlCreateTable(dbDescription, tableName)}\'\'\');').join('\n')}

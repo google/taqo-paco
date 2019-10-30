@@ -69,22 +69,4 @@ class Table {
   /// column name as key and the actual table entry as value.
   Iterable<Map<String, dynamic>> get rowsAsMaps => content
       .map((row) => row.asMap().map((i, v) => MapEntry(_columnNames[i], v)));
-
-  /// Get an iterator for one column.
-  Iterable<dynamic> getColumn(String columnName) sync* {
-    var j = _columnNameToIndexMap[columnName];
-    for (var i = 0; i < rowCount; i++) {
-      yield content[i][j];
-    }
-  }
-
-  /// Get an MapEntry iterator using one column as key and another column as value
-  Iterable<MapEntry> getColumnAsMapEntries(
-      String keyColumn, String valueColumn) sync* {
-    var jKey = _columnNameToIndexMap[keyColumn];
-    var jValue = _columnNameToIndexMap[valueColumn];
-    for (var i = 0; i < rowCount; i++) {
-      yield MapEntry(content[i][jKey], content[i][jValue]);
-    }
-  }
 }
