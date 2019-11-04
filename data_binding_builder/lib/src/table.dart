@@ -5,71 +5,68 @@ import 'package:meta/meta.dart';
 import 'map_literal.dart';
 
 /// A table in traditional meaning, with rows and columns.
+/// Note the column and rows here has nothing to do with a SQL table.
 class Table {
-  /// Table head (column names and types)
-  final MapLiteral<String, Type> head;
+  /// Table column specifications (names and types)
+  final MapLiteral<String, Type> columnSpecification;
 
   /// A list storing the column names.
-  final List<String> _headNames;
+  final List<String> _columnNames;
 
   /// A list storing the column types.
-  final List<Type> _headTypes;
+  final List<Type> _columnTypes;
+
+  /// The content of the table stored in a list of lists.
+  final List<List<dynamic>> content;
 
   /// The number of columns in the table
-  int _columnCount;
+  final int columnCount;
 
-  int get columnCount {
-    _columnCount ??= _headNames.length;
-    return _columnCount;
-  }
+  /// The number of rows in the table
+  final int rowCount;
 
   /// A map from column name in the head to the column index (starting from 0)
-  Map<String, int> _headToIndexMap;
+  final Map<String, int> _columnNameToIndexMap;
 
-  Map<String, int> get headToIndexMap {
-    _headToIndexMap ??= _headNames.asMap().map((k, v) => MapEntry(v, k));
-    return _headToIndexMap;
-  }
+  Table._(
+      this.columnSpecification,
+      this._columnNames,
+      this._columnTypes,
+      this.content,
+      this.columnCount,
+      this.rowCount,
+      this._columnNameToIndexMap);
 
-  /// The content of the table stored in a row major order, should be of size rowCount x columnCount.
-  List<dynamic> body;
+  factory Table(
+      {@required MapLiteral<String, Type> columnSpec,
+      @required List<List<dynamic>> content}) {
+    final List<String> columnNames = columnSpec.keys.toList();
+    final List<Type> columnTypes = columnSpec.values.toList();
+    final int columnCount = columnNames.length;
+    final int rowCount = content.length;
 
-  Table({@required this.head, this.body})
-      : _headNames = head.keys.toList(),
-        _headTypes = head.values.toList();
-
-  /// Validate the table body
-  void validateBody() {
-    if (body.length % columnCount != 0) {
-      throw StateError(
-          'The table "body" is invalid. The size of "body" should be a multiple of the size of "head".');
-    }
-    var rowCount = body.length ~/ columnCount;
     for (var i = 0; i < rowCount; i++) {
-      var rowBase = i * columnCount;
+      if (content[i]?.length != columnCount) {
+        throw ArgumentError(
+            'The ${i}-th row of the table content is invalid. The size of each row should be the number of columms.');
+      }
       for (var j = 0; j < columnCount; j++) {
-        if (!(reflectType(body[rowBase + j].runtimeType)
-            .isSubtypeOf(reflectType(_headTypes[j])))) {
-          throw StateError('The table "body" is invalid. '
-              'body[${rowBase + j}]=${body[rowBase + j]} should be of type $_headTypes[j], '
-              'instead of type ${body[rowBase + j].runtimeType}');
+        if (!(reflectType(content[i][j].runtimeType)
+            .isSubtypeOf(reflectType(columnTypes[j])))) {
+          throw ArgumentError('The table content is invalid. '
+              'content[${i}][${j}]=${content[i][j]} should be of type ${columnTypes[j]}, '
+              'instead of type ${content[i][j].runtimeType}');
         }
       }
     }
+    final Map<String, int> headToIndexMap =
+        columnNames.asMap().map((k, v) => MapEntry(v, k));
+    return Table._(columnSpec, columnNames, columnTypes, content, columnCount,
+        rowCount, headToIndexMap);
   }
 
-  /// Get a row iterator, where each row is represented by a map with table
-  /// head/column name as key and the actual table entry as value.
-  Iterable<Map<String, dynamic>> get rowIterator sync* {
-    validateBody();
-    var rowCount = body.length ~/ columnCount;
-    for (var i = 0; i < rowCount; i++) {
-      Map<String, dynamic> map = {};
-      var rowBase = i * columnCount;
-      for (var j = 0; j < columnCount; j++) {
-        map[_headNames[j]] = body[rowBase + j];
-      }
-      yield map;
-    }
-  }
+  /// Get a rows iterator, where each row is represented by a map with table
+  /// column name as key and the actual table entry as value.
+  Iterable<Map<String, dynamic>> get rowsAsMaps => content
+      .map((row) => row.asMap().map((i, v) => MapEntry(_columnNames[i], v)));
 }

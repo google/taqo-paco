@@ -1,4 +1,18 @@
+import 'package:intl/intl.dart';
+
 class TimeUtil {
+
+  static const DATETIME_FORMAT = 'yyyy/MM/dd HH:mm:ssZ';
+
+  static final dateTimeFormat = DateFormat(DATETIME_FORMAT);
+
+  static DateTime dateTimeFromString(String string) =>
+      string == null ? null : dateTimeFormat.parse(string);
+
+  static String dateTimeToString(DateTime dateTime) =>
+      dateTime == null ? null : dateTimeFormat.format(dateTime);
+
+
 
 //  static DateTimeFormatter timeFormatter = ISODateTimeFormat.time();
 //

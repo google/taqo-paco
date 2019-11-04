@@ -2,73 +2,95 @@ import 'package:build/build.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:path/path.dart' as p;
 
-import 'database_helper.dart';
-import 'map_literal.dart';
-import 'table.dart';
+import 'database_description.dart';
+import 'string_util.dart';
 
 // Describe the database schema
-/// Predefined meta information fields
-class _Meta {
-  static const VERSION = 'version';
-  static const PREPEND_ID_COLUMN = 'prependIdColumn';
-}
-
-/// Predefined table head/column names
-class _TableHead {
-  static const COLUMN_NAME = 'columnName';
-  static const COLUMN_TYPE = 'columnType';
-  static const DEFAULT_HEAD =
-      const MapLiteral({COLUMN_NAME: String, COLUMN_TYPE: SqlLiteDatatype});
-}
-
-//
 DatabaseDescription buildDatabaseDescription() {
-  var db = DatabaseDescription(
-      defaultHead: _TableHead.DEFAULT_HEAD,
-      meta: const {_Meta.PREPEND_ID_COLUMN: true, _Meta.VERSION: 1});
-  // In the [db.addTable()] statements below we use an (probably empty) line comment to mark the end of a [Table] row, so that
-  // (1) dartfmt won't auto split the rows into one item per line
-  // (2) In the case one line is split due to its length, one can tell the difference from a line end and a [Table] row end.
-  db.addTable(name: 'experiments', specification: [
-    'server_id', SqlLiteDatatype.INTEGER, //
-    'title', SqlLiteDatatype.TEXT, //
-    'join_date', SqlLiteDatatype.TEXT, //
-    'json', SqlLiteDatatype.TEXT, //
-  ]);
-  db.addTable(name: 'events', specification: [
-    'experiment_id', SqlLiteDatatype.INTEGER, //
-    'experiment_server_id', SqlLiteDatatype.INTEGER, //
-    'experiment_name', SqlLiteDatatype.TEXT, //
-    'experiment_version', SqlLiteDatatype.INTEGER, //
-    'schedule_time', SqlLiteDatatype.INTEGER, //
-    'response_time', SqlLiteDatatype.INTEGER, //
-    'uploaded', SqlLiteDatatype.INTEGER, //
-    'group_name', SqlLiteDatatype.TEXT, //
-    'action_trigger_id', SqlLiteDatatype.INTEGER, //
-    'action_trigger_spec_id', SqlLiteDatatype.INTEGER, //
-    'action_id', SqlLiteDatatype.INTEGER, //
-  ]);
-  db.addTable(name: 'outputs', specification: [
-    'event_id', SqlLiteDatatype.INTEGER, //
-    'input_server_id', SqlLiteDatatype.INTEGER, //
-    'text', SqlLiteDatatype.TEXT, //
-    'answer', SqlLiteDatatype.TEXT, //
-  ]);
+  var dbDescription = DatabaseDescription(meta: const {
+    DatabaseDescription.META_PREPEND_ID_COLUMN: true,
+    DatabaseDescription.META_VERSION: 1
+  });
 
-  return db;
+  dbDescription.addTableSpecWithFormat(
+      name: 'events',
+      specFormat: DatabaseDescription.SPEC_FMT_NT,
+      specContent: [
+        ['experiment_id', SqlLiteDatatype.INTEGER],
+        ['experiment_server_id', SqlLiteDatatype.INTEGER],
+        ['experiment_name', SqlLiteDatatype.TEXT],
+        ['experiment_version', SqlLiteDatatype.INTEGER],
+        ['schedule_time', SqlLiteDatatype.INTEGER],
+        ['response_time', SqlLiteDatatype.INTEGER],
+        ['uploaded', SqlLiteDatatype.INTEGER],
+        ['group_name', SqlLiteDatatype.TEXT],
+        ['action_trigger_id', SqlLiteDatatype.INTEGER],
+        ['action_trigger_spec_id', SqlLiteDatatype.INTEGER],
+        ['action_id', SqlLiteDatatype.INTEGER],
+      ]);
+  dbDescription.addTableSpecWithFormat(
+      name: 'outputs',
+      specFormat: DatabaseDescription.SPEC_FMT_NTTr,
+      specContent: [
+        ['event_id', SqlLiteDatatype.INTEGER, '{{event}}.id'],
+        ['text', SqlLiteDatatype.TEXT, '{{responses.entry}}.key'],
+        ['answer', SqlLiteDatatype.TEXT, '{{responses.entry}}.value']
+      ]);
+  return dbDescription;
 }
 
 /// How-tos
 ///
 /// How to create a table?
-String buildSqlCreateTable(String name, Table tableDescription,
-    {bool prependIdColumn = false}) {
+String buildSqlCreateTable(
+    DatabaseDescription dbDescription, String tableName) {
+  var dbColumnSpecs = dbDescription.getDatabaseColumnSpecifications(tableName);
+  var prependIdColumn =
+      dbDescription.meta[DatabaseDescription.META_PREPEND_ID_COLUMN] ?? false;
   return '''
-CREATE TABLE $name (
+CREATE TABLE $tableName (
 ${prependIdColumn ? "_id INTEGER PRIMARY KEY AUTOINCREMENT,\n" : ""}'''
       '''
-${tableDescription.rowIterator.map((item) => "${item[_TableHead.COLUMN_NAME]} ${getEnumName(item[_TableHead.COLUMN_TYPE])}").join(', \n')}
+${dbColumnSpecs.map((dbColumn) => "${dbColumn.name} ${dbColumn.typeAsString}").join(', \n')}
   );
+  ''';
+}
+
+/// How to get all column fields (of a table) from an object, in a default way?
+/// The returned string is the representation of a map that can be used by Database.insert()
+String buildDartFieldsMap(
+    DatabaseDescription dbDescription, String tableName, String objectName) {
+  var dbColumnSpecs = dbDescription.getDatabaseColumnSpecifications(tableName);
+  var prependIdColumn =
+      dbDescription.meta[DatabaseDescription.META_PREPEND_ID_COLUMN] ?? false;
+  if (prependIdColumn == false) {
+    throw UnimplementedError();
+  }
+  // We don't include the column '_id' in the returned map representation because it will be automatically generated by sqlite.
+  return '''
+{
+  ${dbColumnSpecs.map((dbColumn) => "'${dbColumn.name}': ${objectName}.${snakeCaseToCamelCase(dbColumn.name)},").join('\n')}
+}
+  ''';
+}
+
+/// How to get column fields (of a table) using a map specifying template
+/// replacement rules, when the table is specified with "translation" templates?
+String buildDartFieldsMapWithTranslationTemplate(
+    DatabaseDescription dbDescription,
+    String tableName,
+    Map<String, String> placeholderMap) {
+  var dbColumnSpecs = dbDescription.getDatabaseColumnSpecifications(tableName);
+  var prependIdColumn =
+      dbDescription.meta[DatabaseDescription.META_PREPEND_ID_COLUMN] ?? false;
+  if (prependIdColumn == false) {
+    throw UnimplementedError();
+  }
+
+  return '''
+  {
+    ${dbColumnSpecs.map((dbColumn) => "'${dbColumn.name}': ${templateFormat(dbColumn.translation, placeholderMap)},").join('\n')}
+  }
   ''';
 }
 
@@ -100,15 +122,41 @@ class LocalDatabaseBuilder implements Builder {
 
 part of '$partOfFilename';
 
-var _dbVersion = ${dbDescription.meta[_Meta.VERSION]};
+var _dbVersion = ${dbDescription.meta[DatabaseDescription.META_VERSION]};
+
 Future<void> _onCreate(Database db, int version) async {
-${dbDescription.tableSpecifications.entries.map((entry) => 'await db.execute(\'\'\'${buildSqlCreateTable(entry.key, entry.value, prependIdColumn: dbDescription.meta[_Meta.PREPEND_ID_COLUMN])}\'\'\');').join('\n')}
+${dbDescription.tableNames.map((tableName) => 'await db.execute(\'\'\'${buildSqlCreateTable(dbDescription, tableName)}\'\'\');').join('\n')}
 }
+
+Future<void> _insertEvent(Database db, Event event) async {
+  try {
+    db.transaction((txn) async {
+      event.id = await txn.insert(
+      'events',
+      ${buildDartFieldsMap(dbDescription, 'events', 'event')},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      var batch = txn.batch();
+      for (var entry in event.responses.entries) {
+        batch.insert('outputs', 
+        ${buildDartFieldsMapWithTranslationTemplate(dbDescription, 'outputs', {
+      'event': 'event',
+      'responses.entry': 'entry'
+    })},
+        conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+      await batch.commit(noResult: true);
+    });
+  } catch (e) {
+    event.id = null;
+    rethrow;
+  }
+}
+
     ''');
 
     final output = _output(buildStep);
     await buildStep.writeAsString(output, content);
   }
 }
-
-

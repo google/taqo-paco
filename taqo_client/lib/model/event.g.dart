@@ -7,8 +7,41 @@ part of 'event.dart';
 // **************************************************************************
 
 Event _$EventFromJson(Map<String, dynamic> json) {
-  return Event()..responses = json['responses'] as Map<String, dynamic>;
+  return Event()
+    ..responses = json['responses'] == null
+        ? null
+        : Event._responsesFromListOfMap(
+            json['responses'] as List<Map<String, dynamic>>)
+    ..experimentServerId = json['experimentId'] as int
+    ..experimentName = json['experimentName'] as String
+    ..scheduleTime = json['scheduledTime'] == null
+        ? null
+        : TimeUtil.dateTimeFromString(json['scheduledTime'] as String)
+    ..responseTime = json['responseTime'] == null
+        ? null
+        : TimeUtil.dateTimeFromString(json['responseTime'] as String)
+    ..experimentVersion = json['experimentVersion'] as int
+    ..groupName = json['experimentGroupName'] as String
+    ..actionTriggerId = json['actionTriggerId'] as int
+    ..actionTriggerSpecId = json['actionTriggerSpecId'] as int
+    ..actionId = json['actionId'] as int;
 }
 
-Map<String, dynamic> _$EventToJson(Event instance) =>
-    <String, dynamic>{'responses': instance.responses};
+Map<String, dynamic> _$EventToJson(Event instance) => <String, dynamic>{
+      'responses': instance.responses == null
+          ? null
+          : Event._responsesToListOfMap(instance.responses),
+      'experimentId': instance.experimentServerId,
+      'experimentName': instance.experimentName,
+      'scheduledTime': instance.scheduleTime == null
+          ? null
+          : TimeUtil.dateTimeToString(instance.scheduleTime),
+      'responseTime': instance.responseTime == null
+          ? null
+          : TimeUtil.dateTimeToString(instance.responseTime),
+      'experimentVersion': instance.experimentVersion,
+      'experimentGroupName': instance.groupName,
+      'actionTriggerId': instance.actionTriggerId,
+      'actionTriggerSpecId': instance.actionTriggerSpecId,
+      'actionId': instance.actionId
+    };
