@@ -9,7 +9,7 @@ import 'login_page.dart';
 
 // Entry page for App
 class WelcomePage extends StatefulWidget {
-  static const routeName  = '/welcome';
+  static const routeName = '/welcome';
 
   WelcomePage({Key key}) : super(key: key);
 
@@ -17,13 +17,13 @@ class WelcomePage extends StatefulWidget {
   _WelcomePageState createState() => _WelcomePageState();
 }
 
-
 class _WelcomePageState extends State<WelcomePage> {
-
   var _authenticated = false;
 
   GoogleAuth gAuth = GoogleAuth();
   var authListener;
+
+  var experimentService = ExperimentService();
 
   _WelcomePageState();
 
@@ -47,7 +47,6 @@ class _WelcomePageState extends State<WelcomePage> {
     authListener.cancel();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -87,25 +86,24 @@ class _WelcomePageState extends State<WelcomePage> {
   }
 
   RaisedButton buildLoginButtonWidget(BuildContext context) {
-      return RaisedButton(
-        onPressed: _authenticated
-            ? null
-            : () {
-                    Navigator.pushReplacementNamed(context, LoginPage.routeName);
-                  },
-        child: const Text('Login with Google Id'),
-      );
+    return RaisedButton(
+      onPressed: _authenticated
+          ? null
+          : () {
+              Navigator.pushReplacementNamed(context, LoginPage.routeName);
+            },
+      child: const Text('Login with Google Id'),
+    );
   }
 
   RaisedButton buildLogoutButtonWidget(BuildContext context) {
-
     return RaisedButton(
       onPressed: !_authenticated
           ? null
           : () {
-            gAuth.clearCredentials();
-            setState(() => _authenticated = false );
-          },
+              gAuth.clearCredentials();
+              setState(() => _authenticated = false);
+            },
       child: const Text('Logout'),
     );
   }
@@ -115,8 +113,9 @@ class _WelcomePageState extends State<WelcomePage> {
       onPressed: _authenticated
           ? null
           : () {
-                  Navigator.pushReplacementNamed(context, InvitationEntryPage.routeName);
-                },
+              Navigator.pushReplacementNamed(
+                  context, InvitationEntryPage.routeName);
+            },
       child: const Text('Enter Invitation Code'),
     );
   }
@@ -126,22 +125,27 @@ class _WelcomePageState extends State<WelcomePage> {
       onPressed: !_authenticated
           ? null
           : () {
-                  Navigator.pushReplacementNamed(context, FindExperimentsPage.routeName);
-                },
+              Navigator.pushReplacementNamed(
+                  context, FindExperimentsPage.routeName);
+            },
       child: const Text('Find Experiments to Join'),
     );
   }
 
-  RaisedButton buildRunningExperimentsButtonWidget(BuildContext context) {
-    return RaisedButton(
-      onPressed: isAlreadyRunningExperiments()
-          ? () {
-              Navigator.pushNamed(context, RunningExperimentsPage.routeName);
-          } : null,
-      child: const Text('Go to Joined Experiments'),
-    );
+  StreamBuilder buildRunningExperimentsButtonWidget(BuildContext context) {
+    return StreamBuilder(
+        stream: experimentService.onJoinedExperimentsLoaded,
+        builder: (context, snapshot) => RaisedButton(
+              onPressed: isAlreadyRunningExperiments()
+                  ? () {
+                      Navigator.pushNamed(
+                          context, RunningExperimentsPage.routeName);
+                    }
+                  : null,
+              child: const Text('Go to Joined Experiments'),
+            ));
   }
 
-  bool isAlreadyRunningExperiments() => _authenticated && ExperimentService().getJoinedExperiments().isNotEmpty;
-
+  bool isAlreadyRunningExperiments() =>
+      _authenticated && ExperimentService().getJoinedExperiments().isNotEmpty;
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:taqo_client/model/experiment.dart';
@@ -9,6 +10,12 @@ class ExperimentService {
   GoogleAuth _gAuth;
 
   var _joined = Map<int, Experiment>();
+
+  StreamController<bool> _joinedExperimentsLoadedStreamController =
+      StreamController<bool>.broadcast();
+
+  Stream<bool> get onJoinedExperimentsLoaded =>
+      _joinedExperimentsLoadedStreamController.stream;
 
   ExperimentService._privateConstructor() {
     _gAuth = GoogleAuth();
@@ -60,7 +67,8 @@ class ExperimentService {
         .then((List<Experiment> experiments) {
       _joined = {};
       mapifyExperimentsById(experiments);
-      // TODO notify listeners that joined experiments are loaded?
+      // notify listeners that joined experiments are loaded?
+      _joinedExperimentsLoadedStreamController.add(true);
     });
   }
 
@@ -107,7 +115,9 @@ class ExperimentService {
   }
 
   Future<Experiment> getPubExperimentById(experimentId) async {
-    return await _gAuth.getPubExperimentById(experimentId).then((experimentJson) {
+    return await _gAuth
+        .getPubExperimentById(experimentId)
+        .then((experimentJson) {
       var experimentJsonObj = jsonDecode(experimentJson).elementAt(0);
       var experiment = Experiment.fromJson(experimentJsonObj);
       return Future.value(experiment);
