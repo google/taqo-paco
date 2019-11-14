@@ -16,10 +16,10 @@ Event _$EventFromJson(Map<String, dynamic> json) {
     ..experimentName = json['experimentName'] as String
     ..scheduleTime = json['scheduledTime'] == null
         ? null
-        : TimeUtil.dateTimeFromString(json['scheduledTime'] as String)
+        : Event._zonedDateTimeFromString(json['scheduledTime'] as String)
     ..responseTime = json['responseTime'] == null
         ? null
-        : TimeUtil.dateTimeFromString(json['responseTime'] as String)
+        : Event._zonedDateTimeFromString(json['responseTime'] as String)
     ..experimentVersion = json['experimentVersion'] as int
     ..groupName = json['experimentGroupName'] as String
     ..actionTriggerId = json['actionTriggerId'] as int
@@ -35,10 +35,10 @@ Map<String, dynamic> _$EventToJson(Event instance) => <String, dynamic>{
       'experimentName': instance.experimentName,
       'scheduledTime': instance.scheduleTime == null
           ? null
-          : TimeUtil.dateTimeToString(instance.scheduleTime),
+          : Event._zonedDateTimeToString(instance.scheduleTime),
       'responseTime': instance.responseTime == null
           ? null
-          : TimeUtil.dateTimeToString(instance.responseTime),
+          : Event._zonedDateTimeToString(instance.responseTime),
       'experimentVersion': instance.experimentVersion,
       'experimentGroupName': instance.groupName,
       'actionTriggerId': instance.actionTriggerId,

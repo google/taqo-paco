@@ -7,6 +7,7 @@ import 'package:taqo_client/model/experiment_group.dart';
 import 'package:taqo_client/model/feedback.dart' as taqo_feedback;
 import 'package:taqo_client/pages/survey/feedback_page.dart';
 import 'package:taqo_client/storage/local_database.dart';
+import 'package:taqo_client/util/zoned_date_time.dart';
 
 import '../running_experiments_page.dart';
 import 'multi_list_output.dart';
@@ -18,29 +19,33 @@ import 'package:numberpicker/numberpicker.dart';
 class SurveyPage extends StatefulWidget {
   static const routeName = '/survey';
 
-  SurveyPage({Key key, this.title}) : super(key: key);
+  SurveyPage({Key key, this.title, @required this.experiment, @required this.experimentGroupName}) : super(key: key);
 
   final String title;
+  Experiment experiment;
+  String experimentGroupName;
 
   @override
-  _SurveyPageState createState() => _SurveyPageState();
+  _SurveyPageState createState() => _SurveyPageState(experiment,experimentGroupName);
 }
 
 
 class _SurveyPageState extends State<SurveyPage> {
+  static const String FORM_DURATION_IN_SECONDS = "Form Duration";
   Experiment _experiment;
   ExperimentGroup _experimentGroup;
-  Event _event = Event();
+  Event _event;
+  DateTime _startTime;
 
   var popupListResults = {};
 
+  _SurveyPageState(this._experiment,String experimentGroupName) {
+    _experimentGroup = _experiment.getGroupNamed(experimentGroupName);
+    _event = Event.of(_experiment, _experimentGroup);
+    _startTime = DateTime.now();
+  }
   @override
   Widget build(BuildContext context) {
-    var list = ModalRoute.of(context).settings.arguments as List;
-    _experiment = list.elementAt(0) as Experiment;
-    var experimentGroupName = list.elementAt(1) as String;
-    _experimentGroup = _experiment.getGroupNamed(experimentGroupName);
-
     return Scaffold(
       appBar: AppBar(
         title: Text("Survey: " + _experimentGroup.name),
@@ -315,7 +320,9 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   Future<void> saveEvent() async {
-    _alertLog("Saving Responses: " + jsonEncode(_event.toJson()));
+    _event.responseTime = ZonedDateTime.now();
+    _event.responses[FORM_DURATION_IN_SECONDS] = _event.responseTime.dateTime.difference(_startTime).inSeconds;
+    await _alertLog("Saving Responses: " + jsonEncode(_event.toJson()));
     var savedOK = validateResponses();
     // TODO Validate answers and store locally.
     var db = LocalDatabase();
