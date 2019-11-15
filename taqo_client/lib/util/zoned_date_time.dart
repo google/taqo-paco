@@ -12,18 +12,12 @@ class ZonedDateTime {
   factory ZonedDateTime.now() {
     final dateTime = DateTime.now();
     final timeZoneOffset = dateTime.timeZoneOffset;
-    var string =
-        '${dateTime.toIso8601String()}${formatTimeZoneOffset(timeZoneOffset)}';
-    if (dateTime.toUtc() == DateTime.parse(string)) {
-      return ZonedDateTime._(timeZoneOffset, dateTime, string);
-    } else {
-      // very rare case where the time zone changes immediately after calling DateTime.now()
-      final dateTimeLocal = dateTime.toUtc().add(timeZoneOffset);
-      string =
-          '${dateTimeLocal.toIso8601String().substring(0, ISO8601_FORMAT_LOCAL.length)}${formatTimeZoneOffset(timeZoneOffset)}';
+    var string = _validateAndFixIso8601String(
+        '${dateTime.toIso8601String()}${formatTimeZoneOffset(timeZoneOffset)}',
+        dateTime,
+        timeZoneOffset);
 
-      return ZonedDateTime._(timeZoneOffset, dateTime, string);
-    }
+    return ZonedDateTime._(timeZoneOffset, dateTime, string);
   }
 
   String toIso8601String() {
@@ -57,6 +51,17 @@ class ZonedDateTime {
     final iso8601String =
         '${stringLocalDateTime}.000000${stringTimeZoneOffset}';
     return ZonedDateTime.fromIso8601String(iso8601String);
+  }
+
+  static String _validateAndFixIso8601String(
+      String string, DateTime dateTime, Duration timeZoneOffset) {
+    if (dateTime.toUtc() == DateTime.parse(string)) {
+      return string;
+    } else {
+      // very rare case where the time zone changes immediately after calling DateTime.now()
+      final dateTimeLocal = dateTime.toUtc().add(timeZoneOffset);
+      return '${dateTimeLocal.toIso8601String().substring(0, ISO8601_FORMAT_LOCAL.length)}${formatTimeZoneOffset(timeZoneOffset)}';
+    }
   }
 
   static String formatTimeZoneOffset(Duration timeZoneOffset) {
