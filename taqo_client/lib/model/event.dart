@@ -1,5 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:taqo_client/util/time_util.dart';
+import 'package:taqo_client/model/experiment.dart';
+import 'package:taqo_client/model/experiment_group.dart';
+import 'package:taqo_client/util/zoned_date_time.dart';
 
 part 'event.g.dart';
 
@@ -21,13 +23,14 @@ class Event {
 
   @JsonKey(
       name: 'scheduledTime',
-      fromJson: TimeUtil.dateTimeFromString,
-      toJson: TimeUtil.dateTimeToString)
-  DateTime scheduleTime;
+      fromJson: _zonedDateTimeFromString,
+      toJson: _zonedDateTimeToString)
+  ZonedDateTime scheduleTime;
 
   @JsonKey(
-      fromJson: TimeUtil.dateTimeFromString, toJson: TimeUtil.dateTimeToString)
-  DateTime responseTime;
+      fromJson: _zonedDateTimeFromString,
+      toJson: _zonedDateTimeToString)
+  ZonedDateTime responseTime;
 
   int experimentVersion;
 
@@ -53,6 +56,14 @@ class Event {
 
   Event();
 
+  Event.of(Experiment experiment, ExperimentGroup experimentGroup) {
+    experimentServerId = experiment.id;
+    experimentName = experiment.title;
+    experimentVersion = experiment.version;
+    groupName =experimentGroup.name;
+    uploaded = false;
+  }
+
   factory Event.fromJson(Map<String, dynamic> json) => _$EventFromJson(json);
 
   Map<String, dynamic> toJson() => _$EventToJson(this);
@@ -67,4 +78,7 @@ class Event {
           List<Map<String, dynamic>> listOfMap) =>
       Map.fromIterable(listOfMap,
           key: (item) => item['name'], value: (item) => item['answer']);
+
+  static ZonedDateTime _zonedDateTimeFromString(String string) => string == null ? null : ZonedDateTime.fromString(string);
+  static String _zonedDateTimeToString(ZonedDateTime zonedDateTime) => zonedDateTime?.toString();
 }
