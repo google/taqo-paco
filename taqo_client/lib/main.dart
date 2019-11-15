@@ -54,6 +54,9 @@ class MyApp extends StatelessWidget {
         PostJoinInstructionsPage.routeName: (context) =>
             PostJoinInstructionsPage(),
       },
+      // Here the route for SurveyPage is configured separately in onGenerateRoute(),
+      // since we need to pass argument to this route before the page being built,
+      // which is not supported by ModalRoute.of().
       onGenerateRoute: (settings) {
         if (settings.name == SurveyPage.routeName) {
           final List args = settings.arguments;
