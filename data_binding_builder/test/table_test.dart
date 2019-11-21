@@ -1,12 +1,16 @@
+import 'dart:collection';
+
 import 'package:test/test.dart';
 
-import 'package:data_binding_builder/src/map_literal.dart';
 import 'package:data_binding_builder/src/table.dart';
 
 void main() {
   group('Table for normal use', () {
     var table = Table(
-        columnSpec: MapLiteral({'column1': String, 'column2': int}),
+        columnSpec: LinkedHashMap.from({
+          'column1': Table.columnProcessorTakeType(String),
+          'column2': Table.columnProcessorTakeType(int)
+        }),
         content: [
           ['row1', 1],
           ['row2', 2],
@@ -33,7 +37,10 @@ void main() {
     test('ill-formed table content', () {
       expect(
           () => Table(
-                  columnSpec: MapLiteral({'column1': String, 'column2': int}),
+                  columnSpec: LinkedHashMap.from({
+                    'column1': Table.columnProcessorTakeType(String),
+                    'column2': Table.columnProcessorTakeType(int)
+                  }),
                   content: [
                     ['row1', 1],
                     ['row2'],
@@ -43,7 +50,10 @@ void main() {
 
       expect(
           () => Table(
-                  columnSpec: MapLiteral({'column1': String, 'column2': int}),
+                  columnSpec: LinkedHashMap.from({
+                    'column1': Table.columnProcessorTakeType(String),
+                    'column2': Table.columnProcessorTakeType(int)
+                  }),
                   content: [
                     ['row1', 1],
                     ['row2', 2, 4],
@@ -55,7 +65,10 @@ void main() {
     test('Table content type errors', () {
       expect(
           () => Table(
-                  columnSpec: MapLiteral({'column1': String, 'column2': int}),
+                  columnSpec: LinkedHashMap.from({
+                    'column1': Table.columnProcessorTakeType(String),
+                    'column2': Table.columnProcessorTakeType(int)
+                  }),
                   content: [
                     ['row1', 1],
                     ['row2', 'wrong type'],
@@ -65,7 +78,10 @@ void main() {
 
       expect(
           () => Table(
-                  columnSpec: MapLiteral({'column1': String, 'column2': int}),
+                  columnSpec: LinkedHashMap.from({
+                    'column1': Table.columnProcessorTakeType(String),
+                    'column2': Table.columnProcessorTakeType(int)
+                  }),
                   content: [
                     ['row1', 1],
                     [2, 2],
