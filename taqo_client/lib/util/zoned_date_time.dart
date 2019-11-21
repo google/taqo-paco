@@ -4,40 +4,42 @@ class ZonedDateTime {
 
   final Duration timeZoneOffset;
   final DateTime dateTime;
-  final String _iso8601String;
+  // As dateTime.toString() is not stable against timezone change, it is
+  // necessary to convert and store the string representation as early as
+  // possible. Here we only store the local part since timeZoneOffset formatting
+  // is stable and we will need different variants of the timezone format.
+  final String _iso8601StringLocal;
 
   const ZonedDateTime._(
-      this.timeZoneOffset, this.dateTime, this._iso8601String);
+      this.timeZoneOffset, this.dateTime, this._iso8601StringLocal);
 
   factory ZonedDateTime.now() {
     final dateTime = DateTime.now();
     final timeZoneOffset = dateTime.timeZoneOffset;
-    var string = _validateAndFixIso8601String(
-        '${dateTime.toIso8601String()}${formatTimeZoneOffset(timeZoneOffset)}',
+    var string = _validateAndFixIso8601StringLocal(
+        dateTime.toIso8601String(),
         dateTime,
         timeZoneOffset);
 
     return ZonedDateTime._(timeZoneOffset, dateTime, string);
   }
 
-  String toIso8601String() {
-    return _iso8601String;
+  String toIso8601String({withColon = false}) {
+    return '$_iso8601StringLocal${formatTimeZoneOffset(timeZoneOffset, withColon: withColon)}';
   }
 
   factory ZonedDateTime.fromIso8601String(String iso8601String) {
     final dateTime = DateTime.parse(iso8601String);
-    final timeZoneOffset = parseTimeZoneOffset(iso8601String.substring(
-        iso8601String.length - 5, iso8601String.length));
-    return ZonedDateTime._(timeZoneOffset, dateTime, iso8601String);
+    final timeZoneOffset = parseTimeZoneOffset(iso8601String.substring(ISO8601_FORMAT_LOCAL.length, iso8601String.length));
+    final iso8601StringLocal = iso8601String.substring(0, ISO8601_FORMAT_LOCAL.length);
+    return ZonedDateTime._(timeZoneOffset, dateTime, iso8601StringLocal);
   }
 
   String toString() {
-    return _iso8601String
+    return _iso8601StringLocal
             .substring(0, DATETIME_FORMAT_LOCAL.length)
             .replaceAll('-', '/')
-            .replaceFirst('T', ' ') +
-        _iso8601String.substring(
-            ISO8601_FORMAT_LOCAL.length, _iso8601String.length);
+            .replaceFirst('T', ' ') + formatTimeZoneOffset(timeZoneOffset, withColon: false);
   }
 
   // Note: this is only a right inverse of toString(), because toString() lost some precision.
@@ -53,18 +55,23 @@ class ZonedDateTime {
     return ZonedDateTime.fromIso8601String(iso8601String);
   }
 
-  static String _validateAndFixIso8601String(
-      String string, DateTime dateTime, Duration timeZoneOffset) {
-    if (dateTime.toUtc() == DateTime.parse(string)) {
-      return string;
+  static String _validateAndFixIso8601StringLocal(
+      String stringLocal, DateTime dateTime, Duration timeZoneOffset) {
+    var stringTZ = '$stringLocal${formatTimeZoneOffset(timeZoneOffset)}';
+    if (dateTime.toUtc() == DateTime.parse(stringTZ)) {
+      return stringLocal;
     } else {
       // very rare case where the time zone changes immediately after calling DateTime.now()
       final dateTimeLocal = dateTime.toUtc().add(timeZoneOffset);
-      return '${dateTimeLocal.toIso8601String().substring(0, ISO8601_FORMAT_LOCAL.length)}${formatTimeZoneOffset(timeZoneOffset)}';
+      return dateTimeLocal.toIso8601String().substring(0, ISO8601_FORMAT_LOCAL.length);
     }
   }
 
-  static String formatTimeZoneOffset(Duration timeZoneOffset) {
+  // ISO8601 allows several variants for formatting timezone, where two of them
+  // are ±hhmm and ±hh:mm. The Paco server uses ±hhmm, while SQLite uses ±hh:mm.
+  // We need to support both of them here.
+
+  static String formatTimeZoneOffset(Duration timeZoneOffset, {bool withColon = false}) {
     String twoDigits(int n) {
       if (n >= 10) return "$n";
       return '0$n';
@@ -81,13 +88,14 @@ class ZonedDateTime {
     String twoDigitMinutes =
         twoDigits(timeZoneOffset.inMinutes.remainder(Duration.minutesPerHour));
 
-    return '$sign$twoDigitHours$twoDigitMinutes';
+    return withColon? '$sign$twoDigitHours:$twoDigitMinutes' : '$sign$twoDigitHours$twoDigitMinutes';
   }
 
   static Duration parseTimeZoneOffset(String string) {
+    final withColon = (string[3] == ':');
     final sign = string.substring(0, 1);
     final twoDigitHours = string.substring(1, 3);
-    final twoDigitMinutes = string.substring(3, 5);
+    final twoDigitMinutes = withColon ? string.substring(4, 6) : string.substring(3, 5);
 
     final hours = int.parse(twoDigitHours);
     final minutes = int.parse(twoDigitMinutes);
