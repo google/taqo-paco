@@ -19,16 +19,21 @@ import 'package:numberpicker/numberpicker.dart';
 class SurveyPage extends StatefulWidget {
   static const routeName = '/survey';
 
-  SurveyPage({Key key, this.title, @required this.experiment, @required this.experimentGroupName}) : super(key: key);
+  SurveyPage(
+      {Key key,
+      this.title,
+      @required this.experiment,
+      @required this.experimentGroupName})
+      : super(key: key);
 
   final String title;
   Experiment experiment;
   String experimentGroupName;
 
   @override
-  _SurveyPageState createState() => _SurveyPageState(experiment,experimentGroupName);
+  _SurveyPageState createState() =>
+      _SurveyPageState(experiment, experimentGroupName);
 }
-
 
 class _SurveyPageState extends State<SurveyPage> {
   static const String FORM_DURATION_IN_SECONDS = "Form Duration";
@@ -39,7 +44,7 @@ class _SurveyPageState extends State<SurveyPage> {
 
   var popupListResults = {};
 
-  _SurveyPageState(this._experiment,String experimentGroupName) {
+  _SurveyPageState(this._experiment, String experimentGroupName) {
     _experimentGroup = _experiment.getGroupNamed(experimentGroupName);
     _event = Event.of(_experiment, _experimentGroup);
     _startTime = DateTime.now();
@@ -321,7 +326,8 @@ class _SurveyPageState extends State<SurveyPage> {
 
   Future<void> saveEvent() async {
     _event.responseTime = ZonedDateTime.now();
-    _event.responses[FORM_DURATION_IN_SECONDS] = _event.responseTime.dateTime.difference(_startTime).inSeconds;
+    _event.responses[FORM_DURATION_IN_SECONDS] =
+        _event.responseTime.dateTime.difference(_startTime).inSeconds;
     await _alertLog("Saving Responses: " + jsonEncode(_event.toJson()));
     var savedOK = validateResponses();
     // TODO Validate answers and store locally.
@@ -329,9 +335,10 @@ class _SurveyPageState extends State<SurveyPage> {
     await db.insertEvent(_event);
     // If should be uploaded alert sync service
     if (savedOK) {
-      if (_experimentGroup.feedback.type == taqo_feedback.Feedback.FEEDBACK_TYPE_STATIC_MESSAGE) {
-        Navigator.popAndPushNamed(
-            context, FeedbackPage.routeName, arguments: [_experiment, _experimentGroup]);
+      if (_experimentGroup.feedback.type ==
+          taqo_feedback.Feedback.FEEDBACK_TYPE_STATIC_MESSAGE) {
+        Navigator.popAndPushNamed(context, FeedbackPage.routeName,
+            arguments: [_experiment, _experimentGroup]);
       } else {
         Navigator.pushReplacementNamed(
             context, RunningExperimentsPage.routeName);

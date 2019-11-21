@@ -30,27 +30,31 @@ void main() {
           equals('+0845'));
     });
 
-    test('formatTimeZoneOffset() for withColon=true', (){
+    test('formatTimeZoneOffset() for withColon=true', () {
       expect(
-          ZonedDateTime.formatTimeZoneOffset(
-              Duration(hours: 8, minutes: 45), withColon: true),
+          ZonedDateTime.formatTimeZoneOffset(Duration(hours: 8, minutes: 45),
+              withColon: true),
           equals('+08:45'));
       expect(
-          ZonedDateTime.formatTimeZoneOffset(
-              Duration(hours: -9, minutes: -30), withColon: true),
+          ZonedDateTime.formatTimeZoneOffset(Duration(hours: -9, minutes: -30),
+              withColon: true),
           equals('-09:30'));
     });
   });
 
-  group('parseTimeZoneOffset()', (){
-    test('parseTimeZoneOffset() without colon', (){
-      expect(ZonedDateTime.parseTimeZoneOffset('+0845'),equals(Duration(hours: 8, minutes: 45)));
-      expect(ZonedDateTime.parseTimeZoneOffset('-0930'),equals(Duration(hours: -9, minutes: -30)));
+  group('parseTimeZoneOffset()', () {
+    test('parseTimeZoneOffset() without colon', () {
+      expect(ZonedDateTime.parseTimeZoneOffset('+0845'),
+          equals(Duration(hours: 8, minutes: 45)));
+      expect(ZonedDateTime.parseTimeZoneOffset('-0930'),
+          equals(Duration(hours: -9, minutes: -30)));
     });
 
-    test('parseTimeZoneOffset() with colon', (){
-      expect(ZonedDateTime.parseTimeZoneOffset('+08:45'),equals(Duration(hours: 8, minutes: 45)));
-      expect(ZonedDateTime.parseTimeZoneOffset('-09:30'),equals(Duration(hours: -9, minutes: -30)));
+    test('parseTimeZoneOffset() with colon', () {
+      expect(ZonedDateTime.parseTimeZoneOffset('+08:45'),
+          equals(Duration(hours: 8, minutes: 45)));
+      expect(ZonedDateTime.parseTimeZoneOffset('-09:30'),
+          equals(Duration(hours: -9, minutes: -30)));
     });
   });
 
@@ -60,9 +64,13 @@ void main() {
         () {
       const stringDateTime = '2019-11-11T12:34:56.789012-0930';
       const stringDateTimeTZColon = '2019-11-11T12:34:56.789012-09:30';
-      expect(ZonedDateTime.fromIso8601String(stringDateTime).toIso8601String(withColon: false),
+      expect(
+          ZonedDateTime.fromIso8601String(stringDateTime)
+              .toIso8601String(withColon: false),
           equals(stringDateTime));
-      expect(ZonedDateTime.fromIso8601String(stringDateTimeTZColon).toIso8601String(withColon: true),
+      expect(
+          ZonedDateTime.fromIso8601String(stringDateTimeTZColon)
+              .toIso8601String(withColon: true),
           equals(stringDateTimeTZColon));
     });
   });

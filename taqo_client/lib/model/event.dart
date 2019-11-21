@@ -27,9 +27,7 @@ class Event {
       toJson: _zonedDateTimeToString)
   ZonedDateTime scheduleTime;
 
-  @JsonKey(
-      fromJson: _zonedDateTimeFromString,
-      toJson: _zonedDateTimeToString)
+  @JsonKey(fromJson: _zonedDateTimeFromString, toJson: _zonedDateTimeToString)
   ZonedDateTime responseTime;
 
   int experimentVersion;
@@ -60,7 +58,7 @@ class Event {
     experimentServerId = experiment.id;
     experimentName = experiment.title;
     experimentVersion = experiment.version;
-    groupName =experimentGroup.name;
+    groupName = experimentGroup.name;
     uploaded = false;
   }
 
@@ -79,6 +77,8 @@ class Event {
       Map.fromIterable(listOfMap,
           key: (item) => item['name'], value: (item) => item['answer']);
 
-  static ZonedDateTime _zonedDateTimeFromString(String string) => string == null ? null : ZonedDateTime.fromString(string);
-  static String _zonedDateTimeToString(ZonedDateTime zonedDateTime) => zonedDateTime?.toString();
+  static ZonedDateTime _zonedDateTimeFromString(String string) =>
+      string == null ? null : ZonedDateTime.fromString(string);
+  static String _zonedDateTimeToString(ZonedDateTime zonedDateTime) =>
+      zonedDateTime?.toString();
 }

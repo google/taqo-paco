@@ -40,8 +40,7 @@ class Table {
       {@required LinkedHashMap<String, Function> columnSpec,
       @required List<List<dynamic>> content}) {
     final List<String> columnNames = columnSpec.keys.toList();
-    final List<Function> columnProcessors =
-        columnSpec.values.toList();
+    final List<Function> columnProcessors = columnSpec.values.toList();
     final int columnCount = columnNames.length;
     final int rowCount = content.length;
     List<List<dynamic>> processedContent =

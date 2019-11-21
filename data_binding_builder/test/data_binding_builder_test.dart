@@ -13,7 +13,7 @@ void main() {
           name: 'a_table',
           defaultFromObjectTranslator:
               (DatabaseColumnSpecification dbColSpec, String object) =>
-          '$object.${snakeCaseToCamelCase(dbColSpec.name)}',
+                  '$object.${snakeCaseToCamelCase(dbColSpec.name)}',
           specContent: [
             ['column_first', SqlLiteDatatype.INTEGER],
             ['column_second', SqlLiteDatatype.TEXT],
@@ -36,7 +36,7 @@ void main() {
           name: 'a_table',
           defaultFromObjectTranslator:
               (DatabaseColumnSpecification dbColSpec, String object) =>
-          '$object.${snakeCaseToCamelCase(dbColSpec.name)}',
+                  '$object.${snakeCaseToCamelCase(dbColSpec.name)}',
           specContent: [
             ['column_first', SqlLiteDatatype.INTEGER],
             ['column_second', SqlLiteDatatype.TEXT],
@@ -60,7 +60,7 @@ void main() {
           name: 'a_table',
           defaultFromObjectTranslator:
               (DatabaseColumnSpecification dbColSpec, String object) =>
-          '$object.${snakeCaseToCamelCase(dbColSpec.name)}',
+                  '$object.${snakeCaseToCamelCase(dbColSpec.name)}',
           specContent: [
             ['column_first', SqlLiteDatatype.INTEGER],
             ['column_second', SqlLiteDatatype.TEXT],
@@ -83,7 +83,7 @@ void main() {
           name: 'a_table',
           defaultFromObjectTranslator:
               (DatabaseColumnSpecification dbColSpec, String object) =>
-          '$object.${snakeCaseToCamelCase(dbColSpec.name)}',
+                  '$object.${snakeCaseToCamelCase(dbColSpec.name)}',
           specContent: [
             ['column_first', SqlLiteDatatype.INTEGER],
             ['column_second', SqlLiteDatatype.TEXT],
@@ -99,7 +99,7 @@ void main() {
           name: 'a_table',
           defaultFromObjectTranslator:
               (DatabaseColumnSpecification dbColSpec, String object) =>
-          '$object.${snakeCaseToCamelCase(dbColSpec.name)}',
+                  '$object.${snakeCaseToCamelCase(dbColSpec.name)}',
           specContent: [
             ['column_first', SqlLiteDatatype.INTEGER],
             ['column_second', SqlLiteDatatype.TEXT],
@@ -113,6 +113,4 @@ void main() {
           throwsUnimplementedError);
     });
   });
-
-
 }

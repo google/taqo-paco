@@ -17,9 +17,7 @@ class ZonedDateTime {
     final dateTime = DateTime.now();
     final timeZoneOffset = dateTime.timeZoneOffset;
     var string = _validateAndFixIso8601StringLocal(
-        dateTime.toIso8601String(),
-        dateTime,
-        timeZoneOffset);
+        dateTime.toIso8601String(), dateTime, timeZoneOffset);
 
     return ZonedDateTime._(timeZoneOffset, dateTime, string);
   }
@@ -30,8 +28,10 @@ class ZonedDateTime {
 
   factory ZonedDateTime.fromIso8601String(String iso8601String) {
     final dateTime = DateTime.parse(iso8601String);
-    final timeZoneOffset = parseTimeZoneOffset(iso8601String.substring(ISO8601_FORMAT_LOCAL.length, iso8601String.length));
-    final iso8601StringLocal = iso8601String.substring(0, ISO8601_FORMAT_LOCAL.length);
+    final timeZoneOffset = parseTimeZoneOffset(iso8601String.substring(
+        ISO8601_FORMAT_LOCAL.length, iso8601String.length));
+    final iso8601StringLocal =
+        iso8601String.substring(0, ISO8601_FORMAT_LOCAL.length);
     return ZonedDateTime._(timeZoneOffset, dateTime, iso8601StringLocal);
   }
 
@@ -39,7 +39,8 @@ class ZonedDateTime {
     return _iso8601StringLocal
             .substring(0, DATETIME_FORMAT_LOCAL.length)
             .replaceAll('-', '/')
-            .replaceFirst('T', ' ') + formatTimeZoneOffset(timeZoneOffset, withColon: false);
+            .replaceFirst('T', ' ') +
+        formatTimeZoneOffset(timeZoneOffset, withColon: false);
   }
 
   // Note: this is only a right inverse of toString(), because toString() lost some precision.
@@ -63,7 +64,9 @@ class ZonedDateTime {
     } else {
       // very rare case where the time zone changes immediately after calling DateTime.now()
       final dateTimeLocal = dateTime.toUtc().add(timeZoneOffset);
-      return dateTimeLocal.toIso8601String().substring(0, ISO8601_FORMAT_LOCAL.length);
+      return dateTimeLocal
+          .toIso8601String()
+          .substring(0, ISO8601_FORMAT_LOCAL.length);
     }
   }
 
@@ -71,7 +74,8 @@ class ZonedDateTime {
   // are ±hhmm and ±hh:mm. The Paco server uses ±hhmm, while SQLite uses ±hh:mm.
   // We need to support both of them here.
 
-  static String formatTimeZoneOffset(Duration timeZoneOffset, {bool withColon = false}) {
+  static String formatTimeZoneOffset(Duration timeZoneOffset,
+      {bool withColon = false}) {
     String twoDigits(int n) {
       if (n >= 10) return "$n";
       return '0$n';
@@ -88,14 +92,17 @@ class ZonedDateTime {
     String twoDigitMinutes =
         twoDigits(timeZoneOffset.inMinutes.remainder(Duration.minutesPerHour));
 
-    return withColon? '$sign$twoDigitHours:$twoDigitMinutes' : '$sign$twoDigitHours$twoDigitMinutes';
+    return withColon
+        ? '$sign$twoDigitHours:$twoDigitMinutes'
+        : '$sign$twoDigitHours$twoDigitMinutes';
   }
 
   static Duration parseTimeZoneOffset(String string) {
     final withColon = (string[3] == ':');
     final sign = string.substring(0, 1);
     final twoDigitHours = string.substring(1, 3);
-    final twoDigitMinutes = withColon ? string.substring(4, 6) : string.substring(3, 5);
+    final twoDigitMinutes =
+        withColon ? string.substring(4, 6) : string.substring(3, 5);
 
     final hours = int.parse(twoDigitHours);
     final minutes = int.parse(twoDigitMinutes);
