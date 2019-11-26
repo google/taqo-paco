@@ -4,6 +4,9 @@ import 'package:data_binding_builder/src/database_description.dart';
 import 'package:data_binding_builder/src/local_database_builder.dart';
 import 'package:data_binding_builder/src/string_util.dart';
 
+String _defaultFromObjectTranslator(DatabaseColumnSpecification dbColSpec) =>
+    '${dbColSpec.dbTableInfo.objectName}.${snakeCaseToCamelCase(dbColSpec.name)}';
+
 void main() {
   group('buildQueryCreateTable()', () {
     test('buildQueryCreateTable() with prependIdColumn=true', () {
@@ -11,9 +14,7 @@ void main() {
           meta: {DatabaseDescription.META_PREPEND_ID_COLUMN: true});
       dbDescription.addTableSpec(
           name: 'a_table',
-          defaultFromObjectTranslator:
-              (DatabaseColumnSpecification dbColSpec, String object) =>
-                  '$object.${snakeCaseToCamelCase(dbColSpec.name)}',
+          defaultFromObjectTranslator: _defaultFromObjectTranslator,
           specContent: [
             ['column_first', SqlLiteDatatype.INTEGER],
             ['column_second', SqlLiteDatatype.TEXT],
@@ -34,9 +35,7 @@ void main() {
           meta: {DatabaseDescription.META_PREPEND_ID_COLUMN: false});
       dbDescription.addTableSpec(
           name: 'a_table',
-          defaultFromObjectTranslator:
-              (DatabaseColumnSpecification dbColSpec, String object) =>
-                  '$object.${snakeCaseToCamelCase(dbColSpec.name)}',
+          defaultFromObjectTranslator: _defaultFromObjectTranslator,
           specContent: [
             ['column_first', SqlLiteDatatype.INTEGER],
             ['column_second', SqlLiteDatatype.TEXT],
@@ -58,9 +57,8 @@ void main() {
           meta: {DatabaseDescription.META_PREPEND_ID_COLUMN: true});
       dbDescription.addTableSpec(
           name: 'a_table',
-          defaultFromObjectTranslator:
-              (DatabaseColumnSpecification dbColSpec, String object) =>
-                  '$object.${snakeCaseToCamelCase(dbColSpec.name)}',
+          objectName: 'aTable',
+          defaultFromObjectTranslator: _defaultFromObjectTranslator,
           specContent: [
             ['column_first', SqlLiteDatatype.INTEGER],
             ['column_second', SqlLiteDatatype.TEXT],
@@ -72,7 +70,7 @@ void main() {
     }
     ''';
 
-      expect(buildDartFieldsMap(dbDescription, 'a_table', 'aTable'),
+      expect(buildDartFieldsMap(dbDescription, 'a_table'),
           equalsIgnoringWhitespace(results));
     });
 
@@ -81,14 +79,13 @@ void main() {
           meta: {DatabaseDescription.META_PREPEND_ID_COLUMN: true});
       dbDescription.addTableSpec(
           name: 'a_table',
-          defaultFromObjectTranslator:
-              (DatabaseColumnSpecification dbColSpec, String object) =>
-                  '$object.${snakeCaseToCamelCase(dbColSpec.name)}',
+          objectName: 'aTable',
+          defaultFromObjectTranslator: _defaultFromObjectTranslator,
           specContent: [
             ['column_first', SqlLiteDatatype.INTEGER],
             ['column_second', SqlLiteDatatype.TEXT],
           ]);
-      expect(() => buildDartFieldsMap(dbDescription, 'b_table', 'aTable'),
+      expect(() => buildDartFieldsMap(dbDescription, 'b_table'),
           throwsArgumentError);
     });
 
@@ -97,19 +94,18 @@ void main() {
           meta: {DatabaseDescription.META_PREPEND_ID_COLUMN: false});
       dbDescription.addTableSpec(
           name: 'a_table',
-          defaultFromObjectTranslator:
-              (DatabaseColumnSpecification dbColSpec, String object) =>
-                  '$object.${snakeCaseToCamelCase(dbColSpec.name)}',
+          objectName: 'aTable',
+          defaultFromObjectTranslator: _defaultFromObjectTranslator,
           specContent: [
             ['column_first', SqlLiteDatatype.INTEGER],
             ['column_second', SqlLiteDatatype.TEXT],
           ]);
-      expect(() => buildDartFieldsMap(dbDescription, 'a_table', 'aTable'),
+      expect(() => buildDartFieldsMap(dbDescription, 'a_table'),
           throwsUnimplementedError);
       // Note: compare the following with the similar test above when
       // prependIdColumn=true, which throws ArgumentError instead of UnimplementedError.
       // The difference is caused by "lazy" evaluation of a sync* function.
-      expect(() => buildDartFieldsMap(dbDescription, 'b_table', 'aTable'),
+      expect(() => buildDartFieldsMap(dbDescription, 'b_table'),
           throwsUnimplementedError);
     });
   });

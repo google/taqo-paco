@@ -6,37 +6,34 @@ import 'package:meta/meta.dart';
 import 'database_description_base.dart';
 import 'table.dart';
 
-typedef TranslatorFromObject = String Function(
-    DatabaseColumnSpecification, String);
-typedef TranslatorFromObject2 = String Function(
-    DatabaseColumnSpecification, String, String);
+typedef TranslatorFromObject = String Function(DatabaseColumnSpecification);
+
+class DatabaseTableInfo {
+  final String name;
+  final String objectName;
+  final String parentObjectName;
+  DatabaseTableInfo(
+      {@required this.name, this.objectName, this.parentObjectName});
+}
 
 class DatabaseColumnSpecification {
   final String name;
   final SqlLiteDatatype type;
-  final int fromObjectLevel;
-  Function fromObject;
-  Function toObject;
+  String fromObject;
+  String toObject;
+  final DatabaseTableInfo dbTableInfo;
 
   String get typeAsString => getEnumName(type);
 
-  DatabaseColumnSpecification(
-      {@required this.name,
-      @required this.type,
-      @required this.fromObjectLevel,
-      @required Function fromObject,
-      @required this.toObject}) {
-    var fromObjectTranslator;
-    if (fromObjectLevel == 1 && fromObject is TranslatorFromObject) {
-      fromObjectTranslator = (String object) => fromObject(this, object);
-    } else if (fromObjectLevel == 2 && fromObject is TranslatorFromObject2) {
-      fromObjectTranslator = (String object1, String object2) =>
-          fromObject(this, object1, object2);
-    } else {
-      throw ArgumentError(
-          'Unsupported fromObjectLevel and/or fromObject function');
-    }
-    this.fromObject = fromObjectTranslator;
+  DatabaseColumnSpecification({
+    @required this.name,
+    @required this.type,
+    @required TranslatorFromObject fromObject,
+    @required Function toObject,
+    @required this.dbTableInfo,
+  }) {
+    this.fromObject = fromObject(this);
+    this.toObject = '';
   }
 }
 
@@ -53,41 +50,19 @@ class DatabaseDescription extends DatabaseDescriptionBase {
 
   DatabaseDescription({Map<String, dynamic> meta}) : super(meta: meta);
 
-  Map<String, int> tableFromObjectLevel = {};
+  Map<String, DatabaseTableInfo> dbTableInfos = {};
 
   void addTableSpec(
       {@required String name, // DB table name
-      int fromObjectLevel,
-      Function defaultFromObjectTranslator,
+      String objectName,
+      String parentObjectName,
+      TranslatorFromObject defaultFromObjectTranslator,
       Function defaultToObjectTranslator,
       @required List<List<dynamic>> specContent // content of the specification
       }) {
-    // Checking and processing the parameters
-    if (fromObjectLevel == null && defaultFromObjectTranslator == null) {
-      fromObjectLevel = 1;
-    } else if (fromObjectLevel == null) {
-      fromObjectLevel = (reflect(defaultFromObjectTranslator) as ClosureMirror)
-              .function
-              .parameters
-              .length -
-          1;
-    } else if (defaultFromObjectTranslator == null) {
-      //Do nothing
-    } else {
-      // both non-null
-      if (fromObjectLevel !=
-          (reflect(defaultFromObjectTranslator) as ClosureMirror)
-                  .function
-                  .parameters
-                  .length -
-              1) {
-        throw ArgumentError(
-            'The defaultFromObjectTranslator is inconsistent with fromObjectLevel $fromObjectLevel.');
-      }
-    }
-    if (fromObjectLevel < 1 || fromObjectLevel > 2) {
-      throw ArgumentError('Unsupported fromObjectLevel: ${fromObjectLevel}');
-    }
+    dbTableInfos[name] = DatabaseTableInfo(
+        name: name, objectName: objectName, parentObjectName: parentObjectName);
+
     if (specContent == null || specContent.isEmpty) {
       throw ArgumentError('Empty or null specContent');
     }
@@ -107,40 +82,36 @@ class DatabaseDescription extends DatabaseDescriptionBase {
       }
     }
 
-    var foo = _specColumnProcessorFromObjectLevel[fromObjectLevel];
-    var bar = foo(defaultFromObjectTranslator);
-
     LinkedHashMap specColumnSpec = LinkedHashMap<String, Function>.from({
       _SPEC_COLUMN_NAME: Table.columnProcessorTakeType(String),
       _SPEC_COLUMN_TYPE: Table.columnProcessorTakeType(SqlLiteDatatype),
-      _SPEC_FROM_OBJECT: _specColumnProcessorFromObjectLevel[fromObjectLevel](
-          defaultFromObjectTranslator),
+      _SPEC_FROM_OBJECT:
+          _specColumnProcessorFromObject(defaultFromObjectTranslator),
       _SPEC_TO_OBJECT: Table.columnProcessorIdentity
     });
 
     addTableSpecification(
         name: name,
         specification: Table(columnSpec: specColumnSpec, content: specContent));
-    tableFromObjectLevel[name] = fromObjectLevel;
   }
 
-  int getTableFromObjectLevel(String tableName) =>
-      tableFromObjectLevel[tableName] ??
+  DatabaseTableInfo getDbTableInfo(String tableName) =>
+      dbTableInfos[tableName] ??
       (throw ArgumentError(
           'There is no specification for table $tableName in the database description.'));
 
   Iterable<DatabaseColumnSpecification> getDatabaseColumnSpecifications(
       String tableName) sync* {
-    final fromObjectLevel = getTableFromObjectLevel(tableName);
     final tableSpec = getTableSpecification(tableName);
+    final dbTableInfo = getDbTableInfo(tableName);
 
     for (var row in tableSpec.rowsAsMaps) {
       yield DatabaseColumnSpecification(
-          fromObjectLevel: fromObjectLevel,
           name: row[_SPEC_COLUMN_NAME],
           type: row[_SPEC_COLUMN_TYPE],
           fromObject: row[_SPEC_FROM_OBJECT],
-          toObject: row[_SPEC_TO_OBJECT]);
+          toObject: row[_SPEC_TO_OBJECT],
+          dbTableInfo: dbTableInfo);
     }
   }
 
@@ -153,29 +124,10 @@ class DatabaseDescription extends DatabaseDescriptionBase {
         return entry;
       } else {
         throw ArgumentError(
-            '$entry should be of type String Function(DatabaseColumnSpecification, String), instead of ${entry.runtimeType}');
+            '$entry should be of type String Function(DatabaseColumnSpecification), instead of ${entry.runtimeType}');
       }
     };
   }
-
-  static _specColumnProcessorFromObject2(TranslatorFromObject2 defaultFunc) {
-    return (entry) {
-      if (entry == null) {
-        return defaultFunc;
-      } else if (reflectType(entry.runtimeType)
-          .isSubtypeOf(reflectType(TranslatorFromObject2))) {
-        return entry;
-      } else {
-        throw ArgumentError(
-            '$entry should be of type String Function(DatabaseColumnSpecification, String, String), instead of ${entry.runtimeType}');
-      }
-    };
-  }
-
-  static const _specColumnProcessorFromObjectLevel = <int, Function>{
-    1: _specColumnProcessorFromObject,
-    2: _specColumnProcessorFromObject2
-  };
 }
 
 enum SqlLiteDatatype { NULL, INTEGER, REAL, TEXT, BLOB }

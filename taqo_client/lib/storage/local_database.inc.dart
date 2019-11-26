@@ -52,13 +52,13 @@ Future<void> _insertEvent(Database db, Event event) async {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
       var batch = txn.batch();
-      for (var entry in event.responses.entries) {
+      for (var responseEntry in event.responses.entries) {
         batch.insert(
           'outputs',
           {
             'event_id': event.id,
-            'text': entry.key,
-            'answer': entry.value,
+            'text': responseEntry.key,
+            'answer': responseEntry.value,
           },
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
