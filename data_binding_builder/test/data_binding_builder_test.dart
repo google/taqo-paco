@@ -2,15 +2,19 @@ import 'package:test/test.dart';
 
 import 'package:data_binding_builder/src/database_description.dart';
 import 'package:data_binding_builder/src/local_database_builder.dart';
+import 'package:data_binding_builder/src/string_util.dart';
+
+String _defaultFromObjectTranslator(DatabaseColumnSpecification dbColSpec) =>
+    '${dbColSpec.dbTableInfo.objectName}.${snakeCaseToCamelCase(dbColSpec.name)}';
 
 void main() {
   group('buildQueryCreateTable()', () {
     test('buildQueryCreateTable() with prependIdColumn=true', () {
       var dbDescription = DatabaseDescription(
           meta: {DatabaseDescription.META_PREPEND_ID_COLUMN: true});
-      dbDescription.addTableSpecWithFormat(
+      dbDescription.addTableSpec(
           name: 'a_table',
-          specFormat: DatabaseDescription.SPEC_FMT_NT,
+          defaultFromObjectTranslator: _defaultFromObjectTranslator,
           specContent: [
             ['column_first', SqlLiteDatatype.INTEGER],
             ['column_second', SqlLiteDatatype.TEXT],
@@ -29,9 +33,9 @@ void main() {
     test('buildQueryCreateTable() with prependIdColumn=false', () {
       var dbDescription = DatabaseDescription(
           meta: {DatabaseDescription.META_PREPEND_ID_COLUMN: false});
-      dbDescription.addTableSpecWithFormat(
+      dbDescription.addTableSpec(
           name: 'a_table',
-          specFormat: DatabaseDescription.SPEC_FMT_NT,
+          defaultFromObjectTranslator: _defaultFromObjectTranslator,
           specContent: [
             ['column_first', SqlLiteDatatype.INTEGER],
             ['column_second', SqlLiteDatatype.TEXT],
@@ -51,9 +55,10 @@ void main() {
     test('buildDartFieldsMap() with normal input', () {
       var dbDescription = DatabaseDescription(
           meta: {DatabaseDescription.META_PREPEND_ID_COLUMN: true});
-      dbDescription.addTableSpecWithFormat(
+      dbDescription.addTableSpec(
           name: 'a_table',
-          specFormat: DatabaseDescription.SPEC_FMT_NT,
+          objectName: 'aTable',
+          defaultFromObjectTranslator: _defaultFromObjectTranslator,
           specContent: [
             ['column_first', SqlLiteDatatype.INTEGER],
             ['column_second', SqlLiteDatatype.TEXT],
@@ -65,105 +70,42 @@ void main() {
     }
     ''';
 
-      expect(buildDartFieldsMap(dbDescription, 'a_table', 'aTable'),
+      expect(buildDartFieldsMap(dbDescription, 'a_table'),
           equalsIgnoringWhitespace(results));
     });
 
-    test('buildQueryCreateTable() errors with prependIdColumn=true', () {
+    test('buildDartFieldMap() errors with prependIdColumn=true', () {
       var dbDescription = DatabaseDescription(
           meta: {DatabaseDescription.META_PREPEND_ID_COLUMN: true});
-      dbDescription.addTableSpecWithFormat(
+      dbDescription.addTableSpec(
           name: 'a_table',
-          specFormat: DatabaseDescription.SPEC_FMT_NT,
+          objectName: 'aTable',
+          defaultFromObjectTranslator: _defaultFromObjectTranslator,
           specContent: [
             ['column_first', SqlLiteDatatype.INTEGER],
             ['column_second', SqlLiteDatatype.TEXT],
           ]);
-      expect(() => buildDartFieldsMap(dbDescription, 'b_table', 'aTable'),
+      expect(() => buildDartFieldsMap(dbDescription, 'b_table'),
           throwsArgumentError);
     });
 
-    test('buildQueryCreateTable() errors with prependIdColumn=false', () {
+    test('buildDartFieldMap() errors with prependIdColumn=false', () {
       var dbDescription = DatabaseDescription(
           meta: {DatabaseDescription.META_PREPEND_ID_COLUMN: false});
-      dbDescription.addTableSpecWithFormat(
+      dbDescription.addTableSpec(
           name: 'a_table',
-          specFormat: DatabaseDescription.SPEC_FMT_NT,
+          objectName: 'aTable',
+          defaultFromObjectTranslator: _defaultFromObjectTranslator,
           specContent: [
             ['column_first', SqlLiteDatatype.INTEGER],
             ['column_second', SqlLiteDatatype.TEXT],
           ]);
-      expect(() => buildDartFieldsMap(dbDescription, 'a_table', 'aTable'),
+      expect(() => buildDartFieldsMap(dbDescription, 'a_table'),
           throwsUnimplementedError);
       // Note: compare the following with the similar test above when
       // prependIdColumn=true, which throws ArgumentError instead of UnimplementedError.
       // The difference is caused by "lazy" evaluation of a sync* function.
-      expect(() => buildDartFieldsMap(dbDescription, 'b_table', 'aTable'),
-          throwsUnimplementedError);
-    });
-  });
-
-  group('buildDartFieldMapWithTranslationTemplate()', () {
-    test('buildDartFieldsMapWithTranslationTemplate() with normal input', () {
-      var dbDescription = DatabaseDescription(
-          meta: {DatabaseDescription.META_PREPEND_ID_COLUMN: true});
-      dbDescription.addTableSpecWithFormat(
-          name: 'a_table',
-          specFormat: DatabaseDescription.SPEC_FMT_NTTr,
-          specContent: [
-            ['column_first', SqlLiteDatatype.INTEGER, '{{object}}.first'],
-            ['column_second', SqlLiteDatatype.TEXT, '{{object}}.second'],
-          ]);
-      var results = '''
-    {
-      'column_first': aTable.first,
-      'column_second': aTable.second,
-    }
-    ''';
-
-      expect(
-          buildDartFieldsMapWithTranslationTemplate(
-              dbDescription, 'a_table', {'object': 'aTable'}),
-          equalsIgnoringWhitespace(results));
-    });
-
-    test(
-        'buildQueryCreateTableWithTranslationTemplate() errors with prependIdColumn=true',
-        () {
-      var dbDescription = DatabaseDescription(
-          meta: {DatabaseDescription.META_PREPEND_ID_COLUMN: true});
-      dbDescription.addTableSpecWithFormat(
-          name: 'a_table',
-          specFormat: DatabaseDescription.SPEC_FMT_NTTr,
-          specContent: [
-            ['column_first', SqlLiteDatatype.INTEGER, '{{object}}.first'],
-            ['column_second', SqlLiteDatatype.TEXT, '{{object}}.second'],
-          ]);
-      expect(
-          () => buildDartFieldsMapWithTranslationTemplate(
-              dbDescription, 'b_table', {'object': 'aTable'}),
-          throwsArgumentError);
-    });
-
-    test(
-        'buildQueryCreateTableWithTranslationTemplate() errors with prependIdColumn=false',
-        () {
-      var dbDescription = DatabaseDescription(
-          meta: {DatabaseDescription.META_PREPEND_ID_COLUMN: false});
-      dbDescription.addTableSpecWithFormat(
-          name: 'a_table',
-          specFormat: DatabaseDescription.SPEC_FMT_NTTr,
-          specContent: [
-            ['column_first', SqlLiteDatatype.INTEGER, '{{object}}.first'],
-            ['column_second', SqlLiteDatatype.TEXT, '{{object}}.second'],
-          ]);
-      expect(
-          () => buildDartFieldsMapWithTranslationTemplate(
-              dbDescription, 'a_table', {'object': 'aTable'}),
-          throwsUnimplementedError);
-      expect(
-          () => buildDartFieldsMapWithTranslationTemplate(
-              dbDescription, 'b_table', {'object': 'aTable'}),
+      expect(() => buildDartFieldsMap(dbDescription, 'b_table'),
           throwsUnimplementedError);
     });
   });

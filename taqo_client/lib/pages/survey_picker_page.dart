@@ -77,6 +77,4 @@ class _SurveyPickerPageState extends State<SurveyPickerPage> {
     }
     return widgets;
   }
-
-
 }

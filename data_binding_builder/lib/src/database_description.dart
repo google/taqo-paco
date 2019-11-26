@@ -1,22 +1,40 @@
+import 'dart:collection';
+import 'dart:mirrors';
+
 import 'package:meta/meta.dart';
 
 import 'database_description_base.dart';
-import 'map_literal.dart';
 import 'table.dart';
 
+typedef TranslatorFromObject = String Function(DatabaseColumnSpecification);
+
+class DatabaseTableInfo {
+  final String name;
+  final String objectName;
+  final String parentObjectName;
+  DatabaseTableInfo(
+      {@required this.name, this.objectName, this.parentObjectName});
+}
+
 class DatabaseColumnSpecification {
-  final String specFormat;
   final String name;
   final SqlLiteDatatype type;
-  final String translation;
+  String fromObject;
+  String toObject;
+  final DatabaseTableInfo dbTableInfo;
 
   String get typeAsString => getEnumName(type);
 
-  DatabaseColumnSpecification(
-      {@required this.specFormat,
-      @required this.name,
-      @required this.type,
-      @required this.translation});
+  DatabaseColumnSpecification({
+    @required this.name,
+    @required this.type,
+    @required TranslatorFromObject fromObject,
+    @required Function toObject,
+    @required this.dbTableInfo,
+  }) {
+    this.fromObject = fromObject(this);
+    this.toObject = '';
+  }
 }
 
 class DatabaseDescription extends DatabaseDescriptionBase {
@@ -27,58 +45,88 @@ class DatabaseDescription extends DatabaseDescriptionBase {
   // Predefined [Table] column names for DB table specifications
   static const _SPEC_COLUMN_NAME = 'columnName';
   static const _SPEC_COLUMN_TYPE = 'columnType';
-  static const _SPEC_TRANSLATION = 'translation';
+  static const _SPEC_FROM_OBJECT = 'fromObject';
+  static const _SPEC_TO_OBJECT = 'toObject';
 
   DatabaseDescription({Map<String, dynamic> meta}) : super(meta: meta);
 
-  // Specification formats
-  static const SPEC_FMT_NT = 'columnName, columnType';
-  static const SPEC_FMT_NTTr = 'columnName, columnType, translation';
+  Map<String, DatabaseTableInfo> dbTableInfos = {};
 
-  static const _SPEC_BY_FORMAT = {
-    SPEC_FMT_NT: MapLiteral(
-        {_SPEC_COLUMN_NAME: String, _SPEC_COLUMN_TYPE: SqlLiteDatatype}),
-    SPEC_FMT_NTTr: MapLiteral({
-      _SPEC_COLUMN_NAME: String,
-      _SPEC_COLUMN_TYPE: SqlLiteDatatype,
-      _SPEC_TRANSLATION: String
-    })
-  };
-
-  Map<String, String> tableSpecFormat = {};
-
-  void addTableSpecWithFormat(
+  void addTableSpec(
       {@required String name, // DB table name
-      @required String specFormat, // format of the specification
+      String objectName,
+      String parentObjectName,
+      TranslatorFromObject defaultFromObjectTranslator,
+      Function defaultToObjectTranslator,
       @required List<List<dynamic>> specContent // content of the specification
       }) {
-    if (!_SPEC_BY_FORMAT.containsKey(specFormat)) {
-      throw ArgumentError('Unknow specFormat: ${specFormat}');
+    dbTableInfos[name] = DatabaseTableInfo(
+        name: name, objectName: objectName, parentObjectName: parentObjectName);
+
+    if (specContent == null || specContent.isEmpty) {
+      throw ArgumentError('Empty or null specContent');
     }
+
+    // Complete the specContent
+    for (var i = 0; i < specContent.length; i++) {
+      var specRow = specContent[i];
+      if (specRow.length == 2) {
+        specRow.addAll([null, null]);
+      } else if (specRow.length == 3) {
+        specRow.add(null);
+      } else if (specRow.length == 4) {
+        // Good, do nothing
+      } else {
+        throw ArgumentError(
+            'The $i-th row of specContent has unsupported number of elements');
+      }
+    }
+
+    LinkedHashMap specColumnSpec = LinkedHashMap<String, Function>.from({
+      _SPEC_COLUMN_NAME: Table.columnProcessorTakeType(String),
+      _SPEC_COLUMN_TYPE: Table.columnProcessorTakeType(SqlLiteDatatype),
+      _SPEC_FROM_OBJECT:
+          _specColumnProcessorFromObject(defaultFromObjectTranslator),
+      _SPEC_TO_OBJECT: Table.columnProcessorIdentity
+    });
+
     addTableSpecification(
         name: name,
-        specification: Table(
-            columnSpec: _SPEC_BY_FORMAT[specFormat], content: specContent));
-    tableSpecFormat[name] = specFormat;
+        specification: Table(columnSpec: specColumnSpec, content: specContent));
   }
 
-  String getTableSpecFormat(String tableName) =>
-      tableSpecFormat[tableName] ??
+  DatabaseTableInfo getDbTableInfo(String tableName) =>
+      dbTableInfos[tableName] ??
       (throw ArgumentError(
           'There is no specification for table $tableName in the database description.'));
 
   Iterable<DatabaseColumnSpecification> getDatabaseColumnSpecifications(
       String tableName) sync* {
-    final specFormat = getTableSpecFormat(tableName);
     final tableSpec = getTableSpecification(tableName);
+    final dbTableInfo = getDbTableInfo(tableName);
 
     for (var row in tableSpec.rowsAsMaps) {
       yield DatabaseColumnSpecification(
-          specFormat: specFormat,
           name: row[_SPEC_COLUMN_NAME],
           type: row[_SPEC_COLUMN_TYPE],
-          translation: row[_SPEC_TRANSLATION]);
+          fromObject: row[_SPEC_FROM_OBJECT],
+          toObject: row[_SPEC_TO_OBJECT],
+          dbTableInfo: dbTableInfo);
     }
+  }
+
+  static _specColumnProcessorFromObject(TranslatorFromObject defaultFunc) {
+    return (entry) {
+      if (entry == null) {
+        return defaultFunc;
+      } else if (reflectType(entry.runtimeType)
+          .isSubtypeOf(reflectType(TranslatorFromObject))) {
+        return entry;
+      } else {
+        throw ArgumentError(
+            '$entry should be of type String Function(DatabaseColumnSpecification), instead of ${entry.runtimeType}');
+      }
+    };
   }
 }
 
