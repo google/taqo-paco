@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:taqo_client/model/action_trigger.dart';
 import 'package:taqo_client/model/experiment.dart';
+import 'package:taqo_client/model/schedule_trigger.dart';
 import 'package:taqo_client/storage/user_preferences.dart';
+import 'package:taqo_client/util/schedule_printer.dart' as schedule_printer;
 
 class ScheduleOverviewPage extends StatefulWidget {
   static const routeName = '/schedule_overview';
@@ -15,11 +18,10 @@ class ScheduleOverviewPage extends StatefulWidget {
 class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
   var _userPreferences;
 
-
   @override
   initState() {
-    _userPreferences = UserPreferences();
     super.initState();
+    _userPreferences = UserPreferences();
   }
 
 
@@ -27,7 +29,7 @@ class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
     Experiment experiment = ModalRoute.of(context).settings.arguments;
     return Scaffold(
         appBar: AppBar(
-          title: Text(experiment.title + "Schedule Overview"),
+          title: Text("${experiment.title} Schedule Overview"),
           backgroundColor: Colors.indigo,
         ),
         body: Container(
@@ -41,7 +43,10 @@ class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
                 height: 16.0,
                 color: Colors.black,
               ),
-              Text("List scheduled by group"),
+              ListView(
+                children: _buildExperimentGroupScheduleList(experiment),
+                shrinkWrap: true,
+              ),
             ],
           ),
         ),
@@ -51,6 +56,45 @@ class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
               Navigator.pop(context);
             })
     );
+  }
+
+  List<Widget> _buildExperimentGroupScheduleList(Experiment experiment) {
+    final List<Widget> widgets = [];
+    for (var group in experiment.groups) {
+      if (group == null) {
+        continue;
+      }
+      for (var actionTrigger in group.actionTriggers) {
+        if (actionTrigger == null ||
+            ActionTrigger.SCHEDULE_TRIGGER_TYPE_SPECIFIER != actionTrigger.type ||
+            actionTrigger is! ScheduleTrigger) {
+          continue;
+        }
+        final scheduleTrigger = actionTrigger as ScheduleTrigger;
+        if (scheduleTrigger.schedules == null) continue;
+        for (var schedule in (actionTrigger as ScheduleTrigger).schedules) {
+          var rowChildren = <Widget>[
+            Expanded(
+                child: InkWell(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(schedule_printer.toPrettyString(schedule),
+                        style: TextStyle(fontSize: 18),),
+                    ],
+                  ),
+                  onTap: () {
+                    // TODO
+                  },
+                )),
+          ];
+
+          var experimentRow = Card(child: Row(children: rowChildren));
+          widgets.add(experimentRow);
+        }
+      }
+    }
+    return widgets;
   }
 
   Widget buildPauseRow(experiment) {
