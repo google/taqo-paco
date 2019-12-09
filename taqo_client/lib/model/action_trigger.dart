@@ -1,9 +1,13 @@
-import 'package:json_annotation/json_annotation.dart';
-import 'package:taqo_client/model/validatable.dart';
-import 'paco_action.dart';
-import 'package:taqo_client/model/validator.dart';
-import 'package:taqo_client/model/experiment_validator.dart';
 import 'dart:collection';
+
+import 'package:json_annotation/json_annotation.dart';
+import 'package:taqo_client/model/experiment_validator.dart';
+import 'package:taqo_client/model/interrupt_trigger.dart';
+import 'package:taqo_client/model/schedule_trigger.dart';
+import 'package:taqo_client/model/validatable.dart';
+import 'package:taqo_client/model/validator.dart';
+
+import 'paco_action.dart';
 
 part 'action_trigger.g.dart';
 
@@ -25,7 +29,19 @@ class ActionTrigger implements Validatable {
     actions = new List<PacoAction>();
   }
 
-  factory ActionTrigger.fromJson(Map<String, dynamic> json) => _$ActionTriggerFromJson(json);
+  factory ActionTrigger.fromJson(Map<String, dynamic> json) {
+    if (json == null || !json.containsKey('type') || json['type'] == null) {
+      return null;
+    }
+    switch (json['type']) {
+      case INTERRUPT_TRIGGER_TYPE_SPECIFIER:
+        return InterruptTrigger.fromJson(json);
+      case SCHEDULE_TRIGGER_TYPE_SPECIFIER:
+        return ScheduleTrigger.fromJson(json);
+    }
+    return null;
+  }
+
   Map<String, dynamic> toJson() => _$ActionTriggerToJson(this);
 
   set setActions(List<PacoAction> triggerActions) {
