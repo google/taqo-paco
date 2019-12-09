@@ -39,8 +39,6 @@ final _12PM = DateTime(_testNow.year, _testNow.month, _testNow.day, 12);
 final _315PM = DateTime(_testNow.year, _testNow.month, _testNow.day, 15, 15);
 final _445PM = DateTime(_testNow.year, _testNow.month, _testNow.day, 16, 45);
 
-// Repeats 1, >1
-
 void main() {
   test('Daily', () {
     expect(schedule_printer.toPrettyString(_getSchedule(Schedule.DAILY,

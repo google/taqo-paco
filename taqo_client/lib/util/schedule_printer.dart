@@ -15,33 +15,25 @@ String _getHourOffsetAsTimeString(int millisFromMidnight) {
 }
 
 void _appendDaysOfWeek(int weekDaysScheduled, StringBuffer sb) {
-  var first = true;
+  final daysScheduled = [];
   for (var i = 0; i < Schedule.DAYS_OF_WEEK.length; i++) {
     if (Schedule.DAYS_OF_WEEK[i] & weekDaysScheduled != 0) {
-      if (first) {
-        first = false;
-      } else {
-        sb.write(",");
-      }
-      sb.write(DAYS_SHORT_NAMES[i]);
+      daysScheduled.add(DAYS_SHORT_NAMES[i]);
     }
   }
+  sb.write(daysScheduled.join(","));
 }
 
 void _appendTimesOfDay(List<SignalTime> signalTimes, StringBuffer sb) {
   if (signalTimes == null) return;
-  var firstTime = true;
-  for (var time in signalTimes) {
-    if (firstTime) {
-      firstTime = false;
-    } else {
-      sb.write(",");
-    }
+  sb.write(List.generate(signalTimes.length, (i) {
+    final time = signalTimes[i];
     if (time.label != null && time.label.isNotEmpty && time.label != "null") {
-      sb.write("${time.label}: ");
+      return "${time.label}: ${_getHourOffsetAsTimeString(time.fixedTimeMillisFromMidnight)}";
+    } else {
+      return "${_getHourOffsetAsTimeString(time.fixedTimeMillisFromMidnight)}";
     }
-    sb.write(_getHourOffsetAsTimeString(time.fixedTimeMillisFromMidnight));
-  }
+  }).join(","));
 }
 
 String toPrettyString(Schedule schedule, [bool includeIds=false]) {

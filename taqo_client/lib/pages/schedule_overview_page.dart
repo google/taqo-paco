@@ -72,7 +72,7 @@ class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
         }
         final scheduleTrigger = actionTrigger as ScheduleTrigger;
         if (scheduleTrigger.schedules == null) continue;
-        for (var schedule in (actionTrigger as ScheduleTrigger).schedules) {
+        for (var schedule in scheduleTrigger.schedules) {
           var rowChildren = <Widget>[
             Expanded(
                 child: InkWell(
