@@ -110,12 +110,9 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
         )),
       ];
 
-      if (_userPreferences.paused) {
-        rowChildren.add(IconButton(
-            icon: Icon(Icons.pause),
-            onPressed: () => editExperiment(experiment)));
-      }
-
+      rowChildren.add(IconButton(
+          icon: Icon(_userPreferences.paused ? Icons.play_arrow : Icons.pause),
+          onPressed: () => setState(() => _userPreferences.paused = !_userPreferences.paused)));
       rowChildren.add(IconButton(
           icon: Icon(Icons.edit), onPressed: () => editExperiment(experiment)));
       rowChildren.add(IconButton(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:taqo_client/model/action_trigger.dart';
 import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/model/schedule_trigger.dart';
+import 'package:taqo_client/pages/schedule_detail_page.dart';
 import 'package:taqo_client/storage/user_preferences.dart';
 import 'package:taqo_client/util/schedule_printer.dart' as schedule_printer;
 
@@ -38,11 +39,7 @@ class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              (!experiment.isOver()) ? buildPauseRow(experiment) : Text(""),
-              Divider(
-                height: 16.0,
-                color: Colors.black,
-              ),
+              const Text("Tap to edit schedule, if allowed", style: TextStyle(fontSize: 20)),
               ListView(
                 children: _buildExperimentGroupScheduleList(experiment),
                 shrinkWrap: true,
@@ -60,7 +57,8 @@ class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
 
   List<Widget> _buildExperimentGroupScheduleList(Experiment experiment) {
     final List<Widget> widgets = [];
-    for (var group in experiment.groups) {
+    for (var i = 0; i < experiment.groups.length; i++) {
+      final group = experiment.groups[i];
       if (group == null) {
         continue;
       }
@@ -71,7 +69,13 @@ class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
           continue;
         }
         final scheduleTrigger = actionTrigger as ScheduleTrigger;
-        if (scheduleTrigger.schedules == null) continue;
+        if (scheduleTrigger.schedules == null || scheduleTrigger.schedules.isEmpty) {
+          continue;
+        }
+        widgets.add(Divider());
+        widgets.add(Text(group.name == null || group.name.isEmpty || group.name == "null"
+            ? "Question ${i + 1}"
+            : group.name));
         for (var schedule in scheduleTrigger.schedules) {
           var rowChildren = <Widget>[
             Expanded(
@@ -84,44 +88,20 @@ class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
                     ],
                   ),
                   onTap: () {
-                    // TODO
+                    if (schedule.userEditable && !schedule.onlyEditableOnJoin) {
+                      Navigator.pushNamed(context, ScheduleDetailPage.routeName,
+                          arguments: ScheduleDetailArguments(experiment, schedule));
+                    }
                   },
                 )),
           ];
 
-          var experimentRow = Card(child: Row(children: rowChildren));
+          var experimentRow = Card(child: Padding(padding: EdgeInsets.all(8),
+              child: Row(children: rowChildren)));
           widgets.add(experimentRow);
         }
       }
     }
     return widgets;
   }
-
-  Widget buildPauseRow(experiment) {
-    var pauseState = "Pause";
-    var pauseIcon = Icons.pause;
-    if (_userPreferences.paused) {
-      pauseState = "Resume";
-      pauseIcon = Icons.play_arrow;
-    }
-
-    return Column(children: <Widget>[
-      Text(pauseState + " experiment data collection", style: TextStyle(fontWeight: FontWeight.bold),),
-      IconButton(icon: Icon(pauseIcon),
-      onPressed: () {
-        toggleExperimentRunning();
-      },),
-    ]);
-  }
-
-  void toggleExperimentRunning() {
-    setState(() {
-      _userPreferences.paused = !_userPreferences.paused;
-    });
-
-
-  }
-
-
 }
-

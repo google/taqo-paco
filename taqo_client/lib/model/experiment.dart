@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:taqo_client/model/experiment_group.dart';
+import 'package:taqo_client/model/schedule_trigger.dart';
 import 'package:taqo_client/model/visualization.dart';
 import "experiment_core.dart";
 
@@ -51,4 +52,15 @@ class Experiment extends ExperimentCore {
     return groups.singleWhere((grp) => grp.name == experimentGroupName);
   }
 
+  bool userCanEditAtLeastOneSchedule() {
+    for (var group in groups) {
+      if (group.actionTriggers
+          .where((trigger) => trigger is ScheduleTrigger)
+          .map((trigger) => (trigger as ScheduleTrigger).schedules.any((schedule) => schedule.userEditable))
+          .any((x) => x)) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
