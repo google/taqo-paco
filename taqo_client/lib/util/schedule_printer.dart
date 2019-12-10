@@ -1,18 +1,7 @@
-import 'package:intl/intl.dart';
 import 'package:taqo_client/model/schedule.dart';
 import 'package:taqo_client/model/signal_time.dart';
-
-const DAYS_SHORT_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" ];
-const ORDINAL_NUMBERS = ["", "1st", "2nd", "3rd", "4th", "5th" ];
-
-
-String _getHourOffsetAsTimeString(int millisFromMidnight) {
-  final hourFormatter = DateFormat('hh:mma');
-  final now = DateTime.now();
-  final endHour = DateTime(now.year, now.month, now.day)
-      .add(Duration(milliseconds: millisFromMidnight));
-  return hourFormatter.format(endHour);
-}
+import 'package:taqo_client/util/date_time_util.dart'
+    show DAYS_SHORT_NAMES, ORDINAL_NUMBERS, getHourOffsetAsTimeString;
 
 void _appendDaysOfWeek(int weekDaysScheduled, StringBuffer sb) {
   final daysScheduled = [];
@@ -29,9 +18,9 @@ void _appendTimesOfDay(List<SignalTime> signalTimes, StringBuffer sb) {
   sb.write(List.generate(signalTimes.length, (i) {
     final time = signalTimes[i];
     if (time.label != null && time.label.isNotEmpty && time.label != "null") {
-      return "${time.label}: ${_getHourOffsetAsTimeString(time.fixedTimeMillisFromMidnight)}";
+      return "${time.label}: ${getHourOffsetAsTimeString(time.fixedTimeMillisFromMidnight)}";
     } else {
-      return "${_getHourOffsetAsTimeString(time.fixedTimeMillisFromMidnight)}";
+      return "${getHourOffsetAsTimeString(time.fixedTimeMillisFromMidnight)}";
     }
   }).join(","));
 }
@@ -71,9 +60,9 @@ String toPrettyString(Schedule schedule, [bool includeIds=false]) {
       sb.write(" times per ");
       sb.write(Schedule.ESM_PERIODS_NAMES[schedule.esmPeriodInDays].toLowerCase());
       sb.write(" between ");
-      sb.write(_getHourOffsetAsTimeString(schedule.esmStartHour));
+      sb.write(getHourOffsetAsTimeString(schedule.esmStartHour));
       sb.write(" and ");
-      sb.write(_getHourOffsetAsTimeString(schedule.esmEndHour));
+      sb.write(getHourOffsetAsTimeString(schedule.esmEndHour));
       // TODO "excl weekends" is a better ux?
       if (schedule.esmWeekends) {
         sb.write(" incl weekends");

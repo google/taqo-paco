@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html_view/flutter_html_view.dart';
 import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/pages/post_join_instructions_page.dart';
+import 'package:taqo_client/pages/schedule_overview_page.dart';
 import 'package:taqo_client/service/experiment_service.dart';
 
 class InformedConsentPage extends StatefulWidget {
@@ -40,6 +41,14 @@ class _InformedConsentPageState extends State<InformedConsentPage> {
                 height: 16.0,
                 color: Colors.black,
               ),
+              Row(mainAxisAlignment: MainAxisAlignment.end,
+                  children: <Widget>[RaisedButton(color: Colors.indigo,
+                    child: const Text("Edit schedule", style: TextStyle(color: Colors.white),),
+                    onPressed: experiment.userCanEditAtLeastOneSchedule() ? () {
+                      Navigator.pushNamed(
+                          context, ScheduleOverviewPage.routeName, arguments: experiment);
+                    } : null,)
+                  ]),
             ],
           ),
         ),

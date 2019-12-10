@@ -6,6 +6,7 @@ import 'package:taqo_client/pages/find_experiments_page.dart';
 import 'package:taqo_client/pages/informed_consent_page.dart';
 import 'package:taqo_client/pages/post_join_instructions_page.dart';
 import 'package:taqo_client/pages/running_experiments_page.dart';
+import 'package:taqo_client/pages/schedule_detail_page.dart';
 import 'package:taqo_client/pages/schedule_overview_page.dart';
 import 'package:taqo_client/pages/survey/feedback_page.dart';
 
@@ -48,11 +49,11 @@ class MyApp extends StatelessWidget {
         ExperimentDetailPage.routeName: (context) => ExperimentDetailPage(),
         InformedConsentPage.routeName: (context) => InformedConsentPage(),
         ScheduleOverviewPage.routeName: (context) => ScheduleOverviewPage(),
+        ScheduleDetailPage.routeName: (context) => ScheduleDetailPage(),
         InvitationEntryPage.routeName: (context) => InvitationEntryPage(),
         WelcomePage.routeName: (context) => WelcomePage(),
         RunningExperimentsPage.routeName: (context) => RunningExperimentsPage(),
-        PostJoinInstructionsPage.routeName: (context) =>
-            PostJoinInstructionsPage(),
+        PostJoinInstructionsPage.routeName: (context) => PostJoinInstructionsPage(),
       },
       // Here the route for SurveyPage is configured separately in onGenerateRoute(),
       // since we need to pass argument to this route before the page being built,
