@@ -46,7 +46,8 @@ class _InformedConsentPageState extends State<InformedConsentPage> {
                     child: const Text("Edit schedule", style: TextStyle(color: Colors.white),),
                     onPressed: experiment.userCanEditAtLeastOneSchedule() ? () {
                       Navigator.pushNamed(
-                          context, ScheduleOverviewPage.routeName, arguments: experiment);
+                          context, ScheduleOverviewPage.routeName,
+                          arguments: ScheduleOverviewArguments(experiment, fromConsentPage: true));
                     } : null,)
                   ]),
             ],
