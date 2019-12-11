@@ -56,7 +56,7 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
       case Schedule.MONTHLY:
         return _buildMonthlyScheduleDetail(context, args);
       case Schedule.ESM:
-        return _buildESMScheduleDetail(args);
+        return _buildESMScheduleDetail(context, args);
     }
     return [];
   }
@@ -72,7 +72,9 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
       SizedBox(width: labelWidth, child: Text("$label: ")),
       RaisedButton(onPressed: () async {
         final newTime = await showTimePicker(context: context, initialTime: time);
-        setState(() => set(getMsFromMidnight(newTime)));
+        if (newTime != null) {
+          setState(() => set(getMsFromMidnight(newTime)));
+        }
       },
         child: Text(getHourOffsetAsTimeString(msFromMidnight))),
     ]);
@@ -144,15 +146,37 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
     return widgets;
   }
 
-  List<Widget> _buildESMScheduleDetail(ScheduleDetailArguments args) {
+  List<Widget> _buildESMScheduleDetail(BuildContext context, ScheduleDetailArguments args) {
     final Experiment experiment = args.experiment;
     final Schedule schedule = args.schedule;
     List<Widget> widgets = [_buildTitleWidget("Randomly", experiment.title)];
+
+    // TODO incorporate esmPeriodDays
+    var min = (schedule.esmFrequency - 1) * schedule.minimumBuffer;
+    final hours = min ~/ 60;
+    min %= 60;
+    final errMsg = Text("Start time must be before end time and total time must be at least"
+        "${hours > 0 ? " $hours hours and" : ""} $min minutes long");
+
     widgets.add(Text("Suggested signaling schedule"));
-    widgets.add(_buildTimeWidget("Start hour", schedule.esmStartHour,
-            (int start) => schedule.esmStartHour = start));
-    widgets.add(_buildTimeWidget("End hour", schedule.esmEndHour,
-            (int end) => schedule.esmEndHour = end));
+    widgets.add(Builder(builder: (context) =>
+        _buildTimeWidget("Start hour", schedule.esmStartHour, (int newStartTime) {
+          if (schedule.validateESMSchedule(startHour: newStartTime)) {
+            schedule.esmStartHour = newStartTime;
+          } else {
+            Scaffold.of(context).showSnackBar(SnackBar(content: errMsg));
+          }
+        })
+    ));
+    widgets.add(Builder(builder: (context) =>
+        _buildTimeWidget("End hour", schedule.esmEndHour, (int newEndTime) {
+          if (schedule.validateESMSchedule(endHour: newEndTime)) {
+            schedule.esmEndHour = newEndTime;
+          } else {
+            Scaffold.of(context).showSnackBar(SnackBar(content: errMsg));
+          }
+        })
+    ));
     return widgets;
   }
 
