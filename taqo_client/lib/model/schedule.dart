@@ -118,6 +118,7 @@ class Schedule implements Validatable, MinimumBufferable {
         validator.isNotNull(esmStartHour, "esm startHour is not properly initialized");
         validator.isNotNull(esmEndHour, "esm endHour is not properly initialized");
         validator.isNotNull(minimumBuffer, "minimumBuffer for esm signals is not properly initialized");
+        validator.isTrue(validateESMSchedule(), "esm parameters are invalid");
         break;
       default:
       // do nothing;
@@ -183,6 +184,30 @@ class Schedule implements Validatable, MinimumBufferable {
     return (weekDaysScheduled & day) != 0;
   }
 
+  bool validateESMSchedule({int startHour, int endHour, int frequency, int minBuffer, int period}) {
+    // Use default instance values (default parameter values must be const)
+    startHour ??= esmStartHour;
+    endHour ??= esmEndHour;
+    frequency ??= esmFrequency;
+    minBuffer ??= minimumBuffer;
+    period ??= esmPeriodInDays;
+
+    int periodDays = 1;
+    // TODO consider period
+//    switch (period) {
+//      case Schedule.ESM_PERIOD_WEEK:
+//        periodDays = 7;
+//        break;
+//      case Schedule.ESM_PERIOD_MONTH:
+//        periodDays = 28;
+//        break;
+//    }
+
+    // 1. start time is before end time
+    // 2. enough minutes per period for all of the samples, with buffer
+    return startHour < endHour &&
+        ((endHour - startHour) / (1000 * 60)) >= periodDays * ((frequency - 1) * minBuffer);
+  }
 
 
 }
