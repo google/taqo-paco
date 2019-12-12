@@ -24,26 +24,43 @@ class ScheduleDetailPage extends StatefulWidget {
 }
 
 class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
+  bool _pendingChanges;
+
+  @override
+  void initState() {
+    super.initState();
+    _pendingChanges = false;
+  }
+
+  Future<bool> _onWillPop() {
+    Navigator.pop(context, _pendingChanges);
+    return Future.value(false);
+  }
+
+  void _setStateAndMarkChanged(VoidCallback setFn) {
+    setState(() {
+      _pendingChanges = true;
+      setFn();
+    });
+  }
+
   Widget build(BuildContext context) {
     final ScheduleDetailArguments args = ModalRoute.of(context).settings.arguments;
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text("Schedule Details"),
-          backgroundColor: Colors.indigo,
-        ),
-        body: Container(
-          padding: EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: _buildScheduleDetail(context, args),
+    return WillPopScope(onWillPop: _onWillPop,
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text("Schedule Details"),
+            backgroundColor: Colors.indigo,
           ),
-        ),
-        floatingActionButton: FloatingActionButton(
-            child: Icon(Icons.done),
-            tooltip: "Done",
-            onPressed: () {
-              Navigator.pop(context);
-            }));
+          body: Container(
+            padding: EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: _buildScheduleDetail(context, args),
+            ),
+          ),
+        )
+    );
   }
 
   List<Widget> _buildScheduleDetail(BuildContext context, ScheduleDetailArguments args) {
@@ -73,7 +90,7 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
       RaisedButton(onPressed: () async {
         final newTime = await showTimePicker(context: context, initialTime: time);
         if (newTime != null) {
-          setState(() => set(getMsFromMidnight(newTime)));
+          _setStateAndMarkChanged(() => set(getMsFromMidnight(newTime)));
         }
       },
         child: Text(getHourOffsetAsTimeString(msFromMidnight))),
@@ -110,14 +127,17 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
 
     widgets.add(Wrap(spacing: 8.0, runSpacing: 4.0, children: <Widget>[
       RadioListTile(title: const Text('By day of month'),
-      groupValue: schedule.byDayOfMonth,
-      value: true,
-      onChanged: (bool newValue) => setState(() => schedule.byDayOfMonth = newValue),),
+        groupValue: schedule.byDayOfMonth,
+        value: true,
+        onChanged: (bool newValue) =>
+            _setStateAndMarkChanged(() => schedule.byDayOfMonth = newValue)
+      ),
       RadioListTile(title: const Text('By week of month'),
-      groupValue: schedule.byDayOfMonth,
-      value: false,
-      onChanged: (bool newValue) => setState(() => schedule.byDayOfMonth = newValue),),
-    ],));
+        groupValue: schedule.byDayOfMonth,
+        value: false,
+        onChanged: (bool newValue) => _setStateAndMarkChanged(() => schedule.byDayOfMonth = newValue)
+      ),
+    ]));
 
     if (schedule.byDayOfMonth) {
       widgets.add(Row(children: <Widget>[
@@ -125,8 +145,8 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
         DropdownButton(value: schedule.dayOfMonth,
           items: List.generate(31, (i) => i + 1).map((int j) =>
               DropdownMenuItem(value: j, child: Text("$j"))).toList(),
-          onChanged: (int newValue) => setState(() => schedule.dayOfMonth = newValue),
-        ),
+          onChanged: (int newValue) => _setStateAndMarkChanged(() => schedule.dayOfMonth = newValue)
+        )
       ]));
     } else {
       widgets.add(Row(children: <Widget>[
@@ -135,7 +155,7 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
           items: List.generate(ORDINAL_NUMBERS.length - 1, (i) => i + 1).map((int j) =>
               DropdownMenuItem(value: ORDINAL_NUMBERS[j], child: Text(ORDINAL_NUMBERS[j]))).toList(),
           onChanged: (String newValue) =>
-              setState(() => schedule.nthOfMonth = ORDINAL_NUMBERS.indexOf(newValue)),
+              _setStateAndMarkChanged(() => schedule.nthOfMonth = ORDINAL_NUMBERS.indexOf(newValue)),
         ),
       ]));
       widgets += _buildDaysOfWeekRow(schedule);
@@ -187,7 +207,7 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
         DropdownButton(value: schedule.repeatRate,
           items: List.generate(num, (i) => i + 1).map((int j) =>
               DropdownMenuItem(value: j, child: Text("$j"))).toList(),
-          onChanged: (int newValue) => setState(() => schedule.repeatRate = newValue),
+          onChanged: (int newValue) => _setStateAndMarkChanged(() => schedule.repeatRate = newValue),
         ),
         Text(" $when"),
       ]),
@@ -200,10 +220,10 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
     for (var day = 1; day < 1 << 7; day <<= 1) {
       children.add(Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
         Checkbox(value: schedule.weekDaysScheduled & day != 0,
-            onChanged: (bool newValue) => setState(() =>
-            newValue ?
-            schedule.weekDaysScheduled |= day :
-            schedule.weekDaysScheduled &= ~day)),
+            onChanged: (bool newValue) => _setStateAndMarkChanged(() =>
+              newValue ?
+              schedule.weekDaysScheduled |= day :
+              schedule.weekDaysScheduled &= ~day)),
         Text(DAYS_SHORT_NAMES[i])
       ]));
       i += 1;

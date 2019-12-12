@@ -206,7 +206,7 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
 
   void editExperiment(Experiment experiment) {
     Navigator.pushNamed(context, ScheduleOverviewPage.routeName,
-        arguments: experiment);
+        arguments: ScheduleOverviewArguments(experiment));
   }
 
   void emailExperiment(Experiment experiment) {}

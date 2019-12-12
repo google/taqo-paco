@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:taqo_client/model/experiment_group.dart';
+import 'package:taqo_client/model/schedule.dart';
 import 'package:taqo_client/model/schedule_trigger.dart';
 import 'package:taqo_client/model/visualization.dart';
 import "experiment_core.dart";
@@ -63,5 +64,19 @@ class Experiment extends ExperimentCore {
       }
     }
     return false;
+  }
+
+  void updateSchedule(int scheduleId, Schedule newSchedule) {
+    groups.forEach((group) {
+      group.actionTriggers.where((trigger) => trigger is ScheduleTrigger).forEach((trigger) {
+        final schedules = (trigger as ScheduleTrigger).schedules;
+        for (var i = 0; i < schedules.length; i++) {
+          if (schedules[i].id == scheduleId) {
+            schedules[i] = newSchedule;
+            return;
+          }
+        }
+      });
+    });
   }
 }
