@@ -35,7 +35,8 @@ class Experiment extends ExperimentCore {
 
 
   List<ExperimentGroup> getSurveys() {
-    return groups.where((group) => group.groupType == GroupTypeEnum.SURVEY).toList();
+    return groups.where((group) => group.groupType == GroupTypeEnum.SURVEY ||
+        (group.groupType == null && group.inputs.isNotEmpty)).toList();
   }
 
   List<ExperimentGroup> getActiveSurveys() {
