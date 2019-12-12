@@ -16,11 +16,11 @@ class ScheduleOverviewArguments {
   ScheduleOverviewArguments(this.experiment, {this.fromConsentPage = false});
 }
 
-class PendingScheduleChange {
+class ScheduleRevision {
   final Experiment experiment;
   final int scheduleId;
   final Schedule schedule;
-  PendingScheduleChange(this.experiment, this.scheduleId, this.schedule);
+  ScheduleRevision(this.experiment, this.scheduleId, this.schedule);
 }
 
 class ScheduleOverviewPage extends StatefulWidget {
@@ -34,16 +34,16 @@ class ScheduleOverviewPage extends StatefulWidget {
 
 
 class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
-  final _pendingScheduleChanges = List<PendingScheduleChange>();
+  final _scheduleChangesToRevert = List<ScheduleRevision>();
 
   @override
   initState() {
     super.initState();
-    _pendingScheduleChanges.clear();
+    _scheduleChangesToRevert.clear();
   }
 
   Future<bool> _onWillPop() {
-    if (_pendingScheduleChanges.isEmpty) {
+    if (_scheduleChangesToRevert.isEmpty) {
       Navigator.pop(context);
       return Future.value(false);
     }
@@ -155,15 +155,15 @@ class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
         // Tentatively updates the schedule
         experiment.updateSchedule(schedule.id, scheduleClone);
         // Cache changes for revert
-        _pendingScheduleChanges.add(PendingScheduleChange(experiment, schedule.id, schedule));
+        _scheduleChangesToRevert.add(ScheduleRevision(experiment, schedule.id, schedule));
       }
     }
   }
 
   void _onDiscardChanges() {
     // Revert changes
-    if (_pendingScheduleChanges.isNotEmpty) {
-      for (var change in _pendingScheduleChanges) {
+    if (_scheduleChangesToRevert.isNotEmpty) {
+      for (var change in _scheduleChangesToRevert) {
         change.experiment.updateSchedule(change.scheduleId, change.schedule);
       }
     }
@@ -172,7 +172,7 @@ class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
 
   void _onSaveChanges() {
     // Persist changes
-    if (_pendingScheduleChanges.isNotEmpty) {
+    if (_scheduleChangesToRevert.isNotEmpty) {
       ExperimentService().saveJoinedExperiments();
     }
     Navigator.pop(context, true);
