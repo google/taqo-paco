@@ -440,33 +440,25 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   List<Widget> buildSmileyButtons(Input2 input) {
-    List<Widget> buttons = [];
-    buttons.add(buildIconButton(
-        input, 1, Image(image: AssetImage("assets/smile_icon1.png"))));
-    buttons.add(buildIconButton(
-        input, 2, Image(image: AssetImage("assets/smile_icon2.png"))));
-    buttons.add(buildIconButton(
-        input, 3, Image(image: AssetImage("assets/smile_icon3.png"))));
-    buttons.add(buildIconButton(
-        input, 4, Image(image: AssetImage("assets/smile_icon4.png"))));
-    buttons.add(buildIconButton(
-        input, 5, Image(image: AssetImage("assets/smile_icon5.png"))));
-    return buttons;
-  }
+    Widget getIconWidget(AssetImage asset, Color color, int value) {
+      final blendMode = _event.responses[input.name] == value ? BlendMode.multiply : BlendMode.dst;
+      return IconButton(
+        icon: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: Image(image: asset, color: color, colorBlendMode: blendMode,),
+        ),
+        iconSize: 40,
+        onPressed: () => setState(() => _event.responses[input.name] = value),
+      );
+    }
 
-  IconButton buildIconButton(Input2 input, int value, icon) {
-    //var iconButton = IconButton(icon:Icon(iconData),
-    var iconButton = IconButton(
-      icon: icon, iconSize: 40, //highlightColor: Colors.indigo,
-      onPressed: () {
-        // select this button, set value
-        // unselect any other buttons.
-        setState(() {
-          _event.responses[input.name] = value;
-        });
-      },
-    );
-    return iconButton;
+    return <Widget>[
+      getIconWidget(AssetImage("assets/smile_icon1.png"), Colors.red, 1),
+      getIconWidget(AssetImage("assets/smile_icon2.png"), Colors.orange, 2),
+      getIconWidget(AssetImage("assets/smile_icon3.png"), Colors.yellow, 3),
+      getIconWidget(AssetImage("assets/smile_icon4.png"), Colors.lightGreen, 4),
+      getIconWidget(AssetImage("assets/smile_icon5.png"), Colors.green, 5),
+    ];
   }
 
   List<Widget> fabBufferSpace() {
