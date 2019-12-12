@@ -51,10 +51,7 @@ class ExperimentService {
     return List<Experiment>.from(_joined.values);
   }
 
-  void joinExperiment(Experiment experiment) {
-    _joined[experiment.id] = experiment;
-    saveJoinedExperiments();
-
+  Event createJoinEvent(Experiment experiment, {bool joining = false}) {
     final event = Event();
     event.experimentId = experiment.id;
     event.experimentServerId = experiment.id;
@@ -62,13 +59,21 @@ class ExperimentService {
     event.experimentVersion = experiment.version;
     event.responseTime = ZonedDateTime.now();
     event.responses = {
-      "joined": "true",
       "schedule": schedule_printer.createStringOfAllSchedules(experiment),
     };
+    if (joining) {
+      event.responses["joined"] = "true";
+    }
     if (experiment.recordPhoneDetails) {
       // TODO Platform implementation
     }
+    return event;
+  }
 
+  void joinExperiment(Experiment experiment) {
+    _joined[experiment.id] = experiment;
+    saveJoinedExperiments();
+    final event = createJoinEvent(experiment, joining: true);
     LocalDatabase().insertEvent(event);
   }
 
@@ -157,19 +162,16 @@ class ExperimentService {
   }
 
   Future<List<Experiment>> updateJoinedExperiments(callback) async {
-    return await _gAuth
-        .getExperimentsByIdWithSavedCredentials(_joined.keys)
-        .then((experimentJson) {
-      List experimentList = jsonDecode(experimentJson);
-      var experiments = List<Experiment>();
-      for (var experimentJson in experimentList) {
-        var experiment = Experiment.fromJson(experimentJson);
-        experiments.add(experiment);
-      }
-      _joined = {};
-      mapifyExperimentsById(experiments);
-      saveJoinedExperiments();
-      callback(experiments);
-    });
+    final experimentJson = await _gAuth.getExperimentsByIdWithSavedCredentials(_joined.keys);
+    final experimentList = jsonDecode(experimentJson);
+    final experiments = List<Experiment>();
+    for (var expJson in experimentList) {
+      experiments.add(Experiment.fromJson(expJson));
+    }
+    _joined = {};
+    mapifyExperimentsById(experiments);
+    saveJoinedExperiments();
+    callback(experiments);
+    return experiments;
   }
 }
