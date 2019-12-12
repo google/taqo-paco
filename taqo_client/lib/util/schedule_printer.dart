@@ -1,4 +1,6 @@
+import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/model/schedule.dart';
+import 'package:taqo_client/model/schedule_trigger.dart';
 import 'package:taqo_client/model/signal_time.dart';
 import 'package:taqo_client/util/date_time_util.dart'
     show DAYS_SHORT_NAMES, ORDINAL_NUMBERS, getHourOffsetAsTimeString;
@@ -72,4 +74,22 @@ String toPrettyString(Schedule schedule, [bool includeIds=false]) {
       return sb.toString();
   }
   return sb.toString();
+}
+
+String createStringOfAllSchedules(Experiment experiment) {
+  final groupStrings = <String>[];
+  for (var group in experiment.groups) {
+    final triggerStrings = <String>[];
+    for (var trigger in group.actionTriggers) {
+      if (trigger is ScheduleTrigger) {
+        final scheduleStrings = <String>[];
+        for (var schedule in trigger.schedules) {
+          scheduleStrings.add(toPrettyString(schedule));
+        }
+        triggerStrings.add("${trigger.id}:(${scheduleStrings.join(", ")})");
+      }
+    }
+    groupStrings.add("${group.name}:[${triggerStrings.join(" | ")}]");
+  }
+  return groupStrings.join(", ");
 }
