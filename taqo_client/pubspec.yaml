@@ -27,6 +27,12 @@ dependencies:
   intl: ^0.15.8
   cached_network_image: '>=0.7.0'
 
+dependency_overrides:
+  sqflite:
+    git:
+      url: git://github.com/rundong08/sqflite.git
+      path: sqflite
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

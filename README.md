@@ -1,16 +1,7 @@
 # taqo_survey
 
-A tool for rendering surveys
+A tool for rendering surveys.
 
-## Getting Started
+The main app is in the `taqo_client` subdirectory, which contains a Flutter project. More information can be found in `taqo_client/README.md`.
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.io/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.io/docs/cookbook)
-
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.io/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+The `data_binding_builder` subdirectory contains a Dart project that generates code for database-object connection. The instructions for running the builder is also in `taqo_client/README.md`. Since the generated files are also under version control, one does not need to run this builder unless the database-object relation described in this project is changed. 
