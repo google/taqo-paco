@@ -36,7 +36,7 @@ class _InformedConsentPageState extends State<InformedConsentPage> {
                 height: 16.0,
                 color: Colors.black,
               ),
-              buildInformedConsentRow(experiment),
+              Expanded(child: buildInformedConsentRow(experiment)),
               Divider(
                 height: 16.0,
                 color: Colors.black,
@@ -87,14 +87,18 @@ class _InformedConsentPageState extends State<InformedConsentPage> {
   }
 
   Widget buildInformedConsentRow(experiment) {
-    var data = experiment.informedConsentForm != null ? "<div>" + experiment.informedConsentForm + "</div>" : "No statement provided";
+    var data = experiment.informedConsentForm != null ?
+        "<div>${experiment.informedConsentForm}</div>" :
+        "No statement provided";
 
-    return Expanded(child: Column(
+    return SingleChildScrollView(child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text("Informed Consent Statement from the Experiment Creator", style: TextStyle(fontWeight: FontWeight.bold),),
-          Expanded(child: Html(data: data)),
-        ]));
-
+          Text("Informed Consent Statement from the Experiment Creator",
+            style: TextStyle(fontWeight: FontWeight.bold),),
+          Html(data: data),
+        ]
+      )
+    );
   }
 }
