@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_html_view/flutter_html_view.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/pages/post_join_instructions_page.dart';
 import 'package:taqo_client/pages/schedule_overview_page.dart';
@@ -53,18 +53,25 @@ class _InformedConsentPageState extends State<InformedConsentPage> {
             ],
           ),
         ),
-      persistentFooterButtons: (!ExperimentService().isJoined(experiment)) ? <Widget>[
-        RaisedButton(
-          child: Text("Agree", style: TextStyle(color: Colors.white)),
-          onPressed: () {
-            ExperimentService().joinExperiment(experiment);
-              Navigator.popAndPushNamed(context, PostJoinInstructionsPage.routeName, arguments: experiment); }),
-        RaisedButton(child: Text("Cancel", style: TextStyle(color: Colors.white)),
+        persistentFooterButtons: (!ExperimentService().isJoined(experiment)) ? <Widget>[
+          RaisedButton(
+            child: Text("Agree", style: TextStyle(color: Colors.white)),
+            color: Colors.indigo,
             onPressed: () {
-          //TODO should this be a pop? Probably
-              Navigator.pop(context, experiment); }),
-      ] : null,
-        );
+              ExperimentService().joinExperiment(experiment);
+              Navigator.popAndPushNamed(context, PostJoinInstructionsPage.routeName, arguments: experiment);
+            }
+          ),
+          RaisedButton(
+              child: Text("Cancel", style: TextStyle(color: Colors.white)),
+              color: Colors.indigo,
+              onPressed: () {
+                // TODO should this be a pop? Probably
+                Navigator.pop(context, experiment);
+              }
+            ),
+        ] : null,
+    );
   }
 
   Widget buildPreambleRow(experiment) {
@@ -86,7 +93,7 @@ class _InformedConsentPageState extends State<InformedConsentPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text("Informed Consent Statement from the Experiment Creator", style: TextStyle(fontWeight: FontWeight.bold),),
-          Expanded(child: HtmlView(data: data)),
+          Expanded(child: Html(data: data)),
         ]));
 
   }

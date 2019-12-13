@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/pages/running_experiments_page.dart';
-import 'package:flutter_html_view/flutter_html_view.dart';
+import 'package:flutter_html/flutter_html.dart';
 
 class PostJoinInstructionsPage extends StatefulWidget {
   static const routeName = '/post_join_instructions';
@@ -51,7 +51,9 @@ class _PostJoinInstructionsPageState extends State<PostJoinInstructionsPage> {
             height: 16.0,
             color: Colors.black,
           ),
-          Expanded(child: HtmlView(data: experiment.postInstallInstructions != null ? experiment.postInstallInstructions : "No further instructions provided")),
+          Expanded(child: Html(data: experiment.postInstallInstructions != null ?
+              experiment.postInstallInstructions :
+              "No further instructions provided")),
         ]));
   }
 

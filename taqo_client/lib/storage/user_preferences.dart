@@ -1,77 +1,84 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-class UserPreferences {
+import 'package:taqo_client/storage/local_storage.dart';
+
+class UserPreferences extends LocalFileStorage {
+  static const filename = 'preferences.txt';
   static const PAUSED_KEY = "paused";
 
-  var _preferences = {};
+  static final _instance = UserPreferences._();
 
-
-  UserPreferences._privateConstructor() {
-   readPreferences();
+  UserPreferences._() : super(filename) {
+    _loadPreferences();
   }
-
-  static final UserPreferences _instance = UserPreferences._privateConstructor();
 
   factory UserPreferences() {
     return _instance;
   }
 
+  final _prefMap = <String, dynamic>{};
 
-  Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
-
-    return directory.path;
+  Future<Map<String, dynamic>> get _preferences async {
+    await _lock?.future;
+    return _prefMap;
   }
 
-  Future<File> get _localFile async {
-    final path = await _localPath;
-    return File('$path/preferences.txt');
-  }
+  /// Access to [_prefMap] is synchronized:
+  /// 1. Always load saved preferences before allowing any access (read or write)
+  /// 2. Writes must complete before reads
+  /// 3. Calls to [_savePreferences] are synchronized
+  Completer _lock = Completer();
+  Completer _saveLock;
 
-  Future<Null> readPreferences() async {
+  void _loadPreferences() async {
+    _lock = Completer();
     try {
-      final file = await _localFile;
+      final file = await localFile;
       if (await file.exists()) {
         String contents = await file.readAsString();
-        Map preferences = jsonDecode(contents);
-        _preferences = preferences;
+        _prefMap.addAll(jsonDecode(contents));
+      } else {
+        print("preferences file does not exist or is corrupted");
       }
-      print("preferences file does not exist or is corrupted");
-//      return {};
     } catch (e) {
       print("Error loading preferences file: $e");
-//      return {};
     }
+
+    _lock.complete();
   }
 
-  Future<File>  savePreferences() async {
-    // TODO for mobile platforms use secure storage apis
-    // for desktop, use local secure storage apis, e.g., Macos use keychain..
-    // for Fuchsia ...?
-
-    final file = await _localFile;
-    var preferencesJson = jsonEncode(_preferences);
-    return file.writeAsString(preferencesJson, flush: true);
+  void _savePreferences() async {
+    await _saveLock?.future;
+    _saveLock = Completer();
+    await (await localFile).writeAsString(jsonEncode(await _preferences), flush: true);
+    _saveLock.complete();
   }
 
-  getApplicationDocumentsDirectory() {
-    return Directory.systemTemp;
+  Future operator [](String key) async {
+    final value = (await _preferences)[key];
+    return value;
   }
 
-  bool get paused {
-    if (_preferences != null) {
-      var stored = _preferences[PAUSED_KEY];
-      if (stored != null) {
-        return stored;
-      }
+  operator []=(String key, dynamic value) async {
+    final prefs = await _preferences;
+    _lock = Completer();
+    prefs[key] = value;
+    _lock.complete();
+    _savePreferences();
+  }
+
+  // TODO "paused" should be an attribute of each Experiment
+  Future<bool> isPaused() async {
+    final paused = await _instance[PAUSED_KEY];
+    if (paused == null) {
+      return false;
     }
-    return false;
+    return paused is bool ? paused : false;
   }
 
-  void set paused(state) {
-      _preferences[PAUSED_KEY] = state;
-      savePreferences();
+  void setPaused(bool state) {
+    _instance[PAUSED_KEY] = state;
   }
-
 }

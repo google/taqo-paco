@@ -25,13 +25,31 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
   List<Experiment> _experiments = [];
   var _experimentRetriever = ExperimentService();
 
-  var _userPreferences;
+  UserPreferences _userPreferences;
+
+  // TODO "paused" should be an attribute of each Experiment
+  bool isPaused = false;
 
   @override
   void initState() {
     super.initState();
     _experiments = _experimentRetriever.getJoinedExperiments();
     _userPreferences = UserPreferences();
+    _loadUserPrefs();
+  }
+
+  _loadUserPrefs() async {
+    var paused = await _userPreferences.isPaused();
+    setState(() {
+      isPaused = paused;
+    });
+  }
+
+  _pause() {
+    setState(() {
+      isPaused = !isPaused;
+    });
+    _userPreferences.setPaused(isPaused);
   }
 
   @override
@@ -111,8 +129,7 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
       ];
 
       rowChildren.add(IconButton(
-          icon: Icon(_userPreferences.paused ? Icons.play_arrow : Icons.pause),
-          onPressed: () => setState(() => _userPreferences.paused = !_userPreferences.paused)));
+          icon: Icon(isPaused ? Icons.play_arrow : Icons.pause), onPressed: _pause));
       rowChildren.add(IconButton(
           icon: Icon(Icons.edit), onPressed: () => editExperiment(experiment)));
       rowChildren.add(IconButton(
