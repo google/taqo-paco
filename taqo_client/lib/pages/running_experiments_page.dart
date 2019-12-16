@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/net/google_auth.dart';
+import 'package:taqo_client/pages/find_experiments_page.dart';
 import 'package:taqo_client/pages/schedule_overview_page.dart';
 import 'package:taqo_client/pages/survey/survey_page.dart';
 import 'package:taqo_client/pages/survey_picker_page.dart';
 import 'package:taqo_client/service/experiment_service.dart';
-import 'package:taqo_client/storage/user_preferences.dart';
-
-import 'experiment_detail_page.dart';
-import 'find_experiments_page.dart';
 
 class RunningExperimentsPage extends StatefulWidget {
   static const routeName = '/running_experiments';
@@ -25,31 +22,34 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
   List<Experiment> _experiments = [];
   var _experimentRetriever = ExperimentService();
 
-  UserPreferences _userPreferences;
-
-  // TODO "paused" should be an attribute of each Experiment
-  bool isPaused = false;
+  Map<int, bool> _isPaused = Map();
 
   @override
   void initState() {
     super.initState();
     _experiments = _experimentRetriever.getJoinedExperiments();
-    _userPreferences = UserPreferences();
-    _loadUserPrefs();
+    _loadExperimentState();
   }
 
-  _loadUserPrefs() async {
-    var paused = await _userPreferences.isPaused();
+  _loadExperimentState() async {
+    Map<int, bool> temp = {};
+    for (var e in _experiments) {
+      temp[e.id] = await e.isPaused();
+    }
+
     setState(() {
-      isPaused = paused;
+      for (var id in temp.keys) {
+        _isPaused[id] = temp[id];
+      }
     });
   }
 
-  _pause() {
+  _togglePaused(Experiment e) {
+    final newVal = !_isPaused[e.id];
     setState(() {
-      isPaused = !isPaused;
+      _isPaused[e.id] = newVal;
     });
-    _userPreferences.setPaused(isPaused);
+    e.setPaused(newVal);
   }
 
   @override
@@ -129,7 +129,9 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
       ];
 
       rowChildren.add(IconButton(
-          icon: Icon(isPaused ? Icons.play_arrow : Icons.pause), onPressed: _pause));
+          icon: Icon(_isPaused[experiment.id] ?? false ? Icons.play_arrow : Icons.pause),
+          onPressed: () => _togglePaused(experiment)
+      ));
       rowChildren.add(IconButton(
           icon: Icon(Icons.edit), onPressed: () => editExperiment(experiment)));
       rowChildren.add(IconButton(
