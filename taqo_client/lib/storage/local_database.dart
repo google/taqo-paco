@@ -1,15 +1,15 @@
-import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 import 'package:taqo_client/model/event.dart';
+import 'package:taqo_client/storage/local_storage.dart';
 
 part 'local_database.inc.dart';
 
 /// Global reference of the database connection, using singleton pattern
-class LocalDatabase {
+class LocalDatabase extends LocalFileStorage {
   /// Singleton implementation
 
   /// The private constructor
-  LocalDatabase._() {
+  LocalDatabase._(): super(dbFilename) {
     _init();
   }
 
@@ -29,9 +29,7 @@ class LocalDatabase {
   }
 
   Future<Database> _openDatabase() async {
-    var dbPrefix = await getDatabasesPath();
-    String dbPath = p.join(dbPrefix, dbFilename);
-    return await openDatabase(dbPath, version: _dbVersion, onCreate: _onCreate);
+    return await openDatabase((await localFile).path, version: _dbVersion, onCreate: _onCreate);
   }
 
   Future<void> insertEvent(Event event) async {

@@ -118,7 +118,7 @@ class GoogleAuth {
   }
 
   Future<void> clearCredentials() async {
-    var clearTokens = await tokenStore.clearTokens();
+    var clearTokens = await tokenStore.clear();
     _authenticationStreamController.add(false);
     return clearTokens;
   }

@@ -1,21 +1,20 @@
 import 'dart:io';
 
-class UnsecureTokenStorage {
+import 'package:taqo_client/storage/local_storage.dart';
 
-  Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
+class UnsecureTokenStorage extends LocalFileStorage {
+  static const filename = 'tokens.txt';
+  static final _instance = UnsecureTokenStorage._();
 
-    return directory.path;
-  }
+  UnsecureTokenStorage._() : super(filename);
 
-  Future<File> get _localFile async {
-    final path = await _localPath;
-    return File('$path/tokens.txt');
+  factory UnsecureTokenStorage() {
+    return _instance;
   }
 
   Future<List<String>> readTokens() async {
     try {
-      final file = await _localFile;
+      final file = await localFile;
       if (await file.exists()) {
         String contents = await file.readAsString();
         var variables = contents.split("\n");
@@ -31,23 +30,6 @@ class UnsecureTokenStorage {
     }
   }
 
-  Future<File>  saveTokens(String refreshToken, String accessToken, DateTime expiry) async {
-    // TODO for mobile platforms use secure storage apis
-    // for desktop, use local secure storage apis, e.g., Macos use keychain..
-    // for Fuchsia ...?
-
-    final file = await _localFile;
-    return file.writeAsString(refreshToken + "\n" + accessToken + "\n" + expiry.toIso8601String());
-  }
-
-  getApplicationDocumentsDirectory() {
-    return Directory.systemTemp;
-  }
-
-  Future<void> clearTokens() async {
-     final file = await _localFile;
-     if (await file.exists()) {
-       await file.delete();
-     }
-  }
+  Future<File> saveTokens(String refreshToken, String accessToken, DateTime expiry) async =>
+      (await localFile).writeAsString("$refreshToken\n$accessToken\n${expiry.toIso8601String()}");
 }
