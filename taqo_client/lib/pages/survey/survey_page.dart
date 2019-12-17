@@ -335,13 +335,14 @@ class _SurveyPageState extends State<SurveyPage> {
     await db.insertEvent(_event);
     // If should be uploaded alert sync service
     if (savedOK) {
-      if (_experimentGroup.feedback.type ==
-          taqo_feedback.Feedback.FEEDBACK_TYPE_STATIC_MESSAGE) {
-        Navigator.popAndPushNamed(context, FeedbackPage.routeName,
+      if (_experimentGroup.feedback.type == taqo_feedback.Feedback.FEEDBACK_TYPE_STATIC_MESSAGE) {
+        Navigator.pushNamedAndRemoveUntil(
+            context, FeedbackPage.routeName,
+            ModalRoute.withName(RunningExperimentsPage.routeName),
             arguments: [_experiment, _experimentGroup]);
       } else {
-        Navigator.pushReplacementNamed(
-            context, RunningExperimentsPage.routeName);
+        Navigator.pushNamedAndRemoveUntil(
+            context, RunningExperimentsPage.routeName, (Route route) => false);
       }
     }
   }

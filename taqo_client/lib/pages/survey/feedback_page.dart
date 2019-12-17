@@ -40,12 +40,11 @@ class _FeedbackPageState extends State<FeedbackPage> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
-                child: Icon(Icons.done),
-                onPressed: () {
-                  Navigator.pushNamed(context, RunningExperimentsPage.routeName);
-                }
-            ));
-
+            child: Icon(Icons.done),
+            onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                context, RunningExperimentsPage.routeName, (Route route) => false)
+        )
+    );
   }
 
   // TODO determine if it is html feedback and show in an html widget
