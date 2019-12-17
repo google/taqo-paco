@@ -31,9 +31,8 @@ class _PostJoinInstructionsPageState extends State<PostJoinInstructionsPage> {
         ),
         floatingActionButton: FloatingActionButton(
             child: Icon(Icons.done),
-            onPressed: () {
-              Navigator.pushReplacementNamed(context, RunningExperimentsPage.routeName);
-            },
+            onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                context, RunningExperimentsPage.routeName, (Route route) => false)
         )
     );
   }
