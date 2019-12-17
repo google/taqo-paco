@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:taqo_client/model/experiment_group.dart';
 import 'package:taqo_client/model/schedule.dart';
@@ -9,7 +10,7 @@ import "experiment_core.dart";
 part 'experiment.g.dart';
 
 @JsonSerializable()
-class Experiment extends ExperimentCore {
+class Experiment extends ExperimentCore with ChangeNotifier {
 
   static const DEFAULT_POST_INSTALL_INSTRUCTIONS = "<b>You have successfully joined the experiment!</b><br/><br/>"
       + "No need to do anything else for now.<br/><br/>"
@@ -31,13 +32,22 @@ class Experiment extends ExperimentCore {
   List<Visualization> visualizations;
 
   @JsonKey(ignore: true)
-  Future<bool> isPaused() async {
-    return await UserPreferences()["${EXPERIMENT_PAUSED_KEY_PREFIX}_$id"] ?? false;
+  bool _paused = false;
+
+  @JsonKey(ignore: true)
+  bool get paused {
+    UserPreferences()["${EXPERIMENT_PAUSED_KEY_PREFIX}_$id"].then((dynamic fromPref) {
+      _paused = fromPref ?? false;
+      notifyListeners();
+    });
+    return _paused;
   }
 
   @JsonKey(ignore: true)
-  void setPaused(bool value) {
+  set paused(bool value) {
     UserPreferences()["${EXPERIMENT_PAUSED_KEY_PREFIX}_$id"] = value;
+    _paused = value;
+    notifyListeners();
   }
 
   Experiment();
