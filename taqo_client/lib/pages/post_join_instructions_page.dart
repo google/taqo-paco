@@ -26,7 +26,7 @@ class _PostJoinInstructionsPageState extends State<PostJoinInstructionsPage> {
       body: Container(
         padding: EdgeInsets.all(8.0),
         //margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
-        child: Expanded(child: buildinstructionsColumn(experiment),),
+        child: Column(children: <Widget>[Expanded(child: buildinstructionsColumn(experiment),)]),
       ),
       floatingActionButton: FloatingActionButton(
           child: Icon(Icons.done),
