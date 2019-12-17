@@ -138,7 +138,7 @@ class _WelcomePageState extends State<WelcomePage> {
         builder: (context, snapshot) => RaisedButton(
               onPressed: isAlreadyRunningExperiments()
                   ? () {
-                      Navigator.pushNamed(
+                      Navigator.pushReplacementNamed(
                           context, RunningExperimentsPage.routeName);
                     }
                   : null,
