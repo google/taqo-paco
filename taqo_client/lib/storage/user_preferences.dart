@@ -68,17 +68,4 @@ class UserPreferences extends LocalFileStorage {
     _lock.complete();
     _savePreferences();
   }
-
-  // TODO "paused" should be an attribute of each Experiment
-  Future<bool> isPaused() async {
-    final paused = await _instance[PAUSED_KEY];
-    if (paused == null) {
-      return false;
-    }
-    return paused is bool ? paused : false;
-  }
-
-  void setPaused(bool state) {
-    _instance[PAUSED_KEY] = state;
-  }
 }

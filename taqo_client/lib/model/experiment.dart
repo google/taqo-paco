@@ -3,6 +3,7 @@ import 'package:taqo_client/model/experiment_group.dart';
 import 'package:taqo_client/model/schedule.dart';
 import 'package:taqo_client/model/schedule_trigger.dart';
 import 'package:taqo_client/model/visualization.dart';
+import 'package:taqo_client/storage/user_preferences.dart';
 import "experiment_core.dart";
 
 part 'experiment.g.dart';
@@ -15,6 +16,7 @@ class Experiment extends ExperimentCore {
       +
       "Paco will send you a notification when it is time to participate.<br/><br/>"
       + "Be sure your ringer/buzzer is on so you will hear the notification.";
+  static const EXPERIMENT_PAUSED_KEY_PREFIX = "paused";
 
   String modifyDate;
   bool published;
@@ -27,6 +29,16 @@ class Experiment extends ExperimentCore {
   String postInstallInstructions;
   bool anonymousPublic;
   List<Visualization> visualizations;
+
+  @JsonKey(ignore: true)
+  Future<bool> isPaused() async {
+    return await UserPreferences()["${EXPERIMENT_PAUSED_KEY_PREFIX}_$id"] ?? false;
+  }
+
+  @JsonKey(ignore: true)
+  void setPaused(bool value) {
+    UserPreferences()["${EXPERIMENT_PAUSED_KEY_PREFIX}_$id"] = value;
+  }
 
   Experiment();
 
