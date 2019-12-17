@@ -1,11 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:taqo_client/model/experiment_group.dart';
-import 'package:taqo_client/model/schedule.dart';
-import 'package:taqo_client/model/schedule_trigger.dart';
-import 'package:taqo_client/model/visualization.dart';
-import 'package:taqo_client/storage/user_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import "experiment_core.dart";
+import 'experiment_group.dart';
+import 'schedule.dart';
+import 'schedule_trigger.dart';
+import 'visualization.dart';
 
 part 'experiment.g.dart';
 
@@ -32,25 +33,28 @@ class Experiment extends ExperimentCore with ChangeNotifier {
   List<Visualization> visualizations;
 
   @JsonKey(ignore: true)
-  bool _paused = false;
+  bool _paused;
 
   @JsonKey(ignore: true)
   bool get paused {
-    UserPreferences()["${EXPERIMENT_PAUSED_KEY_PREFIX}_$id"].then((dynamic fromPref) {
-      _paused = fromPref ?? false;
-      notifyListeners();
-    });
-    return _paused;
+    return _paused ?? false;
   }
 
   @JsonKey(ignore: true)
   set paused(bool value) {
-    UserPreferences()["${EXPERIMENT_PAUSED_KEY_PREFIX}_$id"] = value;
-    _paused = value;
-    notifyListeners();
+    SharedPreferences.getInstance().then((sharedPreferences) {
+      sharedPreferences.setBool("${EXPERIMENT_PAUSED_KEY_PREFIX}_$id", value);
+      _paused = value;
+      notifyListeners();
+    });
   }
 
-  Experiment();
+  Experiment() {
+    SharedPreferences.getInstance().then((sharedPreferences) {
+      _paused = sharedPreferences.getBool("${EXPERIMENT_PAUSED_KEY_PREFIX}_$id") ?? false;
+      notifyListeners();
+    });
+  }
 
   factory Experiment.fromJson(Map<String, dynamic> json) => _$ExperimentFromJson(json);
 

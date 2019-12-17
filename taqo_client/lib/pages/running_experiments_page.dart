@@ -191,8 +191,6 @@ class ExperimentListItem extends StatelessWidget {
         context, ScheduleOverviewPage.routeName, arguments: ScheduleOverviewArguments(experiment));
   }
 
-  void emailExperiment(Experiment experiment) {}
-
   Future<void> _alertLog(context, msg) async {
     return showDialog<void>(
       context: context,
@@ -216,11 +214,6 @@ class ExperimentListItem extends StatelessWidget {
         );
       },
     );
-  }
-
-  void editExperiment(Experiment experiment) {
-    Navigator.pushNamed(context, ScheduleOverviewPage.routeName,
-        arguments: ScheduleOverviewArguments(experiment));
   }
 
   void emailExperiment(Experiment experiment) {

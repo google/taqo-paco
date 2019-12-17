@@ -17,7 +17,6 @@ import 'package:taqo_client/pages/invitation_entry_page.dart';
 import 'package:taqo_client/pages/login_page.dart';
 
 import 'package:taqo_client/net/google_auth.dart';
-import 'package:taqo_client/storage/user_preferences.dart';
 
 var gAuth = GoogleAuth();
 
@@ -30,8 +29,6 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  UserPreferences _userPreferences = UserPreferences();
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
