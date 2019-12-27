@@ -1,10 +1,13 @@
-import 'package:json_annotation/json_annotation.dart';
-import "input2.dart";
-import "feedback.dart";
-import "action_trigger.dart";
-import "validator.dart";
 import 'dart:collection';
+
 import 'package:intl/intl.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+import 'package:taqo_client/model/action_trigger.dart';
+import 'package:taqo_client/model/feedback.dart';
+import 'package:taqo_client/model/input2.dart';
+import 'package:taqo_client/model/validator.dart';
+import 'package:taqo_client/util/date_time_util.dart';
 
 part 'experiment_group.g.dart';
 
@@ -148,17 +151,14 @@ class ExperimentGroup {
     feedback.validateWith(validator);
   }
 
-
-
   bool isDurationLessThanTwoWeeks() {
     try {
       if (startDate == null || endDate == null) {
         return false;
       }
 
-      // TODO will it parse "yyyy/MM/dd"
-      var startDateCandidate = toMidnight(DateTime.parse(startDate));
-      var endDateCandidate = toMidnight(DateTime.parse(endDate));
+      var startDateCandidate = toMidnight(parseYMDTime(startDate));
+      var endDateCandidate = toMidnight(parseYMDTime(endDate));
       Duration daysDuration = endDateCandidate.difference(startDateCandidate);
       if (daysDuration.inDays > MAX_DURATION_DAYS_FOR_LARGE_DATA_LOGGERS) {
         return false;
@@ -173,6 +173,15 @@ class ExperimentGroup {
 
   bool isOver(DateTime now) {
     return fixedDuration && DateFormat.yMd().parse(endDate).isBefore(now);
+  }
+
+  bool isStarted(DateTime now) => !fixedDuration || now.isBefore(parseYMDTime(startDate));
+
+  bool isRunning(DateTime now) {
+    if (groupType != GroupTypeEnum.SYSTEM && !fixedDuration) {
+      return true;
+    }
+    return now.isBefore(parseYMDTime(startDate)) ? false : !isOver(now);
   }
 
   DateTime toMidnight(startDateCandidate) {
@@ -211,5 +220,4 @@ class ExperimentGroup {
       }
     }
   }
-
 }

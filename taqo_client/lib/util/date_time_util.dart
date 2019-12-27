@@ -13,3 +13,10 @@ String getHourOffsetAsTimeString(int millisFromMidnight) {
       .add(Duration(milliseconds: millisFromMidnight));
   return hourFormatter.format(endHour);
 }
+
+/// Parses a string of YYYY/MM/DD into a [DateTime] object
+DateTime parseYMDTime(String time) {
+  // TODO (mike) Error check
+  final parse = time.split("/");
+  return DateTime(int.parse(parse[0]), int.parse(parse[1]), int.parse(parse[2]));
+}

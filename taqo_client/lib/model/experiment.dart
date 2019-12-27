@@ -2,8 +2,10 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:taqo_client/model/experiment_group.dart';
 import 'package:taqo_client/model/schedule.dart';
 import 'package:taqo_client/model/schedule_trigger.dart';
+import 'package:taqo_client/model/signal_time.dart';
 import 'package:taqo_client/model/visualization.dart';
 import 'package:taqo_client/storage/user_preferences.dart';
+import 'package:taqo_client/util/date_time_util.dart';
 import "experiment_core.dart";
 
 part 'experiment.g.dart';
@@ -57,9 +59,56 @@ class Experiment extends ExperimentCore {
     return getSurveys().where((survey) => !survey.isOver(now)).toList();
   }
 
-  bool isOver() {
-    DateTime now = DateTime.now();
+  DateTime getFirstGroupStartTime() {
+    final startTimes = groups.where((g) => g.groupType != GroupTypeEnum.SYSTEM && g.fixedDuration)
+        .map((g) => parseYMDTime(g.startDate)).toList(growable: false);
+    startTimes.sort();
+    return startTimes.first;
+  }
+
+  DateTime getLastGroupEndTime() {
+    final endTimes = groups.where((g) => g.groupType != GroupTypeEnum.SYSTEM && g.fixedDuration)
+        .map((g) => parseYMDTime(g.endDate)).toList(growable: false);
+    endTimes.sort();
+    return endTimes.last;
+  }
+
+  bool isOver([DateTime now]) {
+    now ??= DateTime.now();
     return groups.every((group) => group.isOver(now));
+  }
+
+  bool isStarted(DateTime now) => areAllGroupsFixed() && now.isBefore(getFirstGroupStartTime());
+
+  DateTime getEndTime() {
+    DateTime lastSignalTime;
+    for (var g in groups) {
+      DateTime lastGroupSignalTime = parseYMDTime(g.endDate).add(
+          Duration(days: 1));
+
+      for (var trigger in g.actionTriggers) {
+        if (trigger is ScheduleTrigger) {
+          for (var schedule in trigger.schedules) {
+            if (schedule.scheduleType == Schedule.WEEKDAY) {
+              final lastSignal = schedule.signalTimes.last;
+              if (lastSignal != null && lastSignal.type == SignalTime.FIXED_TIME) {
+                // TODO actually compute the last time based on all of the rules for offset times
+                // TODO and skip if missed rules
+                lastGroupSignalTime = parseYMDTime(g.endDate);
+                lastGroupSignalTime.add(
+                    Duration(milliseconds: lastSignal.fixedTimeMillisFromMidnight));
+              }
+            }
+          }
+        }
+
+        if (lastSignalTime == null || lastGroupSignalTime.isAfter(lastSignalTime)) {
+          lastSignalTime = lastGroupSignalTime;
+        }
+      }
+    }
+
+    return lastSignalTime;
   }
 
   ExperimentGroup getGroupNamed(String experimentGroupName) {
@@ -91,4 +140,9 @@ class Experiment extends ExperimentCore {
       });
     });
   }
+
+  bool areAllGroupsFixed() =>
+      groups.where((g) => g.groupType != GroupTypeEnum.SYSTEM)
+          .map((g) => g.fixedDuration)
+          .every((b) => b);
 }
