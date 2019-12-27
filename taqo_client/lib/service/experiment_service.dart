@@ -5,6 +5,8 @@ import 'package:taqo_client/model/event.dart';
 import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/net/google_auth.dart';
 import 'package:taqo_client/net/invitation_response.dart';
+import 'package:taqo_client/service/alarm_service.dart' as alarm_service;
+import 'package:taqo_client/service/notification_service.dart';
 import 'package:taqo_client/storage/joined_experiments_storage.dart';
 import 'package:taqo_client/storage/local_database.dart';
 import 'package:taqo_client/util/schedule_printer.dart' as schedule_printer;
@@ -74,6 +76,8 @@ class ExperimentService {
     _joined[experiment.id] = experiment;
     saveJoinedExperiments();
     final event = createJoinEvent(experiment, joining: true);
+
+    alarm_service.scheduleNextNotification();
     LocalDatabase().insertEvent(event);
   }
 
@@ -95,6 +99,8 @@ class ExperimentService {
       "joined": "false",
     };
 
+    NotificationManager().cancelForExperiment(experiment);
+    alarm_service.scheduleNextNotification();
     LocalDatabase().insertEvent(event);
   }
 
@@ -111,6 +117,7 @@ class ExperimentService {
 
   void mapifyExperimentsById(List<Experiment> experiments) {
     experiments.forEach((experiment) => _joined[experiment.id] = experiment);
+    alarm_service.scheduleNextNotification();
   }
 
   void saveJoinedExperiments() {

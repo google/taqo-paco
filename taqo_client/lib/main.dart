@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart'
     show debugDefaultTargetPlatformOverride;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:taqo_client/pages/experiment_detail_page.dart';
 import 'package:taqo_client/pages/find_experiments_page.dart';
 import 'package:taqo_client/pages/informed_consent_page.dart';
@@ -15,22 +16,24 @@ import 'package:taqo_client/pages/survey_picker_page.dart';
 import 'package:taqo_client/pages/welcome_page.dart';
 import 'package:taqo_client/pages/invitation_entry_page.dart';
 import 'package:taqo_client/pages/login_page.dart';
-
-import 'package:taqo_client/net/google_auth.dart';
-import 'package:taqo_client/storage/user_preferences.dart';
-
-var gAuth = GoogleAuth();
+import 'package:taqo_client/service/notification_service.dart';
 
 void main() {
   // Desktop platforms are not recognized as valid targets by
   // Flutter; force a specific target to prevent exceptions.
-  // TODO this shoudl change as we adopt the new Flutter Desktop Embedder
+  // TODO this should change as we adopt the new Flutter Desktop Embedder
   debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
-  runApp(MyApp());
+
+  NotificationManager().getLaunchDetails().then((launchDetails) {
+    runApp(MyApp(launchDetails));
+  });
 }
 
 class MyApp extends StatelessWidget {
-  UserPreferences _userPreferences = UserPreferences();
+  static final navigatorKey = GlobalKey<NavigatorState>();
+  final NotificationAppLaunchDetails _launchDetails;
+
+  MyApp(this._launchDetails);
 
   @override
   Widget build(BuildContext context) {
@@ -39,9 +42,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.indigo,
       ),
+      navigatorKey: navigatorKey,
       initialRoute: '/',
       routes: {
-        '/': (context) => WelcomePage(),
+        '/': (context) => WelcomePage(_launchDetails),
         LoginPage.routeName: (context) => LoginPage(),
         FeedbackPage.routeName: (context) => FeedbackPage(),
         SurveyPickerPage.routeName: (context) => SurveyPickerPage(),
@@ -51,7 +55,7 @@ class MyApp extends StatelessWidget {
         ScheduleOverviewPage.routeName: (context) => ScheduleOverviewPage(),
         ScheduleDetailPage.routeName: (context) => ScheduleDetailPage(),
         InvitationEntryPage.routeName: (context) => InvitationEntryPage(),
-        WelcomePage.routeName: (context) => WelcomePage(),
+        WelcomePage.routeName: (context) => WelcomePage(_launchDetails),
         RunningExperimentsPage.routeName: (context) => RunningExperimentsPage(),
         PostJoinInstructionsPage.routeName: (context) => PostJoinInstructionsPage(),
       },
@@ -65,6 +69,7 @@ class MyApp extends StatelessWidget {
               builder: (context) => SurveyPage(
                   experiment: args[0], experimentGroupName: args[1]));
         }
+        return null;
       },
     );
   }

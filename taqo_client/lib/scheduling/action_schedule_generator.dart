@@ -94,5 +94,6 @@ Future<ActionSpecification> getNextAlarmTime({List<Experiment> experiments, Date
   now ??= DateTime.now();
 
   final alarms = await getAllAlarmTimesOrdered(experiments: experiments, now: now);
+  print('Next alarm is ${alarms.isEmpty ? null : alarms.first}');
   return alarms.isEmpty ? null : alarms.first;
 }

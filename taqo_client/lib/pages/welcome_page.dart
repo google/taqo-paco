@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:taqo_client/net/google_auth.dart';
 import 'package:taqo_client/pages/running_experiments_page.dart';
 import 'package:taqo_client/service/experiment_service.dart';
+import 'package:taqo_client/service/notification_service.dart';
 
 import 'find_experiments_page.dart';
 import 'invitation_entry_page.dart';
@@ -10,8 +12,9 @@ import 'login_page.dart';
 // Entry page for App
 class WelcomePage extends StatefulWidget {
   static const routeName = '/welcome';
+  final NotificationAppLaunchDetails _launchDetails;
 
-  WelcomePage({Key key}) : super(key: key);
+  WelcomePage(this._launchDetails, {Key key}) : super(key: key);
 
   @override
   _WelcomePageState createState() => _WelcomePageState();
@@ -30,15 +33,25 @@ class _WelcomePageState extends State<WelcomePage> {
   @override
   void initState() {
     super.initState();
+
     gAuth.isAuthenticated().then((res) {
       setState(() {
         _authenticated = res;
       });
     });
+
     authListener = gAuth.onAuthChanged.listen((newAuthState) {
       setState(() {
         _authenticated = newAuthState;
       });
+    });
+
+    ExperimentService().onJoinedExperimentsLoaded.listen((_) {
+      final fromNotify = widget._launchDetails.didNotificationLaunchApp ?? false;
+      print('launching from notification: $fromNotify');
+      if (fromNotify) {
+        NotificationManager().openSurvey(widget._launchDetails.payload);
+      }
     });
   }
 
