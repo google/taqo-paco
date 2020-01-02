@@ -23,6 +23,7 @@ final _lookup = <String, dynamic>{
   'input455': '-11',
   'list14a': [1, 2, 4, ],
   '8adSymbol': 666,
+  '__123_4': [1234, ],
 };
 final _parser = InputParser(_lookup);
 
@@ -33,6 +34,7 @@ void main() {
     expect(_parser.parse('input455 != -11 || input1 < pi'), SuccessMatcher(false));
     expect(_parser.parse('list14a contains 1 && (list14a == 2 && list14a != 3)'), SuccessMatcher(true));
     expect(_parser.parse('list14a > 2'), SuccessMatcher(false));
+    expect(_parser.parse('__123_4 < 2000'), SuccessMatcher(true));
     expect(_parser.parse("/* doesn't matter should be ignored */ _e > -2\n//ignore this too\n && _e < 3"),
         SuccessMatcher(true));
   });
