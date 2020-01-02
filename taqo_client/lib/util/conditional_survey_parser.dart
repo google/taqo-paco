@@ -4,7 +4,7 @@ class InputParser {
   /// It seems like using [ExpressionBuilder] will not easily support a comment syntax
   /// Removing them with regular expressions seems like a good alternative
   /// TODO Gauge the performance impact
-  static final _blockComment = RegExp(r'\/\*[\S\s]*\*\/');
+  static final _blockComment = RegExp(r'\/\*[\S\s]*?\*\/');
   static final _lineComment = RegExp(r'\/\/.*$', multiLine: true);
 
   final Map<String, dynamic> _conditions;
@@ -23,7 +23,7 @@ class InputParser {
     builder.group()
       ..primitive((digit().plus() & (char('.') & digit().plus()).optional()).trim().flatten()
           .map((a) => num.tryParse(a)))
-      ..primitive((char('_').optional() & letter() & word().star()).trim().flatten()
+      ..primitive(((char('_') | letter()) & (word() | char('_')).star()).trim().flatten()
           .map((a) {
           final aVal = _conditions[a.trim()];
           if (aVal is num || aVal is List) {
@@ -43,11 +43,11 @@ class InputParser {
       ..left(string('contains').trim(), (a, op, b) => a is List ? a.contains(b) : false)
       ..left(string('==').trim(), (a, op, b) => a is List ? a.contains(b) : a == b)
       ..left(string('!=').trim(), (a, op, b) => a is List ? !a.contains(b) : a != b)
-      ..left(string('<=').trim(), (a, op, b) => a <= b)
-      ..left(string('>=').trim(), (a, op, b) => a >= b)
-      ..left(char('=').trim(), (a, op, b) => a == b)
-      ..left(char('<').trim(), (a, op, b) => a < b)
-      ..left(char('>').trim(), (a, op, b) => a > b);
+      ..left(string('<=').trim(), (a, op, b) => a is List ? (a.length == 1 && a.first <= b) : a <= b)
+      ..left(string('>=').trim(), (a, op, b) => a is List ? (a.length == 1 && a.first >= b) : a >= b)
+      ..left(char('=').trim(), (a, op, b) => a is List ? (a.contains(b)) : a == b)
+      ..left(char('<').trim(), (a, op, b) => a is List ? (a.length == 1 && a.first < b) : a < b)
+      ..left(char('>').trim(), (a, op, b) => a is List ? (a.length == 1 && a.first > b) : a > b);
     // Logical operators. Have lower precedence than comparators
     builder.group()
       ..left(string('&&').trim(), (a, op, b) => a && b)
@@ -56,12 +56,12 @@ class InputParser {
     _parser = builder.build().end();
   }
 
-  bool parse(String expression) {
+  Result parse(String expression) {
     // Drop comments
     expression = expression.replaceAll(_blockComment, '');
     expression = expression.replaceAll(_lineComment, '');
 //    print(expression);
 //    print(_parser.parse(expression));
-    return _parser.parse(expression).value as bool;
+    return _parser.parse(expression);
   }
 }

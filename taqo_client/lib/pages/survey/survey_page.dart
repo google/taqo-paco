@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:petitparser/petitparser.dart';
 import 'package:taqo_client/model/event.dart';
 import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/model/experiment_group.dart';
@@ -83,7 +84,12 @@ class _SurveyPageState extends State<SurveyPage> {
           key: (i) => i.name,
           value: (i) => _event.responses[i.name]);
       try {
-        match = InputParser(responses).parse(input.conditionExpression);
+         final result = InputParser(responses).parse(input.conditionExpression);
+         if (result is Failure) {
+           print('error parsing ${input.name}: ${result.message}');
+         } else {
+           match = result.value as bool;
+         }
       } catch(e) {
         print('error parsing ${input.name}: $e');
       }
