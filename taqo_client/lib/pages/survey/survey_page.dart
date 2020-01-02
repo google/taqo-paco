@@ -191,7 +191,7 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   Text buildTextPrompt(String promptMessage) => Text(
-        promptMessage,
+        promptMessage ?? "",
         softWrap: true,
         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
       );
