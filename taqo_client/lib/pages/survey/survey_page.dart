@@ -351,9 +351,18 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   Future<void> saveEvent() async {
+    // Filter out conditional inputs that may no longer be valid
+    // This can occur if the user answered a conditional input but later modified an answer
+    // that nullifies the conditional input
+    _experimentGroup.inputs.forEach((input) {
+      if (!_evaluateInputCondition(input) && _event.responses.containsKey(input.name)) {
+        _event.responses.remove(input.name);
+      }
+    });
+
     _event.responseTime = ZonedDateTime.now();
     _event.responses[FORM_DURATION_IN_SECONDS] =
-        _event.responseTime.dateTime.difference(_startTime).inSeconds;
+    _event.responseTime.dateTime.difference(_startTime).inSeconds;
     await _alertLog("Saving Responses: " + jsonEncode(_event.toJson()));
     var savedOK = validateResponses();
     // TODO Validate answers and store locally.
