@@ -15,6 +15,7 @@ class InputParser {
 
     // TODO Support for escaped unicode literals?
     // TODO Support for "escaped" octal literals?
+    // TODO Better null handling (currently rely on try-catch)
 
     // Numbers and symbols
     // Numbers are any valid integer, floating point or hex literal (but not octal)

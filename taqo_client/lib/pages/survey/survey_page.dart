@@ -43,6 +43,7 @@ class _SurveyPageState extends State<SurveyPage> {
   ExperimentGroup _experimentGroup;
   Event _event;
   DateTime _startTime;
+  final _visible = <String, bool>{};
 
   var popupListResults = {};
 
@@ -50,6 +51,14 @@ class _SurveyPageState extends State<SurveyPage> {
     _experimentGroup = _experiment.getGroupNamed(experimentGroupName);
     _event = Event.of(_experiment, _experimentGroup);
     _startTime = DateTime.now();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _experimentGroup.inputs.forEach((input) {
+      _visible[input.name] = !input.conditional;
+    });
   }
 
   @override
@@ -82,16 +91,17 @@ class _SurveyPageState extends State<SurveyPage> {
       match = false;
       final responses = Map<String, dynamic>.fromIterable(_experimentGroup.inputs,
           key: (i) => i.name,
-          value: (i) => _event.responses[i.name]);
+          value: (i) => (_visible[i.name] ?? false) ? _event.responses[i.name] : null);
       try {
          final result = InputParser(responses).parse(input.conditionExpression);
          if (result is Failure) {
-           print('error parsing ${input.name}: ${result.message}');
+           print('failure parsing ${input.name}: ${result.message}');
          } else {
            match = result.value as bool;
+           _visible[input.name] = match;
          }
       } catch(e) {
-        print('error parsing ${input.name}: $e');
+        print('unknown error parsing ${input.name}: $e');
       }
     }
     return match;
@@ -355,7 +365,7 @@ class _SurveyPageState extends State<SurveyPage> {
     // This can occur if the user answered a conditional input but later modified an answer
     // that nullifies the conditional input
     _experimentGroup.inputs.forEach((input) {
-      if (!_evaluateInputCondition(input) && _event.responses.containsKey(input.name)) {
+      if (_event.responses.containsKey(input.name) && !_visible[input.name]) {
         _event.responses.remove(input.name);
       }
     });
