@@ -53,7 +53,7 @@ class ESMScheduleGenerator {
     var base = from ?? startTime;
 
     // Find first day of ESM period
-    var periodStart = DateTime.fromMillisecondsSinceEpoch(base.millisecondsSinceEpoch);
+    var periodStart = DateTime(base.year, base.month, base.day);
     if (from != null) {
       periodStart = periodStart.add(Duration(days: schedule.convertEsmPeriodToDays()));
     }
@@ -81,7 +81,14 @@ class ESMScheduleGenerator {
     }
 
     signals.sort();
-    return signals.first;
+    final now = DateTime.now();
+    for (var s in signals) {
+      if (s.isAtSameMomentAs(now) || s.isAfter(now)) {
+        return s;
+      }
+    }
+
+    return null;
   }
 
   /// Checks if ESM schedule for [periodStart] exists in storage and generates/stores it, if
@@ -96,6 +103,7 @@ class ESMScheduleGenerator {
 
     if (signals.isNotEmpty) {
       // Signals are already generated -> done
+      print('ESM signals already generated for period ${periodStart.toIso8601String()}');
       return;
     }
 

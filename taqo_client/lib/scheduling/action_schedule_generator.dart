@@ -91,5 +91,6 @@ Future<ActionSpecification> getNextAlarmTime({List<Experiment> experiments, Date
   experiments ??= ExperimentService().getJoinedExperiments();
   now ??= DateTime.now();
 
-  return (await getAllAlarmTimesOrdered(experiments: experiments, now: now)).first;
+  final alarms = await getAllAlarmTimesOrdered(experiments: experiments, now: now);
+  return alarms.isEmpty ? null : alarms.first;
 }
