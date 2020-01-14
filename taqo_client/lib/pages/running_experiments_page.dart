@@ -5,6 +5,7 @@ import 'package:taqo_client/pages/find_experiments_page.dart';
 import 'package:taqo_client/pages/schedule_overview_page.dart';
 import 'package:taqo_client/pages/survey/survey_page.dart';
 import 'package:taqo_client/pages/survey_picker_page.dart';
+import 'package:taqo_client/platform/platform_email.dart';
 import 'package:taqo_client/service/experiment_service.dart';
 
 class RunningExperimentsPage extends StatefulWidget {
@@ -228,7 +229,17 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
         arguments: ScheduleOverviewArguments(experiment));
   }
 
-  void emailExperiment(Experiment experiment) {}
+  void emailExperiment(Experiment experiment) {
+    bool validateEmail(String email) {
+      return RegExp(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$').hasMatch(email);
+    }
+    var to = experiment.creator;
+    final contactEmail = experiment.contactEmail;
+    if (contactEmail != null && contactEmail.isNotEmpty && validateEmail(contactEmail)) {
+      to = contactEmail;
+    }
+    sendEmail(to, experiment.title);
+  }
 }
 
 enum ConfirmAction { CANCEL, ACCEPT }
