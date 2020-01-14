@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:taqo_client/model/experiment.dart';
-import 'package:taqo_client/model/schedule.dart';
-import 'package:taqo_client/storage/esm_signal_storage.dart';
+import '../model/experiment.dart';
+import '../model/schedule.dart';
+import '../storage/esm_signal_storage.dart';
+import '../util/date_time_util.dart';
 
 class ESMScheduleGenerator {
   static const int _maxRandomAttempts = 1000;
@@ -40,14 +41,6 @@ class ESMScheduleGenerator {
     _lock.complete();
   }
 
-  /// Skips over Saturday and Sunday
-  DateTime _skipOverWeekend(DateTime dt) {
-    while (dt.weekday > DateTime.friday) {
-      dt = dt.add(Duration(days: 1));
-    }
-    return dt;
-  }
-
   /// Gets the next period start after [from]
   DateTime _getNextPeriodStart([DateTime from]) {
     var base = from ?? startTime;
@@ -65,7 +58,7 @@ class ESMScheduleGenerator {
     }
 
     if (!schedule.esmWeekends) {
-      periodStart = _skipOverWeekend(periodStart);
+      periodStart = skipOverWeekend(periodStart);
     }
 
     return periodStart;
@@ -161,7 +154,7 @@ class ESMScheduleGenerator {
         while (candidate > minutesPerDay) {
           candidateDt = candidateDt.add(Duration(days: 1));
           if (!schedule.esmWeekends) {
-            candidateDt = _skipOverWeekend(candidateDt);
+            candidateDt = skipOverWeekend(candidateDt);
           }
           candidate -= minutesPerDay;
         }

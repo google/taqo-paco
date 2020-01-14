@@ -33,8 +33,8 @@ Future<ActionSpecification> _getNextAlarmTimeForExperiment(Experiment experiment
                   .nextScheduleTime();
         } else {
           nextScheduleTime =
-              await FixedScheduleGenerator(startTime, experiment, group.name, trigger.id, schedule)
-                  .nextAlarmTimeFromNow();
+              FixedScheduleGenerator(startTime, experiment, group.name, trigger.id, schedule)
+                  .nextAlarmTimeFromNow(fromNow: startTime);
         }
 
         if (nextScheduleTime != null &&
