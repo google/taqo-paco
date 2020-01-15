@@ -86,25 +86,15 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   bool _evaluateInputCondition(Input2 input) {
-    bool match = true;
     if (input.conditional) {
-      match = false;
       final responses = Map<String, dynamic>.fromIterable(_experimentGroup.inputs,
           key: (i) => i.name,
           value: (i) => (_visible[i.name] ?? false) ? _event.responses[i.name] : null);
-      try {
-         final result = InputParser(responses).parse(input.conditionExpression);
-         if (result is Failure) {
-           print('failure parsing ${input.name}: ${result.message}');
-         } else {
-           match = result.value as bool;
-           _visible[input.name] = match;
-         }
-      } catch(e) {
-        print('unknown error parsing ${input.name}: $e');
-      }
+      final match = InputParser(responses).getParseResult(input.conditionExpression);
+      _visible[input.name] = match;
+      return match;
     }
-    return match;
+    return true;
   }
 
   ListView buildSurveyInputs(BuildContext context) {

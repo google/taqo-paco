@@ -57,12 +57,29 @@ class InputParser {
     _parser = builder.build().end();
   }
 
+  /// Attempts to parse [expression] and returns either a [Success] or [Failure].
+  /// Throws any exception from [_parser.parse]
   Result parse(String expression) {
     // Drop comments
     expression = expression.replaceAll(_blockComment, '');
     expression = expression.replaceAll(_lineComment, '');
-//    print(expression);
-//    print(_parser.parse(expression));
     return _parser.parse(expression);
+  }
+
+  /// Get the boolean result of parsing [expression]. Returns true iff parsing succeeds and the
+  /// [Success.value] is true, otherwise false (including exceptions)
+  bool getParseResult(String expression) {
+    try {
+      final result = parse(expression);
+      if (result is Success) {
+        return result.value;
+      } else {
+        print('failure parsing $expression: ${result.message}');
+        return false;
+      }
+    } catch (e) {
+      print('exception parsing $expression: $e, with conditions: $_conditions');
+      return false;
+    }
   }
 }
