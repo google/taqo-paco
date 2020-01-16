@@ -1,9 +1,31 @@
 import 'package:petitparser/petitparser.dart';
 
+typedef OpFunction = bool Function(dynamic, dynamic);
+
+// Common function for operations
+// Handles null checking
+bool _op(OpFunction func, dynamic a, dynamic b) {
+  if (a == null || b == null) return false;
+  return func(a, b);
+}
+
+// Common function for equality operations
+// Defers to 'contains' for list arg
+bool _equalOp(OpFunction func, dynamic a, dynamic b) {
+  if (a is List) return a.contains(b);
+  return _op(func, a, b);
+}
+
+// Common function for non-equality operations
+// Uses first element of list arg
+bool _orderOp(OpFunction func, dynamic a, dynamic b) {
+  if (a is List) return a.length == 1 && func(a.first, b);
+  return _op(func, a, b);
+}
+
 class InputParser {
   /// It seems like using [ExpressionBuilder] will not easily support a comment syntax
   /// Removing them with regular expressions seems like a good alternative
-  /// TODO Gauge the performance impact
   static final _blockComment = RegExp(r'\/\*[\S\s]*?\*\/');
   static final _lineComment = RegExp(r'\/\/.*$', multiLine: true);
 
@@ -15,7 +37,6 @@ class InputParser {
 
     // TODO Support for escaped unicode literals?
     // TODO Support for "escaped" octal literals?
-    // TODO Better null handling (currently rely on try-catch)
 
     // Numbers and symbols
     // Numbers are any valid integer, floating point or hex literal (but not octal)
@@ -27,28 +48,36 @@ class InputParser {
       ..primitive(((char('_') | letter()) & (word() | char('_')).star()).trim().flatten()
           .map((a) {
           final aVal = _conditions[a.trim()];
-          if (aVal is num || aVal is List) {
+          if (aVal is num || aVal is List || aVal == null) {
             return aVal;
-          } else /*if (aVal is String)*/ {
+          } else if (aVal is String) {
+            if (aVal.contains(',')) {
+              return aVal.split(',').map((s) => num.tryParse(s)).toList();
+            }
             return num.tryParse(aVal);
           }
+          return null;
       }));
+
     // Supports negation
     builder.group()
       ..prefix(char('-').trim(), (op, a) => -a);
+
     // Parentheses
     builder.group()
       ..wrapper(char('(').trim(), char(')').trim(), (l, a, r) => a);
+
     // Comparison operators
     builder.group()
-      ..left(string('contains').trim(), (a, op, b) => a is List ? a.contains(b) : false)
-      ..left(string('==').trim(), (a, op, b) => a is List ? a.contains(b) : a == b)
-      ..left(string('!=').trim(), (a, op, b) => a is List ? !a.contains(b) : a != b)
-      ..left(string('<=').trim(), (a, op, b) => a is List ? (a.length == 1 && a.first <= b) : a <= b)
-      ..left(string('>=').trim(), (a, op, b) => a is List ? (a.length == 1 && a.first >= b) : a >= b)
-      ..left(char('=').trim(), (a, op, b) => a is List ? (a.contains(b)) : a == b)
-      ..left(char('<').trim(), (a, op, b) => a is List ? (a.length == 1 && a.first < b) : a < b)
-      ..left(char('>').trim(), (a, op, b) => a is List ? (a.length == 1 && a.first > b) : a > b);
+      ..left(string('contains').trim(), (a, _, b) => _equalOp((a, b) => false, a, b))
+      ..left(string('==').trim(), (a, _, b) => _equalOp((a, b) => a == b, a, b))
+      ..left(string('!=').trim(), (a, _, b) => !_equalOp((a, b) => a == b, a, b))
+      ..left(string('=').trim(), (a, _, b) => _equalOp((a, b) => a == b, a, b))
+      ..left(string('<=').trim(), (a, _, b) => _orderOp((a, b) => a <= b, a, b))
+      ..left(string('>=').trim(), (a, _, b) => _orderOp((a, b) => a >= b, a, b))
+      ..left(string('<').trim(), (a, _, b) => _orderOp((a, b) => a < b, a, b))
+      ..left(string('>').trim(), (a, _, b) => _orderOp((a, b) => a > b, a, b));
+
     // Logical operators. Have lower precedence than comparators
     builder.group()
       ..left(string('&&').trim(), (a, op, b) => a && b)
