@@ -25,14 +25,14 @@ class ESMScheduleGenerator {
   /// Get the next scheduled alarm time
   Future<DateTime> nextScheduleTime() async {
     await _lock.future;
-    final periodStart = _getNextPeriodStart();
-    return _lookupNextESMScheduleTime(periodStart) ??
+    final periodStart = _getPeriodStart();
+    return await _lookupNextESMScheduleTime(periodStart) ??
         _lookupNextESMScheduleTime(_getNextPeriodStart(periodStart));
   }
 
   /// Generate ESM Schedules for the next two periods
   Future<void> _generate() async {
-    final periodStart = _getNextPeriodStart();
+    final periodStart = _getPeriodStart();
     await _ensureESMScheduleGeneratedForPeriod(periodStart);
 
     final nextPeriodStart = _getNextPeriodStart(periodStart);
@@ -41,18 +41,30 @@ class ESMScheduleGenerator {
     _lock.complete();
   }
 
-  /// Gets the next period start after [from]
-  DateTime _getNextPeriodStart([DateTime from]) {
-    var base = from ?? startTime;
+  DateTime _getNextPeriodStart(DateTime prev) {
+    if (schedule.esmPeriodInDays == Schedule.ESM_PERIOD_DAY) {
+      return _getPeriodStart(prev.add(Duration(days: 1)));
+    } else if (schedule.esmPeriodInDays == Schedule.ESM_PERIOD_WEEK) {
+      final offset = prev.weekday == DateTime.sunday ? 7 : 7 - prev.weekday;
+      return _getPeriodStart(prev.add(Duration(days: offset)));
+    } else if (schedule.esmPeriodInDays == Schedule.ESM_PERIOD_MONTH) {
+      final offset = getLastDayOfMonth(prev) - prev.day + 1;
+      return _getPeriodStart(prev.add(Duration(days: offset)));
+    }
+    return null;
+  }
+
+  /// Gets the first day of the period
+  /// If [forDate] is null, returns the period start day for [startTime]
+  /// Else returns the period start day for the period containing [forDate]
+  DateTime _getPeriodStart([DateTime forDate]) {
+    var base = forDate ?? startTime;
 
     // Find first day of ESM period
-    var periodStart = DateTime(base.year, base.month, base.day);
-    if (from != null) {
-      periodStart = periodStart.add(Duration(days: schedule.convertEsmPeriodToDays()));
-    }
-
+    var periodStart = getDateWithoutTime(base);
     if (schedule.esmPeriodInDays == Schedule.ESM_PERIOD_WEEK) {
-      periodStart = periodStart.subtract(Duration(days: periodStart.weekday - 1));
+      // We use Sunday for the first day of the week
+      periodStart = periodStart.subtract(Duration(days: periodStart.weekday % 7));
     } else if (schedule.esmPeriodInDays == Schedule.ESM_PERIOD_MONTH) {
       periodStart = periodStart.subtract(Duration(days: periodStart.day - 1));
     }
@@ -96,7 +108,7 @@ class ESMScheduleGenerator {
 
     if (signals.isNotEmpty) {
       // Signals are already generated -> done
-      print('ESM signals already generated for period ${periodStart.toIso8601String()}');
+      //print('ESM signals already generated for period periodStart');
       return;
     }
 
@@ -125,7 +137,7 @@ class ESMScheduleGenerator {
         }
         break;
       case Schedule.ESM_PERIOD_MONTH:
-        var dt = DateTime.fromMillisecondsSinceEpoch(periodStart.millisecondsSinceEpoch);
+        var dt = cloneDateTime(periodStart);
         while (dt.month == periodStart.month) {
           if (dt.weekday < DateTime.saturday || schedule.esmWeekends) {
             schedulableDays += 1;
@@ -135,12 +147,12 @@ class ESMScheduleGenerator {
         break;
     }
 
-    final candidateBaseDt = DateTime(periodStart.year, periodStart.month, periodStart.day)
+    final candidateBaseDt = getDateWithoutTime(periodStart)
         .add(Duration(hours: schedule.esmStartHour ~/ 3600000));
 
     final minutesPerDay = ((schedule.esmEndHour - schedule.esmStartHour) ~/ 1000) ~/ 60;
     final minutesPerPeriod = schedulableDays * minutesPerDay;
-    final minutesPerBlock = minutesPerPeriod ~/ schedule.esmFrequency;
+    final minutesPerBlock = max(minutesPerPeriod ~/ schedule.esmFrequency, 1);
     final minBuffer = schedule.minimumBuffer;
     final rand = Random();
 
@@ -149,7 +161,7 @@ class ESMScheduleGenerator {
       bool okToAdd = false;
 
       for (var i = 0; i < _maxRandomAttempts; i++) {
-        candidateDt = candidateBaseDt.add(Duration());
+        candidateDt = cloneDateTime(candidateBaseDt);
         var candidate = (signal * minutesPerBlock) + rand.nextInt(minutesPerBlock);
         while (candidate > minutesPerDay) {
           candidateDt = candidateDt.add(Duration(days: 1));

@@ -31,10 +31,12 @@ Future<ActionSpecification> _getNextAlarmTimeForExperiment(Experiment experiment
           nextScheduleTime =
               await ESMScheduleGenerator(startTime, experiment, group.name, trigger.id, schedule)
                   .nextScheduleTime();
+          print('Next ESM $nextScheduleTime');
         } else {
           nextScheduleTime =
               FixedScheduleGenerator(startTime, experiment, group.name, trigger.id, schedule)
                   .nextAlarmTimeFromNow(fromNow: startTime);
+          print('Next fixed $nextScheduleTime');
         }
 
         if (nextScheduleTime != null &&

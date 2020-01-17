@@ -37,11 +37,20 @@ class FixedScheduleGenerator {
 
   DateTime _getNextTimeOnDay(DateTime day, DateTime fromNow) {
     // TODO (mike) investigate SignalTime.type (offset)
-    final nowTimeOnDay = mixDateWithTime(day, fromNow);
-    for (var time in schedule.signalTimes) {
-      final dt = day.add(Duration(milliseconds: time.fixedTimeMillisFromMidnight));
-      if (dt.isAfter(nowTimeOnDay)) {
-        return dt;
+    if (day.isAfter(fromNow)) {
+      // Return first time on day
+      if (schedule.signalTimes.isNotEmpty) {
+        return day.add(Duration(milliseconds: schedule.signalTimes.first.fixedTimeMillisFromMidnight));
+      }
+      return null;
+    } else {
+      // Return first time on day after fromNow
+      final nowTimeOnDay = mixDateWithTime(day, fromNow);
+      for (var time in schedule.signalTimes) {
+        final dt = day.add(Duration(milliseconds: time.fixedTimeMillisFromMidnight));
+        if (dt.isAfter(nowTimeOnDay)) {
+          return dt;
+        }
       }
     }
     return null;
@@ -65,7 +74,7 @@ class FixedScheduleGenerator {
     if (time != null) {
       return time;
     }
-    return _getNextTimeOnDay(_getNextDailyScheduleDay(day), fromNow);
+    return _getNextTimeOnDay(_getNextDailyScheduleDay(day.add(Duration(days: 1))), fromNow);
   }
 
   DateTime _scheduleWeekday(DateTime fromNow) {
@@ -74,7 +83,8 @@ class FixedScheduleGenerator {
     if (time != null) {
       return time;
     }
-    return _getNextTimeOnDay(skipOverWeekend(_getNextDailyScheduleDay(day)), fromNow);
+    return _getNextTimeOnDay(
+        skipOverWeekend(_getNextDailyScheduleDay(day.add(Duration(days: 1)))), fromNow);
   }
 
   DateTime _getNextWeeklyScheduleDay(DateTime fromNow) {

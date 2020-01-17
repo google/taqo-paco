@@ -89,9 +89,9 @@ final m = {
     dt3: ESMTestResult('Experiment 1', DateTime(2012, 8, 25), DateTime(2012, 8, 26), 9, 17, 0, 0, 5, 59),
   },
   'Experiment 2': {
-    dt1: ESMTestResult('Experiment 2', DateTime(2001, 1, 1), DateTime(2001, 1, 8), 6, 14, 7, 7, 11, 118),
-    dt2: ESMTestResult('Experiment 2', DateTime(2005, 9, 12), DateTime(2005, 9, 19), 6, 14, 7, 7, 11, 118),
-    dt3: ESMTestResult('Experiment 2', DateTime(2012, 8, 20), DateTime(2012, 8, 27), 6, 14, 7, 7, 11, 118),
+    dt1: ESMTestResult('Experiment 2', DateTime(2000, 12, 31), DateTime(2001, 1, 7), 6, 14, 7, 7, 11, 118),
+    dt2: ESMTestResult('Experiment 2', DateTime(2005, 9, 11), DateTime(2005, 9, 18), 6, 14, 7, 7, 11, 118),
+    dt3: ESMTestResult('Experiment 2', DateTime(2012, 8, 19), DateTime(2012, 8, 26), 6, 14, 7, 7, 11, 118),
   },
   'Experiment 3': {
     dt1: ESMTestResult('Experiment 3', DateTime(2001, 1, 1), DateTime(2001, 2, 1), 13, 23, 31, 28, 45, 15),
