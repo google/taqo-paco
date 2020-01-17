@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:petitparser/petitparser.dart';
 import 'package:taqo_client/model/event.dart';
 import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/model/experiment_group.dart';
@@ -85,16 +84,32 @@ class _SurveyPageState extends State<SurveyPage> {
     );
   }
 
-  bool _evaluateInputCondition(Input2 input) {
-    if (input.conditional) {
-      final responses = Map<String, dynamic>.fromIterable(_experimentGroup.inputs,
-          key: (i) => i.name,
-          value: (i) => (_visible[i.name] ?? false) ? _event.responses[i.name] : null);
-      final match = InputParser(responses).getParseResult(input.conditionExpression);
-      _visible[input.name] = match;
-      return match;
-    }
-    return true;
+  List<Widget> _evaluateInputConditions(List<Input2> inputs) {
+    final env = Environment();
+    inputs.forEach((input) {
+      env[input.name] = Binding(input.name, input.responseType, _event.responses[input.name]);
+    });
+
+    final parser = InputParser(env);
+
+    final children = <Widget>[];
+    inputs.forEach((input) {
+      if (input.conditional) {
+        final id = input.name;
+        final result = parser.getParseResult(input.conditionExpression);
+        if (result) {
+          children.add(buildWidgetForInput(input));
+          _visible[id] = true;
+        } else {
+          env[id] = Binding(id, input.responseType, null);
+          _visible[id] = false;
+        }
+      } else {
+        children.add(buildWidgetForInput(input));
+      }
+    });
+
+    return children;
   }
 
   ListView buildSurveyInputs(BuildContext context) {
@@ -105,14 +120,7 @@ class _SurveyPageState extends State<SurveyPage> {
         color: Colors.black,
       ),
     ];
-    var inputChildren = <Widget>[];
-    _experimentGroup.inputs.forEach((input) {
-      if (_evaluateInputCondition(input)) {
-        var buildWidgetForInput2 = buildWidgetForInput(input);
-        inputChildren.add(buildWidgetForInput2);
-      }
-    });
-
+    var inputChildren = _evaluateInputConditions(_experimentGroup.inputs);
     var allChildren = preambleChildren + inputChildren + fabBufferSpace();
     return ListView(
       padding: EdgeInsets.all(4.0),
@@ -354,12 +362,7 @@ class _SurveyPageState extends State<SurveyPage> {
     // Filter out conditional inputs that may no longer be valid
     // This can occur if the user answered a conditional input but later modified an answer
     // that nullifies the conditional input
-    _experimentGroup.inputs.forEach((input) {
-      if (_event.responses.containsKey(input.name) && !_visible[input.name]) {
-        _event.responses.remove(input.name);
-      }
-    });
-
+    _event.responses.removeWhere((String k, _) => !(_visible[k] ?? true));
     _event.responseTime = ZonedDateTime.now();
     _event.responses[FORM_DURATION_IN_SECONDS] =
     _event.responseTime.dateTime.difference(_startTime).inSeconds;

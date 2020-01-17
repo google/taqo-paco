@@ -29,10 +29,10 @@ class InputParser {
   static final _blockComment = RegExp(r'\/\*[\S\s]*?\*\/');
   static final _lineComment = RegExp(r'\/\/.*$', multiLine: true);
 
-  final Map<String, dynamic> _conditions;
+  final Environment _env;
   Parser _parser;
 
-  InputParser(this._conditions) {
+  InputParser(this._env) {
     final builder = ExpressionBuilder();
 
     // TODO Support for escaped unicode literals?
@@ -47,7 +47,7 @@ class InputParser {
           .map((a) => num.tryParse(a)))
       ..primitive(((char('_') | letter()) & (word() | char('_')).star()).trim().flatten()
           .map((a) {
-          final aVal = _conditions[a.trim()];
+          final aVal = _env[a.trim()].value;
           if (aVal is num || aVal is List || aVal == null) {
             return aVal;
           } else if (aVal is String) {
@@ -107,8 +107,29 @@ class InputParser {
         return false;
       }
     } catch (e) {
-      print('exception parsing $expression: $e, with conditions: $_conditions');
+      print('exception parsing $expression: $e, with env: $_env');
       return false;
     }
   }
+}
+
+class Binding {
+  final String varName;
+  final responseType;
+  final value;
+
+  Binding(this.varName, this.responseType, this.value);
+}
+
+class Environment {
+  final _knownQuestions = <String, Binding>{};
+
+  void operator []=(String id, Binding binding) => _knownQuestions[id] = binding;
+
+  Binding operator [](String id) => _knownQuestions[id];
+
+  void remove(String id) => _knownQuestions.remove(id);
+
+  @override
+  String toString() => _knownQuestions.toString();
 }

@@ -27,9 +27,14 @@ final _lookup = <String, dynamic>{
   '__123_4': [1234, ],
   'null': null,
 };
-final _parser = InputParser(_lookup);
 
 void main() {
+  final _env = Environment();
+  _lookup.forEach((k, v) {
+    _env[k] = Binding(k, null, v);
+  });
+  final _parser = InputParser(_env);
+
   test('Basic tests returning true', () {
     expect(_parser.parse('pi < 3.1416'), SuccessMatcher(true));
     expect(_parser.parse('(pi >= 3 && _e <= 3) && input1 == 7'), SuccessMatcher(true));
