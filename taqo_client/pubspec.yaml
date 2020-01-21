@@ -29,6 +29,7 @@ dependencies:
   provider: ^3.2.0
   path_provider: ^1.5.1
   path_provider_macos: ^0.0.1
+  petitparser: ^2.4.0
   shared_preferences: ^0.5.6
 
 dependency_overrides:

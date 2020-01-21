@@ -7,6 +7,7 @@ import 'package:taqo_client/model/experiment_group.dart';
 import 'package:taqo_client/model/feedback.dart' as taqo_feedback;
 import 'package:taqo_client/pages/survey/feedback_page.dart';
 import 'package:taqo_client/storage/local_database.dart';
+import 'package:taqo_client/util/conditional_survey_parser.dart';
 import 'package:taqo_client/util/zoned_date_time.dart';
 
 import '../running_experiments_page.dart';
@@ -27,8 +28,8 @@ class SurveyPage extends StatefulWidget {
       : super(key: key);
 
   final String title;
-  Experiment experiment;
-  String experimentGroupName;
+  final Experiment experiment;
+  final String experimentGroupName;
 
   @override
   _SurveyPageState createState() =>
@@ -41,6 +42,7 @@ class _SurveyPageState extends State<SurveyPage> {
   ExperimentGroup _experimentGroup;
   Event _event;
   DateTime _startTime;
+  final _visible = <String, bool>{};
 
   var popupListResults = {};
 
@@ -49,6 +51,15 @@ class _SurveyPageState extends State<SurveyPage> {
     _event = Event.of(_experiment, _experimentGroup);
     _startTime = DateTime.now();
   }
+
+  @override
+  void initState() {
+    super.initState();
+    _experimentGroup.inputs.forEach((input) {
+      _visible[input.name] = !input.conditional;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,6 +84,34 @@ class _SurveyPageState extends State<SurveyPage> {
     );
   }
 
+  List<Widget> _evaluateInputConditions(List<Input2> inputs) {
+    final env = Environment();
+    inputs.forEach((input) {
+      env[input.name] = Binding(input.name, input.responseType, _event.responses[input.name]);
+    });
+
+    final parser = InputParser(env);
+
+    final children = <Widget>[];
+    inputs.forEach((input) {
+      if (input.conditional) {
+        final id = input.name;
+        final result = parser.getParseResult(input.conditionExpression);
+        if (result) {
+          children.add(buildWidgetForInput(input));
+          _visible[id] = true;
+        } else {
+          env[id] = Binding(id, input.responseType, null);
+          _visible[id] = false;
+        }
+      } else {
+        children.add(buildWidgetForInput(input));
+      }
+    });
+
+    return children;
+  }
+
   ListView buildSurveyInputs(BuildContext context) {
     var preambleChildren = <Widget>[
       buildPreambleTextWidget(),
@@ -81,12 +120,7 @@ class _SurveyPageState extends State<SurveyPage> {
         color: Colors.black,
       ),
     ];
-    var inputChildren = <Widget>[];
-    _experimentGroup.inputs.forEach((input) {
-      var buildWidgetForInput2 = buildWidgetForInput(input);
-      inputChildren.add(buildWidgetForInput2);
-    });
-
+    var inputChildren = _evaluateInputConditions(_experimentGroup.inputs);
     var allChildren = preambleChildren + inputChildren + fabBufferSpace();
     return ListView(
       padding: EdgeInsets.all(4.0),
@@ -165,7 +199,7 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   Text buildTextPrompt(String promptMessage) => Text(
-        promptMessage,
+        promptMessage ?? "",
         softWrap: true,
         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
       );
@@ -325,9 +359,13 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   Future<void> saveEvent() async {
+    // Filter out conditional inputs that may no longer be valid
+    // This can occur if the user answered a conditional input but later modified an answer
+    // that nullifies the conditional input
+    _event.responses.removeWhere((String k, _) => !(_visible[k] ?? true));
     _event.responseTime = ZonedDateTime.now();
     _event.responses[FORM_DURATION_IN_SECONDS] =
-        _event.responseTime.dateTime.difference(_startTime).inSeconds;
+    _event.responseTime.dateTime.difference(_startTime).inSeconds;
     await _alertLog("Saving Responses: " + jsonEncode(_event.toJson()));
     var savedOK = validateResponses();
     // TODO Validate answers and store locally.
