@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/net/google_auth.dart';
 import 'package:taqo_client/pages/find_experiments_page.dart';
@@ -20,37 +21,13 @@ class RunningExperimentsPage extends StatefulWidget {
 class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
   var gAuth = GoogleAuth();
 
-  List<Experiment> _experiments = [];
-  var _experimentRetriever = ExperimentService();
-
-  Map<int, bool> _isPaused = Map();
+  final _experimentRetriever = ExperimentService();
+  var _experiments = <Experiment>[];
 
   @override
   void initState() {
     super.initState();
     _experiments = _experimentRetriever.getJoinedExperiments();
-    _loadExperimentState();
-  }
-
-  _loadExperimentState() async {
-    Map<int, bool> temp = {};
-    for (var e in _experiments) {
-      temp[e.id] = await e.isPaused();
-    }
-
-    setState(() {
-      for (var id in temp.keys) {
-        _isPaused[id] = temp[id];
-      }
-    });
-  }
-
-  _togglePaused(Experiment e) {
-    final newVal = !_isPaused[e.id];
-    setState(() {
-      _isPaused[e.id] = newVal;
-    });
-    e.setPaused(newVal);
   }
 
   @override
@@ -63,90 +40,42 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
           IconButton(
             icon: Icon(Icons.search),
             tooltip: 'Find Experiments to Join',
-            onPressed: () {
-              Navigator.pushNamed(context, FindExperimentsPage.routeName);
-            },
+            onPressed: () => Navigator.pushNamed(context, FindExperimentsPage.routeName)
           ),
           IconButton(
             icon: Icon(Icons.refresh),
             tooltip: 'Update Experiments',
-            onPressed: () {
-              updateExperiments();
-            },
+            onPressed: updateExperiments,
           )
         ],
       ),
       body: Container(
         padding: EdgeInsets.all(8.0),
-        //margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
         child: Column(
           children: <Widget>[
-//            buildWelcomeTextWidget(),
             Divider(
               height: 16.0,
               color: Colors.black,
             ),
-            ListView(
-              children: buildExperimentList(),
-              shrinkWrap: true,
-            ),
+            _buildExperimentList(),
           ],
         ),
       ),
     );
   }
 
-  List<Widget> buildExperimentList() {
-    List<Widget> widgets = [];
+  Widget _buildExperimentList() {
+    final children = <Widget>[];
     for (var experiment in _experiments) {
-      var rowChildren = <Widget>[
-        Expanded(
-            child: InkWell(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(experiment.title, textScaleFactor: 1.5),
-              if (experiment.organization != null &&
-                  experiment.organization.isNotEmpty)
-                Text(experiment.organization),
-              Text(experiment.contactEmail != null
-                  ? experiment.contactEmail
-                  : experiment.creator),
-            ],
-          ),
-          onTap: () {
-            if (experiment.getActiveSurveys().length == 1) {
-              Navigator.pushNamed(context, SurveyPage.routeName,
-                  arguments: [experiment, experiment.getActiveSurveys().elementAt(0).name]);
-            } else if (experiment.getActiveSurveys().length > 1) {
-              Navigator.pushNamed(context, SurveyPickerPage.routeName,
-                  arguments: experiment);
-            } else {
-              // TODO no action for finished surveys
-              _alertLog("This experiment has finished.");
-            }
-          },
-        )),
-      ];
-
-      rowChildren.add(IconButton(
-          icon: Icon(_isPaused[experiment.id] ?? false ? Icons.play_arrow : Icons.pause),
-          onPressed: () => _togglePaused(experiment)
+      children.add(ChangeNotifierProvider<Experiment>.value(
+        value: experiment,
+        child: ExperimentListItem(stopExperiment),
       ));
-      rowChildren.add(IconButton(
-          icon: Icon(Icons.edit), onPressed: () => editExperiment(experiment)));
-      rowChildren.add(IconButton(
-          icon: Icon(Icons.email),
-          onPressed: () => emailExperiment(experiment)));
-      rowChildren.add(IconButton(
-          icon: Icon(Icons.close),
-          onPressed: () => stopExperiment(experiment)));
-
-      var experimentRow = Card(child: Row(children: rowChildren));
-
-      widgets.add(experimentRow);
     }
-    return widgets;
+    return ListView(
+      children: children,
+      shrinkWrap: true,
+    );
   }
 
   void updateExperiments() {
@@ -176,28 +105,93 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Stop Experiment'),
-          content: const Text(
-              'Do you want to stop participating in this experiment?'),
+          content: const Text('Do you want to stop participating in this experiment?'),
           actions: <Widget>[
             FlatButton(
               child: const Text('No'),
-              onPressed: () {
-                Navigator.of(context).pop(ConfirmAction.CANCEL);
-              },
+              onPressed: () => Navigator.of(context).pop(ConfirmAction.CANCEL)
             ),
             FlatButton(
               child: const Text('Yes'),
-              onPressed: () {
-                Navigator.of(context).pop(ConfirmAction.ACCEPT);
-              },
+              onPressed: () => Navigator.of(context).pop(ConfirmAction.ACCEPT)
             )
           ],
         );
       },
     );
   }
+}
 
-  Future<void> _alertLog(msg) async {
+class ExperimentListItem extends StatelessWidget {
+  final stop;
+  ExperimentListItem(this.stop);
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<Experiment>(
+        builder: (BuildContext context, Experiment experiment, _) {
+          return Card(
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                    child: InkWell(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(experiment.title, textScaleFactor: 1.5),
+                          if (experiment.organization != null &&
+                              experiment.organization.isNotEmpty)
+                            Text(experiment.organization),
+                          Text(experiment.contactEmail != null
+                              ? experiment.contactEmail
+                              : experiment.creator),
+                        ],
+                      ),
+                      onTap: () {
+                        if (experiment.getActiveSurveys().length == 1) {
+                          Navigator.pushNamed(context, SurveyPage.routeName,
+                              arguments: [
+                                experiment, experiment.getActiveSurveys().elementAt(0).name
+                              ]
+                          );
+                        } else if (experiment.getActiveSurveys().length > 1) {
+                          Navigator.pushNamed(context, SurveyPickerPage.routeName,
+                              arguments: experiment);
+                        } else {
+                          // TODO no action for finished surveys
+                          _alertLog(context, "This experiment has finished.");
+                        }
+                      },
+                    )),
+
+                IconButton(
+                    icon: Icon(experiment.paused ? Icons.play_arrow : Icons.pause),
+                    onPressed: () => experiment.paused = !experiment.paused
+                ),
+                IconButton(
+                    icon: Icon(Icons.edit),
+                    onPressed: () => editExperiment(context, experiment)
+                ),
+                IconButton(
+                    icon: Icon(Icons.email),
+                    onPressed: () => emailExperiment(experiment)
+                ),
+                IconButton(
+                    icon: Icon(Icons.close),
+                    onPressed: () => stop(experiment)
+                ),
+              ],
+            ),
+          );
+        }
+    );
+  }
+
+  void editExperiment(BuildContext context, Experiment experiment) {
+    Navigator.pushNamed(
+        context, ScheduleOverviewPage.routeName, arguments: ScheduleOverviewArguments(experiment));
+  }
+
+  Future<void> _alertLog(context, msg) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -214,19 +208,12 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
           actions: <Widget>[
             FlatButton(
               child: Text('Dismiss'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop()
             ),
           ],
         );
       },
     );
-  }
-
-  void editExperiment(Experiment experiment) {
-    Navigator.pushNamed(context, ScheduleOverviewPage.routeName,
-        arguments: ScheduleOverviewArguments(experiment));
   }
 
   void emailExperiment(Experiment experiment) {
