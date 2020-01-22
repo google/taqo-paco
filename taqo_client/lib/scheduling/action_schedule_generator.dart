@@ -10,7 +10,7 @@ import 'package:taqo_client/service/experiment_service.dart';
 import 'package:taqo_client/util/date_time_util.dart';
 
 Future<ActionSpecification> _getNextAlarmTimeForExperiment(Experiment experiment, DateTime now) async {
-  if (experiment.isOver()) {
+  if (experiment.isOver() || experiment.paused) {
     return null;
   }
 
