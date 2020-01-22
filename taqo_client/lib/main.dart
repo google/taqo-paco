@@ -18,6 +18,10 @@ import 'package:taqo_client/pages/invitation_entry_page.dart';
 import 'package:taqo_client/pages/login_page.dart';
 import 'package:taqo_client/service/notification_service.dart';
 
+import 'package:taqo_client/net/google_auth.dart';
+
+var gAuth = GoogleAuth();
+
 void main() {
   // Desktop platforms are not recognized as valid targets by
   // Flutter; force a specific target to prevent exceptions.
