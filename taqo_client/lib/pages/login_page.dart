@@ -32,7 +32,7 @@ class _LoginPageState extends State<LoginPage> {
 
   successCallbackGenerator(context) {
     print("entering");
-    return () => Navigator.popAndPushNamed(context, FindExperimentsPage.routeName);
+    return () => Navigator.pushReplacementNamed(context, FindExperimentsPage.routeName);
   }
 
   @override
