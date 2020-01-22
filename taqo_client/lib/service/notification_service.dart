@@ -10,7 +10,6 @@ import '../model/action_specification.dart';
 import '../model/experiment.dart';
 import '../model/notification_holder.dart';
 import '../storage/local_database.dart';
-import '../storage/pending_alarm_storage.dart';
 import '../pages/survey/survey_page.dart';
 import 'alarm_service.dart' as alarm_manager;
 import 'experiment_service.dart';
@@ -110,7 +109,7 @@ class NotificationManager {
     }
 
     // Cancel timeout
-    (await PendingAlarms.getInstance()).getAll().entries.forEach((alarm) async {
+    (await LocalDatabase().getAllAlarms()).entries.forEach((alarm) async {
       if (notificationHolder.matches(alarm.value)) {
         alarm_manager.cancel(alarm.key);
       }

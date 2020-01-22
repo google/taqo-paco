@@ -1,4 +1,8 @@
+import 'dart:convert';
+
+import 'package:flutter/cupertino.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:taqo_client/model/action_specification.dart';
 import 'package:taqo_client/model/event.dart';
 import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/model/notification_holder.dart';
@@ -67,5 +71,25 @@ class LocalDatabase extends LocalFileStorage {
   Future<void> removeAllNotifications() async {
     final db = await _db;
     return _removeAllNotifications(db);
+  }
+
+  Future<int> insertAlarm(ActionSpecification actionSpecification) async {
+    final db = await _db;
+    return _insertAlarm(db, actionSpecification);
+  }
+
+  Future<ActionSpecification> getAlarm(int id) async {
+    final db = await _db;
+    return _getAlarm(db, id);
+  }
+
+  Future<Map<int, ActionSpecification>> getAllAlarms() async {
+    final db = await _db;
+    return _getAllAlarms(db);
+  }
+
+  Future<void> removeAlarm(int id) async {
+    final db = await _db;
+    return _removeAlarm(db, id);
   }
 }

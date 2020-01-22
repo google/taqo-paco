@@ -1,58 +1,47 @@
 import 'dart:isolate';
 
 import 'package:android_alarm_manager/android_alarm_manager.dart';
-import 'package:taqo_client/model/action_specification.dart';
-import 'package:taqo_client/scheduling/action_schedule_generator.dart';
-import 'package:taqo_client/service/notification_service.dart';
-import 'package:taqo_client/storage/local_database.dart';
-import 'package:taqo_client/storage/pending_alarm_storage.dart';
 
-/// Gets the initial alarm ID. Afterwards, the ID is just incremented.
-/// Using this method should allow for unique IDs that never overlap (ever)
-/// Note: Dart uses 64-bit ints but Android uses 32-bits
-Future<int> _getNextAlarmId() async {
-  var max = -1;
-  (await PendingAlarms.getInstance()).getAll().keys.forEach((k) {
-    if (k != null && k > max) {
-      max = k;
-    }
-  });
-  return max + 1;
-}
+import '../model/action_specification.dart';
+import '../scheduling/action_schedule_generator.dart';
+import '../storage/local_database.dart';
+import 'notification_service.dart';
 
 /// Schedule an alarm for [actionSpec] at [when] to run [callback]
-void _schedule(int alarmId, ActionSpecification actionSpec, DateTime when, Function(int) callback) {
-  AndroidAlarmManager.initialize().then((success) async {
+Future<int> _schedule(ActionSpecification actionSpec, DateTime when, Function(int) callback) {
+  return AndroidAlarmManager.initialize().then((success) async {
     if (success) {
+      final alarmId = await LocalDatabase().insertAlarm(actionSpec);
       AndroidAlarmManager.oneShotAt(when, alarmId, callback,
           allowWhileIdle: true, exact: true, rescheduleOnReboot: true, wakeup: true);
-      (await PendingAlarms.getInstance())[alarmId] = actionSpec;
+      return alarmId;
     }
+    return -1;
   });
 }
 
-Future<bool> _scheduleNotification(int alarmId, ActionSpecification actionSpec) async {
+Future<bool> _scheduleNotification(ActionSpecification actionSpec) async {
   // Don't show a notification that's already pending
-  final pending = (await PendingAlarms.getInstance()).getAll();
-  for (var as in pending.values) {
+  final alarms = await LocalDatabase().getAllAlarms();
+  for (var as in alarms.values) {
     if (as == actionSpec) {
       print('Notification for $actionSpec already scheduled');
       return false;
     }
   }
 
-  _schedule(alarmId, actionSpec, actionSpec.time, _notifyCallback);
+  final alarmId = await _schedule(actionSpec, actionSpec.time, _notifyCallback);
   print('_scheduleNotification: alarmId: $alarmId when: ${actionSpec.time}'
       ' isolate: ${Isolate.current.hashCode}');
   return true;
 }
 
-void _scheduleTimeout(int alarmId, ActionSpecification actionSpec) {
+void _scheduleTimeout(ActionSpecification actionSpec) async {
   var timeout = 59;
   if (actionSpec.action != null) {
     timeout = actionSpec.action.timeout ?? timeout;
   }
-  _schedule(alarmId, actionSpec, actionSpec.time.add(Duration(minutes: timeout)), _expireCallback);
+  final alarmId = await _schedule(actionSpec, actionSpec.time.add(Duration(minutes: timeout)), _expireCallback);
   print('_scheduleTimeout: alarmId: $alarmId'
       ' when: ${actionSpec.time.add(Duration(minutes: timeout))}'
       ' isolate: ${Isolate.current.hashCode}');
@@ -61,7 +50,7 @@ void _scheduleTimeout(int alarmId, ActionSpecification actionSpec) {
 void _notifyCallback(int alarmId) async {
   // This is running in a different (background) Isolate
   print('notify: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
-  final actionSpec = (await PendingAlarms.getInstance())[alarmId];
+  final actionSpec = await LocalDatabase().getAlarm(alarmId);
   if (actionSpec != null) {
     NotificationManager().showNotification(actionSpec);
   }
@@ -75,7 +64,7 @@ void _expireCallback(int alarmId) async {
   // This is running in a different (background) Isolate
   print('expire: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
   // Cancel notification
-  final toCancel = (await PendingAlarms.getInstance())[alarmId];
+  final toCancel = await LocalDatabase().getAlarm(alarmId);
   // TODO Move the matches() logic to SQL
   final notifications = await LocalDatabase().getAllNotifications();
   if (notifications != null) {
@@ -93,12 +82,11 @@ void _expireCallback(int alarmId) async {
 void _scheduleNextNotification() async {
   getNextAlarmTime().then((ActionSpecification actionSpec) async {
     if (actionSpec != null) {
-      var alarmId = await _getNextAlarmId();
       // Schedule a notification (android_alarm_manager)
-      _scheduleNotification(alarmId, actionSpec).then((scheduled) {
+      _scheduleNotification(actionSpec).then((scheduled) {
         if (scheduled) {
           // Schedule a timeout (android_alarm_manager)
-          _scheduleTimeout(++alarmId, actionSpec);
+          _scheduleTimeout(actionSpec);
         }
       });
     }
@@ -116,9 +104,9 @@ Future<void> cancel(int alarmId) async {
       AndroidAlarmManager.cancel(alarmId);
     }
   });
-  (await PendingAlarms.getInstance()).remove(alarmId);
+  LocalDatabase().removeAlarm(alarmId);
 }
 
 Future<void> cancelAll() async {
-  (await PendingAlarms.getInstance()).getAll().keys.forEach((alarmId) async => await cancel(alarmId));
+  (await LocalDatabase().getAllAlarms()).keys.forEach((alarmId) async => await cancel(alarmId));
 }

@@ -45,6 +45,11 @@ snooze_time INTEGER,
 snooze_count INTEGER
   );
   ''');
+  await db.execute('''CREATE TABLE alarms (
+_id INTEGER PRIMARY KEY AUTOINCREMENT,
+json TEXT
+  );
+  ''');
 }
 
 Future<void> _insertEvent(Database db, Event event) async {
@@ -172,4 +177,47 @@ Future<List<NotificationHolder>> _getAllNotificationsForExperiment(
     if (res == null || res.isEmpty) return <NotificationHolder>[];
     return _buildNotificationHolder(res);
   }).catchError((e, st) => <NotificationHolder>[]);
+}
+
+Future<int> _insertAlarm(
+    Database db, ActionSpecification actionSpecification) async {
+  try {
+    return db.transaction((txn) {
+      return txn.insert(
+        'alarms',
+        {
+          'json': jsonEncode(actionSpecification),
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    });
+  } catch (_) {
+    rethrow;
+  }
+}
+
+Future<ActionSpecification> _getAlarm(Database db, int id) {
+  return db.transaction((txn) async {
+    List<Map<String, dynamic>> res =
+        await txn.query('alarms', where: '_id = $id');
+    if (res == null || res.isEmpty) return null;
+    return ActionSpecification.fromJson(jsonDecode(res.first['json']));
+  }).catchError((e, st) => null);
+}
+
+Future<int> _removeAlarm(Database db, int id) async {
+  return db.transaction((txn) {
+    return txn.delete('alarms', where: '_id = $id');
+  }).catchError((e, st) => null);
+}
+
+Future<Map<int, ActionSpecification>> _getAllAlarms(Database db) {
+  return db.transaction((txn) async {
+    List<Map<String, dynamic>> res = await txn.query('alarms');
+    if (res == null || res.isEmpty) return <int, ActionSpecification>{};
+    int key(as) => as['_id'];
+    ActionSpecification value(as) =>
+        ActionSpecification.fromJson(jsonDecode(as['json']));
+    return Map.fromEntries(res.map((as) => MapEntry(key(as), value(as))));
+  }).catchError((e, st) => <int, ActionSpecification>{});
 }

@@ -72,6 +72,13 @@ DatabaseDescription buildDatabaseDescription() {
         ['snooze_time', SqlLiteDatatype.INTEGER],
         ['snooze_count', SqlLiteDatatype.INTEGER],
       ]);
+  dbDescription.addTableSpec(
+      name: 'alarms',
+      objectName: 'actionSpecification',
+      defaultFromObjectTranslator: (dbColSpec) => 'jsonEncode(${dbColSpec.dbTableInfo.objectName})',
+      specContent: [
+        ['json', SqlLiteDatatype.TEXT],
+      ]);
   return dbDescription;
 }
 
@@ -134,6 +141,7 @@ class LocalDatabaseBuilder implements Builder {
     var eventsTableInfo = dbDescription.getDbTableInfo('events');
     var outputsTableInfo = dbDescription.getDbTableInfo('outputs');
     var notificationsTableInfo = dbDescription.getDbTableInfo('notifications');
+    var alarmsTableInfo = dbDescription.getDbTableInfo('alarms');
     var formatter = DartFormatter();
     final content = formatter.format('''
 // GENERATED CODE - DO NOT MODIFY BY HAND
@@ -236,6 +244,44 @@ Future<List<NotificationHolder>> _getAllNotificationsForExperiment(Database db, 
     if (res == null || res.isEmpty) return <NotificationHolder>[];
     return _buildNotificationHolder(res);
   }).catchError((e, st) => <NotificationHolder>[]);
+}
+
+Future<int> _insertAlarm(Database db, ActionSpecification ${alarmsTableInfo.objectName}) async {
+  try {
+    return db.transaction((txn) {
+      return txn.insert(
+      'alarms',
+      ${buildDartFieldsMap(dbDescription, 'alarms')},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    });
+  } catch (_) {
+    rethrow;
+  }
+}
+
+Future<ActionSpecification> _getAlarm(Database db, int id) {
+  return db.transaction((txn) async {
+    List<Map<String, dynamic>> res = await txn.query('alarms', where: '_id = \$id');
+    if (res == null || res.isEmpty) return null;
+    return ActionSpecification.fromJson(jsonDecode(res.first['json']));
+  }).catchError((e, st) => null);
+}
+
+Future<int> _removeAlarm(Database db, int id) async {
+  return db.transaction((txn) {
+    return txn.delete('alarms', where: '_id = \$id');
+  }).catchError((e, st) => null);
+}
+
+Future<Map<int, ActionSpecification>> _getAllAlarms(Database db) {
+  return db.transaction((txn) async {
+    List<Map<String, dynamic>> res = await txn.query('alarms');
+    if (res == null || res.isEmpty) return <int, ActionSpecification>{};
+    int key(as) => as['_id'];
+    ActionSpecification value(as) => ActionSpecification.fromJson(jsonDecode(as['json']));
+    return Map.fromEntries(res.map((as) => MapEntry(key(as), value(as))));
+  }).catchError((e, st) => <int, ActionSpecification>{});
 }
 
     ''');
