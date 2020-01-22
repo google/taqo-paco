@@ -78,7 +78,13 @@ class Experiment extends ExperimentCore {
     return groups.every((group) => group.isOver(now));
   }
 
-  bool isStarted(DateTime now) => areAllGroupsFixed() && now.isBefore(getFirstGroupStartTime());
+  bool isStarted(DateTime now) {
+    if (!areAllGroupsFixed()) {
+      return true;
+    }
+    final firstGroupStartTime = getFirstGroupStartTime();
+    return now.isAtSameMomentAs(firstGroupStartTime) || now.isAfter(firstGroupStartTime);
+  }
 
   DateTime getEndTime() {
     DateTime lastSignalTime;
@@ -143,6 +149,5 @@ class Experiment extends ExperimentCore {
 
   bool areAllGroupsFixed() =>
       groups.where((g) => g.groupType != GroupTypeEnum.SYSTEM)
-          .map((g) => g.fixedDuration)
-          .every((b) => b);
+          .every((g) => g.fixedDuration);
 }

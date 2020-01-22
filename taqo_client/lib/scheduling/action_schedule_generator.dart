@@ -46,7 +46,7 @@ Future<ActionSpecification> _getNextAlarmTimeForExperiment(Experiment experiment
           for (var action in trigger.actions) {
             if (action != null && action is PacoNotificationAction) {
               notificationAction = action;
-              // Should we break here or something?
+              break;
             }
           }
 
