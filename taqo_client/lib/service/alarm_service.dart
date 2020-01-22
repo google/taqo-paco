@@ -4,8 +4,8 @@ import 'package:android_alarm_manager/android_alarm_manager.dart';
 import 'package:taqo_client/model/action_specification.dart';
 import 'package:taqo_client/scheduling/action_schedule_generator.dart';
 import 'package:taqo_client/service/notification_service.dart';
+import 'package:taqo_client/storage/local_database.dart';
 import 'package:taqo_client/storage/pending_alarm_storage.dart';
-import 'package:taqo_client/storage/pending_notification_storage.dart';
 
 /// Gets the initial alarm ID. Afterwards, the ID is just incremented.
 /// Using this method should allow for unique IDs that never overlap (ever)
@@ -68,7 +68,7 @@ void _notifyCallback(int alarmId) async {
   // Cleanup alarm
   cancel(alarmId);
   // schedule the next one
-  scheduleNextNotification();
+  _scheduleNextNotification();
 }
 
 void _expireCallback(int alarmId) async {
@@ -76,19 +76,21 @@ void _expireCallback(int alarmId) async {
   print('expire: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
   // Cancel notification
   final toCancel = (await PendingAlarms.getInstance())[alarmId];
-  final pending = (await PendingNotifications.getInstance()).getAll();
-  for (var id in pending.keys) {
-    final holder = pending[id];
-    if (holder.matches(toCancel)) {
-      NotificationManager().cancelNotification(id);
-      //break;
+  // TODO Move the matches() logic to SQL
+  final notifications = await LocalDatabase().getAllNotifications();
+  if (notifications != null) {
+    final match = notifications.firstWhere((notificationHolder) =>
+        notificationHolder.matches(toCancel), orElse: () => null);
+    if (match != null) {
+      NotificationManager().cancelNotification(match.id);
     }
   }
+
   // Cleanup alarm
   cancel(alarmId);
 }
 
-void scheduleNextNotification() async {
+void _scheduleNextNotification() async {
   getNextAlarmTime().then((ActionSpecification actionSpec) async {
     if (actionSpec != null) {
       var alarmId = await _getNextAlarmId();
@@ -103,7 +105,12 @@ void scheduleNextNotification() async {
   });
 }
 
-void cancel(int alarmId) async {
+void scheduleNextNotification() async {
+  // TODO cancelAll except timeouts for already showing notifications
+  _scheduleNextNotification();
+}
+
+Future<void> cancel(int alarmId) async {
   AndroidAlarmManager.initialize().then((bool success) {
     if (success) {
       AndroidAlarmManager.cancel(alarmId);
@@ -112,6 +119,6 @@ void cancel(int alarmId) async {
   (await PendingAlarms.getInstance()).remove(alarmId);
 }
 
-void cancelAll() async {
-  (await PendingAlarms.getInstance()).getAll().keys.forEach((alarmId) => cancel(alarmId));
+Future<void> cancelAll() async {
+  (await PendingAlarms.getInstance()).getAll().keys.forEach((alarmId) async => await cancel(alarmId));
 }

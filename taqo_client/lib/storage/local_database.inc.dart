@@ -29,6 +29,22 @@ text TEXT,
 answer TEXT
   );
   ''');
+  await db.execute('''CREATE TABLE notifications (
+_id INTEGER PRIMARY KEY AUTOINCREMENT,
+alarm_time INTEGER, 
+experiment_id INTEGER, 
+notice_count INTEGER, 
+timeout_millis INTEGER, 
+notification_source TEXT, 
+message TEXT, 
+experiment_group_name TEXT, 
+action_trigger_id INTEGER, 
+action_id INTEGER, 
+action_trigger_spec_id INTEGER, 
+snooze_time INTEGER, 
+snooze_count INTEGER
+  );
+  ''');
 }
 
 Future<void> _insertEvent(Database db, Event event) async {
@@ -69,4 +85,91 @@ Future<void> _insertEvent(Database db, Event event) async {
     event.id = null;
     rethrow;
   }
+}
+
+Future<int> _insertNotification(
+    Database db, NotificationHolder notificationHolder) async {
+  try {
+    return db.transaction((txn) {
+      return txn.insert(
+        'notifications',
+        {
+          'alarm_time': notificationHolder.alarmTime,
+          'experiment_id': notificationHolder.experimentId,
+          'notice_count': notificationHolder.noticeCount,
+          'timeout_millis': notificationHolder.timeoutMillis,
+          'notification_source': notificationHolder.notificationSource,
+          'message': notificationHolder.message,
+          'experiment_group_name': notificationHolder.experimentGroupName,
+          'action_trigger_id': notificationHolder.actionTriggerId,
+          'action_id': notificationHolder.actionId,
+          'action_trigger_spec_id': notificationHolder.actionTriggerSpecId,
+          'snooze_time': notificationHolder.snoozeTime,
+          'snooze_count': notificationHolder.snoozeCount,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    });
+  } catch (_) {
+    rethrow;
+  }
+}
+
+Future<int> _removeNotification(Database db, int id) async {
+  return db.transaction((txn) {
+    return txn.delete('notifications', where: '_id = $id');
+  }).catchError((e, st) => null);
+}
+
+Future<int> _removeAllNotifications(Database db) async {
+  return db.transaction((txn) {
+    return txn.delete('notifications');
+  }).catchError((e, st) => null);
+}
+
+List<NotificationHolder> _buildNotificationHolder(
+        List<Map<String, dynamic>> res) =>
+    res
+        .map((json) => NotificationHolder.fromJson({
+              'id': json['_id'],
+              'alarmTime': json['alarm_time'],
+              'experimentId': json['experiment_id'],
+              'noticeCount': json['notice_count'],
+              'timeoutMillis': json['timeout_millis'],
+              'notificationSource': json['notification_source'],
+              'message': json['message'],
+              'experimentGroupName': json['experiment_group_name'],
+              'actionTriggerId': json['action_trigger_id'],
+              'actionId': json['action_id'],
+              'actionTriggerSpecId': json['action_trigger_spec_id'],
+              'snoozeTime': json['snooze_time'],
+              'snoozeCount': json['snooze_count'],
+            }))
+        .toList(growable: false);
+
+Future<NotificationHolder> _getNotification(Database db, int id) {
+  return db.transaction((txn) async {
+    List<Map<String, dynamic>> res =
+        await txn.query('notifications', where: '_id = $id');
+    if (res == null || res.isEmpty) return null;
+    return _buildNotificationHolder(res).first;
+  }).catchError((e, st) => null);
+}
+
+Future<List<NotificationHolder>> _getAllNotifications(Database db) {
+  return db.transaction((txn) async {
+    List<Map<String, dynamic>> res = await txn.query('notifications');
+    if (res == null || res.isEmpty) return <NotificationHolder>[];
+    return _buildNotificationHolder(res);
+  }).catchError((e, st) => <NotificationHolder>[]);
+}
+
+Future<List<NotificationHolder>> _getAllNotificationsForExperiment(
+    Database db, int expId) {
+  return db.transaction((txn) async {
+    List<Map<String, dynamic>> res =
+        await txn.query('notifications', where: 'experiment_id = $expId');
+    if (res == null || res.isEmpty) return <NotificationHolder>[];
+    return _buildNotificationHolder(res);
+  }).catchError((e, st) => <NotificationHolder>[]);
 }

@@ -77,7 +77,6 @@ class ExperimentService {
     saveJoinedExperiments();
     final event = createJoinEvent(experiment, joining: true);
 
-    alarm_service.scheduleNextNotification();
     LocalDatabase().insertEvent(event);
   }
 
@@ -100,7 +99,6 @@ class ExperimentService {
     };
 
     NotificationManager().cancelForExperiment(experiment);
-    alarm_service.scheduleNextNotification();
     LocalDatabase().insertEvent(event);
   }
 
@@ -108,20 +106,20 @@ class ExperimentService {
     JoinedExperimentsStorage()
         .readJoinedExperiments()
         .then((List<Experiment> experiments) {
-      _joined = {};
       mapifyExperimentsById(experiments);
       // notify listeners that joined experiments are loaded?
       _joinedExperimentsLoadedStreamController.add(true);
+      alarm_service.scheduleNextNotification();
     });
   }
 
   void mapifyExperimentsById(List<Experiment> experiments) {
-    experiments.forEach((experiment) => _joined[experiment.id] = experiment);
-    alarm_service.scheduleNextNotification();
+    _joined = Map.fromIterable(experiments, key: (e) => e.id);
   }
 
   void saveJoinedExperiments() {
     JoinedExperimentsStorage().saveJoinedExperiments(_joined.values.toList());
+    alarm_service.scheduleNextNotification();
   }
 
   Future<InvitationResponse> checkCode(String code) async {
@@ -175,7 +173,6 @@ class ExperimentService {
     for (var expJson in experimentList) {
       experiments.add(Experiment.fromJson(expJson));
     }
-    _joined = {};
     mapifyExperimentsById(experiments);
     saveJoinedExperiments();
     callback(experiments);

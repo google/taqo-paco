@@ -1,5 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:taqo_client/model/event.dart';
+import 'package:taqo_client/model/experiment.dart';
+import 'package:taqo_client/model/notification_holder.dart';
 import 'package:taqo_client/storage/local_storage.dart';
 
 part 'local_database.inc.dart';
@@ -35,5 +37,35 @@ class LocalDatabase extends LocalFileStorage {
   Future<void> insertEvent(Event event) async {
     final db = await _db;
     await _insertEvent(db, event);
+  }
+
+  Future<int> insertNotification(NotificationHolder notificationHolder) async {
+    final db = await _db;
+    return _insertNotification(db, notificationHolder);
+  }
+
+  Future<NotificationHolder> getNotification(int id) async {
+    final db = await _db;
+    return _getNotification(db, id);
+  }
+
+  Future<List<NotificationHolder>> getAllNotifications() async {
+    final db = await _db;
+    return _getAllNotifications(db);
+  }
+
+  Future<List<NotificationHolder>> getAllNotificationsForExperiment(Experiment experiment) async {
+    final db = await _db;
+    return _getAllNotificationsForExperiment(db, experiment.id);
+  }
+
+  Future<void> removeNotification(int id) async {
+    final db = await _db;
+    return _removeNotification(db, id);
+  }
+
+  Future<void> removeAllNotifications() async {
+    final db = await _db;
+    return _removeAllNotifications(db);
   }
 }

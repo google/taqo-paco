@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:isolate';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -10,8 +9,10 @@ import '../main.dart';
 import '../model/action_specification.dart';
 import '../model/experiment.dart';
 import '../model/notification_holder.dart';
+import '../storage/local_database.dart';
+import '../storage/pending_alarm_storage.dart';
 import '../pages/survey/survey_page.dart';
-import '../storage/pending_notification_storage.dart';
+import 'alarm_service.dart' as alarm_manager;
 import 'experiment_service.dart';
 
 class ReceivedNotification {
@@ -44,19 +45,6 @@ class NotificationManager {
   }
 
   factory NotificationManager() => _instance;
-
-  /// Gets the initial notification ID. Afterwards, the ID is just incremented.
-  /// Using this method should allow for unique IDs that never overlap (ever)
-  /// Note: Dart uses 64-bit ints but Android uses 32-bits
-  Future<int> _getNextId() async {
-    var max = -1;
-    (await PendingNotifications.getInstance()).getAll().keys.forEach((k) {
-      if (k != null && k > max) {
-        max = k;
-      }
-    });
-    return max + 1;
-  }
 
   void _init() async {
     _initialized = Completer();
@@ -113,13 +101,20 @@ class NotificationManager {
 
   Future<void> openSurvey(String payload) async {
     final id = int.tryParse(payload);
-    final notificationHolder = (await PendingNotifications.getInstance())[id];
-    (await PendingNotifications.getInstance()).remove(id);
+    final notificationHolder = await LocalDatabase().getNotification(id);
+    LocalDatabase().removeNotification(id);
 
     if (notificationHolder == null) {
       print('No holder for payload: $payload');
       return;
     }
+
+    // Cancel timeout
+    (await PendingAlarms.getInstance()).getAll().entries.forEach((alarm) async {
+      if (notificationHolder.matches(alarm.value)) {
+        alarm_manager.cancel(alarm.key);
+      }
+    });
 
     try {
       final e = ExperimentService()
@@ -137,13 +132,12 @@ class NotificationManager {
   Future<int> showNotification(ActionSpecification actionSpec) async {
     await _initialized.future;
 
-    final int id = await _getNextId();
     var timeout = 59;
     if (actionSpec.action != null) {
       timeout = actionSpec.action.timeout ?? timeout;
     }
-    final notification = NotificationHolder(
-      id,
+    final notificationHolder = NotificationHolder(
+      -1,   // Not the real ID
       actionSpec.time.millisecondsSinceEpoch,
       actionSpec.experiment.id,
       0,
@@ -156,8 +150,7 @@ class NotificationManager {
       actionSpec.actionTriggerSpecId,
     );
 
-    print('Showing notification id: $id @ ${actionSpec.time}');
-    (await PendingNotifications.getInstance())[id] = notification;
+    final id = await LocalDatabase().insertNotification(notificationHolder);
 
     final androidDetails = AndroidNotificationDetails(
       ANDROID_NOTIFICATION_CHANNEL_ID,
@@ -169,7 +162,7 @@ class NotificationManager {
     final details = NotificationDetails(androidDetails, iOSDetails);
 
     await _plugin.show(
-        id, actionSpec.experiment.title, notification.message, details, payload: "$id");
+        id, actionSpec.experiment.title, notificationHolder.message, details, payload: "$id");
 
     return id;
   }
@@ -177,13 +170,12 @@ class NotificationManager {
   Future<int> scheduleNotification(ActionSpecification actionSpec) async {
     await _initialized.future;
 
-    final int id = await _getNextId();
     var timeout = 59;
     if (actionSpec.action != null) {
       timeout = actionSpec.action.timeout ?? timeout;
     }
-    final notification = NotificationHolder(
-      id,
+    final notificationHolder = NotificationHolder(
+      -1,   // Not the real ID
       actionSpec.time.millisecondsSinceEpoch,
       actionSpec.experiment.id,
       0,
@@ -196,8 +188,8 @@ class NotificationManager {
       actionSpec.actionTriggerSpecId,
     );
 
-    print('Scheduling notification id: $id @ ${actionSpec.time}');
-    (await PendingNotifications.getInstance())[id] = notification;
+    final id = await LocalDatabase().insertNotification(notificationHolder);
+    print('Showing notification id: $id @ ${actionSpec.time}');
 
     final androidDetails = AndroidNotificationDetails(
       ANDROID_NOTIFICATION_CHANNEL_ID,
@@ -209,7 +201,7 @@ class NotificationManager {
     final details = NotificationDetails(androidDetails, iOSDetails);
 
     await _plugin.schedule(
-        id, actionSpec.experiment.title, notification.message, actionSpec.time, details,
+        id, actionSpec.experiment.title, notificationHolder.message, actionSpec.time, details,
         payload: "$id", androidAllowWhileIdle: true);
 
     return id;
@@ -223,15 +215,14 @@ class NotificationManager {
     } on MissingPluginException catch (e) {
       print("Error canceling notification id $id: $e");
     }
-    (await PendingNotifications.getInstance()).remove(id);
+    LocalDatabase().removeNotification(id);
   }
 
   void cancelForExperiment(Experiment experiment) async {
-    (await PendingNotifications.getInstance()).getAll().forEach((k, v) async {
-      if (v.experimentId == experiment.id) {
-        cancelNotification(k);
-        (await PendingNotifications.getInstance()).remove(k);
-      }
+    final pending = await LocalDatabase().getAllNotificationsForExperiment(experiment);
+    pending.forEach((notificationHolder) {
+      cancelNotification(notificationHolder.id);
+      LocalDatabase().removeNotification(notificationHolder.id);
     });
   }
 
@@ -241,5 +232,6 @@ class NotificationManager {
     } on MissingPluginException catch (e) {
       print("Error canceling notifications: $e");
     }
+    LocalDatabase().removeAllNotifications();
   }
 }
