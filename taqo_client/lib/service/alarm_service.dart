@@ -5,7 +5,7 @@ import 'package:android_alarm_manager/android_alarm_manager.dart';
 import '../model/action_specification.dart';
 import '../scheduling/action_schedule_generator.dart';
 import '../storage/local_database.dart';
-import 'notification_service.dart';
+import 'notification_service.dart' as notification_manager;
 
 /// Schedule an alarm for [actionSpec] at [when] to run [callback]
 Future<int> _schedule(ActionSpecification actionSpec, DateTime when, Function(int) callback) {
@@ -52,7 +52,7 @@ void _notifyCallback(int alarmId) async {
   print('notify: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
   final actionSpec = await LocalDatabase().getAlarm(alarmId);
   if (actionSpec != null) {
-    NotificationManager().showNotification(actionSpec);
+    notification_manager.showNotification(actionSpec);
   }
   // Cleanup alarm
   cancel(alarmId);
@@ -71,7 +71,7 @@ void _expireCallback(int alarmId) async {
     final match = notifications.firstWhere((notificationHolder) =>
         notificationHolder.matches(toCancel), orElse: () => null);
     if (match != null) {
-      NotificationManager().cancelNotification(match.id);
+      notification_manager.cancelNotification(match.id);
     }
   }
 

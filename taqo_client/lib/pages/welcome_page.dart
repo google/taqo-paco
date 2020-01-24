@@ -3,7 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:taqo_client/net/google_auth.dart';
 import 'package:taqo_client/pages/running_experiments_page.dart';
 import 'package:taqo_client/service/experiment_service.dart';
-import 'package:taqo_client/service/notification_service.dart';
+import 'package:taqo_client/service/notification_service.dart' as notification_manager;
 
 import 'find_experiments_page.dart';
 import 'invitation_entry_page.dart';
@@ -50,7 +50,7 @@ class _WelcomePageState extends State<WelcomePage> {
       final fromNotify = widget._launchDetails.didNotificationLaunchApp ?? false;
       print('launching from notification: $fromNotify');
       if (fromNotify) {
-        NotificationManager().openSurvey(widget._launchDetails.payload);
+        notification_manager.openSurvey(widget._launchDetails.payload);
       }
     });
   }

@@ -16,7 +16,7 @@ import 'package:taqo_client/pages/survey_picker_page.dart';
 import 'package:taqo_client/pages/welcome_page.dart';
 import 'package:taqo_client/pages/invitation_entry_page.dart';
 import 'package:taqo_client/pages/login_page.dart';
-import 'package:taqo_client/service/notification_service.dart';
+import 'package:taqo_client/service/notification_service.dart' as notification_manager;
 
 import 'package:taqo_client/net/google_auth.dart';
 
@@ -28,8 +28,12 @@ void main() {
   // TODO this should change as we adopt the new Flutter Desktop Embedder
   debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
 
-  NotificationManager().getLaunchDetails().then((launchDetails) {
-    runApp(MyApp(launchDetails));
+  // notification_manager.init() should be called once and only once
+  // Calling it here ensures that it completes before the app launches
+  notification_manager.init().then((_) {
+    notification_manager.getLaunchDetails().then((launchDetails) {
+      runApp(MyApp(launchDetails));
+    });
   });
 }
 
