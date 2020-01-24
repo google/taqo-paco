@@ -16,7 +16,7 @@ class MainActivity: FlutterActivity() {
     private val subjectArg = "subject"
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
-        GeneratedPluginRegistrant.registerWith(flutterEngine)
+        //GeneratedPluginRegistrant.registerWith(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channel)
                 .setMethodCallHandler { call, result ->
                     if (sendEmailMethod == call.method) {
