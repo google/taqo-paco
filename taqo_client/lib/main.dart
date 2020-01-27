@@ -74,8 +74,11 @@ class MyApp extends StatelessWidget {
         if (settings.name == SurveyPage.routeName) {
           final List args = settings.arguments;
           return MaterialPageRoute(
-              builder: (context) => SurveyPage(
-                  experiment: args[0], experimentGroupName: args[1]));
+              builder: (context) =>
+                  SurveyPage(experiment: args[0],
+                      experimentGroupName: args[1],
+                      selfReportTime: args.length > 2 ? args[2] : null)
+          );
         }
         return null;
       },

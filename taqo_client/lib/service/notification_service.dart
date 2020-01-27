@@ -147,13 +147,6 @@ Future<void> openSurvey(String payload) async {
     return;
   }
 
-  // Cancel timeout
-  (await LocalDatabase().getAllAlarms()).entries.forEach((alarm) async {
-    if (notificationHolder.matchesAction(alarm.value)) {
-      alarm_manager.cancel(alarm.key);
-    }
-  });
-
   try {
     final e = ExperimentService()
         .getJoinedExperiments()

@@ -125,6 +125,23 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
 class ExperimentListItem extends StatelessWidget {
   final stop;
   ExperimentListItem(this.stop);
+
+  void _onTapExperiment(BuildContext context, Experiment experiment) {
+    if (experiment.getActiveSurveys().length == 1) {
+      Navigator.pushNamed(context, SurveyPage.routeName,
+          arguments: [
+            experiment, experiment.getActiveSurveys().elementAt(0).name, DateTime.now(),
+          ]
+      );
+    } else if (experiment.getActiveSurveys().length > 1) {
+      Navigator.pushNamed(context, SurveyPickerPage.routeName,
+          arguments: [experiment, DateTime.now(), ]);
+    } else {
+      // TODO no action for finished surveys
+      _alertLog(context, "This experiment has finished.");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<Experiment>(
@@ -146,22 +163,9 @@ class ExperimentListItem extends StatelessWidget {
                               : experiment.creator),
                         ],
                       ),
-                      onTap: () {
-                        if (experiment.getActiveSurveys().length == 1) {
-                          Navigator.pushNamed(context, SurveyPage.routeName,
-                              arguments: [
-                                experiment, experiment.getActiveSurveys().elementAt(0).name
-                              ]
-                          );
-                        } else if (experiment.getActiveSurveys().length > 1) {
-                          Navigator.pushNamed(context, SurveyPickerPage.routeName,
-                              arguments: experiment);
-                        } else {
-                          // TODO no action for finished surveys
-                          _alertLog(context, "This experiment has finished.");
-                        }
-                      },
-                    )),
+                      onTap: () => _onTapExperiment(context, experiment),
+                    )
+                ),
 
                 IconButton(
                     icon: Icon(experiment.paused ? Icons.play_arrow : Icons.pause),
