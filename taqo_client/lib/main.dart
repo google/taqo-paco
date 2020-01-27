@@ -76,8 +76,7 @@ class MyApp extends StatelessWidget {
           return MaterialPageRoute(
               builder: (context) =>
                   SurveyPage(experiment: args[0],
-                      experimentGroupName: args[1],
-                      selfReportTime: args.length > 2 ? args[2] : null)
+                      experimentGroupName: args[1])
           );
         }
         return null;

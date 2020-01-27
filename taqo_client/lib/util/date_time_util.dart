@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:taqo_client/model/schedule.dart';
+
+import '../model/schedule.dart';
+import '../util/zoned_date_time.dart';
 
 const DAYS_SHORT_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" ];
 const ORDINAL_NUMBERS = ["", "1st", "2nd", "3rd", "4th", "5th" ];
@@ -112,3 +114,18 @@ DateTime mixDateWithTime(DateTime date, DateTime time, {int year,
         (second ?? time?.second) ?? 0,
         (millisecond ?? time?.millisecond) ?? 0,
         (microsecond ?? time?.microsecond) ?? 0);
+
+/// Get a ZonedDateTime from [dt] using the current timezone
+/// TODO Remove this when ZonedDateTime is used properly
+ZonedDateTime getZonedDateTime(DateTime dt) {
+  final tzOffset = DateTime.now().timeZoneOffset;
+  final sign = tzOffset.isNegative ? '-' : '+';
+  final hours = tzOffset.inMinutes.abs() ~/ 60;
+  final minutes = tzOffset.inMinutes.abs() - 60 * hours;
+  final format = NumberFormat('00');
+  return ZonedDateTime.fromIso8601String(
+      '${dt.toIso8601String()}'
+      '${dt.microsecond == 0 ? "000" : ""}'
+      '$sign${format.format(hours)}${format.format(minutes)}'
+  );
+}

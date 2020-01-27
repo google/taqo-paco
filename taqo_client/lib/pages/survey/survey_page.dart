@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:taqo_client/model/event.dart';
 import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/model/experiment_group.dart';
@@ -11,6 +10,7 @@ import 'package:taqo_client/service/alarm_service.dart' as alarm_manager;
 import 'package:taqo_client/service/notification_service.dart';
 import 'package:taqo_client/storage/local_database.dart';
 import 'package:taqo_client/util/conditional_survey_parser.dart';
+import 'package:taqo_client/util/date_time_util.dart';
 import 'package:taqo_client/util/zoned_date_time.dart';
 
 import '../running_experiments_page.dart';
@@ -27,23 +27,12 @@ class SurveyPage extends StatefulWidget {
       {Key key,
       this.title,
       @required this.experiment,
-      @required this.experimentGroupName,
-      this.actionId,
-      this.actionTriggerId,
-      this.actionTriggerSpecId,
-      this.scheduleTime,
-      this.selfReportTime,})
+      @required this.experimentGroupName,})
       : super(key: key);
 
   final String title;
   final Experiment experiment;
   final String experimentGroupName;
-
-  final int actionId;
-  final int actionTriggerId;
-  final int actionTriggerSpecId;
-  final DateTime scheduleTime;
-  final DateTime selfReportTime;
 
   @override
   _SurveyPageState createState() =>
@@ -373,30 +362,20 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   Future<void> submitSurvey() async {
-    // TODO Need to investigate DateTime vs ZonedDateTime throughout the app
-    // Get the current timezone offset
-    final now = DateTime.now();
-    final offset = now.timeZoneOffset;
-    final sign = offset.isNegative ? '-' : '+';
-    final hours = offset.inMinutes.abs() ~/ 60;
-    final minutes = offset.inMinutes.abs() - 60 * hours;
-    final format = NumberFormat('00');
-
     final pendingAlarms = await LocalDatabase().getAllAlarms();
+
     for (var entry in pendingAlarms.entries) {
       final id = entry.key;
       final alarm = entry.value;
       if (alarm.experiment.id == _experiment.id &&
         alarm.experimentGroup.name == _experimentGroup.name &&
-        alarm.time.isBefore(now)) {
+        alarm.time.isBefore(DateTime.now())) {
         // This alarm is the timeout for the notification
         // The alarm for the notification was already cleared when it fired
         _event.actionId = alarm.action.id;
         _event.actionTriggerId = alarm.actionTrigger.id;
         _event.actionTriggerSpecId = alarm.actionTriggerSpecId;
-        _event.scheduleTime = ZonedDateTime.fromIso8601String(
-            '${alarm.time.toIso8601String()}${alarm.time.microsecond == 0 ? "000" : ""}'
-                '$sign${format.format(hours)}${format.format(minutes)}');
+        _event.scheduleTime = getZonedDateTime(alarm.time);
 
         // Cancel timeout alarm
         // We cancel here both for self-report as well as coming from a notification
