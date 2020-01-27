@@ -69,7 +69,7 @@ void _expireCallback(int alarmId) async {
   final notifications = await LocalDatabase().getAllNotifications();
   if (notifications != null) {
     final match = notifications.firstWhere((notificationHolder) =>
-        notificationHolder.matches(toCancel), orElse: () => null);
+        notificationHolder.matchesAction(toCancel), orElse: () => null);
     if (match != null) {
       notification_manager.cancelNotification(match.id);
     }

@@ -55,11 +55,15 @@ class NotificationHolder {
   bool isCustomNotification() =>
       notificationSource == null ? false : notificationSource == CUSTOM_GENERATED_NOTIFICATION;
 
-  bool matches(ActionSpecification actionSpecification) =>
+  bool matchesAction(ActionSpecification actionSpecification) =>
       experimentId == actionSpecification.experiment.id &&
       experimentGroupName == actionSpecification.experimentGroup.name &&
       actionTriggerId == actionSpecification.actionTrigger.id &&
       actionId == actionSpecification.action.id &&
       actionTriggerSpecId == actionSpecification.actionTriggerSpecId &&
       alarmTime == actionSpecification.time.millisecondsSinceEpoch;
+
+  bool sameGroupAs(NotificationHolder other) =>
+      experimentId == other.experimentId &&
+          experimentGroupName == other.experimentGroupName;
 }

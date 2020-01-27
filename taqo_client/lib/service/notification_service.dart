@@ -55,6 +55,14 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when}) async {
     actionSpec.actionTriggerSpecId,
   );
 
+  // Cancel existing notifications for the same survey
+  final pending = await LocalDatabase().getAllNotificationsForExperiment(actionSpec.experiment);
+  for (var n in pending) {
+    if (notificationHolder.sameGroupAs(n)) {
+      cancelNotification(n.id);
+    }
+  }
+
   final id = await LocalDatabase().insertNotification(notificationHolder);
   print('Showing notification id: $id @ ${actionSpec.time}');
 
@@ -141,7 +149,7 @@ Future<void> openSurvey(String payload) async {
 
   // Cancel timeout
   (await LocalDatabase().getAllAlarms()).entries.forEach((alarm) async {
-    if (notificationHolder.matches(alarm.value)) {
+    if (notificationHolder.matchesAction(alarm.value)) {
       alarm_manager.cancel(alarm.key);
     }
   });
