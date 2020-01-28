@@ -1,4 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:taqo_client/model/paco_action_all_others.dart';
+import 'package:taqo_client/model/paco_notification_action.dart';
 import 'package:taqo_client/model/validator.dart';
 
 part 'paco_action.g.dart';
@@ -24,7 +26,17 @@ class PacoAction {
 
   PacoAction();
 
-  factory PacoAction.fromJson(Map<String, dynamic> json) => _$PacoActionFromJson(json);
+  factory PacoAction.fromJson(Map<String, dynamic> json) {
+    switch (json['actionCode']) {
+    case NOTIFICATION_TO_PARTICIPATE_ACTION_CODE:
+      return PacoNotificationAction.fromJson(json);
+    case NOTIFICATION_ACTION_CODE:
+    case LOG_EVENT_ACTION_CODE:
+    case EXECUTE_SCRIPT_ACTION_CODE:
+      return PacoActionAllOthers.fromJson(json);
+    }
+    throw TypeError();
+  }
 
   Map<String, dynamic> toJson() => _$PacoActionToJson(this);
   

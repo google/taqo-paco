@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as path;
@@ -11,7 +12,12 @@ abstract class LocalFileStorage {
   // TODO for Fuchsia ...?
   Future<Directory> get _localStorageDir async {
     WidgetsFlutterBinding.ensureInitialized();
-    return await getApplicationDocumentsDirectory();
+    try {
+      return await getApplicationDocumentsDirectory();
+    } on MissingPluginException {
+      // Workaround to support file storage during tests
+      return Directory.systemTemp;
+    }
   }
 
   Future<String> get _localPath async => (await _localStorageDir).path;

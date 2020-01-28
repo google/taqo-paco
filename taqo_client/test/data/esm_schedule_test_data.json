@@ -1,0 +1,404 @@
+[
+  {
+    "admins": [
+      "maksymowych.test@gmail.com"
+    ],
+    "creator": "maksymowych.test@gmail.com",
+    "contactEmail": "maksymowych.test@gmail.com",
+    "extraDataCollectionDeclarations": [],
+    "groups": [
+      {
+        "actionTriggers": [
+          {
+            "type": "scheduleTrigger",
+            "actions": [
+              {
+                "type": "pacoNotificationAction",
+                "actionCode": 1,
+                "timeout": 15,
+                "color": 0,
+                "delay": 0,
+                "dismissible": true
+              }
+            ],
+            "schedules": [
+              {
+                "esmFrequency": 5,
+                "esmPeriodInDays": 0,
+                "esmEndHour": 61200000,
+                "esmStartHour": 32400000,
+                "esmWeekends": true,
+                "minimumBuffer": 59,
+                "repeatRate": 1,
+                "scheduleType": 4,
+                "timeout": 15,
+                "userEditable": true,
+                "weekDaysScheduled": 0,
+                "signalTimes": [
+                  {
+                    "fixedTimeMillisFromMidnight": 43200000,
+                    "type": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "name": "Experiment 1",
+        "inputs": [],
+        "feedbackType": 0,
+        "feedback": {
+          "type": 0,
+          "text": "Thanks for Participating!"
+        },
+        "rawDataAccess": true,
+        "fixedDuration": false,
+        "startDate": null,
+        "endDate": null
+      }
+    ],
+    "postInstallInstructions": "You have successfully joined the experiment!",
+    "published": false,
+    "publishedUsers": [],
+    "ringtoneUri": "/assets/ringtone/Paco Bark",
+    "title": "Experiment 1",
+    "description": "For testing scheduling/notifications",
+    "informedConsentForm": "Please agree",
+    "organization": "Mike"
+  },
+  {
+    "admins": [
+      "maksymowych.test@gmail.com"
+    ],
+    "creator": "maksymowych.test@gmail.com",
+    "contactEmail": "maksymowych.test@gmail.com",
+    "extraDataCollectionDeclarations": [],
+    "groups": [
+      {
+        "actionTriggers": [
+          {
+            "type": "scheduleTrigger",
+            "actions": [
+              {
+                "type": "pacoNotificationAction",
+                "actionCode": 1,
+                "timeout": 15,
+                "color": 0,
+                "delay": 0,
+                "dismissible": true
+              }
+            ],
+            "schedules": [
+              {
+                "esmFrequency": 11,
+                "esmPeriodInDays": 1,
+                "esmEndHour": 50400000,
+                "esmStartHour": 21600000,
+                "esmWeekends": true,
+                "minimumBuffer": 118,
+                "repeatRate": 1,
+                "scheduleType": 4,
+                "timeout": 15,
+                "userEditable": true,
+                "weekDaysScheduled": 0,
+                "signalTimes": [
+                  {
+                    "fixedTimeMillisFromMidnight": 43200000,
+                    "type": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "name": "Experiment 2",
+        "inputs": [],
+        "feedbackType": 0,
+        "feedback": {
+          "type": 0,
+          "text": "Thanks for Participating!"
+        },
+        "rawDataAccess": true,
+        "fixedDuration": false,
+        "startDate": null,
+        "endDate": null
+      }
+    ],
+    "postInstallInstructions": "You have successfully joined the experiment!",
+    "published": false,
+    "publishedUsers": [],
+    "ringtoneUri": "/assets/ringtone/Paco Bark",
+    "title": "Experiment 2",
+    "description": "For testing scheduling/notifications",
+    "informedConsentForm": "Please agree",
+    "organization": "Mike"
+  },
+  {
+    "admins": [
+      "maksymowych.test@gmail.com"
+    ],
+    "creator": "maksymowych.test@gmail.com",
+    "contactEmail": "maksymowych.test@gmail.com",
+    "extraDataCollectionDeclarations": [],
+    "groups": [
+      {
+        "actionTriggers": [
+          {
+            "type": "scheduleTrigger",
+            "actions": [
+              {
+                "type": "pacoNotificationAction",
+                "actionCode": 1,
+                "timeout": 15,
+                "color": 0,
+                "delay": 0,
+                "dismissible": true
+              }
+            ],
+            "schedules": [
+              {
+                "esmFrequency": 45,
+                "esmPeriodInDays": 2,
+                "esmEndHour": 82800000,
+                "esmStartHour": 46800000,
+                "esmWeekends": true,
+                "minimumBuffer": 15,
+                "repeatRate": 1,
+                "scheduleType": 4,
+                "timeout": 15,
+                "userEditable": true,
+                "weekDaysScheduled": 0,
+                "signalTimes": [
+                  {
+                    "fixedTimeMillisFromMidnight": 43200000,
+                    "type": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "name": "Experiment 3",
+        "inputs": [],
+        "feedbackType": 0,
+        "feedback": {
+          "type": 0,
+          "text": "Thanks for Participating!"
+        },
+        "rawDataAccess": true,
+        "fixedDuration": false,
+        "startDate": null,
+        "endDate": null
+      }
+    ],
+    "postInstallInstructions": "You have successfully joined the experiment!",
+    "published": false,
+    "publishedUsers": [],
+    "ringtoneUri": "/assets/ringtone/Paco Bark",
+    "title": "Experiment 3",
+    "description": "For testing scheduling/notifications",
+    "informedConsentForm": "Please agree",
+    "organization": "Mike"
+  },
+  {
+    "admins": [
+      "maksymowych.test@gmail.com"
+    ],
+    "creator": "maksymowych.test@gmail.com",
+    "contactEmail": "maksymowych.test@gmail.com",
+    "extraDataCollectionDeclarations": [],
+    "groups": [
+      {
+        "actionTriggers": [
+          {
+            "type": "scheduleTrigger",
+            "actions": [
+              {
+                "type": "pacoNotificationAction",
+                "actionCode": 1,
+                "timeout": 15,
+                "color": 0,
+                "delay": 0,
+                "dismissible": true
+              }
+            ],
+            "schedules": [
+              {
+                "esmFrequency": 1,
+                "esmPeriodInDays": 0,
+                "esmEndHour": 46800000,
+                "esmStartHour": 39600000,
+                "esmWeekends": false,
+                "minimumBuffer": 10,
+                "repeatRate": 1,
+                "scheduleType": 4,
+                "timeout": 15,
+                "userEditable": true,
+                "weekDaysScheduled": 0,
+                "signalTimes": [
+                  {
+                    "fixedTimeMillisFromMidnight": 43200000,
+                    "type": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "name": "Experiment 4",
+        "inputs": [],
+        "feedbackType": 0,
+        "feedback": {
+          "type": 0,
+          "text": "Thanks for Participating!"
+        },
+        "rawDataAccess": true,
+        "fixedDuration": false,
+        "startDate": null,
+        "endDate": null
+      }
+    ],
+    "postInstallInstructions": "You have successfully joined the experiment!",
+    "published": false,
+    "publishedUsers": [],
+    "ringtoneUri": "/assets/ringtone/Paco Bark",
+    "title": "Experiment 4",
+    "description": "For testing scheduling/notifications",
+    "informedConsentForm": "Please agree",
+    "organization": "Mike"
+  },
+  {
+    "admins": [
+      "maksymowych.test@gmail.com"
+    ],
+    "creator": "maksymowych.test@gmail.com",
+    "contactEmail": "maksymowych.test@gmail.com",
+    "extraDataCollectionDeclarations": [],
+    "groups": [
+      {
+        "actionTriggers": [
+          {
+            "type": "scheduleTrigger",
+            "actions": [
+              {
+                "type": "pacoNotificationAction",
+                "actionCode": 1,
+                "timeout": 15,
+                "color": 0,
+                "delay": 0,
+                "dismissible": true
+              }
+            ],
+            "schedules": [
+              {
+                "esmFrequency": 3,
+                "esmPeriodInDays": 1,
+                "esmEndHour": 18000000,
+                "esmStartHour": 0,
+                "esmWeekends": false,
+                "minimumBuffer": 400,
+                "repeatRate": 1,
+                "scheduleType": 4,
+                "timeout": 15,
+                "userEditable": true,
+                "weekDaysScheduled": 0,
+                "signalTimes": [
+                  {
+                    "fixedTimeMillisFromMidnight": 43200000,
+                    "type": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "name": "Experiment 5",
+        "inputs": [],
+        "feedbackType": 0,
+        "feedback": {
+          "type": 0,
+          "text": "Thanks for Participating!"
+        },
+        "rawDataAccess": true,
+        "fixedDuration": false,
+        "startDate": null,
+        "endDate": null
+      }
+    ],
+    "postInstallInstructions": "You have successfully joined the experiment!",
+    "published": false,
+    "publishedUsers": [],
+    "ringtoneUri": "/assets/ringtone/Paco Bark",
+    "title": "Experiment 5",
+    "description": "For testing scheduling/notifications",
+    "informedConsentForm": "Please agree",
+    "organization": "Mike"
+  },
+  {
+    "admins": [
+      "maksymowych.test@gmail.com"
+    ],
+    "creator": "maksymowych.test@gmail.com",
+    "contactEmail": "maksymowych.test@gmail.com",
+    "extraDataCollectionDeclarations": [],
+    "groups": [
+      {
+        "actionTriggers": [
+          {
+            "type": "scheduleTrigger",
+            "actions": [
+              {
+                "type": "pacoNotificationAction",
+                "actionCode": 1,
+                "timeout": 15,
+                "color": 0,
+                "delay": 0,
+                "dismissible": true
+              }
+            ],
+            "schedules": [
+              {
+                "esmFrequency": 16,
+                "esmPeriodInDays": 2,
+                "esmStartHour": 57600000,
+                "esmEndHour": 79200000,
+                "esmWeekends": false,
+                "minimumBuffer": 200,
+                "repeatRate": 1,
+                "scheduleType": 4,
+                "timeout": 15,
+                "userEditable": true,
+                "weekDaysScheduled": 0,
+                "signalTimes": [
+                  {
+                    "fixedTimeMillisFromMidnight": 43200000,
+                    "type": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "name": "Experiment 6",
+        "inputs": [],
+        "feedbackType": 0,
+        "feedback": {
+          "type": 0,
+          "text": "Thanks for Participating!"
+        },
+        "rawDataAccess": true,
+        "fixedDuration": false,
+        "startDate": null,
+        "endDate": null
+      }
+    ],
+    "postInstallInstructions": "You have successfully joined the experiment!",
+    "published": false,
+    "publishedUsers": [],
+    "ringtoneUri": "/assets/ringtone/Paco Bark",
+    "title": "Experiment 6",
+    "description": "For testing scheduling/notifications",
+    "informedConsentForm": "Please agree",
+    "organization": "Mike"
+  }
+]

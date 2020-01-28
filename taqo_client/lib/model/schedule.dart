@@ -159,7 +159,7 @@ class Schedule implements Validatable, MinimumBufferable {
       case ESM_PERIOD_WEEK:
         return 7;
       case ESM_PERIOD_MONTH:
-        return 30;
+        return 31;
       default:
         return 1;
     }
