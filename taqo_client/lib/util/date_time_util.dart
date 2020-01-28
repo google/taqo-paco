@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:taqo_client/model/schedule.dart';
 
 import '../model/schedule.dart';
 import '../util/zoned_date_time.dart';

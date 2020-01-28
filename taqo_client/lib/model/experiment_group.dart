@@ -175,7 +175,13 @@ class ExperimentGroup {
     return fixedDuration && DateFormat.yMd().parse(endDate).isBefore(now);
   }
 
-  bool isStarted(DateTime now) => !fixedDuration || now.isBefore(parseYMDTime(startDate));
+  bool isStarted(DateTime now) {
+    if (!fixedDuration) {
+      return true;
+    }
+    final start = parseYMDTime(startDate);
+    return now.isAtSameMomentAs(start) || now.isAfter(start);
+  }
 
   bool isRunning(DateTime now) {
     if (groupType != GroupTypeEnum.SYSTEM && !fixedDuration) {
