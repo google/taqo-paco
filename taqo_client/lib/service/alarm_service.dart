@@ -9,7 +9,6 @@ import '../model/notification_holder.dart';
 import '../service/experiment_service.dart';
 import '../scheduling/action_schedule_generator.dart';
 import '../storage/local_database.dart';
-import '../util/zoned_date_time.dart';
 import 'notification_service.dart' as notification_manager;
 
 /// Schedule an alarm for [actionSpec] at [when] to run [callback]
@@ -55,14 +54,29 @@ void _scheduleTimeout(ActionSpecification actionSpec) async {
 void _notifyCallback(int alarmId) async {
   // This is running in a different (background) Isolate
   print('notify: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
+  var start;
+  var duration;
   final actionSpec = await LocalDatabase().getAlarm(alarmId);
   if (actionSpec != null) {
-    notification_manager.showNotification(actionSpec);
+    // Show all notifications +/- 30 seconds from now
+    final now = DateTime.now();
+    start = now.subtract(Duration(seconds: 30));
+    duration = Duration(minutes: 1);
+    final allAlarms = await getAllAlarmsWithinRange(start: start, duration: duration);
+    print('allAlarms: ${allAlarms.length}');
+    var i = 0;
+    for (var a in allAlarms) {
+      print('[${i++}] Showing ${a.time}');
+      notification_manager.showNotification(a);
+    }
   }
+
   // Cleanup alarm
   cancel(alarmId);
   // schedule the next one
-  _scheduleNextNotification();
+  final from = start?.add(duration)?.add(Duration(seconds: 1));
+  print('scheduleNext from $from');
+  _scheduleNextNotification(from: from);
 }
 
 void _createMissedEvent(NotificationHolder notification) async {
@@ -100,8 +114,9 @@ void _expireCallback(int alarmId) async {
   cancel(alarmId);
 }
 
-void _scheduleNextNotification() async {
-  getNextAlarmTime().then((ActionSpecification actionSpec) async {
+void _scheduleNextNotification({DateTime from}) async {
+  from ??= DateTime.now();
+  getNextAlarmTime(now: from).then((ActionSpecification actionSpec) async {
     if (actionSpec != null) {
       // Schedule a notification (android_alarm_manager)
       _scheduleNotification(actionSpec).then((scheduled) {

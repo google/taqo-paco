@@ -12,6 +12,39 @@ class FixedScheduleGenerator {
   FixedScheduleGenerator(this.startTime, this.experiment, this.groupName, this.triggerId,
       this.schedule);
 
+  List<DateTime> allAlarmTimesFromUntil(DateTime from, DateTime until) {
+    if (schedule.signalTimes == null || schedule.signalTimes.isEmpty) {
+      return null;
+    }
+
+    final alarms = <DateTime>[];
+    var dt = cloneDateTime(from);
+    while (dt.isBefore(until) || dt.isAtSameMomentAs(until)) {
+      DateTime next;
+      switch (schedule.scheduleType) {
+        case Schedule.DAILY:
+          next = _scheduleDaily(dt);
+          break;
+        case Schedule.WEEKDAY:
+          next = _scheduleWeekday(dt);
+          break;
+        case Schedule.WEEKLY:
+          next = _scheduleWeekly(dt);
+          break;
+        case Schedule.MONTHLY:
+          next = _scheduleMonthly(dt);
+          break;
+      }
+      if (next == null) {
+        break;
+      }
+      alarms.add(next);
+      dt = next.add(Duration(seconds: 1));
+    }
+
+    return alarms;
+  }
+
   DateTime nextAlarmTimeFromNow({DateTime fromNow}) {
     if (schedule.signalTimes == null || schedule.signalTimes.isEmpty) {
       return null;
