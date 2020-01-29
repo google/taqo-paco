@@ -80,7 +80,7 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
 
   void updateExperiments() {
     // TODO show progress indicator of some sort and remove once done
-    _experimentRetriever.updateJoinedExperiments((experiments) {
+    _experimentRetriever.updateJoinedExperiments().then((List<Experiment> experiments) {
       setState(() {
         _experiments = experiments;
       });

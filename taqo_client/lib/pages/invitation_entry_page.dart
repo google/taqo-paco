@@ -101,7 +101,7 @@ class _InvitationEntryPageState extends State<InvitationEntryPage> {
       _alertLog(response.participantId.toString() + " " + response.experimentId.toString() + "\nNow fetching experiment.");
       _participantId = response.participantId;
       _experimentId = response.experimentId;
-      var experiment = await ExperimentService().getPubExperimentById(_experimentId);
+      var experiment = await ExperimentService().getPubExperimentFromServerById(_experimentId);
       Navigator.pushReplacementNamed(context, ExperimentDetailPage.routeName, arguments: experiment);
     }
     // if success
@@ -116,7 +116,7 @@ class _InvitationEntryPageState extends State<InvitationEntryPage> {
 
       _participantId = 88;
       _experimentId = 5238446861320192;
-      var experiment = await ExperimentService().getPubExperimentById(
+      var experiment = await ExperimentService().getPubExperimentFromServerById(
           _experimentId);
       Navigator.pushNamed(
           context, ExperimentDetailPage.routeName, arguments: experiment);

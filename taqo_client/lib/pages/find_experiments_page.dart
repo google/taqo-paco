@@ -24,7 +24,7 @@ class _FindExperimentsPageState extends State<FindExperimentsPage> {
   @override
   void initState() {
     super.initState();
-    _experimentRetriever.getExperiments().then((experiments) {
+    _experimentRetriever.getExperimentsFromServer().then((experiments) {
       setState(() {
         _experiments = experiments;
       });
