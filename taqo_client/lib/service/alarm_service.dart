@@ -62,9 +62,9 @@ void _notifyCallback(int alarmId) async {
   final actionSpec = await LocalDatabase().getAlarm(alarmId);
   if (actionSpec != null) {
     // To handle simultaneous alarms as well as possible delay in alarm callbacks,
-    // show all notifications from 30 seconds before the originally schedule alarm time until
+    // show all notifications from the originally schedule alarm time until
     // 30 seconds after the current time
-    start = actionSpec.time.subtract(Duration(seconds: 30));
+    start = actionSpec.time;
     duration = DateTime.now().add(Duration(seconds: 30)).difference(start);
     final allAlarms = await getAllAlarmsWithinRange(start: start, duration: duration);
     print('Showing ${allAlarms.length} alarms from: $start to: ${start.add(duration)}');
