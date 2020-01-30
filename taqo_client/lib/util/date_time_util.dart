@@ -8,6 +8,11 @@ import '../util/zoned_date_time.dart';
 const DAYS_SHORT_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" ];
 const ORDINAL_NUMBERS = ["", "1st", "2nd", "3rd", "4th", "5th" ];
 
+DateTime getLater(DateTime dt1, DateTime dt2) {
+  if (dt1 == null || dt2 == null) return dt1 ?? dt2;
+  return dt1.isAfter(dt2) ? dt1 : dt2;
+}
+
 int getMsFromMidnight(TimeOfDay time) => (60 * time.hour + time.minute) * 60 * 1000;
 
 String getHourOffsetAsTimeString(int millisFromMidnight) {

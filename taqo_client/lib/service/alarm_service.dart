@@ -1,6 +1,7 @@
 import 'dart:isolate';
 
 import 'package:android_alarm_manager/android_alarm_manager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taqo_client/util/date_time_util.dart';
 
 import '../model/action_specification.dart';
@@ -10,6 +11,8 @@ import '../service/experiment_service.dart';
 import '../scheduling/action_schedule_generator.dart';
 import '../storage/local_database.dart';
 import 'notification_service.dart' as notification_manager;
+
+const SHARED_PREFS_LAST_ALARM_TIME = 'lastScheduledAlarm';
 
 /// Schedule an alarm for [actionSpec] at [when] to run [callback]
 Future<int> _schedule(ActionSpecification actionSpec, DateTime when, Function(int) callback) {
@@ -37,7 +40,7 @@ Future<bool> _scheduleNotification(ActionSpecification actionSpec) async {
   final alarmId = await _schedule(actionSpec, actionSpec.time, _notifyCallback);
   print('_scheduleNotification: alarmId: $alarmId when: ${actionSpec.time}'
       ' isolate: ${Isolate.current.hashCode}');
-  return true;
+  return alarmId >= 0;
 }
 
 void _scheduleTimeout(ActionSpecification actionSpec) async {
@@ -54,21 +57,27 @@ void _scheduleTimeout(ActionSpecification actionSpec) async {
 void _notifyCallback(int alarmId) async {
   // This is running in a different (background) Isolate
   print('notify: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
-  var start;
-  var duration;
+  DateTime start;
+  Duration duration;
   final actionSpec = await LocalDatabase().getAlarm(alarmId);
   if (actionSpec != null) {
-    // Show all notifications +/- 30 seconds from now
-    final now = DateTime.now();
-    start = now.subtract(Duration(seconds: 30));
-    duration = Duration(minutes: 1);
+    // To handle simultaneous alarms as well as possible delay in alarm callbacks,
+    // show all notifications from 30 seconds before the originally schedule alarm time until
+    // 30 seconds after the current time
+    start = actionSpec.time.subtract(Duration(seconds: 30));
+    duration = DateTime.now().add(Duration(seconds: 30)).difference(start);
     final allAlarms = await getAllAlarmsWithinRange(start: start, duration: duration);
-    print('allAlarms: ${allAlarms.length}');
+    print('Showing ${allAlarms.length} alarms from: $start to: ${start.add(duration)}');
     var i = 0;
     for (var a in allAlarms) {
       print('[${i++}] Showing ${a.time}');
       notification_manager.showNotification(a);
     }
+
+    // Store last shown notification time
+    final sharedPreferences = await SharedPreferences.getInstance();
+    print('Storing ${start.add(duration)}');
+    sharedPreferences.setString(SHARED_PREFS_LAST_ALARM_TIME, start.add(duration).toIso8601String());
   }
 
   // Cleanup alarm
@@ -116,7 +125,19 @@ void _expireCallback(int alarmId) async {
 }
 
 void _scheduleNextNotification({DateTime from}) async {
+  DateTime lastSchedule;
+  final sharedPreferences = await SharedPreferences.getInstance();
+  final dt = sharedPreferences.getString(SHARED_PREFS_LAST_ALARM_TIME);
+  print('loaded $dt');
+  if (dt != null) {
+    lastSchedule = DateTime.parse(dt).add(Duration(seconds: 1));
+  }
+
+  // To avoid scheduling an alarm that was already shown by the logic in _notifyCallback
   from ??= DateTime.now();
+  from = getLater(from, lastSchedule);
+  print('_scheduleNextNotification from: $from');
+
   getNextAlarmTime(now: from).then((ActionSpecification actionSpec) async {
     if (actionSpec != null) {
       // Schedule a notification (android_alarm_manager)
