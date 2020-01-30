@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:provider/provider.dart';
 import 'package:taqo_client/net/google_auth.dart';
 import 'package:taqo_client/pages/running_experiments_page.dart';
 import 'package:taqo_client/service/experiment_service.dart';
@@ -26,8 +27,6 @@ class _WelcomePageState extends State<WelcomePage> {
   GoogleAuth gAuth = GoogleAuth();
   var authListener;
 
-  var experimentService = ExperimentService();
-
   _WelcomePageState();
 
   @override
@@ -46,7 +45,7 @@ class _WelcomePageState extends State<WelcomePage> {
       });
     });
 
-    ExperimentService().onJoinedExperimentsLoaded.listen((_) {
+    ExperimentService.getInstance().then((service) {
       final fromNotify = widget._launchDetails.didNotificationLaunchApp ?? false;
       print('launching from notification: $fromNotify');
       if (fromNotify) {
@@ -145,20 +144,30 @@ class _WelcomePageState extends State<WelcomePage> {
     );
   }
 
-  StreamBuilder buildRunningExperimentsButtonWidget(BuildContext context) {
-    return StreamBuilder(
-        stream: experimentService.onJoinedExperimentsLoaded,
-        builder: (context, snapshot) => RaisedButton(
-              onPressed: isAlreadyRunningExperiments()
-                  ? () {
-                      Navigator.pushReplacementNamed(
-                          context, RunningExperimentsPage.routeName);
-                    }
-                  : null,
-              child: const Text('Go to Joined Experiments'),
-            ));
+  Widget buildRunningExperimentsButtonWidget(BuildContext context) {
+    return FutureProvider<ExperimentService>(
+      create: (_) => ExperimentService.getInstance(),
+      child: RunningExperimentsList(_authenticated),
+    );
   }
 
-  bool isAlreadyRunningExperiments() =>
-      _authenticated && ExperimentService().getJoinedExperiments().isNotEmpty;
+}
+
+class RunningExperimentsList extends StatelessWidget {
+  final bool _authenticated;
+  RunningExperimentsList(this._authenticated);
+
+  @override
+  Widget build(BuildContext context) {
+    final service = Provider.of<ExperimentService>(context);
+    bool isRunningExperiments() {
+      return service != null && _authenticated && service.getJoinedExperiments().isNotEmpty;
+    }
+
+    return RaisedButton(
+      onPressed: isRunningExperiments() ?
+          () => Navigator.pushReplacementNamed(context, RunningExperimentsPage.routeName) : null,
+      child: const Text('Go to Joined Experiments'),
+    );
+  }
 }

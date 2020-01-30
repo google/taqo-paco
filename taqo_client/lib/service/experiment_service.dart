@@ -17,19 +17,28 @@ class ExperimentService {
 
   var _joined = Map<int, Experiment>();
 
-  bool _loaded = false;
-  bool get loaded => _loaded;
+  static ExperimentService _instance;
 
-  final _joinedExperimentsLoadedStreamController = StreamController<bool>.broadcast();
-  Stream<bool> get onJoinedExperimentsLoaded => _joinedExperimentsLoadedStreamController.stream;
+  ExperimentService._() : _gAuth = GoogleAuth();
 
-  ExperimentService._() : _gAuth = GoogleAuth() {
-    _loadJoinedExperiments();
+  static Future<ExperimentService> getInstance() {
+    if (_instance == null) {
+      final completer = Completer<ExperimentService>();
+      final temp = ExperimentService._();
+      temp._loadJoinedExperiments().then((_) {
+        _instance = temp;
+        completer.complete(_instance);
+      });
+      return completer.future;
+    }
+
+    return Future.value(_instance);
   }
 
-  static final ExperimentService _instance = ExperimentService._();
-
-  factory ExperimentService() => _instance;
+  Future<void> _loadJoinedExperiments() async =>
+      JoinedExperimentsStorage().readJoinedExperiments().then((List<Experiment> experiments) {
+        _mapifyExperimentsById(experiments);
+      });
 
   Future<List<Experiment>> getExperimentsFromServer() async {
     return _gAuth.getExperimentsWithSavedCredentials().then((experimentJson) {
@@ -109,15 +118,6 @@ class ExperimentService {
     LocalDatabase().insertEvent(_createJoinEvent(experiment, joining: false));
 
     notification_manager.cancelForExperiment(experiment);
-  }
-
-  void _loadJoinedExperiments() async {
-    JoinedExperimentsStorage().readJoinedExperiments().then((List<Experiment> experiments) {
-      _mapifyExperimentsById(experiments);
-      // Notify listeners that joined experiments are loaded
-      _joinedExperimentsLoadedStreamController.add(true);
-      _loaded = true;
-    });
   }
 
   void _mapifyExperimentsById(List<Experiment> experiments) {

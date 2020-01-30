@@ -171,10 +171,11 @@ class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
     Navigator.pop(context, true);
   }
 
-  void _onSaveChanges() {
+  void _onSaveChanges() async {
     // Persist changes
     if (_scheduleChangesToRevert.isNotEmpty) {
-      ExperimentService().saveJoinedExperiments();
+      final service = await ExperimentService.getInstance();
+      service.saveJoinedExperiments();
     }
     Navigator.pop(context, true);
   }

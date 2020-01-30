@@ -148,7 +148,8 @@ Future<void> openSurvey(String payload) async {
   }
 
   try {
-    final e = ExperimentService()
+    final service = await ExperimentService.getInstance();
+    final e = service
         .getJoinedExperiments()
         .firstWhere((e) => e.id == notificationHolder.experimentId);
     e.groups.firstWhere((g) => g.name == notificationHolder.experimentGroupName);

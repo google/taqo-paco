@@ -105,20 +105,9 @@ Future<ActionSpecification> _getNextAlarmTimeForExperiment(Experiment experiment
   return nextAlarmTime;
 }
 
-/// Because functions could be running in a background Isolate, or when the program first launches,
-/// the joined Experiments may not have been loaded yet.
-/// OTOH, if they are loaded, we can't rely on onJoinedExperimentsLoaded to emit a value
-Future<ExperimentService> _verifyExperimentsLoaded() async {
-  final service = ExperimentService();
-  if (!service.loaded) {
-    await service.onJoinedExperimentsLoaded.firstWhere((element) => element);
-  }
-  return service;
-}
-
 Future<List<ActionSpecification>> getAllAlarmTimesOrdered(
     {List<Experiment> experiments, DateTime start, DateTime end}) async {
-  final service = await _verifyExperimentsLoaded();
+  final service = await ExperimentService.getInstance();
 
   // Default args
   experiments ??= service.getJoinedExperiments();
@@ -138,7 +127,7 @@ Future<List<ActionSpecification>> getAllAlarmTimesOrdered(
 
 Future<List<ActionSpecification>> getNextAlarmTimesOrdered(
     {List<Experiment> experiments, DateTime now}) async {
-  final service = await _verifyExperimentsLoaded();
+  final service = await ExperimentService.getInstance();
 
   // Default args
   experiments ??= service.getJoinedExperiments();
@@ -157,7 +146,7 @@ Future<List<ActionSpecification>> getNextAlarmTimesOrdered(
 
 Future<List<ActionSpecification>> getAllAlarmsWithinRange(
     {List<Experiment> experiments, DateTime start, Duration duration}) async {
-  final service = await _verifyExperimentsLoaded();
+  final service = await ExperimentService.getInstance();
 
   // Default args
   experiments ??= service.getJoinedExperiments();
@@ -174,7 +163,7 @@ Future<List<ActionSpecification>> getAllAlarmsWithinRange(
 }
 
 Future<ActionSpecification> getNextAlarmTime({List<Experiment> experiments, DateTime now}) async {
-  final service = await _verifyExperimentsLoaded();
+  final service = await ExperimentService.getInstance();
 
   // Default args
   experiments ??= service.getJoinedExperiments();

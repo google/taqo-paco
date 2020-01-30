@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/net/google_auth.dart';
 import 'package:taqo_client/pages/welcome_page.dart';
@@ -17,19 +18,6 @@ class FindExperimentsPage extends StatefulWidget {
 
 class _FindExperimentsPageState extends State<FindExperimentsPage> {
   var gAuth = GoogleAuth();
-  var _experimentRetriever = ExperimentService();
-
-  List<Experiment> _experiments = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _experimentRetriever.getExperimentsFromServer().then((experiments) {
-      setState(() {
-        _experiments = experiments;
-      });
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,10 +45,13 @@ class _FindExperimentsPageState extends State<FindExperimentsPage> {
               height: 16.0,
               color: Colors.black,
             ),
-            Expanded(child: ListView(
-              children: buildExperimentList(),
-              shrinkWrap: true,
-            )),
+            Expanded(
+              child: FutureProvider<List<Experiment>>(
+                create: (_) => ExperimentService.getInstance().then(
+                        (service) => service.getExperimentsFromServer()),
+                child: ExperimentList(),
+              ),
+            ),
           ],
         ),
       ),
@@ -72,31 +63,39 @@ class _FindExperimentsPageState extends State<FindExperimentsPage> {
       'Find Experiments Page',
     );
   }
+}
 
-  List<Widget> buildExperimentList() {
-    List<Widget> widgets = [];
-    for (var experiment in _experiments) {
-      var experimentRow = Card(
-          child: InkWell(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(experiment.title, textScaleFactor: 1.5),
-            if (experiment.organization != null &&
-                experiment.organization.isNotEmpty)
-              Text(experiment.organization),
-            Text(experiment.contactEmail != null
-                ? experiment.contactEmail
-                : experiment.creator),
-          ],
-        ),
-        onTap: () {
-          Navigator.pushNamed(context, ExperimentDetailPage.routeName, arguments: experiment);
-        },
-      ));
+class ExperimentList extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final experiments = Provider.of<List<Experiment>>(context);
+    final listItems = <Widget>[];
 
-      widgets.add(experimentRow);
+    if (experiments != null) {
+      for (var experiment in experiments) {
+        var experimentRow = Card(
+            child: InkWell(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(experiment.title, textScaleFactor: 1.5),
+                  if (experiment.organization != null &&
+                      experiment.organization.isNotEmpty)
+                    Text(experiment.organization),
+                  Text(experiment.contactEmail != null
+                      ? experiment.contactEmail
+                      : experiment.creator),
+                ],
+              ),
+              onTap: () {
+                Navigator.pushNamed(context, ExperimentDetailPage.routeName, arguments: experiment);
+              },
+            ));
+
+        listItems.add(experimentRow);
+      }
     }
-    return widgets;
+
+    return ListView(children: listItems, shrinkWrap: true,);
   }
 }

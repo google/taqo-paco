@@ -80,7 +80,8 @@ void _notifyCallback(int alarmId) async {
 }
 
 void _createMissedEvent(NotificationHolder notification) async {
-  final experiment = await ExperimentService().getExperimentFromServerById(notification.experimentId);
+  final service = await ExperimentService.getInstance();
+  final experiment = await service.getExperimentFromServerById(notification.experimentId);
   final event = Event();
   event.experimentId = experiment.id;
   event.experimentServerId = experiment.id;
