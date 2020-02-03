@@ -36,9 +36,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.indigo,
       ),
-      initialRoute: '/',
+      initialRoute: '/welcome',
       routes: {
-        '/': (context) => WelcomePage(),
         LoginPage.routeName: (context) => LoginPage(),
         FeedbackPage.routeName: (context) => FeedbackPage(),
         SurveyPickerPage.routeName: (context) => SurveyPickerPage(),
