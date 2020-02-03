@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:taqo_client/net/google_auth.dart';
 import 'package:taqo_client/pages/running_experiments_page.dart';
 import 'package:taqo_client/service/experiment_service.dart';
+import 'package:taqo_client/storage/joined_experiments_storage.dart';
+import 'package:taqo_client/storage/unsecure_token_storage.dart';
 
 import 'find_experiments_page.dart';
 import 'invitation_entry_page.dart';
@@ -96,7 +98,8 @@ class _WelcomePageState extends State<WelcomePage> {
     );
   }
 
-  void _logout(BuildContext context) {
+  void _logout(BuildContext context) async {
+    await ExperimentService().clear();
     gAuth.clearCredentials();
 
     // Clear navigation stack. Navigator doesn't allow clearing the stack without pushing,

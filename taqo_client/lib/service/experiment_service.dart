@@ -174,4 +174,9 @@ class ExperimentService {
     callback(experiments);
     return experiments;
   }
+
+  Future<void> clear() async {
+    _joined.clear();
+    await JoinedExperimentsStorage().clear();
+  }
 }
