@@ -78,7 +78,6 @@ class ESMSignalStorage extends LocalFileStorage {
     return signals;
   }
 
-  @visibleForTesting
   Future<void> deleteAllSignals() async {
     try {
       final file = await localFile;

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:provider/provider.dart';
 import 'package:taqo_client/net/google_auth.dart';
 import 'package:taqo_client/pages/running_experiments_page.dart';
 import 'package:taqo_client/service/experiment_service.dart';
+import 'package:taqo_client/service/notification_service.dart' as notification_manager;
 
 import 'find_experiments_page.dart';
 import 'invitation_entry_page.dart';
@@ -10,8 +13,9 @@ import 'login_page.dart';
 // Entry page for App
 class WelcomePage extends StatefulWidget {
   static const routeName = '/welcome';
+  final NotificationAppLaunchDetails _launchDetails;
 
-  WelcomePage({Key key}) : super(key: key);
+  WelcomePage(this._launchDetails, {Key key}) : super(key: key);
 
   @override
   _WelcomePageState createState() => _WelcomePageState();
@@ -23,22 +27,30 @@ class _WelcomePageState extends State<WelcomePage> {
   GoogleAuth gAuth = GoogleAuth();
   var authListener;
 
-  var experimentService = ExperimentService();
-
   _WelcomePageState();
 
   @override
   void initState() {
     super.initState();
+
     gAuth.isAuthenticated().then((res) {
       setState(() {
         _authenticated = res;
       });
     });
+
     authListener = gAuth.onAuthChanged.listen((newAuthState) {
       setState(() {
         _authenticated = newAuthState;
       });
+    });
+
+    ExperimentService.getInstance().then((service) {
+      final fromNotify = widget._launchDetails.didNotificationLaunchApp ?? false;
+      print('launching from notification: $fromNotify');
+      if (fromNotify) {
+        notification_manager.openSurvey(widget._launchDetails.payload);
+      }
     });
   }
 
@@ -132,20 +144,30 @@ class _WelcomePageState extends State<WelcomePage> {
     );
   }
 
-  StreamBuilder buildRunningExperimentsButtonWidget(BuildContext context) {
-    return StreamBuilder(
-        stream: experimentService.onJoinedExperimentsLoaded,
-        builder: (context, snapshot) => RaisedButton(
-              onPressed: isAlreadyRunningExperiments()
-                  ? () {
-                      Navigator.pushReplacementNamed(
-                          context, RunningExperimentsPage.routeName);
-                    }
-                  : null,
-              child: const Text('Go to Joined Experiments'),
-            ));
+  Widget buildRunningExperimentsButtonWidget(BuildContext context) {
+    return FutureProvider<ExperimentService>(
+      create: (_) => ExperimentService.getInstance(),
+      child: RunningExperimentsList(_authenticated),
+    );
   }
 
-  bool isAlreadyRunningExperiments() =>
-      _authenticated && ExperimentService().getJoinedExperiments().isNotEmpty;
+}
+
+class RunningExperimentsList extends StatelessWidget {
+  final bool _authenticated;
+  RunningExperimentsList(this._authenticated);
+
+  @override
+  Widget build(BuildContext context) {
+    final service = Provider.of<ExperimentService>(context);
+    bool isRunningExperiments() {
+      return service != null && _authenticated && service.getJoinedExperiments().isNotEmpty;
+    }
+
+    return RaisedButton(
+      onPressed: isRunningExperiments() ?
+          () => Navigator.pushReplacementNamed(context, RunningExperimentsPage.routeName) : null,
+      child: const Text('Go to Joined Experiments'),
+    );
+  }
 }

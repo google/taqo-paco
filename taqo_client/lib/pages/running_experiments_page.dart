@@ -21,13 +21,16 @@ class RunningExperimentsPage extends StatefulWidget {
 class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
   var gAuth = GoogleAuth();
 
-  final _experimentRetriever = ExperimentService();
   var _experiments = <Experiment>[];
 
   @override
   void initState() {
     super.initState();
-    _experiments = _experimentRetriever.getJoinedExperiments();
+    ExperimentService.getInstance().then((service) {
+      setState(() {
+        _experiments = service.getJoinedExperiments();
+      });
+    });
   }
 
   @override
@@ -78,9 +81,10 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
     );
   }
 
-  void updateExperiments() {
+  void updateExperiments() async {
     // TODO show progress indicator of some sort and remove once done
-    _experimentRetriever.updateJoinedExperiments((experiments) {
+    final service = await ExperimentService.getInstance();
+    service.updateJoinedExperiments().then((List<Experiment> experiments) {
       setState(() {
         _experiments = experiments;
       });
@@ -88,11 +92,12 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
   }
 
   void stopExperiment(Experiment experiment) {
-    _confirmStopDialog(context).then((result) {
+    _confirmStopDialog(context).then((result) async {
       if (result == ConfirmAction.ACCEPT) {
-        _experimentRetriever.stopExperiment(experiment);
+        final service = await ExperimentService.getInstance();
+        service.stopExperiment(experiment);
         setState(() {
-          _experiments = _experimentRetriever.getJoinedExperiments();
+          _experiments = service.getJoinedExperiments();
         });
       }
     });
@@ -125,6 +130,23 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
 class ExperimentListItem extends StatelessWidget {
   final stop;
   ExperimentListItem(this.stop);
+
+  void _onTapExperiment(BuildContext context, Experiment experiment) {
+    if (experiment.getActiveSurveys().length == 1) {
+      Navigator.pushNamed(context, SurveyPage.routeName,
+          arguments: [
+            experiment, experiment.getActiveSurveys().elementAt(0).name, DateTime.now(),
+          ]
+      );
+    } else if (experiment.getActiveSurveys().length > 1) {
+      Navigator.pushNamed(context, SurveyPickerPage.routeName,
+          arguments: [experiment, DateTime.now(), ]);
+    } else {
+      // TODO no action for finished surveys
+      _alertLog(context, "This experiment has finished.");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<Experiment>(
@@ -146,22 +168,9 @@ class ExperimentListItem extends StatelessWidget {
                               : experiment.creator),
                         ],
                       ),
-                      onTap: () {
-                        if (experiment.getActiveSurveys().length == 1) {
-                          Navigator.pushNamed(context, SurveyPage.routeName,
-                              arguments: [
-                                experiment, experiment.getActiveSurveys().elementAt(0).name
-                              ]
-                          );
-                        } else if (experiment.getActiveSurveys().length > 1) {
-                          Navigator.pushNamed(context, SurveyPickerPage.routeName,
-                              arguments: experiment);
-                        } else {
-                          // TODO no action for finished surveys
-                          _alertLog(context, "This experiment has finished.");
-                        }
-                      },
-                    )),
+                      onTap: () => _onTapExperiment(context, experiment),
+                    )
+                ),
 
                 IconButton(
                     icon: Icon(experiment.paused ? Icons.play_arrow : Icons.pause),

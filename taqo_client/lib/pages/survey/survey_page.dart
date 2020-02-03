@@ -6,8 +6,11 @@ import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/model/experiment_group.dart';
 import 'package:taqo_client/model/feedback.dart' as taqo_feedback;
 import 'package:taqo_client/pages/survey/feedback_page.dart';
+import 'package:taqo_client/service/alarm_service.dart' as alarm_manager;
+import 'package:taqo_client/service/notification_service.dart';
 import 'package:taqo_client/storage/local_database.dart';
 import 'package:taqo_client/util/conditional_survey_parser.dart';
+import 'package:taqo_client/util/date_time_util.dart';
 import 'package:taqo_client/util/zoned_date_time.dart';
 
 import '../running_experiments_page.dart';
@@ -24,7 +27,7 @@ class SurveyPage extends StatefulWidget {
       {Key key,
       this.title,
       @required this.experiment,
-      @required this.experimentGroupName})
+      @required this.experimentGroupName,})
       : super(key: key);
 
   final String title;
@@ -79,7 +82,7 @@ class _SurveyPageState extends State<SurveyPage> {
           icon: Icon(Icons.send),
           label: Text('Submit'),
           onPressed: () {
-            saveEvent();
+            submitSurvey();
           }),
     );
   }
@@ -358,7 +361,38 @@ class _SurveyPageState extends State<SurveyPage> {
     );
   }
 
-  Future<void> saveEvent() async {
+  Future<void> submitSurvey() async {
+    final pendingAlarms = await LocalDatabase().getAllAlarms();
+
+    for (var entry in pendingAlarms.entries) {
+      final id = entry.key;
+      final alarm = entry.value;
+      if (alarm.experiment.id == _experiment.id &&
+        alarm.experimentGroup.name == _experimentGroup.name &&
+        alarm.time.isBefore(DateTime.now())) {
+        // This alarm is the timeout for the notification
+        // The alarm for the notification was already cleared when it fired
+        _event.actionId = alarm.action.id;
+        _event.actionTriggerId = alarm.actionTrigger.id;
+        _event.actionTriggerSpecId = alarm.actionTriggerSpecId;
+        _event.scheduleTime = getZonedDateTime(alarm.time);
+
+        // Cancel timeout alarm
+        // We cancel here both for self-report as well as coming from a notification
+        alarm_manager.cancel(id);
+        final activeNotifications =
+            await LocalDatabase().getAllNotificationsForExperiment(_experiment);
+        // Clear any pending notification
+        for (var notification in activeNotifications) {
+          if (notification.matchesAction(alarm)) {
+            cancelNotification(notification.id);
+          }
+        }
+
+        break;
+      }
+    }
+
     // Filter out conditional inputs that may no longer be valid
     // This can occur if the user answered a conditional input but later modified an answer
     // that nullifies the conditional input
