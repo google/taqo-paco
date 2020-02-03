@@ -662,6 +662,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.2.15"
+  time_zone_notifier:
+    dependency: "direct main"
+    description:
+      path: "../time_zone_notifier"
+      relative: true
+    source: path
+    version: "0.0.1"
   timing:
     dependency: transitive
     description:

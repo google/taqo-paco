@@ -24,13 +24,17 @@ ActionSpecification _$ActionSpecificationFromJson(Map<String, dynamic> json) {
           ? null
           : PacoNotificationAction.fromJson(
               json['action'] as Map<String, dynamic>),
-      json['actionTriggerSpecId'] as int);
+      json['actionTriggerSpecId'] as int)
+    ..timeUTC = json['timeUTC'] == null
+        ? null
+        : DateTime.parse(json['timeUTC'] as String);
 }
 
 Map<String, dynamic> _$ActionSpecificationToJson(
         ActionSpecification instance) =>
     <String, dynamic>{
       'time': instance.time?.toIso8601String(),
+      'timeUTC': instance.timeUTC?.toIso8601String(),
       'experiment': instance.experiment,
       'experimentGroup': instance.experimentGroup,
       'actionTrigger': instance.actionTrigger,

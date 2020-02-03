@@ -152,7 +152,19 @@ void _scheduleNextNotification({DateTime from}) async {
 }
 
 void scheduleNextNotification() async {
-  // TODO cancelAll except timeouts for already showing notifications
+  // Cancel all alarms, except for timeouts for past notifications
+  final allAlarms = await LocalDatabase().getAllAlarms();
+  for (var alarm in allAlarms.entries) {
+    // On Android, AlarmManager adjusts alarms relative to time changes
+    // Since timeouts reflect elapsed time since the notification, this is fine for already set
+    // timeout alarms.
+    // For all other (future) alarms, we cancel them and reschedule the next one
+    // TODO to determine what is required on other platforms
+    if (alarm.value.timeUTC.isAfter(DateTime.now().toUtc())) {
+      await cancel(alarm.key);
+    }
+  }
+  // reschedule
   _scheduleNextNotification();
 }
 

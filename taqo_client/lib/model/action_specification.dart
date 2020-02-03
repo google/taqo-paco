@@ -10,6 +10,7 @@ part 'action_specification.g.dart';
 @JsonSerializable()
 class ActionSpecification implements Comparable<ActionSpecification> {
   DateTime time;
+  DateTime timeUTC;
   Experiment experiment;
   ExperimentGroup experimentGroup;
 
@@ -19,7 +20,9 @@ class ActionSpecification implements Comparable<ActionSpecification> {
   int actionTriggerSpecId;
 
   ActionSpecification(this.time, this.experiment, this.experimentGroup, this.actionTrigger,
-      this.action, this.actionTriggerSpecId);
+      this.action, this.actionTriggerSpecId) {
+    timeUTC = time.toUtc();
+  }
 
   factory ActionSpecification.fromJson(Map<String, dynamic> json) => _$ActionSpecificationFromJson(json);
 

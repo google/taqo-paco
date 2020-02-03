@@ -20,14 +20,27 @@ import 'package:taqo_client/service/alarm_service.dart' as alarm_service;
 import 'package:taqo_client/service/notification_service.dart' as notification_manager;
 
 import 'package:taqo_client/net/google_auth.dart';
+import 'package:taqo_client/storage/esm_signal_storage.dart';
+
+import 'package:time_zone_notifier/time_zone_notifier.dart';
 
 var gAuth = GoogleAuth();
+
+void _timeZoneChanged() async {
+  /// TODO Currently provides no info on how the time was changed
+  print('time [zone] changed, rescheduling');
+  await ESMSignalStorage().deleteAllSignals();
+  alarm_service.scheduleNextNotification();
+}
 
 void main() {
   // Desktop platforms are not recognized as valid targets by
   // Flutter; force a specific target to prevent exceptions.
   // TODO this should change as we adopt the new Flutter Desktop Embedder
   debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
+
+  WidgetsFlutterBinding.ensureInitialized();
+  TimeZoneNotifier.initialize(_timeZoneChanged);
 
   // notification_manager.init() should be called once and only once
   // Calling it here ensures that it completes before the app launches
