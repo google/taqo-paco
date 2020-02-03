@@ -56,12 +56,14 @@ class MyApp extends StatelessWidget {
       // since we need to pass argument to this route before the page being built,
       // which is not supported by ModalRoute.of().
       onGenerateRoute: (settings) {
-        if (settings.name == SurveyPage.routeName) {
-          final List args = settings.arguments;
-          return MaterialPageRoute(
-              builder: (context) => SurveyPage(
-                  experiment: args[0], experimentGroupName: args[1]));
+        final List args = settings.arguments;
+        switch (settings.name) {
+          case SurveyPage.routeName:
+            return MaterialPageRoute(
+                builder: (context) => SurveyPage(
+                    experiment: args[0], experimentGroupName: args[1]));
         }
+        return null;
       },
     );
   }
