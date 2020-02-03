@@ -96,14 +96,24 @@ class _WelcomePageState extends State<WelcomePage> {
     );
   }
 
+  void _logout(BuildContext context) {
+    gAuth.clearCredentials();
+
+    // Clear navigation stack. Navigator doesn't allow clearing the stack without pushing,
+    // so we're using PageRouteBuilder to disable the animation/transition since we're staying
+    // on WelcomePage
+    Navigator.pushAndRemoveUntil(
+        context,
+        PageRouteBuilder(pageBuilder: (context, _, __) => WelcomePage()),
+        (route) => false,
+    );
+
+    setState(() => _authenticated = false);
+  }
+
   RaisedButton buildLogoutButtonWidget(BuildContext context) {
     return RaisedButton(
-      onPressed: !_authenticated
-          ? null
-          : () {
-              gAuth.clearCredentials();
-              setState(() => _authenticated = false);
-            },
+      onPressed: _authenticated ? () => _logout(context) : null,
       child: const Text('Logout'),
     );
   }
