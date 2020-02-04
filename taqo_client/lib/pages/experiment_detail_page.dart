@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:taqo_client/model/experiment.dart';
-import 'package:taqo_client/service/experiment_service.dart';
 
 import 'informed_consent_page.dart';
 
@@ -47,14 +46,13 @@ class _ExperimentDetailPageState extends State<ExperimentDetailPage> {
             ],
           ),
         ),
-        floatingActionButton: Visibility(visible: !ExperimentService().isJoined(experiment),
-        child: FloatingActionButton(
+        floatingActionButton: FloatingActionButton(
             child: Icon(Icons.shop),
             onPressed: () {
                     Navigator.pushNamed(context, InformedConsentPage.routeName,
                         arguments: experiment);
                   }
-                )));
+                ));
 
     }
 

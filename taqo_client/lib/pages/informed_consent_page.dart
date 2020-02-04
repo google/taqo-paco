@@ -53,12 +53,13 @@ class _InformedConsentPageState extends State<InformedConsentPage> {
             ],
           ),
         ),
-        persistentFooterButtons: (!ExperimentService().isJoined(experiment)) ? <Widget>[
+        persistentFooterButtons: <Widget>[
           RaisedButton(
             child: Text("Agree", style: TextStyle(color: Colors.white)),
             color: Colors.indigo,
-            onPressed: () {
-              ExperimentService().joinExperiment(experiment);
+            onPressed: () async {
+              final service = await ExperimentService.getInstance();
+              service.joinExperiment(experiment);
               Navigator.popAndPushNamed(context, PostJoinInstructionsPage.routeName, arguments: experiment);
             }
           ),
@@ -70,7 +71,7 @@ class _InformedConsentPageState extends State<InformedConsentPage> {
                 Navigator.pop(context, experiment);
               }
             ),
-        ] : null,
+        ]
     );
   }
 

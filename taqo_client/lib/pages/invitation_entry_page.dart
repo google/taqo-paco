@@ -101,7 +101,8 @@ class _InvitationEntryPageState extends State<InvitationEntryPage> {
       _alertLog(response.participantId.toString() + " " + response.experimentId.toString() + "\nNow fetching experiment.");
       _participantId = response.participantId;
       _experimentId = response.experimentId;
-      var experiment = await ExperimentService().getPubExperimentById(_experimentId);
+      final service = await ExperimentService.getInstance();
+      var experiment = await service.getPubExperimentFromServerById(_experimentId);
       Navigator.pushReplacementNamed(context, ExperimentDetailPage.routeName, arguments: experiment);
     }
     // if success
@@ -116,8 +117,13 @@ class _InvitationEntryPageState extends State<InvitationEntryPage> {
 
       _participantId = 88;
       _experimentId = 5238446861320192;
-      var experiment = await ExperimentService().getPubExperimentById(
+      final service = await ExperimentService.getInstance();
+      var experiment = await service.getPubExperimentFromServerById(
           _experimentId);
+      if (service.isJoined(experiment)) {
+        // TODO Show msg: "already joined" or disable button entirely
+        return;
+      }
       Navigator.pushNamed(
           context, ExperimentDetailPage.routeName, arguments: experiment);
     }
@@ -150,7 +156,8 @@ class _InvitationEntryPageState extends State<InvitationEntryPage> {
   }
 
   Future<InvitationResponse> sendCodetoServer(String code) async {
-  return await ExperimentService().checkCode(code);
+    final service = await ExperimentService.getInstance();
+    return service.checkCode(code);
   }
 
 }

@@ -8,6 +8,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.36.4"
+  android_alarm_manager:
+    dependency: "direct overridden"
+    description:
+      path: "packages/android_alarm_manager"
+      ref: HEAD
+      resolved-ref: de56da50ca78ef275a95b4e59ce8d5e119eadd7a
+      url: "git://github.com/mikemaksymowych/plugins.git"
+    source: git
+    version: "0.4.5+3"
   archive:
     dependency: transitive
     description:
@@ -202,6 +211,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.11.1"
+  flutter_local_notifications:
+    dependency: "direct main"
+    description:
+      name: flutter_local_notifications
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.9.1+3"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -646,6 +662,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.2.15"
+  time_zone_notifier:
+    dependency: "direct main"
+    description:
+      path: "../time_zone_notifier"
+      relative: true
+    source: path
+    version: "0.0.1"
   timing:
     dependency: transitive
     description:

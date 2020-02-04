@@ -1,11 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:taqo_client/model/experiment.dart';
-import 'package:taqo_client/model/experiment_group.dart';
 import 'package:taqo_client/pages/survey/survey_page.dart';
-import 'package:taqo_client/service/experiment_service.dart';
-
-import 'informed_consent_page.dart';
 
 class SurveyPickerPage extends StatefulWidget {
   static const routeName = '/survey_picker';
@@ -19,7 +14,9 @@ class SurveyPickerPage extends StatefulWidget {
 class _SurveyPickerPageState extends State<SurveyPickerPage> {
   @override
   Widget build(BuildContext context) {
-    Experiment experiment = ModalRoute.of(context).settings.arguments;
+    final List<dynamic> args = ModalRoute.of(context).settings.arguments;
+    final experiment = args[0];
+    final selfReportTime = args.length > 1 ? args[1] : null;
 
     var rowChildren = <Widget>[
       buildPickSurveyPromptRow(experiment),
@@ -29,7 +26,7 @@ class _SurveyPickerPageState extends State<SurveyPickerPage> {
       ),
     ];
 
-    rowChildren.addAll(buildSurveyList(experiment));
+    rowChildren.addAll(buildSurveyList(experiment, selfReportTime));
 
     return Scaffold(
       appBar: AppBar(
@@ -54,7 +51,7 @@ class _SurveyPickerPageState extends State<SurveyPickerPage> {
     );
   }
 
-  List<Widget> buildSurveyList(experiment) {
+  List<Widget> buildSurveyList(experiment, selfReportTime) {
     List<Widget> widgets = [];
     for (var survey in experiment.getActiveSurveys()) {
       var rowChildren = <Widget>[
@@ -68,7 +65,7 @@ class _SurveyPickerPageState extends State<SurveyPickerPage> {
           ),
           onTap: () {
             Navigator.pushNamed(context, SurveyPage.routeName,
-                arguments: [experiment, survey.name]);
+                arguments: [experiment, survey.name, selfReportTime]);
           },
         )),
       ];

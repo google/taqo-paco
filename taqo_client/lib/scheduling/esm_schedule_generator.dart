@@ -30,6 +30,19 @@ class ESMScheduleGenerator {
         _lookupNextESMScheduleTime(_getNextPeriodStart(periodStart));
   }
 
+  /// Get the all scheduled alarm times
+  Future<List<DateTime>> allScheduleTimes() async {
+    await _lock.future;
+    final periodStart = _getPeriodStart();
+    final signals = await ESMSignalStorage().getSignals(
+        periodStart, experiment.id, groupName, triggerId, schedule.id);
+    if (signals != null) {
+      return signals;
+    }
+    return ESMSignalStorage().getSignals(
+        _getNextPeriodStart(periodStart), experiment.id, groupName, triggerId, schedule.id);
+  }
+
   /// Generate ESM Schedules for the next two periods
   Future<void> _generate() async {
     final periodStart = _getPeriodStart();
@@ -86,9 +99,8 @@ class ESMScheduleGenerator {
     }
 
     signals.sort();
-    final now = DateTime.now();
     for (var s in signals) {
-      if (s.isAtSameMomentAs(now) || s.isAfter(now)) {
+      if (s.isAtSameMomentAs(startTime) || s.isAfter(startTime)) {
         return s;
       }
     }
