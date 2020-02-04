@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
-import 'package:taqo_client/net/google_auth.dart';
-import 'package:taqo_client/pages/running_experiments_page.dart';
-import 'package:taqo_client/service/experiment_service.dart';
-import 'package:taqo_client/service/notification_service.dart' as notification_manager;
 
+import '../net/google_auth.dart';
+import '../service/experiment_service.dart';
+import '../service/notification_service.dart' as notification_manager;
 import 'find_experiments_page.dart';
 import 'invitation_entry_page.dart';
 import 'login_page.dart';
+import 'running_experiments_page.dart';
 
 // Entry page for App
 class WelcomePage extends StatefulWidget {
@@ -108,14 +108,25 @@ class _WelcomePageState extends State<WelcomePage> {
     );
   }
 
+  void _logout(BuildContext context) async {
+    await (await ExperimentService.getInstance()).clear();
+    gAuth.clearCredentials();
+
+    // Clear navigation stack. Navigator doesn't allow clearing the stack without pushing,
+    // so we're using PageRouteBuilder to disable the animation/transition since we're staying
+    // on WelcomePage
+    Navigator.pushAndRemoveUntil(
+        context,
+        PageRouteBuilder(pageBuilder: (context, _, __) => WelcomePage(widget._launchDetails)),
+        (route) => false,
+    );
+
+    setState(() => _authenticated = false);
+  }
+
   RaisedButton buildLogoutButtonWidget(BuildContext context) {
     return RaisedButton(
-      onPressed: !_authenticated
-          ? null
-          : () {
-              gAuth.clearCredentials();
-              setState(() => _authenticated = false);
-            },
+      onPressed: _authenticated ? () => _logout(context) : null,
       child: const Text('Logout'),
     );
   }

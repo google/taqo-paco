@@ -151,4 +151,9 @@ class ExperimentService {
           experimentId: experimentId);
     });
   }
+
+  Future<void> clear() async {
+    _joined.clear();
+    await JoinedExperimentsStorage().clear();
+  }
 }
