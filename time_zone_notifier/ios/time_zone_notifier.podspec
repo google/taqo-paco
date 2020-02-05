@@ -6,12 +6,12 @@ Pod::Spec.new do |s|
   s.version          = '0.0.1'
   s.summary          = 'Un-implemented implementation to prevent build/run errors'
   s.description      = <<-DESC
-A new flutter plugin project.
+No-op implementation of the iOS plugin to avoid build issues on iOS.
                        DESC
-  s.homepage         = ''
+  s.homepage         = 'https://github.com/BobEvans/taqo_survey/tree/develop/time_zone_notifier'
   s.license          = { :file => '../LICENSE' }
   s.author           = { '' => '' }
-  s.source           = { :path => '.' }
+  s.source           = { :git => '' }
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
