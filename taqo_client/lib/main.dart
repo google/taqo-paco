@@ -16,6 +16,7 @@ import 'package:taqo_client/pages/survey_picker_page.dart';
 import 'package:taqo_client/pages/welcome_page.dart';
 import 'package:taqo_client/pages/invitation_entry_page.dart';
 import 'package:taqo_client/pages/login_page.dart';
+import 'package:taqo_client/platform/platform_sync_service.dart';
 import 'package:taqo_client/service/alarm_service.dart' as alarm_service;
 import 'package:taqo_client/service/notification_service.dart' as notification_manager;
 
@@ -40,6 +41,8 @@ void main() {
   debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
 
   WidgetsFlutterBinding.ensureInitialized();
+  setupSyncServiceMethodChannel();
+  notifySyncService();
   TimeZoneNotifier.initialize(_timeZoneChanged);
 
   // notification_manager.init() should be called once and only once

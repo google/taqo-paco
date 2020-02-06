@@ -6,6 +6,7 @@ import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/model/experiment_group.dart';
 import 'package:taqo_client/model/feedback.dart' as taqo_feedback;
 import 'package:taqo_client/pages/survey/feedback_page.dart';
+import 'package:taqo_client/platform/platform_sync_service.dart';
 import 'package:taqo_client/service/alarm_service.dart' as alarm_manager;
 import 'package:taqo_client/service/notification_service.dart';
 import 'package:taqo_client/storage/local_database.dart';
@@ -405,6 +406,7 @@ class _SurveyPageState extends State<SurveyPage> {
     // TODO Validate answers and store locally.
     var db = LocalDatabase();
     await db.insertEvent(_event);
+    notifySyncService();
     // If should be uploaded alert sync service
     if (savedOK) {
       if (_experimentGroup.feedback.type == taqo_feedback.Feedback.FEEDBACK_TYPE_STATIC_MESSAGE) {

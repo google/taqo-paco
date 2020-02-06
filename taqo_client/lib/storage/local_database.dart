@@ -7,15 +7,17 @@ import 'package:taqo_client/model/event.dart';
 import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/model/notification_holder.dart';
 import 'package:taqo_client/storage/local_storage.dart';
+import 'package:taqo_client/util/zoned_date_time.dart';
 
 part 'local_database.inc.dart';
+part 'local_database.workaround.dart';
 
 /// Global reference of the database connection, using singleton pattern
 class LocalDatabase extends LocalFileStorage {
   /// Singleton implementation
 
   /// The private constructor
-  LocalDatabase._(): super(dbFilename) {
+  LocalDatabase._() : super(dbFilename) {
     _init();
   }
 
@@ -35,7 +37,8 @@ class LocalDatabase extends LocalFileStorage {
   }
 
   Future<Database> _openDatabase() async {
-    return await openDatabase((await localFile).path, version: _dbVersion, onCreate: _onCreate);
+    return await openDatabase((await localFile).path,
+        version: _dbVersion, onCreate: _onCreate);
   }
 
   Future<void> insertEvent(Event event) async {
@@ -58,7 +61,8 @@ class LocalDatabase extends LocalFileStorage {
     return _getAllNotifications(db);
   }
 
-  Future<List<NotificationHolder>> getAllNotificationsForExperiment(Experiment experiment) async {
+  Future<List<NotificationHolder>> getAllNotificationsForExperiment(
+      Experiment experiment) async {
     final db = await _db;
     return _getAllNotificationsForExperiment(db, experiment.id);
   }
@@ -91,5 +95,24 @@ class LocalDatabase extends LocalFileStorage {
   Future<void> removeAlarm(int id) async {
     final db = await _db;
     return _removeAlarm(db, id);
+  }
+
+  Future<Iterable<Event>> getUnuploadedEvents() async {
+    final db = await _db;
+    final eventFieldsMaps = await db.query('events', where: 'uploaded=0');
+    return Future.wait(eventFieldsMaps
+        .map((e) async => await _createEventFromColumnValueMap(db, e)));
+  }
+
+  Future<void> markEventsAsUploaded(Iterable<Event> events) async {
+    final db = await _db;
+    db.transaction((txn) async {
+      var batch = txn.batch();
+      for (var event in events) {
+        batch.update('events', {'uploaded': 1},
+            where: '_id=?', whereArgs: [event.id]);
+      }
+      await batch.commit(noResult: true);
+    });
   }
 }
