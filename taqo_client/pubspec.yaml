@@ -32,8 +32,8 @@ dependencies:
   path_provider_macos: ^0.0.1
   petitparser: ^2.4.0
   shared_preferences: ^0.5.6
-  time_zone_notifier:
-    path: ../time_zone_notifier
+  taqo_time_plugin:
+    path: ../taqo_time_plugin
 
 dependency_overrides:
   sqflite:

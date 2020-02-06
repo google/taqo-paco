@@ -22,11 +22,11 @@ import 'package:taqo_client/service/notification_service.dart' as notification_m
 import 'package:taqo_client/net/google_auth.dart';
 import 'package:taqo_client/storage/esm_signal_storage.dart';
 
-import 'package:time_zone_notifier/time_zone_notifier.dart';
+import 'package:taqo_time_plugin/taqo_time_plugin.dart' as taqo_time_plugin;
 
 var gAuth = GoogleAuth();
 
-void _timeZoneChanged() async {
+void _onTimeChange() async {
   /// TODO Currently provides no info on how the time was changed
   print('time [zone] changed, rescheduling');
   await ESMSignalStorage().deleteAllSignals();
@@ -40,7 +40,7 @@ void main() {
   debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
 
   WidgetsFlutterBinding.ensureInitialized();
-  TimeZoneNotifier.initialize(_timeZoneChanged);
+  taqo_time_plugin.initialize(_onTimeChange);
 
   // notification_manager.init() should be called once and only once
   // Calling it here ensures that it completes before the app launches
