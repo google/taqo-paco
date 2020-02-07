@@ -6,6 +6,8 @@ private let SEND_EMAIL : String = "send_email"
 private let TO_ARG : String = "to"
 private let SUBJ_ARG : String = "subject"
 
+private let gmailTemplate = "https://mail.google.com/mail/?view=cm&fs=1&to=%@&su=%@"
+
 public class TaqoEmailPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: CHANNEL_NAME, binaryMessenger: registrar.messenger)
@@ -20,7 +22,7 @@ public class TaqoEmailPlugin: NSObject, FlutterPlugin {
       let to = args?[TO_ARG]
       let subject = args?[SUBJ_ARG]?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
       if (to != nil && subject != nil) {
-        if let url = URL(string: "mailto:\(to!)?subject=\(subject!)") {
+        if let url = URL(string: String(format: gmailTemplate, to!, subject!)) {
           NSWorkspace.shared.open(url)
         }
       }
