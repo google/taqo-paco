@@ -98,7 +98,7 @@ class FlutterBackgroundExecutor {
     fun executeDartCallbackInBackgroundIsolate(context: Context) {
         val sharedPreferences = context.getSharedPreferences(SHARED_PREF_KEY, MODE_PRIVATE)
         val callbackHandle = sharedPreferences.getLong(CALLBACK_HANDLE, 0)
-        backgroundChannel?.invokeMethod(bgCallbackMethod, arrayOf(callbackHandle as Any), null)
+        backgroundChannel?.invokeMethod(bgCallbackMethod, arrayOf(callbackHandle as Any))
     }
 }
 
