@@ -1,26 +1,15 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-import '../main.dart';
-import '../model/action_specification.dart';
-import '../model/experiment.dart';
-import '../model/notification_holder.dart';
-import '../storage/local_database.dart';
-import '../pages/survey/survey_page.dart';
-import 'alarm_service.dart' as alarm_manager;
-import 'experiment_service.dart';
-
-class _ReceivedNotification {
-  final int id;
-  final String title;
-  final String body;
-  final String payload;
-
-  _ReceivedNotification(this.id, this.title, this.body, this.payload);
-}
+import '../../main.dart';
+import '../../model/action_specification.dart';
+import '../../model/experiment.dart';
+import '../../model/notification_holder.dart';
+import '../../pages/survey/survey_page.dart';
+import '../../storage/local_database.dart';
+import '../experiment_service.dart';
 
 const _ANDROID_NOTIFICATION_CHANNEL_ID = "com.taqo.survey.taqosurvey.NOTIFICATIONS";
 const _ANDROID_NOTIFICATION_CHANNEL_NAME = "Experiment Reminders";
@@ -30,9 +19,13 @@ const _ANDROID_SOUND = "deepbark_trial";
 
 final _plugin = FlutterLocalNotificationsPlugin();
 
-// For iOS only, when notification is received while app has foreground
-final _receivedNotifications = StreamController<_ReceivedNotification>();
-final _selectedNotifications = StreamController<String>();
+final _notificationHandledStream = StreamController<String>();
+
+/// The callback when a notification is tapped by the user
+void _handleNotification(String payload) async {
+  print('Handle $payload');
+  openSurvey(payload);
+}
 
 /// Shows or schedules a notification with the plugin
 Future<int> _notify(ActionSpecification actionSpec, {DateTime when}) async {
@@ -87,53 +80,28 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when}) async {
   return id;
 }
 
-/// The callback when a notification is tapped by the user
-void _handleNotification(String payload) async {
-  print('handle $payload');
-  getLaunchDetails().then((launchDetails) {
-    if (!launchDetails.didNotificationLaunchApp) {
-      openSurvey(payload);
-    }
-  });
-}
-
 /// Initialize the plugin
-Future<void> init() async {
+Future init() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final initSettingsAndroid = AndroidInitializationSettings(_ANDROID_ICON);
   final initSettingsIOS = IOSInitializationSettings(
       onDidReceiveLocalNotification: (int id, String title, String body, String payload) async {
-    // TODO Can we just add the payload to one Stream?
-    _receivedNotifications.add(_ReceivedNotification(id, title, body, payload));
-  });
+        _notificationHandledStream.add(payload);
+      });
 
   final initSettings = InitializationSettings(initSettingsAndroid, initSettingsIOS);
   await _plugin.initialize(initSettings, onSelectNotification: (String payload) async {
-    // TODO Is this all I need?
-    _selectedNotifications.add(payload);
+    _notificationHandledStream.add(payload);
   });
 
-  // Listen
-  _receivedNotifications.stream.listen((_ReceivedNotification notification) {
-    _handleNotification(notification.payload);
-  });
-  _selectedNotifications.stream.listen((String payload) {
+  _notificationHandledStream.stream.listen((String payload) {
     _handleNotification(payload);
   });
 }
 
-void dispose() {
-  if (_selectedNotifications != null) {
-    _selectedNotifications.close();
-  }
-  if (_receivedNotifications != null) {
-    _receivedNotifications.close();
-  }
-}
-
-/// For finding out if the app was launched in response to a notification being tapped
-Future<NotificationAppLaunchDetails> getLaunchDetails() =>
+/// For finding out if the app was launched from a notification
+Future<NotificationAppLaunchDetails> get launchDetails =>
     _plugin.getNotificationAppLaunchDetails();
 
 /// Open the survey that triggered the notification
@@ -181,7 +149,7 @@ void cancelNotification(int id) {
 void cancelForExperiment(Experiment experiment) async {
   LocalDatabase().getAllNotificationsForExperiment(experiment)
       .then((List<NotificationHolder> notifications) =>
-              notifications.forEach((n) => cancelNotification(n.id)))
+      notifications.forEach((n) => cancelNotification(n.id)))
       .catchError((e, st) => "Error canceling notifications: $e");
 }
 

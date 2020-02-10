@@ -2,15 +2,15 @@ import 'dart:isolate';
 
 import 'package:android_alarm_manager/android_alarm_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:taqo_client/util/date_time_util.dart';
 
-import '../model/action_specification.dart';
-import '../model/event.dart';
-import '../model/notification_holder.dart';
-import '../service/experiment_service.dart';
-import '../scheduling/action_schedule_generator.dart';
-import '../storage/local_database.dart';
-import 'notification_service.dart' as notification_manager;
+import '../../model/action_specification.dart';
+import '../../model/event.dart';
+import '../../model/notification_holder.dart';
+import '../../scheduling/action_schedule_generator.dart';
+import '../../storage/local_database.dart';
+import '../../util/date_time_util.dart';
+import '../experiment_service.dart';
+import 'flutter_local_notifications.dart' as flutter_local_notifications;
 
 const SHARED_PREFS_LAST_ALARM_TIME = 'lastScheduledAlarm';
 
@@ -71,7 +71,7 @@ void _notifyCallback(int alarmId) async {
     var i = 0;
     for (var a in allAlarms) {
       print('[${i++}] Showing ${a.time}');
-      notification_manager.showNotification(a);
+      flutter_local_notifications.showNotification(a);
     }
 
     // Store last shown notification time
@@ -116,7 +116,7 @@ void _expireCallback(int alarmId) async {
         notificationHolder.matchesAction(toCancel), orElse: () => null);
     if (match != null) {
       _createMissedEvent(match);
-      notification_manager.cancelNotification(match.id);
+      flutter_local_notifications.cancelNotification(match.id);
     }
   }
 

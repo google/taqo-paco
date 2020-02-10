@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart'
     show debugDefaultTargetPlatformOverride;
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:taqo_client/pages/experiment_detail_page.dart';
 import 'package:taqo_client/pages/find_experiments_page.dart';
 import 'package:taqo_client/pages/informed_consent_page.dart';
@@ -16,13 +15,13 @@ import 'package:taqo_client/pages/survey_picker_page.dart';
 import 'package:taqo_client/pages/welcome_page.dart';
 import 'package:taqo_client/pages/invitation_entry_page.dart';
 import 'package:taqo_client/pages/login_page.dart';
-import 'package:taqo_client/service/alarm_service.dart' as alarm_service;
-import 'package:taqo_client/service/notification_service.dart' as notification_manager;
 
 import 'package:taqo_client/net/google_auth.dart';
 import 'package:taqo_client/storage/esm_signal_storage.dart';
 
 import 'package:taqo_time_plugin/taqo_time_plugin.dart' as taqo_time_plugin;
+
+import 'service/alarm/taqo_alarm.dart' as taqo_alarm;
 
 var gAuth = GoogleAuth();
 
@@ -30,7 +29,7 @@ void _onTimeChange() async {
   /// TODO Currently provides no info on how the time was changed
   print('time [zone] changed, rescheduling');
   await ESMSignalStorage().deleteAllSignals();
-  alarm_service.scheduleNextNotification();
+  taqo_alarm.schedule();
 }
 
 void main() {
@@ -42,21 +41,13 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   taqo_time_plugin.initialize(_onTimeChange);
 
-  // notification_manager.init() should be called once and only once
-  // Calling it here ensures that it completes before the app launches
-  notification_manager.init().then((_) {
-    alarm_service.scheduleNextNotification();
-    notification_manager.getLaunchDetails().then((launchDetails) {
-      runApp(MyApp(launchDetails));
-    });
+  taqo_alarm.init().then((_) {
+    runApp(MyApp());
   });
 }
 
 class MyApp extends StatelessWidget {
   static final navigatorKey = GlobalKey<NavigatorState>();
-  final NotificationAppLaunchDetails _launchDetails;
-
-  MyApp(this._launchDetails);
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +68,7 @@ class MyApp extends StatelessWidget {
         ScheduleOverviewPage.routeName: (context) => ScheduleOverviewPage(),
         ScheduleDetailPage.routeName: (context) => ScheduleDetailPage(),
         InvitationEntryPage.routeName: (context) => InvitationEntryPage(),
-        WelcomePage.routeName: (context) => WelcomePage(_launchDetails),
+        WelcomePage.routeName: (context) => WelcomePage(),
         RunningExperimentsPage.routeName: (context) => RunningExperimentsPage(),
         PostJoinInstructionsPage.routeName: (context) => PostJoinInstructionsPage(),
       },

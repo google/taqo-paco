@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/model/experiment_group.dart';
-import 'package:taqo_client/service/notification_service.dart' as notification_manager;
+
 import '../running_experiments_page.dart';
+import '../../service/alarm/flutter_local_notifications.dart' as flutter_local_notifications;
 
 class FeedbackPage extends StatefulWidget {
   static const routeName = '/feedback';
@@ -44,7 +45,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
         floatingActionButton: FloatingActionButton(
             child: Icon(Icons.done),
             onPressed: () {
-              notification_manager.getLaunchDetails().then((launchDetails) {
+              flutter_local_notifications.launchDetails.then((launchDetails) {
                 if (launchDetails.didNotificationLaunchApp) {
                   SystemChannels.platform.invokeMethod('SystemNavigator.pop');
                 } else {
