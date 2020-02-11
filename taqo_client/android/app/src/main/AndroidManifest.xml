@@ -69,9 +69,9 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED"></action>
             </intent-filter>
         </receiver>
-        <!-- Required for time_zone_notifier -->
+        <!-- Required for taqo_time_plugin -->
         <receiver
-            android:name="com.taqo.survey.timezonenotifier.TimeZoneReceiver"
+            android:name="com.taqo.survey.taqo_time_plugin.TimeChangedReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />
