@@ -71,8 +71,10 @@ class LoggingService {
   }
 
   static void log(String message) {
-    // Output to stderr and console
-    debugPrint(message);
+    // Output to stdout (will be captured by console), only in debug mode
+    if (kDebugMode) {
+      debugPrint(message);
+    }
     // Output to file
     _logSink.writeln(message);
   }
