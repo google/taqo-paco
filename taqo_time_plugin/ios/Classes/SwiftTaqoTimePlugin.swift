@@ -5,9 +5,9 @@ import os
 private let CALLBACK_HANDLE = "callback"
 private let BG_CALLBACK_HANDLE = "background_callback"
 
-private func _log(_ args: CVarArg...) {
+private func _log(_ msg: NSString, _ args: CVarArg...) {
   if #available(iOS 10.0, *) {
-    os_log("TaqoTimePlugin: %s", args)
+    os_log("TaqoTimePlugin: %s", msg)
   }
 }
 
