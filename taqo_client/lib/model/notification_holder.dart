@@ -49,8 +49,12 @@ class NotificationHolder {
 
   Map<String, dynamic> toJson() => _$NotificationHolderToJson(this);
 
-  bool isActive() =>
-      DateTime.now().isBefore(DateTime(alarmTime).add(Duration(milliseconds: timeoutMillis)));
+  bool get isActive {
+    final alarmStart = DateTime.fromMillisecondsSinceEpoch(alarmTime);
+    final alarmEnd = alarmStart.add(Duration(milliseconds: timeoutMillis));
+    final now = DateTime.now();
+    return alarmStart.isAfter(now) && now.isBefore(alarmEnd);
+  }
 
   bool isCustomNotification() =>
       notificationSource == null ? false : notificationSource == CUSTOM_GENERATED_NOTIFICATION;

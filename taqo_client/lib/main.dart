@@ -29,7 +29,7 @@ void _onTimeChange() async {
   /// TODO Currently provides no info on how the time was changed
   print('time [zone] changed, rescheduling');
   await ESMSignalStorage().deleteAllSignals();
-  taqo_alarm.schedule();
+  taqo_alarm.schedule(cancelAll: true);
 }
 
 void main() {
@@ -69,7 +69,6 @@ class MyApp extends StatelessWidget {
         ScheduleDetailPage.routeName: (context) => ScheduleDetailPage(),
         InvitationEntryPage.routeName: (context) => InvitationEntryPage(),
         WelcomePage.routeName: (context) => WelcomePage(),
-        RunningExperimentsPage.routeName: (context) => RunningExperimentsPage(),
         PostJoinInstructionsPage.routeName: (context) => PostJoinInstructionsPage(),
       },
       // Here the route for SurveyPage is configured separately in onGenerateRoute(),
@@ -82,6 +81,10 @@ class MyApp extends StatelessWidget {
             return MaterialPageRoute(
                 builder: (context) => SurveyPage(
                     experiment: args[0], experimentGroupName: args[1]));
+          case RunningExperimentsPage.routeName:
+            return MaterialPageRoute(
+                builder: (context) => RunningExperimentsPage(
+                    timeout: args == null ? false : args.length > 0 ? args[0] : false));
         }
         return null;
       },

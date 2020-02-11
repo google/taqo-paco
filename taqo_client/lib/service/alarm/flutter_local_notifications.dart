@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:taqo_client/pages/running_experiments_page.dart';
 
 import '../../main.dart';
 import '../../model/action_specification.dart';
@@ -10,6 +11,7 @@ import '../../model/notification_holder.dart';
 import '../../pages/survey/survey_page.dart';
 import '../../storage/local_database.dart';
 import '../experiment_service.dart';
+import 'taqo_alarm.dart' as taqo_alarm;
 
 const _ANDROID_NOTIFICATION_CHANNEL_ID = "com.taqo.survey.taqosurvey.NOTIFICATIONS";
 const _ANDROID_NOTIFICATION_CHANNEL_NAME = "Experiment Reminders";
@@ -28,7 +30,8 @@ void _handleNotification(String payload) async {
 }
 
 /// Shows or schedules a notification with the plugin
-Future<int> _notify(ActionSpecification actionSpec, {DateTime when}) async {
+Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
+    bool cancelPending=true}) async {
   var timeout = 59;
   if (actionSpec.action != null) {
     timeout = actionSpec.action.timeout ?? timeout;
@@ -48,16 +51,22 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when}) async {
     actionSpec.actionTriggerSpecId,
   );
 
-  // Cancel existing notifications for the same survey
-  final pending = await LocalDatabase().getAllNotificationsForExperiment(actionSpec.experiment);
-  for (var n in pending) {
-    if (notificationHolder.sameGroupAs(n)) {
-      cancelNotification(n.id);
-    }
+  // Cancel existing (pending) notifications for the same survey
+  // On Android, we create the notification at the time of the alarm
+  // Therefore we should timeout any pending notifications for the same survey
+  // We don't want to do this on iOS where we are aggressively pre-scheduling
+  // notifications
+  if (cancelPending) {
+    final pendingNotifications = await LocalDatabase()
+        .getAllNotificationsForExperiment(actionSpec.experiment);
+    await Future.forEach(pendingNotifications, (pn) async {
+      if (notificationHolder.sameGroupAs(pn)) {
+        await taqo_alarm.timeout(pn.id);
+      }
+    });
   }
 
   final id = await LocalDatabase().insertNotification(notificationHolder);
-  print('Showing notification id: $id @ ${actionSpec.time}');
 
   final androidDetails = AndroidNotificationDetails(
     _ANDROID_NOTIFICATION_CHANNEL_ID,
@@ -65,16 +74,20 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when}) async {
     _ANDROID_NOTIFICATION_CHANNEL_DESC,
     sound: _ANDROID_SOUND,
   );
-  final iOSDetails = IOSNotificationDetails();
+  final iOSDetails = IOSNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+      sound: 'deepbark_trial.m4a');
   final details = NotificationDetails(androidDetails, iOSDetails);
 
   if (when != null) {
+    await _plugin.schedule(
+        id, actionSpec.experiment.title, notificationHolder.message, when, details,
+        payload: "$id", androidAllowWhileIdle: true);
+  } else {
     await _plugin.show(
         id, actionSpec.experiment.title, notificationHolder.message, details, payload: "$id");
-  } else {
-    await _plugin.schedule(
-        id, actionSpec.experiment.title, notificationHolder.message, actionSpec.time, details,
-        payload: "$id", androidAllowWhileIdle: true);
   }
 
   return id;
@@ -108,10 +121,17 @@ Future<NotificationAppLaunchDetails> get launchDetails =>
 Future<void> openSurvey(String payload) async {
   final id = int.tryParse(payload);
   final notificationHolder = await LocalDatabase().getNotification(id);
-  LocalDatabase().removeNotification(id);
 
   if (notificationHolder == null) {
     print('No holder for payload: $payload');
+    return;
+  }
+
+  // Timezone could have changed
+  if (!notificationHolder.isActive) {
+    await taqo_alarm.timeout(id);
+    MyApp.navigatorKey.currentState.pushReplacementNamed(
+        RunningExperimentsPage.routeName, arguments: [true, ]);
     return;
   }
 
@@ -130,31 +150,45 @@ Future<void> openSurvey(String payload) async {
 }
 
 /// Show a notification now
-Future<int> showNotification(ActionSpecification actionSpec) {
-  return _notify(actionSpec);
+Future<int> showNotification(ActionSpecification actionSpec) async {
+  final id = await _notify(actionSpec);
+  print('Showing notification id: $id @ ${actionSpec.time}');
+  return id;
 }
 
 /// Schedule a notification at [actionSpec.time]
-Future<int> scheduleNotification(ActionSpecification actionSpec) {
-  return _notify(actionSpec, when: actionSpec.time);
+Future<int> scheduleNotification(ActionSpecification actionSpec,
+    {bool cancelPending}) async {
+  final id = await _notify(actionSpec, when: actionSpec.time,
+      cancelPending: cancelPending);
+  print('Scheduling notification id: $id @ ${actionSpec.time}');
+  return id;
 }
 
 /// Cancel notification with [id]
-void cancelNotification(int id) {
+Future cancelNotification(int id) {
   _plugin.cancel(id).catchError((e, st) => print("Error canceling notification id $id: $e"));
-  LocalDatabase().removeNotification(id);
+  return LocalDatabase().removeNotification(id);
 }
 
 /// Cancel all notifications for [experiment]
-void cancelForExperiment(Experiment experiment) async {
-  LocalDatabase().getAllNotificationsForExperiment(experiment)
+Future cancelForExperiment(Experiment experiment) {
+  return LocalDatabase().getAllNotificationsForExperiment(experiment)
       .then((List<NotificationHolder> notifications) =>
       notifications.forEach((n) => cancelNotification(n.id)))
       .catchError((e, st) => "Error canceling notifications: $e");
 }
 
-/// Cancel all notifications
-void cancelAllNotifications() {
-  _plugin.cancelAll().catchError((e, st) => print("Error canceling notifications: $e"));
-  LocalDatabase().removeAllNotifications();
+/// Cancel all notifications, except ones that fired and are still pending
+Future cancelAllNotifications() {
+  return LocalDatabase().getAllNotifications()
+      .then(((List<NotificationHolder> notifications) {
+        for (var n in notifications) {
+          final dt = DateTime.fromMillisecondsSinceEpoch(n.alarmTime);
+          if (dt.isBefore(DateTime.now())) {
+            continue;
+          }
+          cancelNotification(n.id);
+        }
+  })).catchError((e, st) => "Error canceling notifications: $e");
 }

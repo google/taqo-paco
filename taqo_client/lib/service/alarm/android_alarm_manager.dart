@@ -4,13 +4,11 @@ import 'package:android_alarm_manager/android_alarm_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../model/action_specification.dart';
-import '../../model/event.dart';
-import '../../model/notification_holder.dart';
 import '../../scheduling/action_schedule_generator.dart';
 import '../../storage/local_database.dart';
 import '../../util/date_time_util.dart';
-import '../experiment_service.dart';
 import 'flutter_local_notifications.dart' as flutter_local_notifications;
+import 'taqo_alarm.dart' as taqo_alarm;
 
 const SHARED_PREFS_LAST_ALARM_TIME = 'lastScheduledAlarm';
 
@@ -88,22 +86,6 @@ void _notifyCallback(int alarmId) async {
   _scheduleNextNotification(from: from);
 }
 
-void _createMissedEvent(NotificationHolder notification) async {
-  final service = await ExperimentService.getInstance();
-  final experiment = await service.getExperimentFromServerById(notification.experimentId);
-  final event = Event();
-  event.experimentId = experiment.id;
-  event.experimentServerId = experiment.id;
-  event.experimentName = experiment.title;
-  event.groupName = notification.experimentGroupName;
-  event.actionId = notification.actionId;
-  event.actionTriggerId = notification.actionTriggerId;
-  event.actionTriggerSpecId = notification.actionTriggerSpecId;
-  event.experimentVersion = experiment.version;
-  event.scheduleTime = getZonedDateTime(DateTime.fromMillisecondsSinceEpoch(notification.alarmTime));
-  LocalDatabase().insertEvent(event);
-}
-
 void _expireCallback(int alarmId) async {
   // This is running in a different (background) Isolate
   print('expire: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
@@ -115,8 +97,7 @@ void _expireCallback(int alarmId) async {
     final match = notifications.firstWhere((notificationHolder) =>
         notificationHolder.matchesAction(toCancel), orElse: () => null);
     if (match != null) {
-      _createMissedEvent(match);
-      flutter_local_notifications.cancelNotification(match.id);
+      taqo_alarm.timeout(match.id);
     }
   }
 

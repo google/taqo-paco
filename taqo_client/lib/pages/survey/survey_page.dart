@@ -392,6 +392,26 @@ class _SurveyPageState extends State<SurveyPage> {
       }
     }
 
+    // Cancel existing (pending) notifications FOR THIS SURVEY only
+    // The implication here is that the actual timeout/expiration time is
+    // the min of the explicit timeout and the time until the next notification
+    // for the same survey fires
+    final pendingNotifications = (await LocalDatabase()
+        .getAllNotificationsForExperiment(_experiment))
+        .where((e) => e.experimentGroupName == _experimentGroup.name)
+        .toList();
+    for (var i = 0; i < pendingNotifications.length; i++) {
+      final pn = pendingNotifications[i];
+      if (!pn.isActive || i + 1 < pendingNotifications.length) {
+        // Record Paco missed event for expired or stale
+        await taqo_alarm.timeout(pn.id);
+      } else {
+        // For the latest notification, during self-report it could be expired,
+        // (!isActive) and handled above (timeout). Otherwise, just clean it up
+        await flutter_local_notifications.cancelNotification(pn.id);
+      }
+    }
+
     // Filter out conditional inputs that may no longer be valid
     // This can occur if the user answered a conditional input but later modified an answer
     // that nullifies the conditional input
