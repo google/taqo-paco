@@ -3,16 +3,27 @@ PODS:
   - FMDB (2.7.5):
     - FMDB/standard (= 2.7.5)
   - FMDB/standard (2.7.5)
+  - path_provider_macos (0.0.1):
+    - FlutterMacOS
+  - shared_preferences (0.0.1)
+  - shared_preferences_macos (0.0.1):
+    - FlutterMacOS
   - sqflite (0.0.1):
     - FlutterMacOS
     - FMDB (~> 2.7.2)
+  - taqo_time_plugin (0.0.1):
+    - FlutterMacOS
   - url_launcher (0.0.1)
   - url_launcher_macos (0.0.1):
     - FlutterMacOS
 
 DEPENDENCIES:
   - FlutterMacOS (from `Flutter/ephemeral/.symlinks/flutter/darwin-x64`)
+  - path_provider_macos (from `Flutter/ephemeral/.symlinks/plugins/path_provider_macos/macos`)
+  - shared_preferences (from `Flutter/ephemeral/.symlinks/plugins/shared_preferences/macos`)
+  - shared_preferences_macos (from `Flutter/ephemeral/.symlinks/plugins/shared_preferences_macos/macos`)
   - sqflite (from `Flutter/ephemeral/.symlinks/plugins/sqflite/macos`)
+  - taqo_time_plugin (from `Flutter/ephemeral/.symlinks/plugins/taqo_time_plugin/macos`)
   - url_launcher (from `Flutter/ephemeral/.symlinks/plugins/url_launcher/macos`)
   - url_launcher_macos (from `Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos`)
 
@@ -23,8 +34,16 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   FlutterMacOS:
     :path: Flutter/ephemeral/.symlinks/flutter/darwin-x64
+  path_provider_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/path_provider_macos/macos
+  shared_preferences:
+    :path: Flutter/ephemeral/.symlinks/plugins/shared_preferences/macos
+  shared_preferences_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/shared_preferences_macos/macos
   sqflite:
     :path: Flutter/ephemeral/.symlinks/plugins/sqflite/macos
+  taqo_time_plugin:
+    :path: Flutter/ephemeral/.symlinks/plugins/taqo_time_plugin/macos
   url_launcher:
     :path: Flutter/ephemeral/.symlinks/plugins/url_launcher/macos
   url_launcher_macos:
@@ -33,7 +52,11 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   FlutterMacOS: 15bea8a44d2fa024068daa0140371c020b4b6ff9
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
+  path_provider_macos: adb94ae6c253c45ef2aac146fbf1f4504d74b0f8
+  shared_preferences: 9fec34d1bd906196a4da48fcf6c3ad521cc00b8d
+  shared_preferences_macos: 5e5c2839894accb56b7d23328905b757f2bafaf6
   sqflite: 6c1f07e1d4399d619ea619fea9171251dd24d058
+  taqo_time_plugin: 8443f93d83f506e56933b036da873c58fa9616f6
   url_launcher: af78307ef9bafff91273b34f1c6c0c86a0004fd7
   url_launcher_macos: 76867a28e24e0b6b98bfd65f157b64108e6d477a
 

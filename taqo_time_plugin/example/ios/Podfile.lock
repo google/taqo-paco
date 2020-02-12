@@ -1,0 +1,22 @@
+PODS:
+  - Flutter (1.0.0)
+  - taqo_time_plugin (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - taqo_time_plugin (from `.symlinks/plugins/taqo_time_plugin/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  taqo_time_plugin:
+    :path: ".symlinks/plugins/taqo_time_plugin/ios"
+
+SPEC CHECKSUMS:
+  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  taqo_time_plugin: 53fdbd570f0305d771c74cbe8087c8ebfc2187ca
+
+PODFILE CHECKSUM: 083258d7f5e80b42ea9bfee905fe93049bc04c64
+
+COCOAPODS: 1.8.4
