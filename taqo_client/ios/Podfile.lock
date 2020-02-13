@@ -22,7 +22,7 @@ PODS:
     - FMDB (~> 2.7.2)
   - taqo_email_plugin (0.0.1):
     - Flutter
-  - time_zone_notifier (0.0.1):
+  - taqo_time_plugin (0.0.1):
     - Flutter
   - url_launcher (0.0.1):
     - Flutter
@@ -42,7 +42,7 @@ DEPENDENCIES:
   - shared_preferences_web (from `.symlinks/plugins/shared_preferences_web/ios`)
   - sqflite (from `.symlinks/plugins/sqflite/ios`)
   - taqo_email_plugin (from `.symlinks/plugins/taqo_email_plugin/ios`)
-  - time_zone_notifier (from `.symlinks/plugins/time_zone_notifier/ios`)
+  - taqo_time_plugin (from `.symlinks/plugins/taqo_time_plugin/ios`)
   - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
   - url_launcher_macos (from `.symlinks/plugins/url_launcher_macos/ios`)
   - url_launcher_web (from `.symlinks/plugins/url_launcher_web/ios`)
@@ -72,8 +72,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/sqflite/ios"
   taqo_email_plugin:
     :path: ".symlinks/plugins/taqo_email_plugin/ios"
-  time_zone_notifier:
-    :path: ".symlinks/plugins/time_zone_notifier/ios"
+  taqo_time_plugin:
+    :path: ".symlinks/plugins/taqo_time_plugin/ios"
   url_launcher:
     :path: ".symlinks/plugins/url_launcher/ios"
   url_launcher_macos:
@@ -93,7 +93,7 @@ SPEC CHECKSUMS:
   shared_preferences_web: 141cce0c3ed1a1c5bf2a0e44f52d31eeb66e5ea9
   sqflite: 4001a31ff81d210346b500c55b17f4d6c7589dd0
   taqo_email_plugin: 4527c2a636976bbfa8f034eae1b59d660883354e
-  time_zone_notifier: b917c34dc1a7086190fce785b64af75dd36e7612
+  taqo_time_plugin: 53fdbd570f0305d771c74cbe8087c8ebfc2187ca
   url_launcher: a1c0cc845906122c4784c542523d8cacbded5626
   url_launcher_macos: fd7894421cd39320dce5f292fc99ea9270b2a313
   url_launcher_web: e5527357f037c87560776e36436bf2b0288b965c

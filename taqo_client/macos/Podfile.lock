@@ -12,6 +12,7 @@ PODS:
     - FlutterMacOS
     - FMDB (~> 2.7.2)
   - taqo_email_plugin (0.0.1):
+  - taqo_time_plugin (0.0.1):
     - FlutterMacOS
   - url_launcher (0.0.1)
   - url_launcher_macos (0.0.1):
@@ -24,6 +25,7 @@ DEPENDENCIES:
   - shared_preferences_macos (from `Flutter/ephemeral/.symlinks/plugins/shared_preferences_macos/macos`)
   - sqflite (from `Flutter/ephemeral/.symlinks/plugins/sqflite/macos`)
   - taqo_email_plugin (from `Flutter/ephemeral/.symlinks/plugins/taqo_email_plugin/macos`)
+  - taqo_time_plugin (from `Flutter/ephemeral/.symlinks/plugins/taqo_time_plugin/macos`)
   - url_launcher (from `Flutter/ephemeral/.symlinks/plugins/url_launcher/macos`)
   - url_launcher_macos (from `Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos`)
 
@@ -44,6 +46,8 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/sqflite/macos
   taqo_email_plugin:
     :path: Flutter/ephemeral/.symlinks/plugins/taqo_email_plugin/macos
+  taqo_time_plugin:
+    :path: Flutter/ephemeral/.symlinks/plugins/taqo_time_plugin/macos
   url_launcher:
     :path: Flutter/ephemeral/.symlinks/plugins/url_launcher/macos
   url_launcher_macos:
@@ -57,6 +61,7 @@ SPEC CHECKSUMS:
   shared_preferences_macos: 5e5c2839894accb56b7d23328905b757f2bafaf6
   sqflite: 6c1f07e1d4399d619ea619fea9171251dd24d058
   taqo_email_plugin: 26d4111d68c90dcf333c186a9fcacc7022942097
+  taqo_time_plugin: 8443f93d83f506e56933b036da873c58fa9616f6
   url_launcher: af78307ef9bafff91273b34f1c6c0c86a0004fd7
   url_launcher_macos: 76867a28e24e0b6b98bfd65f157b64108e6d477a
 
