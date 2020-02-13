@@ -16,7 +16,6 @@ import 'package:taqo_client/pages/survey_picker_page.dart';
 import 'package:taqo_client/pages/welcome_page.dart';
 import 'package:taqo_client/pages/invitation_entry_page.dart';
 import 'package:taqo_client/pages/login_page.dart';
-import 'package:taqo_client/platform/platform_logging.dart';
 import 'package:taqo_client/service/alarm_service.dart' as alarm_service;
 import 'package:taqo_client/service/logging_service.dart';
 import 'package:taqo_client/service/notification_service.dart'
@@ -43,7 +42,6 @@ void main() {
   debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
 
   WidgetsFlutterBinding.ensureInitialized();
-  setupLoggingMethodChannel();
   TimeZoneNotifier.initialize(_timeZoneChanged);
 
   // LoggingService.init() and notification_manager.init() should be called once and only once
