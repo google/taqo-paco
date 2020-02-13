@@ -30,11 +30,10 @@ class LoggingService {
           '${record.time.toUtc().toIso8601String()} ${record.level.name} [${record.loggerName}]: ${record.message}');
     });
   }
-
+  // log file name format is yyyy-MM-dd.log
+  static String getCurrentLogFileName() => '${DateTime.now().toUtc().toIso8601String().substring(0, _ISO8601_INDEX_DAY)}.log';
   static IOSink get _logSink {
-    // log file name format is yyyy-MM-dd.log
-    var logFileName =
-        '${DateTime.now().toUtc().toIso8601String().substring(0, _ISO8601_INDEX_DAY)}.log';
+    var logFileName = getCurrentLogFileName();
     if (logFileName != _logFileName) {
       _flushCloseSink(__logSink);
       _logFileName = logFileName;
