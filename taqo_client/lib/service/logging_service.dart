@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:glob/glob.dart';
 import 'package:logging/logging.dart';
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -51,19 +52,27 @@ class LoggingService {
     await sink?.close();
   }
 
-  static Future<void> _clearOldLogFiles() async {
-    var logFiles = <File>[
+  // Be careful when modifying code calling the following function, since it
+  // will modify its argument and its return value also depends on its argument.
+  @visibleForTesting
+  static Iterable<String> filterOldLogFileNames(List<String> logFileNames,
+      {int maxLogFilesCount = _MAX_LOG_FILES_COUNT}) {
+    if (logFileNames.length <= maxLogFilesCount) {
+      return Iterable<String>.empty();
+    } else {
+      logFileNames.sort((a, b) => p.basename(a).compareTo(p.basename(b)));
+      return logFileNames.take(logFileNames.length - maxLogFilesCount);
+    }
+  }
+
+  static void _clearOldLogFiles() {
+    var logFileNames = <String>[
       for (var entity
           in _logGlob.listSync(root: _logDirectoryPath, followLinks: false))
-        if (entity is File) entity
+        if (entity is File) entity.path
     ];
-
-    if (logFiles.length > _MAX_LOG_FILES_COUNT) {
-      logFiles.sort(
-          (File a, File b) => p.basename(a.path).compareTo(p.basename(b.path)));
-      for (var file in logFiles.take(logFiles.length - _MAX_LOG_FILES_COUNT)) {
-        await file.delete();
-      }
+    for (var fileName in filterOldLogFileNames(logFileNames)) {
+      File(fileName).delete();
     }
   }
 
