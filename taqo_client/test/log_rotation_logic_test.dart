@@ -13,7 +13,7 @@ void main() {
             'fcc4d8/2020-01-12.log',
             'fcc4d8/2020-01-09.log',
             'fcc4d8/2020-01-13.log'
-          ], maxLogFilesCount: 3),
+          ], maxLogFilesCount: _MAX_LOG_FILES_COUNT),
           equals([
             'fcc4d8/2020-01-09.log',
             'fcc4d8/2020-01-10.log',
@@ -26,12 +26,12 @@ void main() {
             'fcc4d8/2020-01-14.log',
             'fcc4d8/2020-01-12.log',
             'fcc4d8/2020-01-13.log'
-          ], maxLogFilesCount: 3),
+          ], maxLogFilesCount: _MAX_LOG_FILES_COUNT),
           equals([]));
       expect(
           LoggingService.filterOldLogFileNames(
               ['fcc4d8/2020-01-14.log', 'fcc4d8/2020-01-13.log'],
-              maxLogFilesCount: 3),
+              maxLogFilesCount: _MAX_LOG_FILES_COUNT),
           equals([]));
     });
   });
