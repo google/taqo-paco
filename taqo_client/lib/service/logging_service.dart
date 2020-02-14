@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:glob/glob.dart';
 import 'package:logging/logging.dart';
-import 'package:path/path.dart' as path;
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 class LoggingService {
@@ -30,14 +30,16 @@ class LoggingService {
           '${record.time.toUtc().toIso8601String()} ${record.level.name} [${record.loggerName}]: ${record.message}');
     });
   }
+
   // log file name format is yyyy-MM-dd.log
-  static String getCurrentLogFileName() => '${DateTime.now().toUtc().toIso8601String().substring(0, _ISO8601_INDEX_DAY)}.log';
+  static String _getCurrentLogFileName() =>
+      '${DateTime.now().toUtc().toIso8601String().substring(0, _ISO8601_INDEX_DAY)}.log';
   static IOSink get _logSink {
-    var logFileName = getCurrentLogFileName();
+    var logFileName = _getCurrentLogFileName();
     if (logFileName != _logFileName) {
       _flushCloseSink(__logSink);
       _logFileName = logFileName;
-      _logFile = File(path.join(_logDirectoryPath, _logFileName));
+      _logFile = File(p.join(_logDirectoryPath, _logFileName));
       __logSink = _logFile.openWrite(mode: FileMode.append);
       _clearOldLogFiles();
     }
@@ -50,22 +52,18 @@ class LoggingService {
   }
 
   static Future<void> _clearOldLogFiles() async {
-    File logFileWithMinDate = File('9999-99-99.log');
-    int logCount = 0;
-    await for (var entity in _logGlob.list(root: _logDirectoryPath)) {
-      if (entity is File) {
-        var file = entity as File;
-        logCount += 1;
-        logFileWithMinDate = path
-                    .basename(file.path)
-                    .compareTo(path.basename(logFileWithMinDate.path)) <
-                0
-            ? file
-            : logFileWithMinDate;
+    var logFiles = <File>[
+      for (var entity
+          in _logGlob.listSync(root: _logDirectoryPath, followLinks: false))
+        if (entity is File) entity
+    ];
+
+    if (logFiles.length > _MAX_LOG_FILES_COUNT) {
+      logFiles.sort(
+          (File a, File b) => p.basename(a.path).compareTo(p.basename(b.path)));
+      for (var file in logFiles.take(logFiles.length - _MAX_LOG_FILES_COUNT)) {
+        await file.delete();
       }
-    }
-    if (logCount > _MAX_LOG_FILES_COUNT) {
-      await logFileWithMinDate.delete();
     }
   }
 
