@@ -17,7 +17,9 @@ import 'package:taqo_client/pages/welcome_page.dart';
 import 'package:taqo_client/pages/invitation_entry_page.dart';
 import 'package:taqo_client/pages/login_page.dart';
 import 'package:taqo_client/service/alarm_service.dart' as alarm_service;
-import 'package:taqo_client/service/notification_service.dart' as notification_manager;
+import 'package:taqo_client/service/logging_service.dart';
+import 'package:taqo_client/service/notification_service.dart'
+    as notification_manager;
 
 import 'package:taqo_client/net/google_auth.dart';
 import 'package:taqo_client/storage/esm_signal_storage.dart';
@@ -42,14 +44,12 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   taqo_time_plugin.initialize(_onTimeChange);
 
-  // notification_manager.init() should be called once and only once
-  // Calling it here ensures that it completes before the app launches
-  notification_manager.init().then((_) {
+  // LoggingService.init() and notification_manager.init() should be called once and only once
+  // Calling them here ensures that they complete before the app launches
+  LoggingService.init().then((_) => notification_manager.init()).then((_) {
     alarm_service.scheduleNextNotification();
-    notification_manager.getLaunchDetails().then((launchDetails) {
-      runApp(MyApp(launchDetails));
-    });
-  });
+    return notification_manager.getLaunchDetails();
+  }).then((launchDetails) => runApp(MyApp(launchDetails)));
 }
 
 class MyApp extends StatelessWidget {
@@ -79,7 +79,8 @@ class MyApp extends StatelessWidget {
         InvitationEntryPage.routeName: (context) => InvitationEntryPage(),
         WelcomePage.routeName: (context) => WelcomePage(_launchDetails),
         RunningExperimentsPage.routeName: (context) => RunningExperimentsPage(),
-        PostJoinInstructionsPage.routeName: (context) => PostJoinInstructionsPage(),
+        PostJoinInstructionsPage.routeName: (context) =>
+            PostJoinInstructionsPage(),
       },
       // Here the route for SurveyPage is configured separately in onGenerateRoute(),
       // since we need to pass argument to this route before the page being built,
