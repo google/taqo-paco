@@ -20,7 +20,7 @@ Future schedule({bool cancelAll=false}) async {
   // TODO the calculate() API currently doesn't support using plugins
   if (Platform.isAndroid) {
     android_alarm_manager.scheduleNextNotification();
-  } else if (Platform.isIOS) {
+  } else if (Platform.isIOS || Platform.isMacOS) {
     if (cancelAll) {
       await flutter_local_notifications.cancelAllNotifications();
     }
@@ -31,7 +31,7 @@ Future schedule({bool cancelAll=false}) async {
 void cancel(int id) {
   if (Platform.isAndroid) {
     android_alarm_manager.cancel(id);
-  } else if (Platform.isIOS) {
+  } else if (Platform.isIOS || Platform.isMacOS) {
     flutter_local_notifications.cancelNotification(id);
     schedule();
   }

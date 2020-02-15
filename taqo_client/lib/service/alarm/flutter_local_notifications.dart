@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:taqo_client/pages/running_experiments_page.dart';
 
 import '../../main.dart';
 import '../../model/action_specification.dart';
 import '../../model/experiment.dart';
 import '../../model/notification_holder.dart';
+import '../../pages/running_experiments_page.dart';
 import '../../pages/survey/survey_page.dart';
 import '../../storage/local_database.dart';
 import '../experiment_service.dart';
@@ -79,7 +79,12 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
       presentBadge: true,
       presentSound: true,
       sound: 'deepbark_trial.m4a');
-  final details = NotificationDetails(androidDetails, iOSDetails);
+  final macOSDetails = MacOSNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+      sound: 'deepbark_trial.m4a');
+  final details = NotificationDetails(androidDetails, iOSDetails, macOSDetails);
 
   if (when != null) {
     await _plugin.schedule(
@@ -102,8 +107,13 @@ Future init() async {
       onDidReceiveLocalNotification: (int id, String title, String body, String payload) async {
         _notificationHandledStream.add(payload);
       });
+  final initSettingsMacOS = MacOSInitializationSettings(
+      onDidReceiveLocalNotification: (int id, String title, String body, String payload) async {
+        _notificationHandledStream.add(payload);
+      });
 
-  final initSettings = InitializationSettings(initSettingsAndroid, initSettingsIOS);
+  final initSettings = InitializationSettings(
+      initSettingsAndroid, initSettingsIOS, initSettingsMacOS);
   await _plugin.initialize(initSettings, onSelectNotification: (String payload) async {
     _notificationHandledStream.add(payload);
   });

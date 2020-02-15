@@ -210,11 +210,13 @@ packages:
     source: hosted
     version: "0.11.1"
   flutter_local_notifications:
-    dependency: "direct main"
+    dependency: "direct overridden"
     description:
-      name: flutter_local_notifications
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: flutter_local_notifications
+      ref: macos
+      resolved-ref: "81fd44bf011ec1fb73b5502ceebe9d0823aae1d7"
+      url: "git://github.com/mikemaksymowych/flutter_local_notifications.git"
+    source: git
     version: "1.1.6"
   flutter_local_notifications_platform_interface:
     dependency: transitive
@@ -767,4 +769,4 @@ packages:
     version: "2.2.0"
 sdks:
   dart: ">=2.6.0 <3.0.0"
-  flutter: ">=1.12.13+hotfix.5 <2.0.0"
+  flutter: ">=1.12.13+hotfix.4 <2.0.0"
