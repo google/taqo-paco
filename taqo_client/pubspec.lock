@@ -641,6 +641,10 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.1"
+  taqo_email_plugin:
+    dependency: "direct main"
+    description:
+      path: "../taqo_email_plugin"
   taqo_time_plugin:
     dependency: "direct main"
     description:

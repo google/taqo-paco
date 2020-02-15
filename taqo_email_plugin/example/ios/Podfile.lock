@@ -1,0 +1,22 @@
+PODS:
+  - Flutter (1.0.0)
+  - taqo_email_plugin (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - taqo_email_plugin (from `.symlinks/plugins/taqo_email_plugin/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  taqo_email_plugin:
+    :path: ".symlinks/plugins/taqo_email_plugin/ios"
+
+SPEC CHECKSUMS:
+  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  taqo_email_plugin: 4527c2a636976bbfa8f034eae1b59d660883354e
+
+PODFILE CHECKSUM: 083258d7f5e80b42ea9bfee905fe93049bc04c64
+
+COCOAPODS: 1.8.4

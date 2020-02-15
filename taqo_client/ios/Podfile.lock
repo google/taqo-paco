@@ -20,6 +20,8 @@ PODS:
   - sqflite (0.0.1):
     - Flutter
     - FMDB (~> 2.7.2)
+  - taqo_email_plugin (0.0.1):
+    - Flutter
   - taqo_time_plugin (0.0.1):
     - Flutter
   - url_launcher (0.0.1):
@@ -39,6 +41,7 @@ DEPENDENCIES:
   - shared_preferences_macos (from `.symlinks/plugins/shared_preferences_macos/ios`)
   - shared_preferences_web (from `.symlinks/plugins/shared_preferences_web/ios`)
   - sqflite (from `.symlinks/plugins/sqflite/ios`)
+  - taqo_email_plugin (from `.symlinks/plugins/taqo_email_plugin/ios`)
   - taqo_time_plugin (from `.symlinks/plugins/taqo_time_plugin/ios`)
   - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
   - url_launcher_macos (from `.symlinks/plugins/url_launcher_macos/ios`)
@@ -67,6 +70,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/shared_preferences_web/ios"
   sqflite:
     :path: ".symlinks/plugins/sqflite/ios"
+  taqo_email_plugin:
+    :path: ".symlinks/plugins/taqo_email_plugin/ios"
   taqo_time_plugin:
     :path: ".symlinks/plugins/taqo_time_plugin/ios"
   url_launcher:
@@ -87,6 +92,7 @@ SPEC CHECKSUMS:
   shared_preferences_macos: f3f29b71ccbb56bf40c9dd6396c9acf15e214087
   shared_preferences_web: 141cce0c3ed1a1c5bf2a0e44f52d31eeb66e5ea9
   sqflite: 4001a31ff81d210346b500c55b17f4d6c7589dd0
+  taqo_email_plugin: 4527c2a636976bbfa8f034eae1b59d660883354e
   taqo_time_plugin: 53fdbd570f0305d771c74cbe8087c8ebfc2187ca
   url_launcher: a1c0cc845906122c4784c542523d8cacbded5626
   url_launcher_macos: fd7894421cd39320dce5f292fc99ea9270b2a313
