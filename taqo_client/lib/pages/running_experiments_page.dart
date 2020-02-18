@@ -1,24 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:taqo_client/model/experiment.dart';
-import 'package:taqo_client/net/google_auth.dart';
-import 'package:taqo_client/pages/find_experiments_page.dart';
-import 'package:taqo_client/pages/schedule_overview_page.dart';
-import 'package:taqo_client/pages/survey/survey_page.dart';
-import 'package:taqo_client/pages/survey_picker_page.dart';
-import 'package:taqo_client/platform/platform_email.dart';
-import 'package:taqo_client/service/experiment_service.dart';
+
+import 'package:taqo_email_plugin/taqo_email_plugin.dart' as taqo_email_plugin;
+
+import '../model/experiment.dart';
+import '../net/google_auth.dart';
+import '../service/experiment_service.dart';
+import 'find_experiments_page.dart';
+import 'schedule_overview_page.dart';
+import 'survey_picker_page.dart';
+import 'survey/survey_page.dart';
 
 class RunningExperimentsPage extends StatefulWidget {
   static const routeName = '/running_experiments';
+  final bool timeout;
 
-  RunningExperimentsPage({Key key}) : super(key: key);
+  RunningExperimentsPage({this.timeout=false, Key key}) : super(key: key);
 
   @override
   _RunningExperimentsPageState createState() => _RunningExperimentsPageState();
 }
 
 class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
+  var _scaffoldKey = GlobalKey<ScaffoldState>();
+  static const _timeoutMsg =
+      "The survey for the notification selected has expired. "
+      "Please respond sooner next time.";
+
   var gAuth = GoogleAuth();
 
   var _experiments = <Experiment>[];
@@ -31,11 +39,32 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
         _experiments = service.getJoinedExperiments();
       });
     });
+
+    // TODO Is there a better way?
+    Future.delayed(Duration(milliseconds: 500), () {
+      if (widget.timeout) {
+        _showTimeout();
+      }
+    });
+  }
+
+  void _showTimeout() {
+    _scaffoldKey.currentState.showSnackBar(
+        SnackBar(
+          content: Text(
+            _timeoutMsg,
+            style: TextStyle(
+              fontSize: 24,
+            ),
+          ),
+          duration: Duration(seconds: 10),)
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text('Running Experiments'),
         backgroundColor: Colors.indigo,
@@ -234,7 +263,7 @@ class ExperimentListItem extends StatelessWidget {
     if (contactEmail != null && contactEmail.isNotEmpty && validateEmail(contactEmail)) {
       to = contactEmail;
     }
-    sendEmail(to, experiment.title);
+    taqo_email_plugin.sendEmail(to, experiment.title);
   }
 }
 

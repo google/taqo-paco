@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:taqo_client/model/action_specification.dart';
 import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/model/experiment_group.dart';
@@ -172,4 +174,31 @@ Future<ActionSpecification> getNextAlarmTime({List<Experiment> experiments, Date
   final alarms = await getNextAlarmTimesOrdered(experiments: experiments, now: now);
   print('Next alarm is ${alarms.isEmpty ? null : alarms.first}');
   return alarms.isEmpty ? null : alarms.first;
+}
+
+Future<List<ActionSpecification>> getNextNAlarmTimes(
+    {int n, List<Experiment> experiments, DateTime now}) async {
+  final service = await ExperimentService.getInstance();
+
+  // Default args
+  experiments ??= service.getJoinedExperiments();
+  now ??= DateTime.now();
+  n ??= 64;
+
+  final alarms = <ActionSpecification>[];
+  var count = 0;
+  var loopNow = now;
+  while (alarms.length < n) {
+    final next = await getNextAlarmTime(
+        experiments: experiments, now: loopNow);
+    if (next == null) {
+      break;
+    }
+    alarms.add(next);
+    loopNow = alarms.last.time.add(Duration(seconds: 1));
+    count = alarms.length;
+  }
+
+  count = min(n, alarms.length);
+  return alarms.isEmpty ? <ActionSpecification>[] : alarms.sublist(0, count);
 }

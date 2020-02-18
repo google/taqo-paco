@@ -9,8 +9,8 @@ import '../storage/joined_experiments_storage.dart';
 import '../storage/local_database.dart';
 import '../util/schedule_printer.dart' as schedule_printer;
 import '../util/zoned_date_time.dart';
-import 'alarm_service.dart' as alarm_service;
-import 'notification_service.dart' as notification_manager;
+import 'alarm/flutter_local_notifications.dart' as flutter_local_notifications;
+import 'alarm/taqo_alarm.dart' as taqo_alarm;
 
 class ExperimentService {
   final GoogleAuth _gAuth;
@@ -117,7 +117,7 @@ class ExperimentService {
     saveJoinedExperiments();
     LocalDatabase().insertEvent(_createJoinEvent(experiment, joining: false));
 
-    notification_manager.cancelForExperiment(experiment);
+    flutter_local_notifications.cancelForExperiment(experiment);
   }
 
   void _mapifyExperimentsById(List<Experiment> experiments) {
@@ -126,7 +126,7 @@ class ExperimentService {
 
   void saveJoinedExperiments() async {
     await JoinedExperimentsStorage().saveJoinedExperiments(_joined.values.toList());
-    alarm_service.scheduleNextNotification();
+    taqo_alarm.schedule();
   }
 
   Future<InvitationResponse> checkCode(String code) async {

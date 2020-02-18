@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
 
 import '../net/google_auth.dart';
 import '../service/experiment_service.dart';
-import '../service/notification_service.dart' as notification_manager;
 import 'find_experiments_page.dart';
 import 'invitation_entry_page.dart';
 import 'login_page.dart';
@@ -13,9 +11,8 @@ import 'running_experiments_page.dart';
 // Entry page for App
 class WelcomePage extends StatefulWidget {
   static const routeName = '/welcome';
-  final NotificationAppLaunchDetails _launchDetails;
 
-  WelcomePage(this._launchDetails, {Key key}) : super(key: key);
+  WelcomePage({Key key}) : super(key: key);
 
   @override
   _WelcomePageState createState() => _WelcomePageState();
@@ -43,14 +40,6 @@ class _WelcomePageState extends State<WelcomePage> {
       setState(() {
         _authenticated = newAuthState;
       });
-    });
-
-    ExperimentService.getInstance().then((service) {
-      final fromNotify = widget._launchDetails.didNotificationLaunchApp ?? false;
-      print('launching from notification: $fromNotify');
-      if (fromNotify) {
-        notification_manager.openSurvey(widget._launchDetails.payload);
-      }
     });
   }
 
@@ -117,7 +106,7 @@ class _WelcomePageState extends State<WelcomePage> {
     // on WelcomePage
     Navigator.pushAndRemoveUntil(
         context,
-        PageRouteBuilder(pageBuilder: (context, _, __) => WelcomePage(widget._launchDetails)),
+        PageRouteBuilder(pageBuilder: (context, _, __) => WelcomePage()),
         (route) => false,
     );
 
