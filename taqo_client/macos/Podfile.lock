@@ -14,6 +14,7 @@ PODS:
     - FlutterMacOS
     - FMDB (~> 2.7.2)
   - taqo_email_plugin (0.0.1):
+    - FlutterMacOS
   - taqo_time_plugin (0.0.1):
     - FlutterMacOS
   - url_launcher (0.0.1)
