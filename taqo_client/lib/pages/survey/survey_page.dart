@@ -398,17 +398,25 @@ class _SurveyPageState extends State<SurveyPage> {
     // for the same survey fires
     final pendingNotifications = (await LocalDatabase()
         .getAllNotificationsForExperiment(_experiment))
-        .where((e) => e.experimentGroupName == _experimentGroup.name)
-        .toList();
-    for (var i = 0; i < pendingNotifications.length; i++) {
-      final pn = pendingNotifications[i];
-      if (!pn.isActive || i + 1 < pendingNotifications.length) {
-        // Record Paco missed event for expired or stale
+        .where((e) => e.experimentGroupName == _experimentGroup.name);
+
+    final expired = pendingNotifications
+        .where((e) => !e.isActive && !e.isFuture).toList();
+    for (var pn in expired) {
+      // Record Paco missed event for expired or stale
+      await taqo_alarm.timeout(pn.id);
+    }
+
+    final active = pendingNotifications.where((e) => e.isActive).toList();
+    for (var i = 0; i < active.length; i++) {
+      final pn = active[i];
+      if (i + 1 < active.length) {
+        // If there are still multiple active notifications,
+        // we record a Paco missed event for all but 1
         await taqo_alarm.timeout(pn.id);
       } else {
-        // For the latest notification, during self-report it could be expired,
-        // (!isActive) and handled above (timeout). Otherwise, just clean it up
-        await flutter_local_notifications.cancelNotification(pn.id);
+        // Just clean it up (no missed event)
+        await taqo_alarm.cancel(pn.id);
       }
     }
 

@@ -53,7 +53,13 @@ class NotificationHolder {
     final alarmStart = DateTime.fromMillisecondsSinceEpoch(alarmTime);
     final alarmEnd = alarmStart.add(Duration(milliseconds: timeoutMillis));
     final now = DateTime.now();
-    return alarmStart.isAfter(now) && now.isBefore(alarmEnd);
+    return alarmStart.isBefore(now) && now.isBefore(alarmEnd);
+  }
+
+  bool get isFuture {
+    final alarmStart = DateTime.fromMillisecondsSinceEpoch(alarmTime);
+    final now = DateTime.now();
+    return alarmStart.isAfter(now);
   }
 
   bool isCustomNotification() =>

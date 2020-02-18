@@ -28,12 +28,12 @@ Future schedule({bool cancelAll=false}) async {
   }
 }
 
-void cancel(int id) {
+Future cancel(int id) async {
   if (Platform.isAndroid) {
     android_alarm_manager.cancel(id);
   } else if (Platform.isIOS || Platform.isMacOS) {
-    flutter_local_notifications.cancelNotification(id);
-    schedule();
+    await flutter_local_notifications.cancelNotification(id);
+    await schedule();
   }
 }
 

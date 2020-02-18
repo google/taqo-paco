@@ -137,8 +137,8 @@ Future<void> openSurvey(String payload) async {
     return;
   }
 
-  // Timezone could have changed
-  if (!notificationHolder.isActive) {
+  // TODO Timezone could have changed?
+  if (!notificationHolder.isActive && !notificationHolder.isFuture) {
     await taqo_alarm.timeout(id);
     MyApp.navigatorKey.currentState.pushReplacementNamed(
         RunningExperimentsPage.routeName, arguments: [true, ]);

@@ -13,7 +13,7 @@ Future<int> _clearExpiredNotifications() async {
   var count = pendingNotifications.length;
 
   await Future.forEach(pendingNotifications, (NotificationHolder pn) async {
-    if (!pn.isActive) {
+    if (!pn.isActive && !pn.isFuture) {
       await taqo_alarm.timeout(pn.id);
       count -= 1;
     }
@@ -23,10 +23,20 @@ Future<int> _clearExpiredNotifications() async {
 }
 
 Future schedule() async {
-  final count = await _clearExpiredNotifications();
+  final count = _maxNotifications - (await _clearExpiredNotifications());
   print('Scheduling $count notification(s)');
 
-  final alarms = await getNextNAlarmTimes(n: _maxNotifications - count);
+  // Find last already scheduled and start scheduling from there
+  final pendingNotifications = await LocalDatabase().getAllNotifications();
+  var max = DateTime.now().millisecondsSinceEpoch;
+  pendingNotifications.forEach((element) {
+    if (element.alarmTime > max) {
+      max = element.alarmTime;
+    }
+  });
+  final dt = DateTime.fromMillisecondsSinceEpoch(max);
+
+  final alarms = await getNextNAlarmTimes(n: count, now: dt);
   for (var a in alarms) {
     await flutter_local_notifications.scheduleNotification(a, cancelPending: false);
   }
