@@ -1,1 +1,6 @@
 #import "GeneratedPluginRegistrant.h"
+#import "flutter_local_notifications/FlutterLocalNotificationsPlugin.h"
+#import "shared_preferences/FLTSharedPreferencesPlugin.h"
+#import "sqflite/SqflitePlugin.h"
+#import "path_provider/FLTPathProviderPlugin.h"
+#import "taqo_time_plugin/TaqoTimePlugin.h"

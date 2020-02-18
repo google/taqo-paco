@@ -5,7 +5,6 @@ import 'package:taqo_email_plugin/taqo_email_plugin.dart' as taqo_email_plugin;
 
 import '../model/experiment.dart';
 import '../net/google_auth.dart';
-import '../platform/platform_email.dart';
 import '../service/experiment_service.dart';
 import 'find_experiments_page.dart';
 import 'schedule_overview_page.dart';
@@ -14,14 +13,20 @@ import 'survey/survey_page.dart';
 
 class RunningExperimentsPage extends StatefulWidget {
   static const routeName = '/running_experiments';
+  final bool timeout;
 
-  RunningExperimentsPage({Key key}) : super(key: key);
+  RunningExperimentsPage({this.timeout=false, Key key}) : super(key: key);
 
   @override
   _RunningExperimentsPageState createState() => _RunningExperimentsPageState();
 }
 
 class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
+  var _scaffoldKey = GlobalKey<ScaffoldState>();
+  static const _timeoutMsg =
+      "The survey for the notification selected has expired. "
+      "Please respond sooner next time.";
+
   var gAuth = GoogleAuth();
 
   var _experiments = <Experiment>[];
@@ -34,11 +39,32 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
         _experiments = service.getJoinedExperiments();
       });
     });
+
+    // TODO Is there a better way?
+    Future.delayed(Duration(milliseconds: 500), () {
+      if (widget.timeout) {
+        _showTimeout();
+      }
+    });
+  }
+
+  void _showTimeout() {
+    _scaffoldKey.currentState.showSnackBar(
+        SnackBar(
+          content: Text(
+            _timeoutMsg,
+            style: TextStyle(
+              fontSize: 24,
+            ),
+          ),
+          duration: Duration(seconds: 10),)
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text('Running Experiments'),
         backgroundColor: Colors.indigo,

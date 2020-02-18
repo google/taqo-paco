@@ -1,24 +1,23 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:taqo_client/model/event.dart';
-import 'package:taqo_client/model/experiment.dart';
-import 'package:taqo_client/model/experiment_group.dart';
-import 'package:taqo_client/model/feedback.dart' as taqo_feedback;
-import 'package:taqo_client/pages/survey/feedback_page.dart';
-import 'package:taqo_client/service/alarm_service.dart' as alarm_manager;
-import 'package:taqo_client/service/notification_service.dart';
-import 'package:taqo_client/storage/local_database.dart';
-import 'package:taqo_client/util/conditional_survey_parser.dart';
-import 'package:taqo_client/util/date_time_util.dart';
-import 'package:taqo_client/util/zoned_date_time.dart';
+import 'package:numberpicker/numberpicker.dart';
 
+import '../../model/event.dart';
+import '../../model/experiment.dart';
+import '../../model/experiment_group.dart';
+import '../../model/feedback.dart' as taqo_feedback;
+import '../../model/input2.dart';
+import '../../pages/survey/feedback_page.dart';
+import '../../service/alarm/flutter_local_notifications.dart' as flutter_local_notifications;
+import '../../service/alarm/taqo_alarm.dart' as taqo_alarm;
+import '../../storage/local_database.dart';
+import '../../util/conditional_survey_parser.dart';
+import '../../util/date_time_util.dart';
+import '../../util/zoned_date_time.dart';
 import '../running_experiments_page.dart';
 import 'multi_list_output.dart';
 import 'multi_select_dialog.dart';
-import 'package:taqo_client/model/input2.dart';
-
-import 'package:numberpicker/numberpicker.dart';
 
 class SurveyPage extends StatefulWidget {
   static const routeName = '/survey';
@@ -379,17 +378,45 @@ class _SurveyPageState extends State<SurveyPage> {
 
         // Cancel timeout alarm
         // We cancel here both for self-report as well as coming from a notification
-        alarm_manager.cancel(id);
+        taqo_alarm.cancel(id);
         final activeNotifications =
             await LocalDatabase().getAllNotificationsForExperiment(_experiment);
         // Clear any pending notification
         for (var notification in activeNotifications) {
           if (notification.matchesAction(alarm)) {
-            cancelNotification(notification.id);
+            flutter_local_notifications.cancelNotification(notification.id);
           }
         }
 
         break;
+      }
+    }
+
+    // Cancel existing (pending) notifications FOR THIS SURVEY only
+    // The implication here is that the actual timeout/expiration time is
+    // the min of the explicit timeout and the time until the next notification
+    // for the same survey fires
+    final pendingNotifications = (await LocalDatabase()
+        .getAllNotificationsForExperiment(_experiment))
+        .where((e) => e.experimentGroupName == _experimentGroup.name);
+
+    final expired = pendingNotifications
+        .where((e) => !e.isActive && !e.isFuture).toList();
+    for (var pn in expired) {
+      // Record Paco missed event for expired or stale
+      await taqo_alarm.timeout(pn.id);
+    }
+
+    final active = pendingNotifications.where((e) => e.isActive).toList();
+    for (var i = 0; i < active.length; i++) {
+      final pn = active[i];
+      if (i + 1 < active.length) {
+        // If there are still multiple active notifications,
+        // we record a Paco missed event for all but 1
+        await taqo_alarm.timeout(pn.id);
+      } else {
+        // Just clean it up (no missed event)
+        await taqo_alarm.cancel(pn.id);
       }
     }
 

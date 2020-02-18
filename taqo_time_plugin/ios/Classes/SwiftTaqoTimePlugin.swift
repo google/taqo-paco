@@ -16,10 +16,11 @@ private class FlutterBackgroundExecutor: NSObject {
   private static let initialized = "initialized"
   private static let bgCallbackMethod = "backgroundIsolateCallback"
 
+  private static var pluginRegistrantCallback: FlutterPluginRegistrantCallback? = nil
+
   private var isCallbackDispatcherReady: Bool = false
   private var backgroundFlutterEngine: FlutterEngine? = nil
   private var backgroundChannel: FlutterMethodChannel? = nil
-  var pluginRegistrantCallback: FlutterPluginRegistrantCallback? = nil
 
   private func isNotRunning() -> Bool {
     return !isCallbackDispatcherReady
@@ -38,7 +39,7 @@ private class FlutterBackgroundExecutor: NSObject {
     })
   }
 
-  public func setPluginRegistrantCallback(_ callback: @escaping FlutterPluginRegistrantCallback) {
+  public static func setPluginRegistrantCallback(_ callback: @escaping FlutterPluginRegistrantCallback) {
     pluginRegistrantCallback = callback
   }
 
@@ -66,7 +67,7 @@ private class FlutterBackgroundExecutor: NSObject {
 
       backgroundFlutterEngine?.run(withEntrypoint: entryPoint, libraryURI: uri)
       initializeMethodChannel(backgroundFlutterEngine!.binaryMessenger)
-      pluginRegistrantCallback?(backgroundFlutterEngine!)
+      FlutterBackgroundExecutor.pluginRegistrantCallback?(backgroundFlutterEngine!)
     }
   }
 
@@ -84,12 +85,19 @@ public class SwiftTaqoTimePlugin: NSObject, FlutterPlugin {
 
   private static let bgCallbackMethod = "backgroundIsolateCallback"
 
+  private static var instance: SwiftTaqoTimePlugin? = nil
   private var flutterBackgroundExecutor: FlutterBackgroundExecutor? = nil
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: channelName, binaryMessenger: registrar.messenger())
-    let instance = SwiftTaqoTimePlugin()
-    registrar.addMethodCallDelegate(instance, channel: channel)
+    if (instance == nil) {
+      let instance = SwiftTaqoTimePlugin()
+      registrar.addMethodCallDelegate(instance, channel: channel)
+    }
+  }
+
+  public static func setPluginRegistrantCallback(_ callback: @escaping FlutterPluginRegistrantCallback) {
+    FlutterBackgroundExecutor.setPluginRegistrantCallback(callback)
   }
 
   @objc private func timeChanged(notification: NSNotification) {

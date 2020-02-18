@@ -78,11 +78,11 @@ class ESMSignalStorage extends LocalFileStorage {
     return signals;
   }
 
-  Future<void> deleteAllSignals() async {
+  Future deleteAllSignals() async {
     try {
       final file = await localFile;
-      if (file.existsSync()) {
-        file.deleteSync();
+      if (await file.exists()) {
+        return file.delete();
       }
     } catch (e) {
       print("Error reading esm signals: $e");
