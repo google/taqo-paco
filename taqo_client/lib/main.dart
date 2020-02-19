@@ -15,6 +15,7 @@ import 'package:taqo_client/pages/survey_picker_page.dart';
 import 'package:taqo_client/pages/welcome_page.dart';
 import 'package:taqo_client/pages/invitation_entry_page.dart';
 import 'package:taqo_client/pages/login_page.dart';
+import 'package:taqo_client/platform/platform_logging.dart';
 import 'package:taqo_client/service/logging_service.dart';
 
 import 'package:taqo_client/net/google_auth.dart';
@@ -40,6 +41,7 @@ void main() {
   debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
 
   WidgetsFlutterBinding.ensureInitialized();
+  setupLoggingMethodChannel();
   taqo_time_plugin.initialize(_onTimeChange);
 
   // LoggingService.init() and taqo_alarm.init() should be called once and only once
