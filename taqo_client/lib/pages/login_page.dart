@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:taqo_client/net/google_auth.dart';
-import 'package:taqo_client/pages/welcome_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../net/google_auth.dart';
 import 'find_experiments_page.dart';
+import 'welcome_page.dart';
 
 class LoginPage extends StatefulWidget {
   static const routeName = '/login';
@@ -21,24 +21,20 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   var url;
 
-  GoogleAuth gAuth = GoogleAuth();
-
-
-  _LoginPageState();
-
   urlCallback(url) {
     this.url = url;
   }
 
-  successCallbackGenerator(context) {
-    print("entering");
-    return () => Navigator.pushReplacementNamed(context, FindExperimentsPage.routeName);
-  }
-
   @override
   void initState() {
-    gAuth.doIt(urlCallback, successCallbackGenerator(context));
     super.initState();
+    final gAuth = GoogleAuth();
+    gAuth.onAuthChanged.listen((bool success) {
+      if (success) {
+        Navigator.pushReplacementNamed(context, FindExperimentsPage.routeName);
+      }
+    });
+    gAuth.authenticate(urlCallback);
   }
 
 

@@ -41,52 +41,65 @@ class ExperimentService {
       });
 
   Future<List<Experiment>> getExperimentsFromServer() async {
-    return _gAuth.getExperimentsWithSavedCredentials().then((experimentJson) {
-      final List experimentJsonList = jsonDecode(experimentJson);
-      final experiments = <Experiment>[];
-      for (var experimentJson in experimentJsonList) {
-        var experiment;
-        try {
-          experiment = Experiment.fromJson(experimentJson);
-        } catch(e) {
-          print('Error parsing experiment ${experimentJson['id']}: $e');
-          continue;
-        }
-        // Don't show Experiments already joined
-        if (!_joined.containsKey(experiment.id)) {
-          experiments.add(experiment);
-        }
-      }
-      return experiments;
-    });
+    return _gAuth.getExperimentsWithSavedCredentials()
+        .then((experimentJson) {
+          final List experimentJsonList = jsonDecode(experimentJson);
+          final experiments = <Experiment>[];
+          for (var experimentJson in experimentJsonList) {
+            var experiment;
+            try {
+              experiment = Experiment.fromJson(experimentJson);
+            } catch(e) {
+              print('Error parsing experiment ${experimentJson['id']}: $e');
+              continue;
+            }
+            // Don't show Experiments already joined
+            if (experiment != null && !_joined.containsKey(experiment.id)) {
+              experiments.add(experiment);
+            }
+          }
+          return experiments;
+        })
+        .catchError((e) => <Experiment>[]);
   }
 
   Future<Experiment> getExperimentFromServerById(experimentId) async {
-    return _gAuth.getExperimentById(experimentId).then((experimentJson) {
-      var experimentJsonObj = jsonDecode(experimentJson).elementAt(0);
-      return Experiment.fromJson(experimentJsonObj);
-    });
+    return _gAuth.getExperimentByIdWithSavedCredentials(experimentId)
+        .then((experimentJson) {
+          var experimentJsonObj = jsonDecode(experimentJson).elementAt(0);
+          return Experiment.fromJson(experimentJsonObj);
+        })
+        .catchError((_) => null);
   }
 
   Future<Experiment> getPubExperimentFromServerById(experimentId) async {
-    return _gAuth.getPubExperimentById(experimentId).then((experimentJson) {
-      var experimentJsonObj = jsonDecode(experimentJson).elementAt(0);
-      return Experiment.fromJson(experimentJsonObj);
-    });
+    return _gAuth.getPubExperimentById(experimentId)
+        .then((experimentJson) {
+          var experimentJsonObj = jsonDecode(experimentJson).elementAt(0);
+          return Experiment.fromJson(experimentJsonObj);
+        })
+        .catchError((_) => null);
   }
 
   Future<List<Experiment>> updateJoinedExperiments() async {
-    return _gAuth.getExperimentsByIdWithSavedCredentials(_joined.keys).then((experimentJson) {
-      final List experimentJsonList = jsonDecode(experimentJson);
-      final experiments = <Experiment>[];
-      for (var experimentJson in experimentJsonList) {
-        experiments.add(Experiment.fromJson(experimentJson));
-      }
+    return _gAuth.getExperimentsByIdWithSavedCredentials(_joined.keys.toList())
+        .then((experimentJson) {
+          final List experimentJsonList = jsonDecode(experimentJson);
+          final experiments = <Experiment>[];
+          for (var experimentJson in experimentJsonList) {
+            experiments.add(Experiment.fromJson(experimentJson));
+          }
 
-      _mapifyExperimentsById(experiments);
-      saveJoinedExperiments();
-      return experiments;
-    });
+          _mapifyExperimentsById(experiments);
+          saveJoinedExperiments();
+          return experiments;
+        })
+        .catchError((_) {
+          final experiments = <Experiment>[];
+          _mapifyExperimentsById(experiments);
+          saveJoinedExperiments();
+          return experiments;
+        });
   }
 
   List<Experiment> getJoinedExperiments() => List<Experiment>.from(_joined.values);
@@ -136,26 +149,27 @@ class ExperimentService {
   }
 
   Future<InvitationResponse> checkCode(String code) async {
-    return _gAuth.checkInvitationWithSavedCredentials(code).then((jsonResponse) {
-      var response = jsonDecode(jsonResponse);
+    return _gAuth.checkInvitationWithSavedCredentials(code)
+        .then((jsonResponse) {
+          var response = jsonDecode(jsonResponse);
+          var errorMessage;
+          var participantId;
+          var experimentId;
 
-      var errorMessage;
-      var participantId;
-      var experimentId;
+          if (jsonResponse.startsWith('[')) {
+            response = response.elementAt(0);
+            errorMessage = response["errorMessage"];
+          } else {
+            participantId = response["participantId"];
+            experimentId = response["experimentId"];
+          }
 
-      if (jsonResponse.startsWith('[')) {
-        response = response.elementAt(0);
-        errorMessage = response["errorMessage"];
-      } else {
-        participantId = response["participantId"];
-        experimentId = response["experimentId"];
-      }
-
-      return InvitationResponse(
-          errorMessage: errorMessage,
-          participantId: participantId,
-          experimentId: experimentId);
-    });
+          return InvitationResponse(
+              errorMessage: errorMessage,
+              participantId: participantId,
+              experimentId: experimentId);
+        })
+        .catchError((_) => null);
   }
 
   Future<void> clear() async {

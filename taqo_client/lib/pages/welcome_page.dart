@@ -30,7 +30,7 @@ class _WelcomePageState extends State<WelcomePage> {
   void initState() {
     super.initState();
 
-    gAuth.isAuthenticated().then((res) {
+    gAuth.isAuthenticated.then((res) {
       setState(() {
         _authenticated = res;
       });

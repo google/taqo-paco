@@ -47,6 +47,9 @@ void _createMissedEvent(NotificationHolder notification) async {
   print('_createMissedEvent: ${notification.id}');
   final service = await ExperimentService.getInstance();
   final experiment = await service.getExperimentFromServerById(notification.experimentId);
+  if (experiment == null) {
+    return;
+  }
   final event = Event();
   event.experimentId = experiment.id;
   event.experimentServerId = experiment.id;
