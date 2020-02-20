@@ -33,6 +33,8 @@ PLUGIN_NAMES=
 FLUTTER_PLUGIN_NAMES=
 # Plugins to include from the taqo_client/plugins subdirectory.
 TAQO_PLUGIN_NAMES=time
+# Plugins to include from the taqo_client/plugins/flutter subdirectory.
+FLUTTER_TAQO_PLUGIN_NAMES=path_provider_linux
 
 
 # Default build type. For a release build, set BUILD=release.
@@ -73,11 +75,15 @@ FLUTTER_ASSETS_SOURCE=$(FLUTTER_APP_BUILD_DIR)/$(FLUTTER_ASSETS_NAME)
 PLUGINS_DIR=$(FDE_ROOT)/plugins
 FLUTTER_PLUGINS_DIR=$(PLUGINS_DIR)/flutter_plugins
 TAQO_PLUGINS_DIR=$(CURDIR)/../plugins
+FLUTTER_TAQO_PLUGINS_DIR=$(CURDIR)/../plugins/flutter
 # The name of each plugin library is the name of its directory with _plugin
 # appended.
 PLUGIN_LIB_NAMES=$(foreach plugin,$(PLUGIN_NAMES) $(FLUTTER_PLUGIN_NAMES),$(plugin)_plugin)
 # Taqo plugin library name is taqo_<name>_plugin
 PLUGIN_LIB_NAMES+=$(foreach plugin,$(TAQO_PLUGIN_NAMES),taqo_$(plugin)_plugin)
+# Flutter Taqo plugin library name is <name>
+PLUGIN_LIB_NAMES+=$(foreach plugin,$(FLUTTER_TAQO_PLUGIN_NAMES),$(plugin))
+
 PLUGIN_LIBS=$(foreach plugin,$(PLUGIN_LIB_NAMES),$(OUT_DIR)/lib$(plugin).so)
 EXTRA_BUNDLED_LIBRARIES+=$(PLUGIN_LIBS)
 EXTRA_LDFLAGS+=$(patsubst %,-l%,$(PLUGIN_LIB_NAMES))
@@ -152,7 +158,8 @@ $(BIN_OUT): $(OBJ_FILES) $(ALL_LIBS_OUT)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OBJ_FILES) $(LDFLAGS) -o $@
 
 $(WRAPPER_SOURCES) $(FLUTTER_LIB) $(ICU_DATA_SOURCE) $(FLUTTER_ASSETS_SOURCE) \
-	$(PLUGIN_NAMES) $(FLUTTER_PLUGIN_NAMES) $(TAQO_PLUGIN_NAMES): | sync
+	$(PLUGIN_NAMES) $(FLUTTER_PLUGIN_NAMES) \
+	$(TAQO_PLUGIN_NAMES) $(FLUTTER_TAQO_PLUGIN_NAMES): | sync
 
 # Implicit rules won't match phony targets, so list plugin builds explicitly.
 # Plugins
@@ -165,6 +172,8 @@ $(WRAPPER_SOURCES) $(FLUTTER_LIB) $(ICU_DATA_SOURCE) $(FLUTTER_ASSETS_SOURCE) \
 #$(OUT_DIR)/liburl_launcher_plugin.so: | url_launcher
 # Taqo plugins
 $(OUT_DIR)/libtaqo_time_plugin.so: | time
+# Flutter Taqo plugins
+$(OUT_DIR)/libpath_provider_linux.so: | path_provider_linux
 
 # Compilation depends on plugin headers that are copied as part of the
 # plugin builds, so ensure those happen first.
@@ -186,6 +195,12 @@ $(FLUTTER_PLUGIN_NAMES):
 .PHONY: $(TAQO_PLUGIN_NAMES)
 $(TAQO_PLUGIN_NAMES):
 	make -C $(TAQO_PLUGINS_DIR)/$@/linux \
+		OUT_DIR=$(OUT_DIR) \
+		FLUTTER_EPHEMERAL_DIR="$(abspath $(FLUTTER_EPHEMERAL_DIR))"
+
+.PHONY: $(FLUTTER_TAQO_PLUGIN_NAMES)
+$(FLUTTER_TAQO_PLUGIN_NAMES):
+	make -C $(FLUTTER_TAQO_PLUGINS_DIR)/$@/linux \
 		OUT_DIR=$(OUT_DIR) \
 		FLUTTER_EPHEMERAL_DIR="$(abspath $(FLUTTER_EPHEMERAL_DIR))"
 
