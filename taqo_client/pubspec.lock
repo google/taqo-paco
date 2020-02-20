@@ -644,14 +644,14 @@ packages:
   taqo_email_plugin:
     dependency: "direct main"
     description:
-      path: "../taqo_email_plugin"
+      path: "plugins/email"
       relative: true
     source: path
     version: "0.0.1"
   taqo_time_plugin:
     dependency: "direct main"
     description:
-      path: "../taqo_time_plugin"
+      path: "plugins/time"
       relative: true
     source: path
     version: "0.0.1"
