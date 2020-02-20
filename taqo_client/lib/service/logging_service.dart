@@ -22,7 +22,7 @@ class LoggingService {
   // This init() function must be called before any logging activity.
   static Future<void> init() async {
     WidgetsFlutterBinding.ensureInitialized();
-    _logDirectoryPath = (await getApplicationDocumentsDirectory()).path;
+    _logDirectoryPath = (await getApplicationSupportDirectory()).path;
 
     // Configure log level and handler for logging package
     Logger.root.level = Level.INFO;

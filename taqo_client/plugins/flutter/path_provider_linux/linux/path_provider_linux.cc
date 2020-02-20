@@ -11,6 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <cstdlib>
+
+#include <pwd.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "plugins/flutter/path_provider_linux/linux/path_provider_linux.h"
 
 #include <flutter/method_channel.h>
@@ -76,6 +82,10 @@ static EncodableValue CreateResponseObject(const std::string path) {
   return EncodableValue(path);
 }
 
+static std::string BuildPath(const std::string base, std::string suffix) {
+  return base + suffix;
+}
+
 // static
 void PathProviderPlugin::RegisterWithRegistrar(
     flutter::PluginRegistrar *registrar) {
@@ -110,26 +120,31 @@ void PathProviderPlugin::HandleMethodCall(
 //    return;
 //  }
 
-  // TODO Implement for realz
+  char *var = getenv("HOME");
+  if (nullptr == var) {
+    struct passwd *pw = getpwuid(getuid());
+    var = pw->pw_dir;
+  }
+  std::string home_dir(var);
 
   if (0 == method_call.method_name().compare(kGetTempMethod)) {
     auto res = CreateResponseObject("/tmp/");
     result->Success(&res);
     return;
   } else if (0 == method_call.method_name().compare(kGetAppSupportMethod)) {
-    auto res = CreateResponseObject("/tmp/");
+    auto res = CreateResponseObject(BuildPath(home_dir, "/.taqo/"));
     result->Success(&res);
     return;
   } else if (0 == method_call.method_name().compare(kGetAppDocMethod)) {
-    auto res = CreateResponseObject("/tmp/");
+    auto res = CreateResponseObject(BuildPath(home_dir, "/Documents/"));
     result->Success(&res);
     return;
   } else if (0 == method_call.method_name().compare(kGetLibraryMethod)) {
-    auto res = CreateResponseObject("/tmp/");
+    auto res = CreateResponseObject(BuildPath(home_dir, "/.taqo/"));
     result->Success(&res);
     return;
   } else if (0 == method_call.method_name().compare(kGetDownloadsMethod)) {
-    auto res = CreateResponseObject("/tmp/");
+    auto res = CreateResponseObject(BuildPath(home_dir, "/Downloads/"));
     result->Success(&res);
     return;
   }
