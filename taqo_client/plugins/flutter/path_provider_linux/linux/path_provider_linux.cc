@@ -15,6 +15,7 @@
 
 #include <pwd.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "plugins/flutter/path_provider_linux/linux/path_provider_linux.h"
@@ -83,7 +84,9 @@ static EncodableValue CreateResponseObject(const std::string path) {
 }
 
 static std::string BuildPath(const std::string base, std::string suffix) {
-  return base + suffix;
+  std::string path(base + suffix);
+  mkdir(path.c_str(), DEFFILEMODE | S_IXUSR);
+  return path;
 }
 
 // static
