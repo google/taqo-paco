@@ -34,7 +34,7 @@ FLUTTER_PLUGIN_NAMES=
 # Plugins to include from the taqo_client/plugins subdirectory.
 TAQO_PLUGIN_NAMES=time
 # Plugins to include from the taqo_client/plugins/flutter subdirectory.
-FLUTTER_TAQO_PLUGIN_NAMES=path_provider_linux url_launcher_linux
+FLUTTER_TAQO_PLUGIN_NAMES=path_provider_linux url_launcher_linux shared_preferences_linux
 
 
 # Default build type. For a release build, set BUILD=release.
@@ -175,6 +175,7 @@ $(OUT_DIR)/libtaqo_time_plugin.so: | time
 # Flutter Taqo plugins
 $(OUT_DIR)/libpath_provider_linux.so: | path_provider_linux
 $(OUT_DIR)/liburl_launcher_linux.so: | url_launcher_linux
+$(OUT_DIR)/libshared_preferences_linux.so: | shared_preferences_linux
 
 # Compilation depends on plugin headers that are copied as part of the
 # plugin builds, so ensure those happen first.
