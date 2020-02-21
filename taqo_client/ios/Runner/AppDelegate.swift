@@ -26,13 +26,19 @@ import BackgroundTasks
       }
     })
 
-
     // Register background tasks
     BGTaskScheduler.shared.register(forTaskWithIdentifier:
-      "com.taqo.survey.taqoSurvey.syncData",
+      "com.taqo.survey.taqoSurvey.syncData.processing",
                                     using: nil)
     {task in
-      handleBackgroundSync(task: task as! BGProcessingTask)
+      handleBackgroundSync(task: task)
+    }
+
+    BGTaskScheduler.shared.register(forTaskWithIdentifier:
+      "com.taqo.survey.taqoSurvey.syncData.refresh",
+                                    using: nil)
+    {task in
+      handleBackgroundSync(task: task)
     }
 
     GeneratedPluginRegistrant.register(with: self)

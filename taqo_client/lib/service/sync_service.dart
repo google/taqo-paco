@@ -1,10 +1,13 @@
-import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
 
 import 'package:taqo_client/net/google_auth.dart';
 import 'package:taqo_client/storage/local_database.dart';
 
-Future<void> syncData() async {
+final logger = Logger('SyncService');
+
+Future<bool> syncData() async {
+  logger.info("Start syncing data...");
   final db = LocalDatabase();
   final events = await db.getUnuploadedEvents();
   final gAuth = GoogleAuth();
@@ -18,15 +21,21 @@ Future<void> syncData() async {
         (e) => http.Response('${e}', 600, reasonPhrase: 'Flutter Exception'));
     if (response.statusCode == 200) {
       await db.markEventsAsUploaded(events);
-      developer.log('Syncing complete.');
+      logger.info('Syncing complete.');
+      return true;
     } else if (response.statusCode == 600) {
-      developer.log('Could not complete upload of events '
+      logger.warning('Could not complete upload of events '
           'becuase of the following error: '
           '${response.body}\n');
+      return false;
     } else {
-      developer.log('Could not complete upload of events. '
+      logger.warning('Could not complete upload of events. '
           'The server returns the following response: '
           '${response.statusCode} ${response.reasonPhrase}\n${response.body}\n');
+      return false;
     }
+  } else {
+    logger.info('There is no unsynced data.');
+    return true;
   }
 }

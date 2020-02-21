@@ -11,9 +11,9 @@
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		3B80C3941E831B6300D905FE /* App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B80C3931E831B6300D905FE /* App.framework */; };
 		3B80C3951E831B6300D905FE /* App.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3B80C3931E831B6300D905FE /* App.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		513FD30323F3C30800CC1187 /* FlutterLoggingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513FD30223F3C30800CC1187 /* FlutterLoggingService.swift */; };
 		510C681323EB421C005319B8 /* MethodChannelHandlers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 510C681223EB421C005319B8 /* MethodChannelHandlers.swift */; };
 		510C681523EB9203005319B8 /* Operations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 510C681423EB9203005319B8 /* Operations.swift */; };
+		513FD30323F3C30800CC1187 /* FlutterLoggingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513FD30223F3C30800CC1187 /* FlutterLoggingService.swift */; };
 		51633C3923D8DC110019F4A7 /* BackgroundTasks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51633C3823D8DC110019F4A7 /* BackgroundTasks.swift */; };
 		51633C3B23D8FA520019F4A7 /* BackgroundTaskHandlers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51633C3A23D8FA520019F4A7 /* BackgroundTaskHandlers.swift */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
@@ -47,9 +47,9 @@
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
 		3B80C3931E831B6300D905FE /* App.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = App.framework; path = Flutter/App.framework; sourceTree = "<group>"; };
-		513FD30223F3C30800CC1187 /* FlutterLoggingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlutterLoggingService.swift; sourceTree = "<group>"; };
 		510C681223EB421C005319B8 /* MethodChannelHandlers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MethodChannelHandlers.swift; sourceTree = "<group>"; };
 		510C681423EB9203005319B8 /* Operations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Operations.swift; sourceTree = "<group>"; };
+		513FD30223F3C30800CC1187 /* FlutterLoggingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlutterLoggingService.swift; sourceTree = "<group>"; };
 		51633C3823D8DC110019F4A7 /* BackgroundTasks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundTasks.swift; sourceTree = "<group>"; };
 		51633C3A23D8FA520019F4A7 /* BackgroundTaskHandlers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundTaskHandlers.swift; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };

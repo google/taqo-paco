@@ -1,18 +1,27 @@
 import Foundation
 import BackgroundTasks
-import os.log
+
+func submitBGTaskRequest(_ request: BGTaskRequest) -> Bool {
+  do {
+    try BGTaskScheduler.shared.submit(request)
+    flutter_log("INFO","Successfully scheduled task \(request.identifier)")
+    return true
+  } catch {
+    flutter_log("WARNING","Unable to schedule task \(request.identifier): \(error)")
+    return false
+  }
+}
 
 func scheduleBGProcessingTask(identifier: String, requiresExternalPower: Bool, requiresNetworkConnectivity: Bool) -> Bool {
   let request = BGProcessingTaskRequest(identifier: identifier)
   request.requiresExternalPower = requiresExternalPower
   request.requiresNetworkConnectivity = requiresNetworkConnectivity
-  do {
-    try BGTaskScheduler.shared.submit(request)
-    return true
-  } catch {
-    os_log("Unable to schedule task %@: %@", "\(identifier)", "\(error)")
-    return false
-  }
+  return submitBGTaskRequest(request)
+}
+
+func scheduleBGAppRefreshTask(identifier: String) -> Bool {
+  let request = BGAppRefreshTaskRequest(identifier: identifier)
+  return submitBGTaskRequest(request)
 }
 
 func cancelBGTask(identifier: String) {
