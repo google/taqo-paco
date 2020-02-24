@@ -1,0 +1,22 @@
+# Linux Instructions
+General instructions for running Taqo on Linux
+
+## Setup
+- Read this: https://github.com/flutter/flutter/wiki/Desktop-shells#tooling
+- Switch the the Flutter master channel
+```
+$ flutter channel master
+$ flutter upgrade
+```
+- Keep the Flutter embedder in sync with [here](https://github.com/google/flutter-desktop-embedding)
+```
+$ git clone https://github.com/google/flutter-desktop-embedding.git /tmp/embedder
+$ cp -R /tmp/embedder/example/linux /path/to/taqo_survey/taqo_client/linux    # Replace if necessary
+```
+
+## Running
+```
+$ cd /path/to/taqo_survey/taqo_client
+$ flutter run -d linux
+```
+

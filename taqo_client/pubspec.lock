@@ -614,12 +614,10 @@ packages:
   sqflite:
     dependency: "direct overridden"
     description:
-      path: sqflite
-      ref: HEAD
-      resolved-ref: c0a4f4dac81498cc5049ea99704f398c076cc434
-      url: "git://github.com/rundong08/sqflite.git"
-    source: git
-    version: "1.1.7+3"
+      path: "plugins/flutter/sqflite/sqflite"
+      relative: true
+    source: path
+    version: "1.2.1"
   stack_trace:
     dependency: transitive
     description:

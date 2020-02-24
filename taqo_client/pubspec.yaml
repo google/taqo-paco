@@ -51,9 +51,7 @@ dependency_overrides:
       ref: macos
       path: flutter_local_notifications
   sqflite:
-    git:
-      url: git://github.com/rundong08/sqflite.git
-      path: sqflite
+    path: plugins/flutter/sqflite/sqflite
 
 dev_dependencies:
   flutter_test:

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Executable name.
-BINARY_NAME=taqo_survey
+BINARY_NAME=sqflite_example
 # Any extra source files to build.
 EXTRA_SOURCES=
 # Paths of any additional libraries to be bundled in the output directory.
@@ -24,19 +24,8 @@ EXTRA_CXXFLAGS=
 EXTRA_CPPFLAGS=
 EXTRA_LDFLAGS=
 
-# The location of the flutter-desktop-embedding repository.
-FDE_ROOT=$(CURDIR)/../..
-# Plugins to include from the flutter-desktop-embedding plugins/ directory.
-PLUGIN_NAMES=
-# Additional plugins to include from the plugins/flutter_plugins subdirectory.
-# Do not include the _fde suffix.
-FLUTTER_PLUGIN_NAMES=
-# Plugins to include from the taqo_client/plugins subdirectory.
-TAQO_PLUGIN_NAMES=time
-# Plugins to include from the taqo_client/plugins/flutter subdirectory.
-FLUTTER_TAQO_PLUGIN_NAMES=path_provider_linux url_launcher_linux shared_preferences_linux
-FLUTTER_TAQO_PLUGIN_NAMES_2=sqflite
-
+# Plugins to include
+PLUGIN_NAMES=sqflite
 
 # Default build type. For a release build, set BUILD=release.
 # Currently this only sets NDEBUG, and not the complation settings
@@ -73,18 +62,10 @@ FLUTTER_ASSETS_SOURCE=$(FLUTTER_APP_BUILD_DIR)/$(FLUTTER_ASSETS_NAME)
 # Plugin-related additions
 # Currently plugins are refenced by direct source path. Eventually this should
 # be pub-based instead as on other platforms.
-PLUGINS_DIR=$(FDE_ROOT)/plugins
-FLUTTER_PLUGINS_DIR=$(PLUGINS_DIR)/flutter_plugins
-TAQO_PLUGINS_DIR=$(CURDIR)/../plugins
-FLUTTER_TAQO_PLUGINS_DIR=$(CURDIR)/../plugins/flutter
+PLUGINS_DIR=$(CURDIR)/../../..
 # The name of each plugin library is the name of its directory with _plugin
 # appended.
-PLUGIN_LIB_NAMES=$(foreach plugin,$(PLUGIN_NAMES) $(FLUTTER_PLUGIN_NAMES),$(plugin)_plugin)
-# Taqo plugin library name is taqo_<name>_plugin
-PLUGIN_LIB_NAMES+=$(foreach plugin,$(TAQO_PLUGIN_NAMES),taqo_$(plugin)_plugin)
-# Flutter Taqo plugin library name is <name>
-PLUGIN_LIB_NAMES+=$(foreach plugin,$(FLUTTER_TAQO_PLUGIN_NAMES),$(plugin))
-PLUGIN_LIB_NAMES+=$(foreach plugin,$(FLUTTER_TAQO_PLUGIN_NAMES_2),$(plugin)_plugin)
+PLUGIN_LIB_NAMES=$(foreach plugin,$(PLUGIN_NAMES),$(plugin)_plugin)
 
 PLUGIN_LIBS=$(foreach plugin,$(PLUGIN_LIB_NAMES),$(OUT_DIR)/lib$(plugin).so)
 EXTRA_BUNDLED_LIBRARIES+=$(PLUGIN_LIBS)
@@ -159,26 +140,11 @@ $(BIN_OUT): $(OBJ_FILES) $(ALL_LIBS_OUT)
 	mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OBJ_FILES) $(LDFLAGS) -o $@
 
-$(WRAPPER_SOURCES) $(FLUTTER_LIB) $(ICU_DATA_SOURCE) $(FLUTTER_ASSETS_SOURCE) \
-	$(PLUGIN_NAMES) $(FLUTTER_PLUGIN_NAMES) \
-	$(TAQO_PLUGIN_NAMES) $(FLUTTER_TAQO_PLUGIN_NAMES) $(FLUTTER_TAQO_PLUGIN_NAMES_2): | sync
+$(WRAPPER_SOURCES) $(FLUTTER_LIB) $(ICU_DATA_SOURCE) $(FLUTTER_ASSETS_SOURCE) $(PLUGIN_NAMES): | sync
 
 # Implicit rules won't match phony targets, so list plugin builds explicitly.
 # Plugins
-#$(OUT_DIR)/libsample_plugin.so: | sample
-#$(OUT_DIR)/libcolor_panel_plugin.so: | color_panel
-#$(OUT_DIR)/libfile_chooser_plugin.so: | file_chooser
-#$(OUT_DIR)/libmenubar_plugin.so: | menubar
-#$(OUT_DIR)/libwindow_size_plugin.so: | window_size
-# Flutter plugins
-#$(OUT_DIR)/liburl_launcher_plugin.so: | url_launcher
-# Taqo plugins
-$(OUT_DIR)/libtaqo_time_plugin.so: | time
-# Flutter Taqo plugins
 $(OUT_DIR)/libsqflite_plugin.so: | sqflite
-$(OUT_DIR)/libpath_provider_linux.so: | path_provider_linux
-$(OUT_DIR)/liburl_launcher_linux.so: | url_launcher_linux
-$(OUT_DIR)/libshared_preferences_linux.so: | shared_preferences_linux
 
 # Compilation depends on plugin headers that are copied as part of the
 # plugin builds, so ensure those happen first.
@@ -188,30 +154,6 @@ $(OBJ_FILES) : | $(EXTRA_BUNDLED_LIBRARIES)
 .PHONY: $(PLUGIN_NAMES)
 $(PLUGIN_NAMES):
 	make -C $(PLUGINS_DIR)/$@/linux \
-		OUT_DIR=$(OUT_DIR) \
-		FLUTTER_EPHEMERAL_DIR="$(abspath $(FLUTTER_EPHEMERAL_DIR))"
-
-.PHONY: $(FLUTTER_PLUGIN_NAMES)
-$(FLUTTER_PLUGIN_NAMES):
-	make -C $(FLUTTER_PLUGINS_DIR)/$@_fde/linux \
-		OUT_DIR=$(OUT_DIR) \
-		FLUTTER_EPHEMERAL_DIR="$(abspath $(FLUTTER_EPHEMERAL_DIR))"
-
-.PHONY: $(TAQO_PLUGIN_NAMES)
-$(TAQO_PLUGIN_NAMES):
-	make -C $(TAQO_PLUGINS_DIR)/$@/linux \
-		OUT_DIR=$(OUT_DIR) \
-		FLUTTER_EPHEMERAL_DIR="$(abspath $(FLUTTER_EPHEMERAL_DIR))"
-
-.PHONY: $(FLUTTER_TAQO_PLUGIN_NAMES)
-$(FLUTTER_TAQO_PLUGIN_NAMES):
-	make -C $(FLUTTER_TAQO_PLUGINS_DIR)/$@/linux \
-		OUT_DIR=$(OUT_DIR) \
-		FLUTTER_EPHEMERAL_DIR="$(abspath $(FLUTTER_EPHEMERAL_DIR))"
-
-.PHONY: $(FLUTTER_TAQO_PLUGIN_NAMES_2)
-$(FLUTTER_TAQO_PLUGIN_NAMES_2):
-	make -C $(FLUTTER_TAQO_PLUGINS_DIR)/$@/linux \
 		OUT_DIR=$(OUT_DIR) \
 		FLUTTER_EPHEMERAL_DIR="$(abspath $(FLUTTER_EPHEMERAL_DIR))"
 
