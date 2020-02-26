@@ -109,4 +109,15 @@ class ZonedDateTime {
     final duration = Duration(hours: hours, minutes: minutes);
     return sign == '-' ? -duration : duration;
   }
+
+  static fromInt(int millis) {
+    final dateTime = DateTime.fromMillisecondsSinceEpoch(millis);
+    final timeZoneOffset = dateTime.timeZoneOffset;
+    var string = _validateAndFixIso8601StringLocal(
+        dateTime.toIso8601String(), dateTime, timeZoneOffset);
+
+    return ZonedDateTime._(timeZoneOffset, dateTime, string);
+  }
+
+  int toMillis() { return dateTime.millisecondsSinceEpoch; }
 }

@@ -13,7 +13,7 @@ Visualization _$VisualizationFromJson(Map<String, dynamic> json) {
     ..title = json['title'] as String
     ..modifyDate = json['modifyDate'] == null
         ? null
-        : DateTime.parse(json['modifyDate'] as String)
+        : Visualization._zonedDateTimeFromInt(json['modifyDate'] as int)
     ..question = json['question'] as String
     ..xAxisVariable = json['xAxisVariable'] == null
         ? null
@@ -28,10 +28,10 @@ Visualization _$VisualizationFromJson(Map<String, dynamic> json) {
     ..description = json['description'] as String
     ..startDatetime = json['startDatetime'] == null
         ? null
-        : DateTime.parse(json['startDatetime'] as String)
+        : Visualization._zonedDateTimeFromInt(json['startDatetime'] as int)
     ..endDatetime = json['endDatetime'] == null
         ? null
-        : DateTime.parse(json['endDatetime'] as String);
+        : Visualization._zonedDateTimeFromInt(json['endDatetime'] as int);
 }
 
 Map<String, dynamic> _$VisualizationToJson(Visualization instance) =>
@@ -39,13 +39,19 @@ Map<String, dynamic> _$VisualizationToJson(Visualization instance) =>
       'id': instance.id,
       'experimentId': instance.experimentId,
       'title': instance.title,
-      'modifyDate': instance.modifyDate?.toIso8601String(),
+      'modifyDate': instance.modifyDate == null
+          ? null
+          : Visualization._zonedDateTimeToInt(instance.modifyDate),
       'question': instance.question,
       'xAxisVariable': instance.xAxisVariable,
       'yAxisVariables': instance.yAxisVariables,
       'participants': instance.participants,
       'type': instance.type,
       'description': instance.description,
-      'startDatetime': instance.startDatetime?.toIso8601String(),
-      'endDatetime': instance.endDatetime?.toIso8601String()
+      'startDatetime': instance.startDatetime == null
+          ? null
+          : Visualization._zonedDateTimeToInt(instance.startDatetime),
+      'endDatetime': instance.endDatetime == null
+          ? null
+          : Visualization._zonedDateTimeToInt(instance.endDatetime)
     };
