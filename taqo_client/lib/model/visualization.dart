@@ -12,7 +12,7 @@ class Visualization {
   int experimentId;
   String title;
 
-  @JsonKey(fromJson: _zonedDateTimeFromInt, toJson: _zonedDateTimeToInt)
+  @JsonKey(fromJson: _zonedDateTimeFromMillis, toJson: _zonedDateTimeToMillis)
   ZonedDateTime modifyDate;
   String question;
 
@@ -23,10 +23,10 @@ class Visualization {
   String type;
   String description;
 
-  @JsonKey(fromJson: _zonedDateTimeFromInt, toJson: _zonedDateTimeToInt)
+  @JsonKey(fromJson: _zonedDateTimeFromMillis, toJson: _zonedDateTimeToMillis)
   ZonedDateTime startDatetime;
 
-  @JsonKey(fromJson: _zonedDateTimeFromInt, toJson: _zonedDateTimeToInt)
+  @JsonKey(fromJson: _zonedDateTimeFromMillis, toJson: _zonedDateTimeToMillis)
   ZonedDateTime endDatetime;
 
   Visualization();
@@ -35,9 +35,9 @@ class Visualization {
 
   Map<String, dynamic> toJson() => _$VisualizationToJson(this);
 
-  static ZonedDateTime _zonedDateTimeFromInt(int millis) =>
-      millis == null ? null : ZonedDateTime.fromInt(millis);
+  static ZonedDateTime _zonedDateTimeFromMillis(int millis) =>
+      millis == null ? null : ZonedDateTime.fromMillis(millis);
 
-  static int _zonedDateTimeToInt(ZonedDateTime zonedDateTime) =>
+  static int _zonedDateTimeToMillis(ZonedDateTime zonedDateTime) =>
       zonedDateTime?.toMillis();
 }

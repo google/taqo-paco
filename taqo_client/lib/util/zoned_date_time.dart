@@ -110,7 +110,7 @@ class ZonedDateTime {
     return sign == '-' ? -duration : duration;
   }
 
-  static fromInt(int millis) {
+  static fromMillis(int millis) {
     final dateTime = DateTime.fromMillisecondsSinceEpoch(millis);
     final timeZoneOffset = dateTime.timeZoneOffset;
     var string = _validateAndFixIso8601StringLocal(

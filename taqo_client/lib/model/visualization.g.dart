@@ -13,7 +13,7 @@ Visualization _$VisualizationFromJson(Map<String, dynamic> json) {
     ..title = json['title'] as String
     ..modifyDate = json['modifyDate'] == null
         ? null
-        : Visualization._zonedDateTimeFromInt(json['modifyDate'] as int)
+        : Visualization._zonedDateTimeFromMillis(json['modifyDate'] as int)
     ..question = json['question'] as String
     ..xAxisVariable = json['xAxisVariable'] == null
         ? null
@@ -28,10 +28,10 @@ Visualization _$VisualizationFromJson(Map<String, dynamic> json) {
     ..description = json['description'] as String
     ..startDatetime = json['startDatetime'] == null
         ? null
-        : Visualization._zonedDateTimeFromInt(json['startDatetime'] as int)
+        : Visualization._zonedDateTimeFromMillis(json['startDatetime'] as int)
     ..endDatetime = json['endDatetime'] == null
         ? null
-        : Visualization._zonedDateTimeFromInt(json['endDatetime'] as int);
+        : Visualization._zonedDateTimeFromMillis(json['endDatetime'] as int);
 }
 
 Map<String, dynamic> _$VisualizationToJson(Visualization instance) =>
@@ -41,7 +41,7 @@ Map<String, dynamic> _$VisualizationToJson(Visualization instance) =>
       'title': instance.title,
       'modifyDate': instance.modifyDate == null
           ? null
-          : Visualization._zonedDateTimeToInt(instance.modifyDate),
+          : Visualization._zonedDateTimeToMillis(instance.modifyDate),
       'question': instance.question,
       'xAxisVariable': instance.xAxisVariable,
       'yAxisVariables': instance.yAxisVariables,
@@ -50,8 +50,8 @@ Map<String, dynamic> _$VisualizationToJson(Visualization instance) =>
       'description': instance.description,
       'startDatetime': instance.startDatetime == null
           ? null
-          : Visualization._zonedDateTimeToInt(instance.startDatetime),
+          : Visualization._zonedDateTimeToMillis(instance.startDatetime),
       'endDatetime': instance.endDatetime == null
           ? null
-          : Visualization._zonedDateTimeToInt(instance.endDatetime)
+          : Visualization._zonedDateTimeToMillis(instance.endDatetime)
     };

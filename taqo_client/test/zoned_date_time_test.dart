@@ -3,8 +3,6 @@ import 'package:test/test.dart';
 
 import 'package:taqo_client/util/zoned_date_time.dart';
 
-import 'fixed_scheduling_test.dart';
-
 void main() {
   group('formatTimeZoneOffset()', () {
     test('formatTimeZoneOffset() format DateTime.timeZoneOffset as ±hhmm', () {
@@ -92,7 +90,7 @@ void main() {
       'fromInt parses an int representing millisSinceEpoch and produces an object in local timezone',
         () {
         int millis = 1517875586000;
-        expect(ZonedDateTime.fromInt(millis).dateTime.millisecondsSinceEpoch
+        expect(ZonedDateTime.fromMillis(millis).dateTime.millisecondsSinceEpoch
             , equals(millis));
         }
     );
