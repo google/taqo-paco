@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 
 import "package:googleapis_auth/auth_io.dart";
 import "package:http/http.dart" as http;
+import 'package:taqo_client/model/event.dart';
 import 'package:taqo_client/storage/unsecure_token_storage.dart';
 
 class GoogleAuth {
@@ -145,10 +147,10 @@ class GoogleAuth {
     var accessToken = new AccessToken("Bearer", savedTokens.elementAt(1),
         DateTime.parse(savedTokens.elementAt(2)));
     return await refreshCredentials(
-        id,
-        new AccessCredentials(
-            accessToken, savedTokens.elementAt(0), scopes),
-        client)
+            id,
+            new AccessCredentials(
+                accessToken, savedTokens.elementAt(0), scopes),
+            client)
         .then((newCredentials) {
       saveCredentials(newCredentials);
       var at = newCredentials.accessToken.data;
@@ -161,7 +163,7 @@ class GoogleAuth {
       http.Client client, Map<String, String> headers, int experimentId) async {
     return await client
         .get("https://www.pacoapp.com/experiments?id=$experimentId",
-        headers: headers)
+            headers: headers)
         .then((response) {
       print(response.body);
       client.close();
@@ -169,19 +171,18 @@ class GoogleAuth {
     });
   }
 
-  Future<String> _getExperimentsByIds(
-      http.Client client, Map<String, String> headers, Iterable<int> experimentIds) async {
+  Future<String> _getExperimentsByIds(http.Client client,
+      Map<String, String> headers, Iterable<int> experimentIds) async {
     var experimentIdsAsString = experimentIds.join(",");
     return await client
         .get("https://www.pacoapp.com/experiments?id=$experimentIdsAsString",
-        headers: headers)
+            headers: headers)
         .then((response) {
       print(response.body);
       client.close();
       return response.body;
     });
   }
-
 
   Future<String> getPubExperimentById(int experimentId) async {
     var client = new http.Client();
@@ -194,7 +195,8 @@ class GoogleAuth {
     });
   }
 
-  Future<String> getExperimentsByIdWithSavedCredentials(Iterable<int> keys) async {
+  Future<String> getExperimentsByIdWithSavedCredentials(
+      Iterable<int> keys) async {
     var scopes = [AUTH_TOKEN_TYPE_USERINFO_EMAIL];
     var client = new http.Client();
     List<String> savedTokens = await readTokens();
@@ -202,10 +204,10 @@ class GoogleAuth {
     var accessToken = new AccessToken("Bearer", savedTokens.elementAt(1),
         DateTime.parse(savedTokens.elementAt(2)));
     return await refreshCredentials(
-        id,
-        new AccessCredentials(
-            accessToken, savedTokens.elementAt(0), scopes),
-        client)
+            id,
+            new AccessCredentials(
+                accessToken, savedTokens.elementAt(0), scopes),
+            client)
         .then((newCredentials) {
       saveCredentials(newCredentials);
       var at = newCredentials.accessToken.data;
@@ -214,6 +216,26 @@ class GoogleAuth {
     });
   }
 
+  Future<http.Response> postEvents(Iterable<Event> events) async {
+    var scopes = [AUTH_TOKEN_TYPE_USERINFO_EMAIL];
+    var client = new http.Client();
+    List<String> savedTokens = await readTokens();
+
+    var accessToken = new AccessToken("Bearer", savedTokens.elementAt(1),
+        DateTime.parse(savedTokens.elementAt(2)));
+    return await refreshCredentials(
+            id,
+            new AccessCredentials(
+                accessToken, savedTokens.elementAt(0), scopes),
+            client)
+        .then((newCredentials) {
+      saveCredentials(newCredentials);
+      var at = newCredentials.accessToken.data;
+      var headers = {"Authorization": "Bearer $at"};
+      return client.post(Uri.https('www.pacoapp.com', '/events'),
+          headers: headers, body: jsonEncode(events));
+    });
+  }
 }
 
 void prompt(String url) {
