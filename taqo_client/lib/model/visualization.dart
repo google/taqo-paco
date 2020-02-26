@@ -1,5 +1,6 @@
 import 'package:taqo_client/model/viz_variable.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:taqo_client/util/zoned_date_time.dart';
 
 part 'visualization.g.dart';
 
@@ -11,7 +12,8 @@ class Visualization {
   int experimentId;
   String title;
 
-  DateTime modifyDate;
+  @JsonKey(fromJson: _zonedDateTimeFromMillis, toJson: _zonedDateTimeToMillis)
+  ZonedDateTime modifyDate;
   String question;
 
   VizVariable xAxisVariable;
@@ -21,13 +23,21 @@ class Visualization {
   String type;
   String description;
 
-  DateTime startDatetime;
-  DateTime endDatetime;
+  @JsonKey(fromJson: _zonedDateTimeFromMillis, toJson: _zonedDateTimeToMillis)
+  ZonedDateTime startDatetime;
+
+  @JsonKey(fromJson: _zonedDateTimeFromMillis, toJson: _zonedDateTimeToMillis)
+  ZonedDateTime endDatetime;
 
   Visualization();
 
   factory Visualization.fromJson(Map<String, dynamic> json) => _$VisualizationFromJson(json);
 
   Map<String, dynamic> toJson() => _$VisualizationToJson(this);
-  
+
+  static ZonedDateTime _zonedDateTimeFromMillis(int millis) =>
+      millis == null ? null : ZonedDateTime.fromMillis(millis);
+
+  static int _zonedDateTimeToMillis(ZonedDateTime zonedDateTime) =>
+      zonedDateTime?.toMillis();
 }
