@@ -84,4 +84,15 @@ void main() {
           equals(stringDateTime));
     });
   });
+
+  group('ZonedDateTime.fromInt()', () {
+    test(
+      'fromInt parses an int representing millisSinceEpoch and produces an object in local timezone',
+        () {
+        int millis = 1517875586000;
+        expect(ZonedDateTime.fromMillis(millis).dateTime.millisecondsSinceEpoch
+            , equals(millis));
+        }
+    );
+  });
 }
