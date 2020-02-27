@@ -1,12 +1,14 @@
 //import "package:test/test.dart";
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taqo_client/model/experiment_core.dart';
 import 'dart:convert';
 import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/model/visualization.dart';
 
 void main() {
-
+  TestWidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences.setMockInitialValues({});
   test("generate json for ExperimentCore", () {
 
     String jsonString = "{"+
@@ -23,7 +25,6 @@ void main() {
 
 
   test("generate json for Experiment (subclass of ExperimentCore", () {
-
     String jsonString = "{"+
         "\"title\": \"Everything Demo New\","+
         " \"description\": \"\","+
