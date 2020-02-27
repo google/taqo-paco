@@ -13,7 +13,7 @@ abstract class LocalFileStorage {
   Future<Directory> get _localStorageDir async {
     WidgetsFlutterBinding.ensureInitialized();
     try {
-      return await getApplicationDocumentsDirectory();
+      return await getApplicationSupportDirectory();
     } on MissingPluginException {
       // Workaround to support file storage during tests
       return Directory.systemTemp;

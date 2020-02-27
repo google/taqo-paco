@@ -23,6 +23,8 @@ dependencies:
   json_annotation: ^2.0.0
   googleapis_auth: ^0.2.7
   url_launcher: ^5.0.2
+  url_launcher_linux:
+    path: plugins/flutter/url_launcher_linux
 #  flutter_secure_storage: ^3.2.1+1
   flutter_html: ^0.11.0
   numberpicker: ^1.0.0
@@ -31,12 +33,16 @@ dependencies:
   provider: ^3.2.0
   path_provider: ^1.5.1
   path_provider_macos: ^0.0.1
+  path_provider_linux:
+    path: plugins/flutter/path_provider_linux
   petitparser: ^2.4.0
   shared_preferences: ^0.5.6
+  shared_preferences_linux:
+    path: plugins/flutter/shared_preferences_linux
   taqo_email_plugin:
-    path: ../taqo_email_plugin
+    path: plugins/email
   taqo_time_plugin:
-    path: ../taqo_time_plugin
+    path: plugins/time
 
 dependency_overrides:
   flutter_local_notifications:
@@ -45,9 +51,7 @@ dependency_overrides:
       ref: macos
       path: flutter_local_notifications
   sqflite:
-    git:
-      url: git://github.com/rundong08/sqflite.git
-      path: sqflite
+    path: plugins/flutter/sqflite/sqflite
 
 dev_dependencies:
   flutter_test:
