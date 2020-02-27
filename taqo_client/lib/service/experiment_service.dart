@@ -45,7 +45,13 @@ class ExperimentService {
       final List experimentJsonList = jsonDecode(experimentJson);
       final experiments = <Experiment>[];
       for (var experimentJson in experimentJsonList) {
-        final experiment = Experiment.fromJson(experimentJson);
+        var experiment;
+        try {
+          experiment = Experiment.fromJson(experimentJson);
+        } catch(e) {
+          print('Error parsing experiment ${experimentJson['id']}: $e');
+          continue;
+        }
         // Don't show Experiments already joined
         if (!_joined.containsKey(experiment.id)) {
           experiments.add(experiment);
