@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:taqo_client/service/sync_service.dart';
@@ -25,6 +27,8 @@ void setupSyncServiceMethodChannel() {
 }
 
 Future<void> notifySyncService() async {
+  // TODO on linux
+  if (Platform.isLinux) return;
   try {
     await _platform.invokeMethod(_notifySyncServiceMethod);
   } on PlatformException catch (e) {
