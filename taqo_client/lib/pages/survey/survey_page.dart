@@ -428,7 +428,6 @@ class _SurveyPageState extends State<SurveyPage> {
     _event.responseTime = ZonedDateTime.now();
     _event.responses[FORM_DURATION_IN_SECONDS] =
     _event.responseTime.dateTime.difference(_startTime).inSeconds;
-    await _alertLog("Saving Responses: " + jsonEncode(_event.toJson()));
     var savedOK = validateResponses();
     // TODO Validate answers and store locally.
     var db = LocalDatabase();
