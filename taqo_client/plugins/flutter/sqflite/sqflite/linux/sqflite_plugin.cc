@@ -311,13 +311,13 @@ void bind(sqlite3_stmt *pStmt, EncodableList &sqlArgs) {
   int ret;
   for (it = sqlArgs.begin(); it != sqlArgs.end(); it++) {
     if (it->IsBool()) {
-      ret = sqlite3_bind_int(pStmt, i++, it->BoolValue());
+      ret = sqlite3_bind_int(pStmt, i++, it->BoolValue() ? 1 : 0);
     } else if (it->IsInt()) {
       ret = sqlite3_bind_int(pStmt, i++, it->IntValue());
     } else if (it->IsLong()) {
-      ret = sqlite3_bind_int(pStmt, i++, it->LongValue());
+      ret = sqlite3_bind_int64(pStmt, i++, it->LongValue());
     } else if (it->IsDouble()) {
-      ret = sqlite3_bind_int(pStmt, i++, it->DoubleValue());
+      ret = sqlite3_bind_double(pStmt, i++, it->DoubleValue());
     } else if (it->IsString()) {
       ret = sqlite3_bind_text(pStmt, i++, it->StringValue().c_str(), -1, nullptr);
     } else {
@@ -357,7 +357,7 @@ EncodableValue step(sqlite3_stmt *pStmt) {
       int type = sqlite3_column_type(pStmt, i);
       EncodableValue value;
       if (SQLITE_INTEGER == type) {
-        value = EncodableValue(sqlite3_column_int(pStmt, i));
+        value = EncodableValue((long)sqlite3_column_int64(pStmt, i));
         //std::cout << "mike21" << i << ": " << (sqlite3_column_int(pStmt, i)) << std::endl;
       } else if (SQLITE_FLOAT == type) {
         value = EncodableValue(sqlite3_column_double(pStmt, i));
