@@ -291,24 +291,28 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   Widget buildScale(Input2 input) {
-    var leftLabel = buildScaleLabelWidget(input.leftSideLabel);
-    var rightLabel = buildScaleLabelWidget(input.rightSideLabel);
+    Widget children = buildScaleRow(input.likertSteps, input);
 
-    List<Widget> buttonChildren = buildRadioButtons(input.likertSteps, input);
-
-    var allChildren = <Widget>[leftLabel] + buttonChildren + [rightLabel];
-
-    return Padding(
-        padding: EdgeInsets.all(0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: allChildren,
-        ));
+    return Row(
+      children: <Widget>[
+        children,
+      ],
+    );
   }
 
-  List<Widget> buildRadioButtons(int numberOfSteps, Input2 input) {
-    return Iterable.generate(numberOfSteps, (i) => buildRadio(i + 1, input))
-        .toList();
+  Widget buildScaleRow(int numberOfSteps, Input2 input) {
+    final leftLabel = buildScaleLabelWidget(input.leftSideLabel);
+    final rightLabel = buildScaleLabelWidget(input.rightSideLabel);
+
+    final radioButtons = Iterable.generate(numberOfSteps, (i) =>
+        buildRadio(i + 1, input)).toList();
+
+    return Expanded(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [leftLabel] + radioButtons + [rightLabel],
+      ),
+    );
   }
 
   Widget buildRadio(int i, input) {
@@ -316,18 +320,22 @@ class _SurveyPageState extends State<SurveyPage> {
         ? _event.responses[input.name] as int
         : -1;
 
-    return Expanded(
-        child: Radio(
-            value: i,
-            groupValue: groupValue,
-            onChanged: (int value) {
-              setState(() {
-                _event.responses[input.name] = value;
-              });
-            }));
+    return Flexible(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Radio(
+              value: i,
+              groupValue: groupValue,
+              onChanged: (int value) {
+                setState(() {
+                  _event.responses[input.name] = value;
+                });
+              })
+        )
+    );
   }
 
-  Text buildScaleLabelWidget(String labelText) {
+  Widget buildScaleLabelWidget(String labelText) {
     return Text(
       (labelText != null) ? labelText : "",
       style: new TextStyle(fontSize: 16.0),
