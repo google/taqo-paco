@@ -56,7 +56,14 @@ int main(int argc, char **argv) {
   std::string icu_data_path = data_directory + "/icudtl.dat";
 
   // Arguments for the Flutter Engine.
+  // This isn't officially supported, but we can change the linux embedder to support it
   std::vector<std::string> arguments;
+  if (argc > 1) {
+    int i = 1;
+    while (i < argc) {
+      arguments.push_back(std::string(argv[i++]));
+    }
+  }
 
   flutter::FlutterWindowController flutter_controller(icu_data_path);
   flutter::WindowProperties window_properties = {};

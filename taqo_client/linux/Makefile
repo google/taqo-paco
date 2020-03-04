@@ -32,7 +32,7 @@ PLUGIN_NAMES=
 # Do not include the _fde suffix.
 FLUTTER_PLUGIN_NAMES=
 # Plugins to include from the taqo_client/plugins subdirectory.
-TAQO_PLUGIN_NAMES=time
+TAQO_PLUGIN_NAMES=time notify
 # Plugins to include from the taqo_client/plugins/flutter subdirectory.
 FLUTTER_TAQO_PLUGIN_NAMES=path_provider_linux url_launcher_linux shared_preferences_linux
 FLUTTER_TAQO_PLUGIN_NAMES_2=sqflite
@@ -174,6 +174,7 @@ $(WRAPPER_SOURCES) $(FLUTTER_LIB) $(ICU_DATA_SOURCE) $(FLUTTER_ASSETS_SOURCE) \
 #$(OUT_DIR)/liburl_launcher_plugin.so: | url_launcher
 # Taqo plugins
 $(OUT_DIR)/libtaqo_time_plugin.so: | time
+$(OUT_DIR)/libtaqo_notify_plugin.so: | notify
 # Flutter Taqo plugins
 $(OUT_DIR)/libsqflite_plugin.so: | sqflite
 $(OUT_DIR)/libpath_provider_linux.so: | path_provider_linux
