@@ -336,9 +336,15 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   Widget buildScaleLabelWidget(String labelText) {
-    return Text(
-      (labelText != null) ? labelText : "",
-      style: new TextStyle(fontSize: 16.0),
+    return Container(
+        constraints: BoxConstraints(maxWidth: 64),
+        child: Text(
+          (labelText != null) ? labelText : "",
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 16.0),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 3,
+        )
     );
   }
 
