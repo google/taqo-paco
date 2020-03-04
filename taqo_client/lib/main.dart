@@ -32,7 +32,7 @@ void _onTimeChange() async {
   /// TODO Currently provides no info on how the time was changed
   print('time [zone] changed, rescheduling');
   await ESMSignalStorage().deleteAllSignals();
-  taqo_alarm.schedule(cancelAll: true);
+  taqo_alarm.schedule();
 }
 
 void main() {
