@@ -42,7 +42,7 @@ Future cancel(int id) async {
     await flutter_local_notifications.cancelNotification(id);
     await schedule(cancelAndReschedule: false);
   } else if (Platform.isLinux) {
-    linux_alarm_manager.cancel(id);
+    linux_notifications.cancelNotification(id);
   }
 }
 

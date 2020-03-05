@@ -42,7 +42,6 @@ void _scheduleTimeout(ActionSpecification actionSpec) async {
   if (actionSpec.action != null) {
     timeout = actionSpec.action.timeout ?? timeout;
   }
-  timeout = 1;
   final alarmId = await _schedule(actionSpec, actionSpec.time.add(Duration(minutes: timeout)), _expireCallback);
   print('_scheduleTimeout: alarmId: $alarmId'
       ' when: ${actionSpec.time.add(Duration(minutes: timeout))}'

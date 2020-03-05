@@ -49,4 +49,5 @@ Future<Null> _callbackHandler(MethodCall methodCall) async {
     final id = methodCall.arguments;
     _func(id);
   }
+  return null;
 }
