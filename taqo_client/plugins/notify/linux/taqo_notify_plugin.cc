@@ -116,14 +116,19 @@ std::string getIconPath() {
 static TaqoNotifyPlugin *plugin_;
 static int callback_id_ = -1;
 
+//static pthread_mutex_t lock_;
+static pthread_t flutter_th_ = -1;
+
 void sigHandle(int sig) {
   if (SIGUSR1 != sig) return;
 
   //std::cout << "Received " << sig << " " << std::this_thread::get_id() << std::endl;
   if (callback_id_ >= 0) {
-    plugin_->channel_->InvokeMethod(kHandleCallbackMethod, std::make_unique<EncodableValue>(callback_id_));
+    plugin_->channel_->InvokeMethod(kHandleCallbackMethod,
+        std::make_unique<EncodableValue>(callback_id_));
     callback_id_ = -1;
   }
+  //pthread_mutex_unlock(&lock_);
 }
 
 static bool initialized_ = false;
@@ -148,8 +153,9 @@ static void handle(NotifyNotification *notification, char *action, gpointer user
   auto payload = reinterpret_cast<int *>(user_data);
   auto id = *payload;
   //std::cout << "Handle " << id << " " << std::this_thread::get_id() << std::endl;
+  //pthread_mutex_lock(&lock_);   // this lock is released by the other thread
   callback_id_ = id;
-  kill(getpid(), SIGUSR1);
+  pthread_kill(flutter_th_, SIGUSR1);
 
   notifications_.erase(id);
   delete payload;
@@ -162,6 +168,7 @@ void TaqoNotifyPlugin::HandleMethodCall(
   if (0 == method_call.method_name().compare(kInitializeMethod)) {
     if (!initialized_) {
       plugin_ = this;
+      flutter_th_ = pthread_self();
       signal(SIGUSR1, sigHandle);
 
       // We need a GMainLoop to handle notification actions
