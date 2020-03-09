@@ -16,17 +16,12 @@ import 'taqo_alarm.dart' as taqo_alarm;
 /// Shows or schedules a notification with the plugin
 Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
     bool cancelPending=true}) async {
-  var timeout = 59;
-  if (actionSpec.action != null) {
-    timeout = actionSpec.action.timeout ?? timeout;
-  }
-
   final notificationHolder = NotificationHolder(
     -1,   // placeholder, the real ID will be assigned by sqlite
     actionSpec.time.millisecondsSinceEpoch,
     actionSpec.experiment.id,
     0,
-    1000 * 60 * timeout,
+    1000 * 60 * actionSpec.action.timeout,
     actionSpec.experimentGroup.name,
     actionSpec.actionTrigger.id,
     actionSpec.action?.id,

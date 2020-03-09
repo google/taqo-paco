@@ -42,10 +42,7 @@ Future<bool> _scheduleNotification(ActionSpecification actionSpec) async {
 }
 
 void _scheduleTimeout(ActionSpecification actionSpec) async {
-  var timeout = 59;
-  if (actionSpec.action != null) {
-    timeout = actionSpec.action.timeout ?? timeout;
-  }
+  final timeout = actionSpec.action.timeout;
   final alarmId = await _schedule(actionSpec, actionSpec.time.add(Duration(minutes: timeout)), _expireCallback);
   print('_scheduleTimeout: alarmId: $alarmId'
       ' when: ${actionSpec.time.add(Duration(minutes: timeout))}'
