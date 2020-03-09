@@ -9,11 +9,15 @@ import '../experiment_service.dart';
 import 'android_alarm_manager.dart' as android_alarm_manager;
 import 'flutter_local_notifications.dart' as flutter_local_notifications;
 import 'ios_notification_scheduler.dart' as ios_notification_scheduler;
+import 'linux_alarm_manager.dart' as linux_alarm_manager;
+import 'linux_notifications.dart' as linux_notifications;
 
 Future init() {
-  // Init the actual notification plugin
-  return flutter_local_notifications.init().then((value) =>
-      schedule(cancelAndReschedule: false));
+  // Init the actual notification plugins
+  return Future.wait([
+    flutter_local_notifications.init().then((value) => schedule(cancelAndReschedule: false)),
+    linux_notifications.init(),
+  ]);
 }
 
 Future schedule({bool cancelAndReschedule=true}) async {
@@ -26,6 +30,8 @@ Future schedule({bool cancelAndReschedule=true}) async {
       await flutter_local_notifications.cancelAllNotifications();
     }
     ios_notification_scheduler.schedule();
+  } else if (Platform.isLinux) {
+    linux_alarm_manager.scheduleNextNotification();
   }
 }
 
@@ -35,12 +41,18 @@ Future cancel(int id) async {
   } else if (Platform.isIOS || Platform.isMacOS) {
     await flutter_local_notifications.cancelNotification(id);
     await schedule(cancelAndReschedule: false);
+  } else if (Platform.isLinux) {
+    linux_notifications.cancelNotification(id);
   }
 }
 
 Future timeout(int id) async {
   _createMissedEvent(await LocalDatabase().getNotification(id));
-  return flutter_local_notifications.cancelNotification(id);
+  if (Platform.isAndroid) {
+    return flutter_local_notifications.cancelNotification(id);
+  } else if (Platform.isLinux) {
+    return linux_notifications.cancelNotification(id);
+  }
 }
 
 void _createMissedEvent(NotificationHolder notification) async {

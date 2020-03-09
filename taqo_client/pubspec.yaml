@@ -41,6 +41,8 @@ dependencies:
     path: plugins/flutter/shared_preferences_linux
   taqo_email_plugin:
     path: plugins/email
+  taqo_notify_plugin:
+    path: plugins/notify
   taqo_time_plugin:
     path: plugins/time
 

@@ -1,28 +1,24 @@
 import 'dart:isolate';
 
-import 'package:android_alarm_manager/android_alarm_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../model/action_specification.dart';
 import '../../scheduling/action_schedule_generator.dart';
 import '../../storage/local_database.dart';
 import '../../util/date_time_util.dart';
-import 'flutter_local_notifications.dart' as flutter_local_notifications;
+import 'linux_notifications.dart' as linux_notifications;
 import 'taqo_alarm.dart' as taqo_alarm;
 
 const SHARED_PREFS_LAST_ALARM_TIME = 'lastScheduledAlarm';
 
 /// Schedule an alarm for [actionSpec] at [when] to run [callback]
-Future<int> _schedule(ActionSpecification actionSpec, DateTime when, Function(int) callback) {
-  return AndroidAlarmManager.initialize().then((success) async {
-    if (success) {
-      final alarmId = await LocalDatabase().insertAlarm(actionSpec);
-      AndroidAlarmManager.oneShotAt(when, alarmId, callback,
-          allowWhileIdle: true, exact: true, rescheduleOnReboot: true, wakeup: true);
-      return alarmId;
-    }
-    return -1;
-  });
+Future<int> _schedule(ActionSpecification actionSpec, DateTime when, Function(int) callback) async {
+  final duration = when.difference(DateTime.now());
+  if (duration.inMilliseconds < 0) return -1;
+
+  final alarmId = await LocalDatabase().insertAlarm(actionSpec);
+  Future.delayed(duration, () => callback(alarmId));
+  return alarmId;
 }
 
 Future<bool> _scheduleNotification(ActionSpecification actionSpec) async {
@@ -66,7 +62,7 @@ void _notifyCallback(int alarmId) async {
     var i = 0;
     for (var a in allAlarms) {
       print('[${i++}] Showing ${a.time}');
-      flutter_local_notifications.showNotification(a);
+      linux_notifications.showNotification(a);
     }
 
     // Store last shown notification time
@@ -147,11 +143,7 @@ void scheduleNextNotification() async {
 }
 
 Future<void> cancel(int alarmId) async {
-  AndroidAlarmManager.initialize().then((bool success) {
-    if (success) {
-      AndroidAlarmManager.cancel(alarmId);
-    }
-  });
+  // TODO Cancel Future?
   LocalDatabase().removeAlarm(alarmId);
 }
 
