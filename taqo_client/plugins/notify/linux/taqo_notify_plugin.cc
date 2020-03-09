@@ -131,7 +131,7 @@ void sigHandle(int sig) {
   //pthread_mutex_unlock(&lock_);
 }
 
-static bool initialized_ = false;
+static bool gMainLoopRunning_ = false;
 static auto notifications_ = std::map<int, NotifyNotification*>();
 
 // We need a GMainLoop to handle notification actions
@@ -145,7 +145,7 @@ static void * main_loop(void *cxt) {
   //std::cout << "Done main loop" << std::endl;
 
   notify_uninit();
-  initialized_ = false;
+  gMainLoopRunning_ = false;
   return nullptr;
 }
 
@@ -166,7 +166,7 @@ void TaqoNotifyPlugin::HandleMethodCall(
     std::unique_ptr<flutter::MethodResult<EncodableValue>> result) {
 
   if (0 == method_call.method_name().compare(kInitializeMethod)) {
-    if (!initialized_) {
+    if (!gMainLoopRunning_) {
       plugin_ = this;
       flutter_th_ = pthread_self();
       signal(SIGUSR1, sigHandle);
@@ -175,7 +175,7 @@ void TaqoNotifyPlugin::HandleMethodCall(
       auto context = g_main_context_default();
       pthread_t main_loop_thread;
       pthread_create(&main_loop_thread, nullptr, main_loop, (void *) context);
-      initialized_ = true;
+      gMainLoopRunning_ = true;
     }
 
     auto res = EncodableValue(true);
