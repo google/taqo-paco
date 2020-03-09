@@ -63,6 +63,18 @@ class TaqoNotifyPlugin : public flutter::Plugin {
   void HandleMethodCall(
       const flutter::MethodCall<EncodableValue> &method_call,
       std::unique_ptr<flutter::MethodResult<EncodableValue>> result);
+
+  void handleInitializeMethod(
+      const flutter::MethodCall<EncodableValue> &method_call,
+      std::unique_ptr<flutter::MethodResult<EncodableValue>> result);
+
+  void handleNotifyMethod(
+      const flutter::MethodCall<EncodableValue> &method_call,
+      std::unique_ptr<flutter::MethodResult<EncodableValue>> result);
+
+  void handleCancelMethod(
+      const flutter::MethodCall<EncodableValue> &method_call,
+      std::unique_ptr<flutter::MethodResult<EncodableValue>> result);
 };
 
 // static
@@ -161,76 +173,106 @@ static void handle(NotifyNotification *notification, char *action, gpointer user
   delete payload;
 }
 
+/**
+  * Initializes the g_main_loop, required for receiving notification action callbacks
+  * Expects no args (ignored if present)
+  */
+void TaqoNotifyPlugin::handleInitializeMethod(
+    const flutter::MethodCall<EncodableValue> &method_call,
+    std::unique_ptr<flutter::MethodResult<EncodableValue>> result) {
+  if (!gMainLoopRunning_) {
+    plugin_ = this;
+    flutter_th_ = pthread_self();
+    signal(SIGUSR1, sigHandle);
+
+    // We need a GMainLoop to handle notification actions
+    auto context = g_main_context_default();
+    pthread_t main_loop_thread;
+    pthread_create(&main_loop_thread, nullptr, main_loop, (void *) context);
+    gMainLoopRunning_ = true;
+  }
+
+  auto res = EncodableValue(true);
+  result->Success(&res);
+}
+
+/**
+  * Post a notification (right now) using libnotify
+  * Expects a Map of args containing: title (string), body (string), and id (int)
+  */
+void TaqoNotifyPlugin::handleNotifyMethod(
+    const flutter::MethodCall<EncodableValue> &method_call,
+    std::unique_ptr<flutter::MethodResult<EncodableValue>> result) {
+  if (!method_call.arguments() || !method_call.arguments()->IsMap()) {
+    auto res = EncodableValue(false);
+    result->Success(&res);
+    return;
+  }
+  auto args = method_call.arguments()->MapValue();
+  auto title = args[EncodableValue(kTitleArg)].StringValue();
+  auto body = args[EncodableValue(kBodyArg)].StringValue();
+  auto id = args[EncodableValue(kPayloadArg)].IntValue();
+
+  NotifyNotification *notification = notify_notification_new(title.c_str(), body.c_str(),
+    getIconPath().c_str());
+  notify_notification_set_timeout(notification, NOTIFY_EXPIRES_NEVER);
+  notify_notification_set_urgency(notification, NOTIFY_URGENCY_CRITICAL);
+
+  int *payload = new int(id);
+  // "default" action (clicked on the Notification)
+  notify_notification_add_action(notification, "default", "Participate",
+    (NotifyActionCallback) handle, (void *) payload, nullptr);
+
+  if (!notify_notification_show(notification, 0)) {
+    auto res = EncodableValue(false);
+    result->Success(&res);
+    return;
+  }
+
+  notifications_[id] = notification;
+
+  auto res = EncodableValue(true);
+  result->Success(&res);
+}
+
+/**
+  * Cancels (remove from screen/tray) an active notification
+  * Expects a Map of args containing: the id (int) to remove
+  */
+void TaqoNotifyPlugin::handleCancelMethod(
+    const flutter::MethodCall<EncodableValue> &method_call,
+    std::unique_ptr<flutter::MethodResult<EncodableValue>> result) {
+  if (!method_call.arguments() || !method_call.arguments()->IsMap()) {
+    auto res = EncodableValue(false);
+    result->Success(&res);
+    return;
+  }
+  auto args = method_call.arguments()->MapValue();
+  auto id = args[EncodableValue(kIdArg)].IntValue();
+
+  if (notifications_.find(id) == notifications_.end()) {
+    auto res = EncodableValue(false);
+    result->Success(&res);
+    return;
+  }
+
+  notify_notification_close(notifications_[id], nullptr);
+  notifications_.erase(id);
+
+  auto res = EncodableValue(true);
+  result->Success(&res);
+}
+
 void TaqoNotifyPlugin::HandleMethodCall(
     const flutter::MethodCall<EncodableValue> &method_call,
     std::unique_ptr<flutter::MethodResult<EncodableValue>> result) {
 
   if (0 == method_call.method_name().compare(kInitializeMethod)) {
-    if (!gMainLoopRunning_) {
-      plugin_ = this;
-      flutter_th_ = pthread_self();
-      signal(SIGUSR1, sigHandle);
-
-      // We need a GMainLoop to handle notification actions
-      auto context = g_main_context_default();
-      pthread_t main_loop_thread;
-      pthread_create(&main_loop_thread, nullptr, main_loop, (void *) context);
-      gMainLoopRunning_ = true;
-    }
-
-    auto res = EncodableValue(true);
-    result->Success(&res);
+    handleInitializeMethod(method_call, std::move(result));
   } else if (0 == method_call.method_name().compare(kNotifyMethod)) {
-    if (!method_call.arguments() || !method_call.arguments()->IsMap()) {
-      auto res = EncodableValue(false);
-      result->Success(&res);
-      return;
-    }
-    auto args = method_call.arguments()->MapValue();
-    auto title = args[EncodableValue(kTitleArg)].StringValue();
-    auto body = args[EncodableValue(kBodyArg)].StringValue();
-    auto id = args[EncodableValue(kPayloadArg)].IntValue();
-
-    NotifyNotification *notification = notify_notification_new(title.c_str(), body.c_str(),
-        getIconPath().c_str());
-    notify_notification_set_timeout(notification, NOTIFY_EXPIRES_NEVER);
-    notify_notification_set_urgency(notification, NOTIFY_URGENCY_CRITICAL);
-
-    int *payload = new int(id);
-    // "default" action (clicked on the Notification)
-    notify_notification_add_action(notification, "default", "Participate",
-        (NotifyActionCallback) handle, (void *) payload, nullptr);
-
-    if (!notify_notification_show(notification, 0)) {
-      auto res = EncodableValue(false);
-      result->Success(&res);
-      return;
-    }
-
-    notifications_[id] = notification;
-
-    auto res = EncodableValue(true);
-    result->Success(&res);
+    handleNotifyMethod(method_call, std::move(result));
   } else if (0 == method_call.method_name().compare(kCancelMethod)) {
-    if (!method_call.arguments() || !method_call.arguments()->IsMap()) {
-      auto res = EncodableValue(false);
-      result->Success(&res);
-      return;
-    }
-    auto args = method_call.arguments()->MapValue();
-    auto id = args[EncodableValue(kIdArg)].IntValue();
-
-    if (notifications_.find(id) == notifications_.end()) {
-      auto res = EncodableValue(false);
-      result->Success(&res);
-      return;
-    }
-
-    notify_notification_close(notifications_[id], nullptr);
-    notifications_.erase(id);
-
-    auto res = EncodableValue(true);
-    result->Success(&res);
+    handleCancelMethod(method_call, std::move(result));
   } else {
     result->NotImplemented();
   }
