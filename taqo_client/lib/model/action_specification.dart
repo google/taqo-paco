@@ -21,6 +21,9 @@ class ActionSpecification implements Comparable<ActionSpecification> {
 
   ActionSpecification(this.time, this.experiment, this.experimentGroup, this.actionTrigger,
       this.action, this.actionTriggerSpecId) {
+    if (action?.timeout == null) {
+      action.timeout = 59;
+    }
     timeUTC = time.toUtc();
   }
 

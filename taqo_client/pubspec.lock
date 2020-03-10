@@ -660,6 +660,13 @@ packages:
       relative: true
     source: path
     version: "0.0.1"
+  taqo_notify_plugin:
+    dependency: "direct main"
+    description:
+      path: "plugins/notify"
+      relative: true
+    source: path
+    version: "0.0.1"
   taqo_time_plugin:
     dependency: "direct main"
     description:

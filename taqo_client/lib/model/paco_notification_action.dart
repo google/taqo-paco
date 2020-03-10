@@ -30,10 +30,10 @@ class PacoNotificationAction extends PacoAction {
 
   PacoNotificationAction.fullSpecified(int snoozeCount, int snoozeTime, int timeout, int delay, String msgText, int color, bool dismissible) {
     this.type = "pacoNotificationAction";
-    this.timeout = timeout;
+    this.timeout = timeout ?? ESM_SIGNAL_TIMEOUT;
     this.delay = delay;
-    this.snoozeCount = (snoozeCount != null) ? snoozeCount : PacoNotificationAction.SNOOZE_COUNT_DEFAULT;
-    this.snoozeTime = (snoozeTime != null) ? snoozeTime : PacoNotificationAction.SNOOZE_TIME_DEFAULT;
+    this.snoozeCount = snoozeCount ?? SNOOZE_COUNT_DEFAULT;
+    this.snoozeTime = snoozeTime ?? SNOOZE_TIME_DEFAULT;
     this.msgText = msgText;
     this.color = color;
     this.dismissible = dismissible;

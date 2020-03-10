@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:taqo_notify_plugin/taqo_notify_plugin.dart' as taqo_notify_plugin;
 
 import '../../main.dart';
 import '../../model/action_specification.dart';
@@ -12,22 +12,6 @@ import '../../pages/survey/survey_page.dart';
 import '../../storage/local_database.dart';
 import '../experiment_service.dart';
 import 'taqo_alarm.dart' as taqo_alarm;
-
-const _ANDROID_NOTIFICATION_CHANNEL_ID = "com.taqo.survey.taqosurvey.NOTIFICATIONS";
-const _ANDROID_NOTIFICATION_CHANNEL_NAME = "Experiment Reminders";
-const _ANDROID_NOTIFICATION_CHANNEL_DESC = "Reminders to participate in Experiments";
-const _ANDROID_ICON = "paco256";
-const _ANDROID_SOUND = "deepbark_trial";
-
-final _plugin = FlutterLocalNotificationsPlugin();
-
-final _notificationHandledStream = StreamController<String>();
-
-/// The callback when a notification is tapped by the user
-void _handleNotification(String payload) async {
-  print('Handle $payload');
-  openSurvey(payload);
-}
 
 /// Shows or schedules a notification with the plugin
 Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
@@ -47,7 +31,7 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
   );
 
   // Cancel existing (pending) notifications for the same survey
-  // On Android, we create the notification at the time of the alarm
+  // On Linux, we create the notification at the time of the alarm
   // Therefore we should timeout any pending notifications for the same survey
   // We don't want to do this on iOS where we are aggressively pre-scheduling
   // notifications
@@ -63,32 +47,7 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
 
   final id = await LocalDatabase().insertNotification(notificationHolder);
 
-  final androidDetails = AndroidNotificationDetails(
-    _ANDROID_NOTIFICATION_CHANNEL_ID,
-    _ANDROID_NOTIFICATION_CHANNEL_NAME,
-    _ANDROID_NOTIFICATION_CHANNEL_DESC,
-    sound: _ANDROID_SOUND,
-  );
-  final iOSDetails = IOSNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-      sound: 'deepbark_trial.m4a');
-  final macOSDetails = MacOSNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-      sound: 'deepbark_trial.m4a');
-  final details = NotificationDetails(androidDetails, iOSDetails, macOSDetails);
-
-  if (when != null) {
-    await _plugin.schedule(
-        id, actionSpec.experiment.title, notificationHolder.message, when, details,
-        payload: "$id", androidAllowWhileIdle: true);
-  } else {
-    await _plugin.show(
-        id, actionSpec.experiment.title, notificationHolder.message, details, payload: "$id");
-  }
+  await taqo_notify_plugin.showNotification(id, actionSpec.experiment.title, notificationHolder.message);
 
   return id;
 }
@@ -96,35 +55,12 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
 /// Initialize the plugin
 Future init() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  final initSettingsAndroid = AndroidInitializationSettings(_ANDROID_ICON);
-  final initSettingsIOS = IOSInitializationSettings(
-      onDidReceiveLocalNotification: (int id, String title, String body, String payload) async {
-        _notificationHandledStream.add(payload);
-      });
-  final initSettingsMacOS = MacOSInitializationSettings(
-      onDidReceiveLocalNotification: (int id, String title, String body, String payload) async {
-        _notificationHandledStream.add(payload);
-      });
-
-  final initSettings = InitializationSettings(
-      initSettingsAndroid, initSettingsIOS, initSettingsMacOS);
-  await _plugin.initialize(initSettings, onSelectNotification: (String payload) async {
-    _notificationHandledStream.add(payload);
-  });
-
-  _notificationHandledStream.stream.listen((String payload) {
-    _handleNotification(payload);
-  });
+  return taqo_notify_plugin.initialize(openSurvey);
 }
 
-/// For finding out if the app was launched from a notification
-Future<NotificationAppLaunchDetails> get launchDetails =>
-    _plugin.getNotificationAppLaunchDetails();
-
 /// Open the survey that triggered the notification
-Future<void> openSurvey(String payload) async {
-  final id = int.tryParse(payload);
+Future<void> openSurvey(int payload) async {
+  final id = payload;
   final notificationHolder = await LocalDatabase().getNotification(id);
 
   if (notificationHolder == null) {
@@ -132,7 +68,6 @@ Future<void> openSurvey(String payload) async {
     return;
   }
 
-  // TODO Timezone could have changed?
   if (!notificationHolder.isActive && !notificationHolder.isFuture) {
     await taqo_alarm.timeout(id);
     MyApp.navigatorKey.currentState.pushReplacementNamed(
@@ -161,18 +96,9 @@ Future<int> showNotification(ActionSpecification actionSpec) async {
   return id;
 }
 
-/// Schedule a notification at [actionSpec.time]
-Future<int> scheduleNotification(ActionSpecification actionSpec,
-    {bool cancelPending}) async {
-  final id = await _notify(actionSpec, when: actionSpec.time,
-      cancelPending: cancelPending);
-  print('Scheduling notification id: $id @ ${actionSpec.time}');
-  return id;
-}
-
 /// Cancel notification with [id]
 Future cancelNotification(int id) {
-  _plugin.cancel(id).catchError((e, st) => print("Error canceling notification id $id: $e"));
+  taqo_notify_plugin.cancel(id).catchError((e, st) => print("Error canceling notification id $id: $e"));
   return LocalDatabase().removeNotification(id);
 }
 

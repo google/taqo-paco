@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:taqo_time_plugin/taqo_time_plugin.dart' as taqo_time_plugin;
@@ -30,10 +32,10 @@ void _onTimeChange() async {
 }
 
 void main() {
-  // Desktop platforms are not recognized as valid targets by
-  // Flutter; force a specific target to prevent exceptions.
-  // TODO this should change as we adopt the new Flutter Desktop Embedder
-  debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
+  // See https://github.com/flutter/flutter/wiki/Desktop-shells#target-platform-override
+  if (!kIsWeb && (Platform.isLinux || Platform.isWindows)) {
+    debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
+  }
 
   WidgetsFlutterBinding.ensureInitialized();
   setupLoggingMethodChannel();
