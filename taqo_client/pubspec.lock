@@ -333,6 +333,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.3.0"
+  json_rpc_2:
+    dependency: "direct main"
+    description:
+      name: json_rpc_2
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.0"
   json_serializable:
     dependency: "direct dev"
     description:
@@ -657,13 +664,6 @@ packages:
     dependency: "direct main"
     description:
       path: "plugins/email"
-      relative: true
-    source: path
-    version: "0.0.1"
-  taqo_notify_plugin:
-    dependency: "direct main"
-    description:
-      path: "plugins/notify"
       relative: true
     source: path
     version: "0.0.1"

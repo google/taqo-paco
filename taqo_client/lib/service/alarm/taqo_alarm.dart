@@ -14,10 +14,11 @@ import 'linux_notifications.dart' as linux_notifications;
 
 Future init() {
   // Init the actual notification plugins
-  return Future.wait([
-    flutter_local_notifications.init().then((value) => schedule(cancelAndReschedule: false)),
-    linux_notifications.init(),
-  ]);
+  if (Platform.isLinux) {
+    return linux_alarm_manager.init().then((value) => schedule(cancelAndReschedule: false));
+  } else {
+    return flutter_local_notifications.init().then((value) => schedule(cancelAndReschedule: false));
+  }
 }
 
 Future schedule({bool cancelAndReschedule=true}) async {

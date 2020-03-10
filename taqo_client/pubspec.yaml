@@ -30,6 +30,7 @@ dependencies:
   numberpicker: ^1.0.0
   intl: ^0.15.8
   cached_network_image: ^1.1.3
+  json_rpc_2: '^2.1.0'
   provider: ^3.2.0
   path_provider: ^1.5.1
   path_provider_macos: ^0.0.1
@@ -41,8 +42,6 @@ dependencies:
     path: plugins/flutter/shared_preferences_linux
   taqo_email_plugin:
     path: plugins/email
-  taqo_notify_plugin:
-    path: plugins/notify
   taqo_time_plugin:
     path: plugins/time
 

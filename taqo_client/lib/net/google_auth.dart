@@ -13,6 +13,10 @@ class GoogleAuth {
   static const String AUTH_TOKEN_TYPE_USERINFO_PROFILE =
       "https://www.googleapis.com/auth/userinfo.profile";
 
+  static const _prodServer = "https://www.pacoapp.com";
+  static const _stagingServer = "https://quantifiedself-staging.appspot.com";
+  static const _server = _stagingServer;
+
   static const _clientId = "619519633889.apps.googleusercontent.com";
   static const _secret = "LOwVPys7lruBjjsI8erzh7KK";
   static final id = new ClientId(_clientId, _secret);
@@ -110,7 +114,7 @@ class GoogleAuth {
   Future<String> getExperiments(
       http.Client client, Map<String, String> headers) async {
     return await client
-        .get("https://www.pacoapp.com/experiments?mine&limit=100",
+        .get("$_server/experiments?mine&limit=100",
             headers: headers)
         .then((response) {
       print(response.body);
@@ -131,7 +135,7 @@ class GoogleAuth {
 //    var headers = {"Authorization": "Bearer $at"};
     var client = new http.Client();
     return await client
-        .get("https://www.pacoapp.com/invite?code=$code")
+        .get("$_server/invite?code=$code")
         .then((response) {
       print(response.body);
       client.close();
@@ -162,8 +166,8 @@ class GoogleAuth {
   Future<String> _getExperimentById(
       http.Client client, Map<String, String> headers, int experimentId) async {
     return await client
-        .get("https://www.pacoapp.com/experiments?id=$experimentId",
-            headers: headers)
+        .get("$_server/experiments?id=$experimentId",
+        headers: headers)
         .then((response) {
       print(response.body);
       client.close();
@@ -175,8 +179,8 @@ class GoogleAuth {
       Map<String, String> headers, Iterable<int> experimentIds) async {
     var experimentIdsAsString = experimentIds.join(",");
     return await client
-        .get("https://www.pacoapp.com/experiments?id=$experimentIdsAsString",
-            headers: headers)
+        .get("$_server/experiments?id=$experimentIdsAsString",
+        headers: headers)
         .then((response) {
       print(response.body);
       client.close();
@@ -187,7 +191,7 @@ class GoogleAuth {
   Future<String> getPubExperimentById(int experimentId) async {
     var client = new http.Client();
     return await client
-        .get("https://www.pacoapp.com/pubexperiments?id=$experimentId")
+        .get("$_server/pubexperiments?id=$experimentId")
         .then((response) {
       print(response.body);
       client.close();

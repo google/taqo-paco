@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
-import 'package:taqo_notify_plugin/taqo_notify_plugin.dart' as taqo_notify_plugin;
+import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 
+import '../../linux_daemon/linux_daemon.dart' as linux_daemon;
 import '../../main.dart';
 import '../../model/action_specification.dart';
 import '../../model/experiment.dart';
@@ -11,7 +11,10 @@ import '../../pages/running_experiments_page.dart';
 import '../../pages/survey/survey_page.dart';
 import '../../storage/local_database.dart';
 import '../experiment_service.dart';
+import 'linux_alarm_manager.dart';
 import 'taqo_alarm.dart' as taqo_alarm;
+
+const openSurveyMethod = 'openSurvey';
 
 /// Shows or schedules a notification with the plugin
 Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
@@ -47,15 +50,16 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
 
   final id = await LocalDatabase().insertNotification(notificationHolder);
 
-  await taqo_notify_plugin.showNotification(id, actionSpec.experiment.title, notificationHolder.message);
+  final peer = linuxDaemonPeer;
+  if (peer != null) {
+    peer.sendNotification(linux_daemon.postNotificationMethod, {
+      'id': id,
+      'title': actionSpec.experiment.title,
+      'body': notificationHolder.message,
+    });
+  }
 
   return id;
-}
-
-/// Initialize the plugin
-Future init() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  return taqo_notify_plugin.initialize(openSurvey);
 }
 
 /// Open the survey that triggered the notification
@@ -89,6 +93,11 @@ Future<void> openSurvey(int payload) async {
   }
 }
 
+Future<void> handleOpenSurvey(json_rpc.Parameters args) {
+  final id = (args.asMap)['id'];
+  return openSurvey(id);
+}
+
 /// Show a notification now
 Future<int> showNotification(ActionSpecification actionSpec) async {
   final id = await _notify(actionSpec);
@@ -98,7 +107,10 @@ Future<int> showNotification(ActionSpecification actionSpec) async {
 
 /// Cancel notification with [id]
 Future cancelNotification(int id) {
-  taqo_notify_plugin.cancel(id).catchError((e, st) => print("Error canceling notification id $id: $e"));
+  final peer = linuxDaemonPeer;
+  if (peer != null) {
+    peer.sendNotification(linux_daemon.cancelNotificationMethod, {'id': id, });
+  }
   return LocalDatabase().removeNotification(id);
 }
 

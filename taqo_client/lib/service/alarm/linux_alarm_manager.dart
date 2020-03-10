@@ -1,7 +1,10 @@
-import 'dart:isolate';
+import 'dart:io';
 
+import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../linux_daemon/linux_daemon.dart' as linux_daemon;
+import '../../linux_daemon/socket_channel.dart';
 import '../../model/action_specification.dart';
 import '../../scheduling/action_schedule_generator.dart';
 import '../../storage/local_database.dart';
@@ -11,13 +14,27 @@ import 'taqo_alarm.dart' as taqo_alarm;
 
 const SHARED_PREFS_LAST_ALARM_TIME = 'lastScheduledAlarm';
 
+const notifyMethod = 'notify';
+const expireMethod = 'expire';
+
+json_rpc.Peer _peer;
+json_rpc.Peer get linuxDaemonPeer => _peer;
+
 /// Schedule an alarm for [actionSpec] at [when] to run [callback]
-Future<int> _schedule(ActionSpecification actionSpec, DateTime when, Function(int) callback) async {
+Future<int> _schedule(ActionSpecification actionSpec, DateTime when, String what) async {
   final duration = when.difference(DateTime.now());
   if (duration.inMilliseconds < 0) return -1;
 
   final alarmId = await LocalDatabase().insertAlarm(actionSpec);
-  Future.delayed(duration, () => callback(alarmId));
+
+  _peer.sendRequest(linux_daemon.scheduleAlarmMethod, {
+    'id': alarmId,
+    'when': when.toIso8601String(),
+    'what': what,
+  }).then((response) {
+    print('Schedule alarm: $response');
+  });
+
   return alarmId;
 }
 
@@ -31,23 +48,20 @@ Future<bool> _scheduleNotification(ActionSpecification actionSpec) async {
     }
   }
 
-  final alarmId = await _schedule(actionSpec, actionSpec.time, _notifyCallback);
-  print('_scheduleNotification: alarmId: $alarmId when: ${actionSpec.time}'
-      ' isolate: ${Isolate.current.hashCode}');
+  final alarmId = await _schedule(actionSpec, actionSpec.time, notifyMethod);
+  print('_scheduleNotification: alarmId: $alarmId when: ${actionSpec.time}');
   return alarmId >= 0;
 }
 
 void _scheduleTimeout(ActionSpecification actionSpec) async {
   final timeout = actionSpec.action.timeout;
-  final alarmId = await _schedule(actionSpec, actionSpec.time.add(Duration(minutes: timeout)), _expireCallback);
+  final alarmId = await _schedule(actionSpec, actionSpec.time.add(Duration(minutes: timeout)), expireMethod);
   print('_scheduleTimeout: alarmId: $alarmId'
-      ' when: ${actionSpec.time.add(Duration(minutes: timeout))}'
-      ' isolate: ${Isolate.current.hashCode}');
+      ' when: ${actionSpec.time.add(Duration(minutes: timeout))}');
 }
 
 void _notifyCallback(int alarmId) async {
-  // This is running in a different (background) Isolate
-  print('notify: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
+  print('notify: alarmId: $alarmId');
   DateTime start;
   Duration duration;
   final actionSpec = await LocalDatabase().getAlarm(alarmId);
@@ -79,9 +93,14 @@ void _notifyCallback(int alarmId) async {
   _scheduleNextNotification(from: from);
 }
 
+// Handles a callback from the linux daemon
+void _handleNotifyCallback(json_rpc.Parameters args) {
+  final alarmId = (args.asMap)['id'] as int;
+  _notifyCallback(alarmId);
+}
+
 void _expireCallback(int alarmId) async {
-  // This is running in a different (background) Isolate
-  print('expire: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
+  print('expire: alarmId: $alarmId');
   // Cancel notification
   final toCancel = await LocalDatabase().getAlarm(alarmId);
   // TODO Move the matches() logic to SQL
@@ -96,6 +115,12 @@ void _expireCallback(int alarmId) async {
 
   // Cleanup alarm
   cancel(alarmId);
+}
+
+// Handles a callback from the linux daemon
+void _handleExpireCallback(json_rpc.Parameters args) {
+  final alarmId = (args.asMap)['id'] as int;
+  _expireCallback(alarmId);
 }
 
 void _scheduleNextNotification({DateTime from}) async {
@@ -122,6 +147,27 @@ void _scheduleNextNotification({DateTime from}) async {
         }
       });
     }
+  });
+}
+
+Future init() async {
+  Socket.connect(linux_daemon.localServerHost, linux_daemon.localServerPort).then((socket) {
+    _peer = json_rpc.Peer(SocketChannel(socket), onUnhandledError: (e, st) {
+      print('linux_alarm_manager socket error: $e');
+    });
+
+    _peer.registerMethod(notifyMethod, _handleNotifyCallback);
+    _peer.registerMethod(expireMethod, _handleExpireCallback);
+    _peer.registerMethod(linux_notifications.openSurveyMethod, linux_notifications.handleOpenSurvey);
+    _peer.listen();
+
+    _peer.done.then((_) {
+      print('linux_alarm_manager socket closed');
+      _peer = null;
+    });
+  }).catchError((e) {
+    print('Failed to connect to the Linux daemon. Is it running?');
+    _peer = null;
   });
 }
 
