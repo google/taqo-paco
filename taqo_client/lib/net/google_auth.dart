@@ -138,12 +138,12 @@ class GoogleAuth {
     final client = http.Client();
     return _refreshCredentials(client).then((headers) {
       if (headers == null) {
-        return Future.value(null);
+        throw http.ClientException('Failed to refresh credentials');
       }
       return _post(client, url, headers, body);
     }).catchError((e) {
       client.close();
-      return Future.value(null);
+      throw http.ClientException(e.toString());
     });
   }
 
