@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../linux_daemon/linux_daemon.dart' as linux_daemon;
+import '../../linux_daemon/rpc_constants.dart';
 import '../../linux_daemon/socket_channel.dart';
 import '../../model/action_specification.dart';
 import '../../scheduling/action_schedule_generator.dart';
@@ -13,9 +13,6 @@ import 'linux_notifications.dart' as linux_notifications;
 import 'taqo_alarm.dart' as taqo_alarm;
 
 const SHARED_PREFS_LAST_ALARM_TIME = 'lastScheduledAlarm';
-
-const notifyMethod = 'notify';
-const expireMethod = 'expire';
 
 json_rpc.Peer _peer;
 json_rpc.Peer get linuxDaemonPeer => _peer;
@@ -27,7 +24,7 @@ Future<int> _schedule(ActionSpecification actionSpec, DateTime when, String what
 
   final alarmId = await LocalDatabase().insertAlarm(actionSpec);
 
-  _peer.sendRequest(linux_daemon.scheduleAlarmMethod, {
+  _peer.sendRequest(scheduleAlarmMethod, {
     'id': alarmId,
     'when': when.toIso8601String(),
     'what': what,
@@ -151,7 +148,7 @@ void _scheduleNextNotification({DateTime from}) async {
 }
 
 Future init() async {
-  Socket.connect(linux_daemon.localServerHost, linux_daemon.localServerPort).then((socket) {
+  Socket.connect(localServerHost, localServerPort).then((socket) {
     _peer = json_rpc.Peer(SocketChannel(socket), onUnhandledError: (e, st) {
       print('linux_alarm_manager socket error: $e');
     });

@@ -3,19 +3,9 @@ import 'dart:io';
 
 import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 
+import 'rpc_constants.dart';
 import 'dbus_notifications.dart' as dbus;
 import 'socket_channel.dart';
-
-final localServerHost = InternetAddress.loopbackIPv4;
-const localServerPort = 31415;
-
-const scheduleAlarmMethod = 'schedule';
-const cancelAlarmMethod = 'cancel';
-const postNotificationMethod = 'notify';
-const cancelNotificationMethod = 'cancelNotify';
-
-// TODO Factor constants out of Flutter dependencies
-const openSurveyMethod = 'openSurvey';
 
 const _appName = 'Taqo';
 

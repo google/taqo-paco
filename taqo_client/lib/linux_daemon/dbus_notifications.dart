@@ -44,13 +44,14 @@ void _listen(String event) {
 void cancel(int id) {
   final notifId = _notifications[id];
   if (notifId == null) return;
+  _notifications.remove(id);
   
   Process.run('gdbus', ['call',
     '--session',
     '--dest', _dest,
     '--object-path', _objectPath,
     '--method', _cancelMethod,
-    '"$notifId"']);
+    '$notifId']);
 }
 
 void monitor() {

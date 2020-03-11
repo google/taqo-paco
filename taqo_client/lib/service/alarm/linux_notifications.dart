@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 
-import '../../linux_daemon/linux_daemon.dart' as linux_daemon;
+import '../../linux_daemon/rpc_constants.dart';
 import '../../main.dart';
 import '../../model/action_specification.dart';
 import '../../model/experiment.dart';
@@ -52,7 +52,7 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
 
   final peer = linuxDaemonPeer;
   if (peer != null) {
-    peer.sendNotification(linux_daemon.postNotificationMethod, {
+    peer.sendNotification(postNotificationMethod, {
       'id': id,
       'title': actionSpec.experiment.title,
       'body': notificationHolder.message,
@@ -109,7 +109,7 @@ Future<int> showNotification(ActionSpecification actionSpec) async {
 Future cancelNotification(int id) {
   final peer = linuxDaemonPeer;
   if (peer != null) {
-    peer.sendNotification(linux_daemon.cancelNotificationMethod, {'id': id, });
+    peer.sendNotification(cancelNotificationMethod, {'id': id, });
   }
   return LocalDatabase().removeNotification(id);
 }
