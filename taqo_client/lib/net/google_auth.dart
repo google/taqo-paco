@@ -81,70 +81,63 @@ class GoogleAuth {
     final savedTokens = await _readTokens();
     if (savedTokens == null || savedTokens.length < 3) {
       clearCredentials();
-      return null;
+      throw Exception("Couldn't read tokens or invalid tokens read");
     }
 
-    final accessToken =
-        AccessToken("Bearer", savedTokens.elementAt(1), DateTime.parse(savedTokens.elementAt(2)));
-    return refreshCredentials(
-            _id, AccessCredentials(accessToken, savedTokens.elementAt(0), _scopes), client)
-        .then((newCredentials) {
+    try {
+      final accessToken =
+          AccessToken("Bearer", savedTokens.elementAt(1), DateTime.parse(savedTokens.elementAt(2)));
+      final newCredentials = await refreshCredentials(
+          _id, AccessCredentials(accessToken, savedTokens.elementAt(0), _scopes), client);
       _saveCredentials(newCredentials);
-      final at = newCredentials.accessToken.data;
-      return {"Authorization": "Bearer $at"};
-    }).catchError((e) {
-      print("Error refreshing tokens: $e");
+      return {"Authorization": "Bearer ${newCredentials.accessToken.data}"};
+    } catch (e) {
       clearCredentials();
-      return null;
-    });
+      rethrow;
+    }
   }
 
-  Future<String> _get(http.Client client, String url, Map<String, String> headers) {
-    return client.get(url, headers: headers).then((response) {
-      client.close();
-      return response.body;
-    }).catchError((e) {
-      print("Error getting experiments ($url): $e");
-      client.close();
-      return "";
-    });
-  }
-
-  Future<String> _refreshAndGet(String url, {String defValue = ""}) async {
-    final client = http.Client();
-    return _refreshCredentials(client).then((headers) {
-      if (headers == null) {
-        return Future.value(defValue);
-      }
-      return _get(client, url, headers);
-    }).catchError((e) {
-      client.close();
-      return Future.value(defValue);
-    });
-  }
-
-  Future<http.Response> _post(http.Client client, Uri url, Map<String, String> headers, String body) {
-    return client.post(url, headers: headers, body: body).then((response) {
-      client.close();
+  Future<http.Response> _get(http.Client client, String url, Map<String, String> headers) async {
+    try {
+      final response = await client.get(url, headers: headers);
       return response;
-    }).catchError((e) {
-      print("Error getting experiments ($url): $e");
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<http.Response> _refreshAndGet(String url, {String defValue = ""}) async {
+    final client = http.Client();
+    try {
+      final headers = await _refreshCredentials(client);
+      return _get(client, url, headers);
+    } catch (e) {
+      rethrow;
+    } finally {
       client.close();
-      return "";
-    });
+    }
+  }
+
+  Future<http.Response> _post(http.Client client, Uri url,
+      Map<String, String> headers, String body) async {
+    try {
+      final response = await client.post(url, headers: headers, body: body);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<http.Response> _refreshAndPost(Uri url, String body) async {
     final client = http.Client();
-    return _refreshCredentials(client).then((headers) {
-      if (headers == null) {
-        throw http.ClientException('Failed to refresh credentials');
-      }
+    try {
+      final headers = await _refreshCredentials(client);
       return _post(client, url, headers, body);
-    }).catchError((e) {
+    } catch (e) {
+      rethrow;
+    } finally {
       client.close();
-      throw http.ClientException(e.toString());
-    });
+    }
   }
 
   // Public API
@@ -154,25 +147,25 @@ class GoogleAuth {
   }
 
   /// Gets all Experiments
-  Future<String> getExperimentsWithSavedCredentials() {
+  Future<http.Response> getExperimentsWithSavedCredentials() {
     return _refreshAndGet(_experimentUrl);
   }
 
   /// Gets the Experiment with id [experimentId]
-  Future<String> getExperimentByIdWithSavedCredentials(int experimentId) {
+  Future<http.Response> getExperimentByIdWithSavedCredentials(int experimentId) {
     return _refreshAndGet("$_experimentByIdUrl$experimentId");
   }
 
   /// Gets the Experiments with ids [ids]
-  Future<String> getExperimentsByIdWithSavedCredentials(Iterable<int> ids) {
+  Future<http.Response> getExperimentsByIdWithSavedCredentials(Iterable<int> ids) {
     return _refreshAndGet("$_experimentByIdUrl${ids.join(',')}");
   }
 
-  Future<String> checkInvitationWithSavedCredentials(String code) {
+  Future<http.Response> checkInvitationWithSavedCredentials(String code) {
     return _get(http.Client(), "$_inviteUrl$code", null);
   }
 
-  Future<String> getPubExperimentById(int experimentId) {
+  Future<http.Response> getPubExperimentById(int experimentId) {
     return _get(http.Client(), "$_pubExperimentByIdUrl$experimentId", null);
   }
 }
