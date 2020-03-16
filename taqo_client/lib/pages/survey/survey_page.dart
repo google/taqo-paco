@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
 
@@ -27,12 +25,14 @@ class SurveyPage extends StatefulWidget {
       {Key key,
       this.title,
       @required this.experiment,
-      @required this.experimentGroupName,})
+      @required this.experimentGroupName,
+      this.fromLaunch = false})
       : super(key: key);
 
   final String title;
   final Experiment experiment;
   final String experimentGroupName;
+  final bool fromLaunch;
 
   @override
   _SurveyPageState createState() =>
@@ -40,6 +40,12 @@ class SurveyPage extends StatefulWidget {
 }
 
 class _SurveyPageState extends State<SurveyPage> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  static final snackBar = SnackBar(
+    content: Text("Survey was opened from active notification response period...",
+        style: TextStyle(fontSize: 20),),
+    duration: Duration(seconds: 8),);
+
   static const String FORM_DURATION_IN_SECONDS = "Form Duration";
   Experiment _experiment;
   ExperimentGroup _experimentGroup;
@@ -61,11 +67,23 @@ class _SurveyPageState extends State<SurveyPage> {
     _experimentGroup.inputs.forEach((input) {
       _visible[input.name] = !input.conditional;
     });
+
+    // TODO Is there a better way?
+    Future.delayed(Duration(milliseconds: 500), () {
+      if (widget.fromLaunch) {
+        _showSnackBar();
+      }
+    });
+  }
+
+  void _showSnackBar() {
+    _scaffoldKey.currentState.showSnackBar(snackBar);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text("Survey: " + _experimentGroup.name),
         backgroundColor: Colors.indigo,

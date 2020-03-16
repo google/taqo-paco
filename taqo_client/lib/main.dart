@@ -18,10 +18,12 @@ import 'package:taqo_client/pages/invitation_entry_page.dart';
 import 'package:taqo_client/pages/login_page.dart';
 import 'package:taqo_client/platform/platform_logging.dart';
 import 'package:taqo_client/platform/platform_sync_service.dart';
+import 'package:taqo_client/service/experiment_service.dart';
 import 'package:taqo_client/service/logging_service.dart';
 
 import 'package:taqo_client/net/google_auth.dart';
 import 'package:taqo_client/storage/esm_signal_storage.dart';
+import 'package:taqo_client/storage/local_database.dart';
 
 import 'package:taqo_time_plugin/taqo_time_plugin.dart' as taqo_time_plugin;
 
@@ -57,8 +59,43 @@ void main() {
   });
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   static final navigatorKey = GlobalKey<NavigatorState>();
+
+  @override
+  State<StatefulWidget> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  // If there is an active notification when the app is open,
+  // direct the user to the survey.
+  // This also solves the issue with not having Pending (launch) Intents on Linux
+  void _checkActiveNotification() async {
+    final activeNotifications = (await LocalDatabase().getAllNotifications())
+        .where((n) => n.isActive).toList(growable: false);
+
+    if (activeNotifications.isNotEmpty) {
+      final n = activeNotifications.first;
+      try {
+        final service = await ExperimentService.getInstance();
+        final e = service
+            .getJoinedExperiments()
+            .firstWhere((e) => e.id == n.experimentId);
+        e.groups.firstWhere((g) => g.name == n.experimentGroupName);
+        MyApp.navigatorKey.currentState.pushReplacementNamed(SurveyPage.routeName,
+            arguments: [e, n.experimentGroupName, true]);
+      } on StateError catch (e, stack) {
+        print('StateError: $e');
+        print(stack);
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _checkActiveNotification();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +105,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.indigo,
       ),
       initialRoute: '/welcome',
-      navigatorKey: navigatorKey,
+      navigatorKey: MyApp.navigatorKey,
       routes: {
         LoginPage.routeName: (context) => LoginPage(),
         FeedbackPage.routeName: (context) => FeedbackPage(),
@@ -91,7 +128,8 @@ class MyApp extends StatelessWidget {
           case SurveyPage.routeName:
             return MaterialPageRoute(
                 builder: (context) => SurveyPage(
-                    experiment: args[0], experimentGroupName: args[1]));
+                    experiment: args[0], experimentGroupName: args[1],
+                    fromLaunch: args.length > 2 ? args[2] : false));
           case RunningExperimentsPage.routeName:
             return MaterialPageRoute(
                 builder: (context) => RunningExperimentsPage(
