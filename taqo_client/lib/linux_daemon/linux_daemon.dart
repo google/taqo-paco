@@ -15,9 +15,16 @@ json_rpc.Peer _peer;
 final _timers = <int, Future>{};
 
 void openSurvey(int id) {
-// TODO: Should open the app if necessary, and then figure out
-// what to do, e.g. open a survey
-  _peer.sendNotification(openSurveyMethod, {'id': id, });
+  try {
+    // If the app is running, just notify it to open a survey
+    _peer.sendNotification(openSurveyMethod, {'id': id,});
+  } catch (e) {
+    // Else launch the app and it will automatically open the survey
+    // Note: this will only work if Taqo is in the user's PATH
+    // For debugging/testing, maybe create a symlink in /usr/local/bin pointing to
+    // build/linux/debug/taqo_survey
+    Process.run('taqo_survey', []);
+  }
 }
 
 bool _cancelAlarm(int id) {
