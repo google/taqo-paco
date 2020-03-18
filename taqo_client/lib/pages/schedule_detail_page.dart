@@ -90,7 +90,7 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
       RaisedButton(onPressed: () async {
         final newTime = await showTimePicker(context: context, initialTime: time);
         if (newTime != null) {
-          _setStateAndMarkChanged(() => set(getMsFromMidnight(newTime)));
+          _setStateAndMarkChanged(() => set(msFromMidnight));
         }
       },
         child: Text(getHourOffsetAsTimeString(msFromMidnight))),

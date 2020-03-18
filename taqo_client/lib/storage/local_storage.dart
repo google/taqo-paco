@@ -9,10 +9,9 @@ abstract class LocalFileStorage {
   // TODO for desktop, use local secure storage apis, e.g., MacOS use keychain
   // TODO for Fuchsia ...?
   Future<Directory> get _localStorageDir async {
-    WidgetsFlutterBinding.ensureInitialized();
     try {
       return await getApplicationSupportDirectory();
-    } on MissingPluginException {
+    } catch (e) {
       // Workaround to support file storage during tests
       return Directory.systemTemp;
     }
