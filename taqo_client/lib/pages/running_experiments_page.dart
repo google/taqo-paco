@@ -30,14 +30,14 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
 
   var gAuth = GoogleAuth();
 
-  var _experiments = <Experiment>[];
+  var _experiments = <ExperimentProvider>[];
 
   @override
   void initState() {
     super.initState();
     ExperimentService.getInstance().then((service) {
       setState(() {
-        _experiments = service.getJoinedExperiments();
+        _experiments = service.getJoinedExperiments().map((e) => ExperimentProvider(e)).toList();
       });
     });
 
@@ -100,7 +100,7 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
   Widget _buildExperimentList() {
     final children = <Widget>[];
     for (var experiment in _experiments) {
-      children.add(ChangeNotifierProvider<Experiment>.value(
+      children.add(ChangeNotifierProvider<ExperimentProvider>.value(
         value: experiment,
         child: ExperimentListItem(stopExperiment),
       ));
@@ -116,7 +116,7 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
     final service = await ExperimentService.getInstance();
     service.updateJoinedExperiments().then((List<Experiment> experiments) {
       setState(() {
-        _experiments = experiments;
+        _experiments = experiments.map((e) => ExperimentProvider(e)).toList();
       });
     });
   }
@@ -127,7 +127,7 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
         final service = await ExperimentService.getInstance();
         service.stopExperiment(experiment);
         setState(() {
-          _experiments = service.getJoinedExperiments();
+          _experiments = service.getJoinedExperiments().map((e) => ExperimentProvider(e)).toList();
         });
       }
     });
@@ -179,8 +179,9 @@ class ExperimentListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<Experiment>(
-        builder: (BuildContext context, Experiment experiment, _) {
+    return Consumer<ExperimentProvider>(
+        builder: (BuildContext context, ExperimentProvider provider, _) {
+          final experiment = provider.experiment;
           return Card(
             child: Row(
               children: <Widget>[
@@ -203,8 +204,8 @@ class ExperimentListItem extends StatelessWidget {
                 ),
 
                 IconButton(
-                    icon: Icon(experiment.paused ? Icons.play_arrow : Icons.pause),
-                    onPressed: () => experiment.paused = !experiment.paused
+                    icon: Icon(provider.paused ? Icons.play_arrow : Icons.pause),
+                    onPressed: () => provider.paused = !provider.paused
                 ),
                 IconButton(
                     icon: Icon(Icons.edit),
