@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:taqo_client/model/experiment.dart';
-import 'package:taqo_client/pages/post_join_instructions_page.dart';
-import 'package:taqo_client/pages/schedule_overview_page.dart';
-import 'package:taqo_client/service/experiment_service.dart';
+
+import '../model/experiment.dart';
+import '../service/experiment_service.dart';
+import 'post_join_instructions_page.dart';
+import 'schedule_overview_page.dart';
 
 class InformedConsentPage extends StatefulWidget {
   static const routeName = "/informed_consent";

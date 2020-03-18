@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:taqo_client/pages/survey/survey_page.dart';
+
+import 'survey/survey_page.dart';
 
 class SurveyPickerPage extends StatefulWidget {
   static const routeName = '/survey_picker';

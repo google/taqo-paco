@@ -1,10 +1,10 @@
-import 'package:taqo_client/model/action_trigger.dart';
-import 'package:taqo_client/model/validatable.dart';
-import 'package:taqo_client/model/validator.dart';
-import 'package:taqo_client/model/paco_action.dart';
-
-import 'package:taqo_client/model/schedule.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import 'action_trigger.dart';
+import 'paco_action.dart';
+import 'schedule.dart';
+import 'validatable.dart';
+import 'validator.dart';
 
 part 'schedule_trigger.g.dart';
 

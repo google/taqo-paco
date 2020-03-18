@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:taqo_email_plugin/taqo_email_plugin.dart' as taqo_email_plugin;
 
 import '../model/experiment.dart';
+import '../model/experiment_provider.dart';
 import '../net/google_auth.dart';
 import '../service/experiment_service.dart';
 import 'find_experiments_page.dart';

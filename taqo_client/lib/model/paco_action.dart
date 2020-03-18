@@ -1,7 +1,8 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:taqo_client/model/paco_action_all_others.dart';
-import 'package:taqo_client/model/paco_notification_action.dart';
-import 'package:taqo_client/model/validator.dart';
+
+import 'paco_action_all_others.dart';
+import 'paco_notification_action.dart';
+import 'validator.dart';
 
 part 'paco_action.g.dart';
 

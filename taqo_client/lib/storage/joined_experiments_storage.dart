@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:taqo_client/model/experiment.dart';
-import 'package:taqo_client/storage/local_storage.dart';
+import '../model/experiment.dart';
+import 'local_storage.dart';
 
 class JoinedExperimentsStorage extends LocalFileStorage {
   static const filename = 'experiments.txt';

@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:meta/meta.dart';
-import 'package:taqo_client/storage/local_storage.dart';
+
+import 'local_storage.dart';
 
 class ESMSignalStorage extends LocalFileStorage {
   static const filename = "esm_signals.json";

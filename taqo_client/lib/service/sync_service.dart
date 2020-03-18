@@ -1,8 +1,8 @@
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
 
-import 'package:taqo_client/net/google_auth.dart';
-import 'package:taqo_client/storage/local_database.dart';
+import '../net/google_auth.dart';
+import '../storage/local_database.dart';
 
 final logger = Logger('SyncService');
 

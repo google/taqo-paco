@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:taqo_client/net/google_auth.dart';
-import 'package:taqo_client/pages/welcome_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../net/google_auth.dart';
 import 'find_experiments_page.dart';
+import 'welcome_page.dart';
 
 class LoginPage extends StatefulWidget {
   static const routeName = '/login';

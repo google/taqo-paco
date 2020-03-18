@@ -1,13 +1,14 @@
-import 'package:taqo_client/model/interrupt_cue.dart';
-import 'package:taqo_client/model/minimum_bufferable.dart';
-import 'package:taqo_client/model/paco_action.dart';
-import 'package:taqo_client/model/paco_notification_action.dart';
-import 'package:taqo_client/model/validatable.dart';
-import 'package:taqo_client/model/validator.dart';
 import 'dart:math';
 
-import 'action_trigger.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import 'action_trigger.dart';
+import 'interrupt_cue.dart';
+import 'minimum_bufferable.dart';
+import 'paco_action.dart';
+import 'paco_notification_action.dart';
+import 'validatable.dart';
+import 'validator.dart';
 
 part 'interrupt_trigger.g.dart';
 

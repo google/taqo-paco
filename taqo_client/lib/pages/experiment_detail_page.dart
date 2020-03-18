@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:taqo_client/model/experiment.dart';
 
+import '../model/experiment.dart';
 import 'informed_consent_page.dart';
 
 class ExperimentDetailPage extends StatefulWidget {

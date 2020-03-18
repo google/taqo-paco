@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:taqo_client/model/experiment.dart';
-import 'package:taqo_client/model/schedule.dart';
-import 'package:taqo_client/model/signal_time.dart';
-import 'package:taqo_client/util/date_time_util.dart'
-    show DAYS_SHORT_NAMES, ORDINAL_NUMBERS, getHourOffsetAsTimeString, getMsFromMidnight;
+
+import '../model/experiment.dart';
+import '../model/schedule.dart';
+import '../model/signal_time.dart';
+import '../util/date_time_util.dart';
 
 typedef SetTimeFunction = void Function(int newTime);
 

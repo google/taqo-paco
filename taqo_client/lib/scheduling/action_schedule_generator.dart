@@ -1,15 +1,14 @@
 import 'dart:math';
 
-import 'package:taqo_client/model/action_specification.dart';
-import 'package:taqo_client/model/experiment.dart';
-import 'package:taqo_client/model/experiment_group.dart';
-import 'package:taqo_client/model/paco_notification_action.dart';
-import 'package:taqo_client/model/schedule.dart';
-import 'package:taqo_client/model/schedule_trigger.dart';
-import 'package:taqo_client/scheduling/esm_schedule_generator.dart';
-import 'package:taqo_client/scheduling/fixed_schedule_generator.dart';
-import 'package:taqo_client/service/experiment_service.dart';
-import 'package:taqo_client/util/date_time_util.dart';
+import '../model/action_specification.dart';
+import '../model/experiment.dart';
+import '../model/experiment_group.dart';
+import '../model/paco_notification_action.dart';
+import '../model/schedule.dart';
+import '../model/schedule_trigger.dart';
+import '../scheduling/esm_schedule_generator.dart';
+import '../scheduling/fixed_schedule_generator.dart';
+import '../util/date_time_util.dart';
 
 Future<List<ActionSpecification>> _getAllAlarmTimesForExperiment(
     Experiment experiment, DateTime start, DateTime end) async {

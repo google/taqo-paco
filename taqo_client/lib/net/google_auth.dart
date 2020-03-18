@@ -3,8 +3,9 @@ import 'dart:convert';
 
 import "package:googleapis_auth/auth_io.dart";
 import "package:http/http.dart" as http;
-import 'package:taqo_client/model/event.dart';
-import 'package:taqo_client/storage/unsecure_token_storage.dart';
+
+import '../model/event.dart';
+import '../storage/unsecure_token_storage.dart';
 
 class GoogleAuth {
   static const String AUTH_TOKEN_TYPE_USERINFO_EMAIL =

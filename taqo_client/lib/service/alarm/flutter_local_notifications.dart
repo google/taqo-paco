@@ -3,14 +3,10 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-import '../../main.dart';
 import '../../model/action_specification.dart';
 import '../../model/experiment.dart';
 import '../../model/notification_holder.dart';
-import '../../pages/running_experiments_page.dart';
-import '../../pages/survey/survey_page.dart';
 import '../../storage/local_database.dart';
-import '../experiment_service.dart';
 import 'taqo_alarm.dart' as taqo_alarm;
 
 const _ANDROID_NOTIFICATION_CHANNEL_ID = "com.taqo.survey.taqosurvey.NOTIFICATIONS";

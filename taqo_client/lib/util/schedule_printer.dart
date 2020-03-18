@@ -1,9 +1,8 @@
-import 'package:taqo_client/model/experiment.dart';
-import 'package:taqo_client/model/schedule.dart';
-import 'package:taqo_client/model/schedule_trigger.dart';
-import 'package:taqo_client/model/signal_time.dart';
-import 'package:taqo_client/util/date_time_util.dart'
-    show DAYS_SHORT_NAMES, ORDINAL_NUMBERS, getHourOffsetAsTimeString;
+import '../model/experiment.dart';
+import '../model/schedule.dart';
+import '../model/schedule_trigger.dart';
+import '../model/signal_time.dart';
+import 'date_time_util.dart';
 
 void _appendDaysOfWeek(int weekDaysScheduled, StringBuffer sb) {
   final daysScheduled = [];

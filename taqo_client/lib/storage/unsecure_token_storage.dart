@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:taqo_client/storage/local_storage.dart';
+import 'local_storage.dart';
 
 class UnsecureTokenStorage extends LocalFileStorage {
   static const filename = 'tokens.txt';

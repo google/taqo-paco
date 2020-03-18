@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:taqo_client/model/experiment.dart';
-import 'package:taqo_client/net/google_auth.dart';
-import 'package:taqo_client/pages/welcome_page.dart';
-import 'package:taqo_client/service/experiment_service.dart';
 
+import '../model/experiment.dart';
+import '../net/google_auth.dart';
+import '../service/experiment_service.dart';
 import 'experiment_detail_page.dart';
+import 'welcome_page.dart';
 
 class FindExperimentsPage extends StatefulWidget {
   static const routeName = '/find_experiments';
