@@ -12,3 +12,4 @@ const notifyMethod = 'notify';
 const expireMethod = 'expire';
 
 const openSurveyMethod = 'openSurvey';
+const timeoutMethod = 'timeout';

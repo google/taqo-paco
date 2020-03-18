@@ -3,4 +3,13 @@ version: 0.0.1
 environment:
   sdk: '>=2.0.0 <3.0.0'
 dependencies:
-  json_rpc_2: '^2.1.0'
+  intl: ^0.16.1
+  json_annotation: ^2.0.0
+  json_rpc_2: ^2.1.0
+  meta: ^1.1.8
+  path: ^1.6.4
+  sqlite2:
+    path: ../../../../dart-sqlite2
+#    git:
+#      url: git@github.com:mikemaksymowych/dart-sqlite2.git
+#      ref: fix

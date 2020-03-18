@@ -24,7 +24,7 @@ void _listen(String event) {
   final action = _actionPattern.matchAsPrefix(event);
   if (action != null) {
     print('action: id: ${action[1]} action: ${action[2]}');
-    if (action[2] == 'default') {
+    if (action.groupCount >= 2 && action[2] == 'default') {
       final notifId = int.tryParse(action[1]);
       if (notifId != null) {
         // Not super efficient, but fine for now
