@@ -106,12 +106,9 @@ Future<ActionSpecification> _getNextAlarmTimeForExperiment(Experiment experiment
   return nextAlarmTime;
 }
 
-Future<List<ActionSpecification>> getAllAlarmTimesOrdered(
-    {List<Experiment> experiments, DateTime start, DateTime end}) async {
-  final service = await ExperimentService.getInstance();
-
+Future<List<ActionSpecification>> getAllAlarmTimesOrdered(List<Experiment> experiments,
+    {DateTime start, DateTime end}) async {
   // Default args
-  experiments ??= service.getJoinedExperiments();
   start ??= DateTime.now();
   // TODO establish a default for end time
 
@@ -126,12 +123,9 @@ Future<List<ActionSpecification>> getAllAlarmTimesOrdered(
   return alarmTimes;
 }
 
-Future<List<ActionSpecification>> getNextAlarmTimesOrdered(
-    {List<Experiment> experiments, DateTime now}) async {
-  final service = await ExperimentService.getInstance();
-
+Future<List<ActionSpecification>> getNextAlarmTimesOrdered(List<Experiment> experiments,
+    {DateTime now}) async {
   // Default args
-  experiments ??= service.getJoinedExperiments();
   now ??= DateTime.now();
 
   final alarmTimes = <ActionSpecification>[];
@@ -145,17 +139,14 @@ Future<List<ActionSpecification>> getNextAlarmTimesOrdered(
   return alarmTimes;
 }
 
-Future<List<ActionSpecification>> getAllAlarmsWithinRange(
-    {List<Experiment> experiments, DateTime start, Duration duration}) async {
-  final service = await ExperimentService.getInstance();
-
+Future<List<ActionSpecification>> getAllAlarmsWithinRange(List<Experiment> experiments,
+    {DateTime start, Duration duration}) async {
   // Default args
-  experiments ??= service.getJoinedExperiments();
   start ??= DateTime.now().subtract(Duration(minutes: 1));
   duration ??= Duration(minutes: 2);
   final end = start.add(duration);
 
-  final alarms = await getAllAlarmTimesOrdered(experiments: experiments, start: start, end: end);
+  final alarms = await getAllAlarmTimesOrdered(experiments, start: start, end: end);
   return alarms
       .where((a) =>
         (a.time.isAtSameMomentAs(start) || a.time.isAfter(start)) &&
@@ -163,24 +154,18 @@ Future<List<ActionSpecification>> getAllAlarmsWithinRange(
       .toList();
 }
 
-Future<ActionSpecification> getNextAlarmTime({List<Experiment> experiments, DateTime now}) async {
-  final service = await ExperimentService.getInstance();
-
+Future<ActionSpecification> getNextAlarmTime(List<Experiment> experiments, {DateTime now}) async {
   // Default args
-  experiments ??= service.getJoinedExperiments();
   now ??= DateTime.now();
 
-  final alarms = await getNextAlarmTimesOrdered(experiments: experiments, now: now);
+  final alarms = await getNextAlarmTimesOrdered(experiments, now: now);
   print('Next alarm is ${alarms.isEmpty ? null : alarms.first}');
   return alarms.isEmpty ? null : alarms.first;
 }
 
-Future<List<ActionSpecification>> getNextNAlarmTimes(
-    {int n, List<Experiment> experiments, DateTime now}) async {
-  final service = await ExperimentService.getInstance();
-
+Future<List<ActionSpecification>> getNextNAlarmTimes(List<Experiment> experiments,
+    {int n, DateTime now}) async {
   // Default args
-  experiments ??= service.getJoinedExperiments();
   now ??= DateTime.now();
   n ??= 64;
 
@@ -188,8 +173,7 @@ Future<List<ActionSpecification>> getNextNAlarmTimes(
   var count = 0;
   var loopNow = now;
   while (alarms.length < n) {
-    final next = await getNextAlarmTime(
-        experiments: experiments, now: loopNow);
+    final next = await getNextAlarmTime(experiments, now: loopNow);
     if (next == null) {
       break;
     }

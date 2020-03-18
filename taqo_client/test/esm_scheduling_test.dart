@@ -127,7 +127,7 @@ void main() async {
 
     for (var dt in _testDateTimes) {
       test('ESM ${e.title}: ${dt.toIso8601String()}', () async {
-        await getNextAlarmTimesOrdered(experiments: [e], now: dt);
+        await getNextAlarmTimesOrdered([e], now: dt);
         final signals = await ESMSignalStorage().getAllSignals();
         expect(m[e.title][dt].verify(signals), true);
       });

@@ -37,7 +37,9 @@ Future schedule() async {
   });
   final dt = DateTime.fromMillisecondsSinceEpoch(max);
 
-  final alarms = await getNextNAlarmTimes(n: count, now: dt);
+  final service = await ExperimentService.getInstance();
+  final experiments = service.getJoinedExperiments();
+  final alarms = await getNextNAlarmTimes(experiments, n: count, now: dt);
   for (var a in alarms) {
     await flutter_local_notifications.scheduleNotification(a, cancelPending: false);
   }

@@ -62,7 +62,9 @@ void _notifyCallback(int alarmId) async {
     // 30 seconds after the current time
     start = actionSpec.time;
     duration = DateTime.now().add(Duration(seconds: 30)).difference(start);
-    final allAlarms = await getAllAlarmsWithinRange(start: start, duration: duration);
+    final service = await ExperimentService.getInstance();
+    final experiments = service.getJoinedExperiments();
+    final allAlarms = await getAllAlarmsWithinRange(experiments, start: start, duration: duration);
     print('Showing ${allAlarms.length} alarms from: $start to: ${start.add(duration)}');
     var i = 0;
     for (var a in allAlarms) {
@@ -117,7 +119,9 @@ void _scheduleNextNotification({DateTime from}) async {
   from = getLater(from, lastSchedule);
   print('_scheduleNextNotification from: $from');
 
-  getNextAlarmTime(now: from).then((ActionSpecification actionSpec) async {
+  final service = await ExperimentService.getInstance();
+  final experiments = service.getJoinedExperiments();
+  getNextAlarmTime(experiments, now: from).then((ActionSpecification actionSpec) async {
     if (actionSpec != null) {
       // Schedule a notification (android_alarm_manager)
       _scheduleNotification(actionSpec).then((scheduled) {

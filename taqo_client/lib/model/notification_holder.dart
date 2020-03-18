@@ -1,5 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 
+import 'action_specification.dart';
+
 part 'notification_holder.g.dart';
 
 @JsonSerializable()

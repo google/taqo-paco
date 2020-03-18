@@ -195,7 +195,7 @@ void main() async {
   for (var e in fixedExperiments) {
     for (var dt in testDateTimes) {
       test('Fixed ${e.title}: ${dt.toIso8601String()}', () async {
-        final nextAlarm = (await getNextAlarmTimesOrdered(experiments: [e], now: dt)).first;
+        final nextAlarm = (await getNextAlarmTimesOrdered([e], now: dt)).first;
         expect(nextAlarm.time, equals(expected[e.title][dt]));
       });
     }

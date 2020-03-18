@@ -22,7 +22,7 @@ final _notificationHandledStream = StreamController<String>();
 /// The callback when a notification is tapped by the user
 void _handleNotification(String payload) async {
   print('Handle $payload');
-  openSurvey(payload);
+  taqo_alarm.openSurvey(payload);
 }
 
 /// Shows or schedules a notification with the plugin
@@ -117,38 +117,6 @@ Future init() async {
 /// For finding out if the app was launched from a notification
 Future<NotificationAppLaunchDetails> get launchDetails =>
     _plugin.getNotificationAppLaunchDetails();
-
-/// Open the survey that triggered the notification
-Future<void> openSurvey(String payload) async {
-  final id = int.tryParse(payload);
-  final notificationHolder = await LocalDatabase().getNotification(id);
-
-  if (notificationHolder == null) {
-    print('No holder for payload: $payload');
-    return;
-  }
-
-  // TODO Timezone could have changed?
-  if (!notificationHolder.isActive && !notificationHolder.isFuture) {
-    await taqo_alarm.timeout(id);
-    MyApp.navigatorKey.currentState.pushReplacementNamed(
-        RunningExperimentsPage.routeName, arguments: [true, ]);
-    return;
-  }
-
-  try {
-    final service = await ExperimentService.getInstance();
-    final e = service
-        .getJoinedExperiments()
-        .firstWhere((e) => e.id == notificationHolder.experimentId);
-    e.groups.firstWhere((g) => g.name == notificationHolder.experimentGroupName);
-    MyApp.navigatorKey.currentState.pushReplacementNamed(SurveyPage.routeName,
-        arguments: [e, notificationHolder.experimentGroupName]);
-  } on StateError catch (e, stack) {
-    print('StateError: $e');
-    print(stack);
-  }
-}
 
 /// Show a notification now
 Future<int> showNotification(ActionSpecification actionSpec) async {
