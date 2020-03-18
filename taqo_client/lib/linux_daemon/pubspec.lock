@@ -88,9 +88,11 @@ packages:
   sqlite2:
     dependency: "direct main"
     description:
-      path: "../../../../dart-sqlite2"
-      relative: true
-    source: path
+      path: "."
+      ref: fix
+      resolved-ref: "1cce69954c3c2623773213197296244aa10ee7ee"
+      url: "git@github.com:mikemaksymowych/dart-sqlite2.git"
+    source: git
     version: "0.5.1"
   stack_trace:
     dependency: transitive
