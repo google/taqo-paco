@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:sqlite2/sqlite.dart';
 
 import '../model/action_specification.dart';
+import '../model/event.dart';
 import '../model/experiment.dart';
 import '../model/notification_holder.dart';
 import '../storage/dart_file_storage.dart';
@@ -62,7 +63,7 @@ json TEXT
     table = await stream.first;
     exists = table.toList().first ?? 0;
     if (exists == 0) {
-    await _db.execute(
+      await _db.execute(
 '''CREATE TABLE notifications (
 _id INTEGER PRIMARY KEY AUTOINCREMENT,
 alarm_time INTEGER, 
@@ -77,6 +78,44 @@ action_id INTEGER,
 action_trigger_spec_id INTEGER, 
 snooze_time INTEGER, 
 snooze_count INTEGER
+);
+'''
+      );
+    }
+
+    stream = _db.query("""SELECT COUNT(1) FROM sqlite_master WHERE type='table' AND name='events'""");
+    table = await stream.first;
+    exists = table.toList().first ?? 0;
+    if (exists == 0) {
+      await _db.execute(
+'''CREATE TABLE events (
+_id INTEGER PRIMARY KEY AUTOINCREMENT,
+experiment_id INTEGER,
+experiment_server_id INTEGER,
+experiment_name TEXT,
+experiment_version INTEGER,
+schedule_time TEXT,
+response_time TEXT,
+uploaded INTEGER,
+group_name TEXT,
+action_trigger_id INTEGER,
+action_trigger_spec_id INTEGER,
+action_id INTEGER
+);
+'''
+      );
+    }
+
+    stream = _db.query("""SELECT COUNT(1) FROM sqlite_master WHERE type='table' AND name='outputs'""");
+    table = await stream.first;
+    exists = table.toList().first ?? 0;
+    if (exists == 0) {
+      await _db.execute(
+'''CREATE TABLE outputs (
+_id INTEGER PRIMARY KEY AUTOINCREMENT,
+event_id INTEGER,
+text TEXT,
+answer TEXT
 );
 '''
       );
@@ -172,5 +211,29 @@ snooze_count INTEGER
 
   Future<void> removeAllNotifications() async {
     _db.execute("""DELETE FROM notifications""");
+  }
+
+  Future<int> insertEvent(Event event) async {
+    event.id = await _db.execute("""INSERT INTO events (experiment_id, experiment_server_id, experiment_name, experiment_version, schedule_time, response_time, uploaded, group_name, action_trigger_id, action_trigger_spec_id, action_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        params: [
+          '${event.experimentId}',
+          '${event.experimentServerId}',
+          event.experimentName,
+          '${event.experimentVersion}',
+          event.scheduleTime?.toIso8601String(withColon: true),
+          event.responseTime?.toIso8601String(withColon: true),
+          '${event.uploaded}',
+          event.groupName,
+          '${event.actionTriggerId}',
+          '${event.actionTriggerSpecId}',
+          '${event.actionId}']);
+    for (var responseEntry in event.responses.entries) {
+      await _db.execute("""INSERT INTO outputs (event_id, text, answer) VALUES (?, ?, ?)""",
+          params: [
+            '${event.id}',
+            '${responseEntry.key}',
+            '${responseEntry.value}']);
+    }
+    return event.id;
   }
 }

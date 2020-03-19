@@ -22,13 +22,6 @@ void openSurvey(int id) {
   }
 }
 
-void timeout(int id) {
-  try {
-    _peer.sendNotification(timeoutMethod, {'id': id,});
-  } catch (e) {
-  }
-}
-
 void _handleCancelAlarm(json_rpc.Parameters args) {
   final id = (args.asMap)['id'];
   linux_alarm_manager.cancel(id);
@@ -36,11 +29,6 @@ void _handleCancelAlarm(json_rpc.Parameters args) {
 
 void _handleScheduleAlarm(json_rpc.Parameters args) {
   linux_alarm_manager.scheduleNextNotification();
-}
-
-void _handleCancelNotify(json_rpc.Parameters args) {
-  final id = (args.asMap)['id'] as int;
-  dbus.cancel(id);
 }
 
 void main() async {
@@ -59,7 +47,6 @@ void main() async {
 
       _peer.registerMethod(scheduleAlarmMethod, _handleScheduleAlarm);
       _peer.registerMethod(cancelAlarmMethod, _handleCancelAlarm);
-      _peer.registerMethod(cancelNotificationMethod, _handleCancelNotify);
       _peer.listen();
 
       _peer.done.then((_) {

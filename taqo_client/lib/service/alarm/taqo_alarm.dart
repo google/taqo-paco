@@ -30,7 +30,6 @@ Future _linuxInit() async {
     });
 
     _peer.registerMethod(openSurveyMethod, _handleOpenSurvey);
-    _peer.registerMethod(timeoutMethod, _handleTimeout);
     _peer.listen();
 
     completer.complete();
@@ -89,22 +88,11 @@ Future cancel(int id) async {
   }
 }
 
-void _handleTimeout(json_rpc.Parameters args)  {
-  final id = (args.asMap)['id'];
-  timeout(id);
-}
-
 Future timeout(int id) async {
   final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
   _createMissedEvent(await storage.getNotification(id));
   if (Platform.isAndroid) {
     return flutter_local_notifications.cancelNotification(id);
-  } else if (Platform.isLinux) {
-    try {
-      _peer.sendNotification(cancelNotificationMethod, {'id': id,});
-    } catch (e) {
-      print(e);
-    }
   }
 }
 

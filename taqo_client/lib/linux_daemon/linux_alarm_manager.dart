@@ -3,11 +3,12 @@ import 'dart:async';
 //import 'package:shared_preferences/shared_preferences.dart';
 
 import '../model/action_specification.dart';
+import '../model/event.dart';
+import '../model/notification_holder.dart';
 import '../scheduling/action_schedule_generator.dart';
 import '../storage/dart_file_storage.dart';
 import '../storage/esm_signal_storage.dart';
 import '../util/date_time_util.dart';
-import 'linux_daemon.dart';
 import 'linux_database.dart';
 import 'linux_notification_manager.dart' as linux_notification_manager;
 import 'rpc_constants.dart';
@@ -170,4 +171,30 @@ Future<void> cancel(int alarmId) async {
 Future<void> cancelAll() async {
   final database = await LinuxDatabase.get();
   (await database.getAllAlarms()).keys.forEach((alarmId) async => await cancel(alarmId));
+}
+
+void timeout(int id) async {
+  final storage = await LinuxDatabase.get();
+  _createMissedEvent(await storage.getNotification(id));
+  linux_notification_manager.cancelNotification(id);
+}
+
+void _createMissedEvent(NotificationHolder notification) async {
+  if (notification == null) return;
+  print('_createMissedEvent: ${notification.id}');
+  // TODO In Taqo, we query the server for the Experiments here... is that necessary?
+  final experiments = await readJoinedExperiments();
+  final experiment = experiments.firstWhere((e) => e.id == notification.experimentId);
+  final event = Event();
+  event.experimentId = experiment.id;
+  event.experimentServerId = experiment.id;
+  event.experimentName = experiment.title;
+  event.groupName = notification.experimentGroupName;
+  event.actionId = notification.actionId;
+  event.actionTriggerId = notification.actionTriggerId;
+  event.actionTriggerSpecId = notification.actionTriggerSpecId;
+  event.experimentVersion = experiment.version;
+  event.scheduleTime = getZonedDateTime(DateTime.fromMillisecondsSinceEpoch(notification.alarmTime));
+  final storage = await LinuxDatabase.get();
+  storage.insertEvent(event);
 }
