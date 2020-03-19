@@ -6,6 +6,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../model/action_specification.dart';
 import '../../model/experiment.dart';
 import '../../model/notification_holder.dart';
+import '../../storage/flutter_file_storage.dart';
 import '../../storage/local_database.dart';
 import 'taqo_alarm.dart' as taqo_alarm;
 
@@ -47,8 +48,9 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
   // Therefore we should timeout any pending notifications for the same survey
   // We don't want to do this on iOS where we are aggressively pre-scheduling
   // notifications
+  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
   if (cancelPending) {
-    final pendingNotifications = await LocalDatabase()
+    final pendingNotifications = await storage
         .getAllNotificationsForExperiment(actionSpec.experiment);
     await Future.forEach(pendingNotifications, (pn) async {
       if (notificationHolder.sameGroupAs(pn)) {
@@ -57,7 +59,7 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
     });
   }
 
-  final id = await LocalDatabase().insertNotification(notificationHolder);
+  final id = await storage.insertNotification(notificationHolder);
 
   final androidDetails = AndroidNotificationDetails(
     _ANDROID_NOTIFICATION_CHANNEL_ID,
@@ -135,22 +137,25 @@ Future<int> scheduleNotification(ActionSpecification actionSpec,
 }
 
 /// Cancel notification with [id]
-Future cancelNotification(int id) {
+Future cancelNotification(int id) async {
   _plugin.cancel(id).catchError((e, st) => print("Error canceling notification id $id: $e"));
-  return LocalDatabase().removeNotification(id);
+  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+  return storage.removeNotification(id);
 }
 
 /// Cancel all notifications for [experiment]
-Future cancelForExperiment(Experiment experiment) {
-  return LocalDatabase().getAllNotificationsForExperiment(experiment)
+Future cancelForExperiment(Experiment experiment) async {
+  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+  return storage.getAllNotificationsForExperiment(experiment)
       .then((List<NotificationHolder> notifications) =>
       notifications.forEach((n) => cancelNotification(n.id)))
       .catchError((e, st) => "Error canceling notifications: $e");
 }
 
 /// Cancel all notifications, except ones that fired and are still pending
-Future cancelAllNotifications() {
-  return LocalDatabase().getAllNotifications()
+Future cancelAllNotifications() async {
+  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+  return storage.getAllNotifications()
       .then(((List<NotificationHolder> notifications) {
         for (var n in notifications) {
           final dt = DateTime.fromMillisecondsSinceEpoch(n.alarmTime);

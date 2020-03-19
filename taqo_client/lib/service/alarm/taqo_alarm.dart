@@ -10,6 +10,7 @@ import '../../model/event.dart';
 import '../../model/notification_holder.dart';
 import '../../pages/running_experiments_page.dart';
 import '../../pages/survey/survey_page.dart';
+import '../../storage/flutter_file_storage.dart';
 import '../../storage/local_database.dart';
 import '../../util/date_time_util.dart';
 import '../experiment_service.dart';
@@ -97,7 +98,8 @@ void _handleTimeout(json_rpc.Parameters args)  {
 }
 
 Future timeout(int id) async {
-  _createMissedEvent(await LocalDatabase().getNotification(id));
+  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+  _createMissedEvent(await storage.getNotification(id));
   if (Platform.isAndroid) {
     return flutter_local_notifications.cancelNotification(id);
   } else if (Platform.isLinux) {
@@ -117,7 +119,8 @@ void _handleOpenSurvey(json_rpc.Parameters args)  {
 /// Open the survey that triggered the notification
 Future<void> openSurvey(String payload) async {
   final id = int.tryParse(payload);
-  final notificationHolder = await LocalDatabase().getNotification(id);
+  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+  final notificationHolder = await storage.getNotification(id);
 
   if (notificationHolder == null) {
     print('No holder for payload: $payload');
@@ -160,5 +163,6 @@ void _createMissedEvent(NotificationHolder notification) async {
   event.actionTriggerSpecId = notification.actionTriggerSpecId;
   event.experimentVersion = experiment.version;
   event.scheduleTime = getZonedDateTime(DateTime.fromMillisecondsSinceEpoch(notification.alarmTime));
-  LocalDatabase().insertEvent(event);
+  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+  storage.insertEvent(event);
 }

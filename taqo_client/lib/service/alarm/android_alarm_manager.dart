@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../model/action_specification.dart';
 import '../../scheduling/action_schedule_generator.dart';
+import '../../storage/esm_signal_storage.dart';
+import '../../storage/flutter_file_storage.dart';
 import '../../storage/local_database.dart';
 import '../../util/date_time_util.dart';
 import '../experiment_service.dart';
@@ -17,7 +19,8 @@ const SHARED_PREFS_LAST_ALARM_TIME = 'lastScheduledAlarm';
 Future<int> _schedule(ActionSpecification actionSpec, DateTime when, Function(int) callback) {
   return AndroidAlarmManager.initialize().then((success) async {
     if (success) {
-      final alarmId = await LocalDatabase().insertAlarm(actionSpec);
+      final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+      final alarmId = await storage.insertAlarm(actionSpec);
       AndroidAlarmManager.oneShotAt(when, alarmId, callback,
           allowWhileIdle: true, exact: true, rescheduleOnReboot: true, wakeup: true);
       return alarmId;
@@ -28,7 +31,8 @@ Future<int> _schedule(ActionSpecification actionSpec, DateTime when, Function(in
 
 Future<bool> _scheduleNotification(ActionSpecification actionSpec) async {
   // Don't show a notification that's already pending
-  final alarms = await LocalDatabase().getAllAlarms();
+  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+  final alarms = await storage.getAllAlarms();
   for (var as in alarms.values) {
     if (as == actionSpec) {
       print('Notification for $actionSpec already scheduled');
@@ -55,7 +59,8 @@ void _notifyCallback(int alarmId) async {
   print('notify: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
   DateTime start;
   Duration duration;
-  final actionSpec = await LocalDatabase().getAlarm(alarmId);
+  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+  final actionSpec = await storage.getAlarm(alarmId);
   if (actionSpec != null) {
     // To handle simultaneous alarms as well as possible delay in alarm callbacks,
     // show all notifications from the originally schedule alarm time until
@@ -64,7 +69,8 @@ void _notifyCallback(int alarmId) async {
     duration = DateTime.now().add(Duration(seconds: 30)).difference(start);
     final service = await ExperimentService.getInstance();
     final experiments = service.getJoinedExperiments();
-    final allAlarms = await getAllAlarmsWithinRange(experiments, start: start, duration: duration);
+    final allAlarms = await getAllAlarmsWithinRange(FlutterFileStorage(ESMSignalStorage.filename),
+        experiments, start: start, duration: duration);
     print('Showing ${allAlarms.length} alarms from: $start to: ${start.add(duration)}');
     var i = 0;
     for (var a in allAlarms) {
@@ -90,9 +96,10 @@ void _expireCallback(int alarmId) async {
   // This is running in a different (background) Isolate
   print('expire: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
   // Cancel notification
-  final toCancel = await LocalDatabase().getAlarm(alarmId);
+  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+  final toCancel = await storage.getAlarm(alarmId);
   // TODO Move the matches() logic to SQL
-  final notifications = await LocalDatabase().getAllNotifications();
+  final notifications = await storage.getAllNotifications();
   if (notifications != null) {
     final match = notifications.firstWhere((notificationHolder) =>
         notificationHolder.matchesAction(toCancel), orElse: () => null);
@@ -121,7 +128,8 @@ void _scheduleNextNotification({DateTime from}) async {
 
   final service = await ExperimentService.getInstance();
   final experiments = service.getJoinedExperiments();
-  getNextAlarmTime(experiments, now: from).then((ActionSpecification actionSpec) async {
+  getNextAlarmTime(FlutterFileStorage(ESMSignalStorage.filename), experiments, now: from)
+      .then((ActionSpecification actionSpec) async {
     if (actionSpec != null) {
       // Schedule a notification (android_alarm_manager)
       _scheduleNotification(actionSpec).then((scheduled) {
@@ -136,7 +144,8 @@ void _scheduleNextNotification({DateTime from}) async {
 
 void scheduleNextNotification() async {
   // Cancel all alarms, except for timeouts for past notifications
-  final allAlarms = await LocalDatabase().getAllAlarms();
+  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+  final allAlarms = await storage.getAllAlarms();
   for (var alarm in allAlarms.entries) {
     // On Android, AlarmManager adjusts alarms relative to time changes
     // Since timeouts reflect elapsed time since the notification, this is fine for already set
@@ -157,9 +166,11 @@ Future<void> cancel(int alarmId) async {
       AndroidAlarmManager.cancel(alarmId);
     }
   });
-  LocalDatabase().removeAlarm(alarmId);
+  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+  storage.removeAlarm(alarmId);
 }
 
 Future<void> cancelAll() async {
-  (await LocalDatabase().getAllAlarms()).keys.forEach((alarmId) async => await cancel(alarmId));
+  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+  (await storage.getAllAlarms()).keys.forEach((alarmId) async => await cancel(alarmId));
 }

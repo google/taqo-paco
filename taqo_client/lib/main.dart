@@ -23,13 +23,15 @@ import 'platform/platform_sync_service.dart';
 import 'service/alarm/taqo_alarm.dart' as taqo_alarm;
 import 'service/logging_service.dart';
 import 'storage/esm_signal_storage.dart';
+import 'storage/flutter_file_storage.dart';
 
 var gAuth = GoogleAuth();
 
 void _onTimeChange() async {
   /// TODO Currently provides no info on how the time was changed
   print('time [zone] changed, rescheduling');
-  await ESMSignalStorage().deleteAllSignals();
+  final storage = await ESMSignalStorage.get(FlutterFileStorage(ESMSignalStorage.filename));
+  storage.deleteAllSignals();
   taqo_alarm.schedule();
 }
 

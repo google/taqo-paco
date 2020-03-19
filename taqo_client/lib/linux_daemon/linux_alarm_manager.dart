@@ -3,12 +3,14 @@ import 'dart:async';
 //import 'package:shared_preferences/shared_preferences.dart';
 
 import '../model/action_specification.dart';
+import '../scheduling/action_schedule_generator.dart';
+import '../storage/dart_file_storage.dart';
+import '../storage/esm_signal_storage.dart';
 import '../util/date_time_util.dart';
 import 'linux_daemon.dart';
 import 'linux_database.dart';
 import 'linux_notification_manager.dart' as linux_notification_manager;
 import 'rpc_constants.dart';
-import 'scheduling/linux_action_schedule_generator.dart';
 import 'util.dart';
 
 const _sharedPrefsLastAlarmTime = 'lastScheduledAlarm';
@@ -28,7 +30,8 @@ void _notify(int alarmId) async {
     start = actionSpec.time;
     duration = DateTime.now().add(Duration(seconds: 30)).difference(start);
     final experiments = await readJoinedExperiments();
-    final allAlarms = await getAllAlarmsWithinRange(experiments, start: start, duration: duration);
+    final allAlarms = await getAllAlarmsWithinRange(DartFileStorage(ESMSignalStorage.filename),
+        experiments, start: start, duration: duration);
     print('Showing ${allAlarms.length} alarms from: $start to: ${start.add(duration)}');
     var i = 0;
     for (var a in allAlarms) {
@@ -130,7 +133,8 @@ void _scheduleNextNotification({DateTime from}) async {
   print('_scheduleNextNotification from: $from');
 
   final experiments = await readJoinedExperiments();
-  getNextAlarmTime(experiments, now: from).then((actionSpec) async {
+  getNextAlarmTime(DartFileStorage(ESMSignalStorage.filename), experiments, now: from)
+      .then((actionSpec) async {
     if (actionSpec != null) {
       // Schedule a notification (android_alarm_manager)
       _scheduleNotification(actionSpec).then((scheduled) {

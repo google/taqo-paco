@@ -3,21 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import '../model/experiment.dart';
-
-String get homeDir {
-  final env = Platform.environment;
-  String home;
-  if (Platform.isLinux) {
-    home = env['HOME'];
-  } else {
-    throw UnsupportedError('Only supports Linux and MacOS');
-  }
-  return '$home/.taqo';
-}
+import '../storage/dart_file_storage.dart';
 
 Future<List<Experiment>> readJoinedExperiments() async {
   try {
-    final file = await File('$homeDir/experiments.txt');
+    final file = await File('$taqoDir/experiments.txt');
     if (await file.exists()) {
       String contents = await file.readAsString();
       List experimentList = jsonDecode(contents);

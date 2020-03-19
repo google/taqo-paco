@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:sqflite/sqflite.dart';
@@ -7,106 +8,102 @@ import '../model/event.dart';
 import '../model/experiment.dart';
 import '../model/notification_holder.dart';
 import '../util/zoned_date_time.dart';
-import 'local_storage.dart';
+import 'local_file_storage.dart';
 
 part 'local_database.inc.dart';
 part 'local_database.workaround.dart';
 
 /// Global reference of the database connection, using singleton pattern
-class LocalDatabase extends LocalFileStorage {
-  /// Singleton implementation
-
-  /// The private constructor
-  LocalDatabase._() : super(dbFilename) {
-    _init();
-  }
-
-  static final LocalDatabase _instance = LocalDatabase._();
-
-  factory LocalDatabase() {
-    return _instance;
-  }
-
-  /// Actual content of the class
+class LocalDatabase {
   static const dbFilename = 'experiments.db';
-  Future<Database> _db;
 
-  /// The actual initializer, which should only be called from the private constructor
-  void _init() {
-    _db = _openDatabase();
+  static Completer<LocalDatabase> _completer;
+  static LocalDatabase _instance;
+
+  ILocalFileStorage _storageImpl;
+  Database _db;
+
+  LocalDatabase._();
+
+  static Future<LocalDatabase> get(ILocalFileStorage storageImpl) {
+    if (_completer != null && !_completer.isCompleted) {
+      return _completer.future;
+    }
+    if (_instance == null) {
+      _completer = Completer<LocalDatabase>();
+      final temp = LocalDatabase._();
+      temp._initialize(storageImpl).then((_) {
+        _instance = temp;
+        _completer.complete(_instance);
+      });
+      return _completer.future;
+    }
+    return Future.value(_instance);
+  }
+
+  Future _initialize(ILocalFileStorage storageImpl) async {
+    _storageImpl = storageImpl;
+    _db = await _openDatabase();
   }
 
   Future<Database> _openDatabase() async {
-    return await openDatabase((await localFile).path,
+    return await openDatabase((await _storageImpl.localFile).path,
         version: _dbVersion, onCreate: _onCreate);
   }
 
   Future<void> insertEvent(Event event) async {
-    final db = await _db;
-    await _insertEvent(db, event);
+    await _insertEvent(_db, event);
   }
 
   Future<int> insertNotification(NotificationHolder notificationHolder) async {
-    final db = await _db;
-    return _insertNotification(db, notificationHolder);
+    return _insertNotification(_db, notificationHolder);
   }
 
   Future<NotificationHolder> getNotification(int id) async {
-    final db = await _db;
-    return _getNotification(db, id);
+    return _getNotification(_db, id);
   }
 
   Future<List<NotificationHolder>> getAllNotifications() async {
-    final db = await _db;
-    return _getAllNotifications(db);
+    return _getAllNotifications(_db);
   }
 
   Future<List<NotificationHolder>> getAllNotificationsForExperiment(
       Experiment experiment) async {
-    final db = await _db;
-    return _getAllNotificationsForExperiment(db, experiment.id);
+    return _getAllNotificationsForExperiment(_db, experiment.id);
   }
 
   Future<void> removeNotification(int id) async {
-    final db = await _db;
-    return _removeNotification(db, id);
+    return _removeNotification(_db, id);
   }
 
   Future<void> removeAllNotifications() async {
-    final db = await _db;
-    return _removeAllNotifications(db);
+    return _removeAllNotifications(_db);
   }
 
   Future<int> insertAlarm(ActionSpecification actionSpecification) async {
-    final db = await _db;
-    return _insertAlarm(db, actionSpecification);
+    return _insertAlarm(_db, actionSpecification);
   }
 
   Future<ActionSpecification> getAlarm(int id) async {
-    final db = await _db;
-    return _getAlarm(db, id);
+    return _getAlarm(_db, id);
   }
 
   Future<Map<int, ActionSpecification>> getAllAlarms() async {
-    final db = await _db;
-    return _getAllAlarms(db);
+    return _getAllAlarms(_db);
   }
 
   Future<void> removeAlarm(int id) async {
-    final db = await _db;
-    return _removeAlarm(db, id);
+    return _removeAlarm(_db, id);
   }
 
   Future<Iterable<Event>> getUnuploadedEvents() async {
-    final db = await _db;
-    final eventFieldsMaps = await db.query('events', where: 'uploaded=0');
+    final eventFieldsMaps = await _db.query('events', where: 'uploaded=0');
     return Future.wait(eventFieldsMaps
-        .map((e) async => await _createEventFromColumnValueMap(db, e)));
+        .map((e) async => await _createEventFromColumnValueMap(_db, e)));
   }
 
   Future<void> markEventsAsUploaded(Iterable<Event> events) async {
-    final db = await _db;
-    db.transaction((txn) async {
+    _db.transaction((txn) async {
       var batch = txn.batch();
       for (var event in events) {
         batch.update('events', {'uploaded': 1},

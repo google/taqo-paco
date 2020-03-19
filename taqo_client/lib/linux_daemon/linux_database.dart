@@ -7,7 +7,7 @@ import 'package:sqlite2/sqlite.dart';
 import '../model/action_specification.dart';
 import '../model/experiment.dart';
 import '../model/notification_holder.dart';
-import 'util.dart';
+import '../storage/dart_file_storage.dart';
 
 class LinuxDatabase {
   static const _dbFile = 'experiments.db';
@@ -36,7 +36,7 @@ class LinuxDatabase {
   }
 
   Future<Database> _initialize() async {
-    final dbPath = '$homeDir/$_dbFile';
+    final dbPath = '$taqoDir/$_dbFile';
     return File(dbPath).create(recursive: true).then((_) async {
       _db = Database(dbPath);
       await _createTables();
