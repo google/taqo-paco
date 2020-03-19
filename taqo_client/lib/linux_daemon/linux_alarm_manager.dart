@@ -164,6 +164,7 @@ void scheduleNextNotification() async {
 Future<void> cancel(int alarmId) async {
   final database = await LinuxDatabase.get();
   database.removeAlarm(alarmId);
+  _alarms.remove(alarmId);
 }
 
 Future<void> cancelAll() async {

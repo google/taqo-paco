@@ -23,7 +23,8 @@ json_rpc.Peer _peer;
 json_rpc.Peer get linuxDaemonPeer => _peer;
 
 Future _linuxInit() async {
-  return Socket.connect(localServerHost, localServerPort).then((socket) {
+  final completer = Completer();
+  Socket.connect(localServerHost, localServerPort).then((socket) {
     _peer = json_rpc.Peer(SocketChannel(socket), onUnhandledError: (e, st) {
       print('linux_alarm_manager socket error: $e');
     });
@@ -32,12 +33,7 @@ Future _linuxInit() async {
     _peer.registerMethod(timeoutMethod, _handleTimeout);
     _peer.listen();
 
-    // Initial call to schedule
-    try {
-      _peer.sendNotification(scheduleAlarmMethod);
-    } catch (e) {
-      print(e);
-    }
+    completer.complete();
 
     _peer.done.then((_) {
       print('linux_alarm_manager socket closed');
@@ -47,14 +43,15 @@ Future _linuxInit() async {
     print('Failed to connect to the Linux daemon. Is it running?');
     _peer = null;
   });
+  return completer.future;
 }
 
 Future init() {
   // Init the actual notification plugins
   if (Platform.isLinux) {
-    return _linuxInit().then((value) => schedule(cancelAndReschedule: false));
+    return _linuxInit().then((_) => schedule(cancelAndReschedule: false));
   } else {
-    return flutter_local_notifications.init();
+    return flutter_local_notifications.init().then((_) => schedule(cancelAndReschedule: false));
   }
 }
 
@@ -150,6 +147,7 @@ Future<void> openSurvey(String payload) async {
 }
 
 void _createMissedEvent(NotificationHolder notification) async {
+  if (notification == null) return;
   print('_createMissedEvent: ${notification.id}');
   final service = await ExperimentService.getInstance();
   final experiment = await service.getExperimentFromServerById(notification.experimentId);

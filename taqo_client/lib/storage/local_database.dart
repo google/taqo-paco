@@ -25,14 +25,15 @@ class LocalDatabase {
 
   LocalDatabase._();
 
-  static Future<LocalDatabase> get(ILocalFileStorage storageImpl) {
+  static Future<LocalDatabase> get(ILocalFileStorage storageImpl) async {
     if (_completer != null && !_completer.isCompleted) {
       return _completer.future;
     }
     if (_instance == null) {
       _completer = Completer<LocalDatabase>();
       final temp = LocalDatabase._();
-      temp._initialize(storageImpl).then((_) {
+      await temp._initialize(storageImpl).then((db) {
+        temp._db = db;
         _instance = temp;
         _completer.complete(_instance);
       });
@@ -41,9 +42,9 @@ class LocalDatabase {
     return Future.value(_instance);
   }
 
-  Future _initialize(ILocalFileStorage storageImpl) async {
+  Future<Database> _initialize(ILocalFileStorage storageImpl) async {
     _storageImpl = storageImpl;
-    _db = await _openDatabase();
+    return _openDatabase();
   }
 
   Future<Database> _openDatabase() async {

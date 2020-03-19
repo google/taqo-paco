@@ -68,7 +68,12 @@ class ESMSignalStorage {
       if (await file.exists()) {
         final lines = await file.readAsLines();
         for (var line in lines) {
-          final m = jsonDecode(line);
+          var m;
+          try {
+            m = jsonDecode(line);
+          } catch (_) {
+            continue;
+          }
           if (m[date] == periodStart.toIso8601String() && m[experiment] == experimentId &&
               m[group] == groupName && m[actionTrigger] == actionTriggerId &&
               m[schedule] == scheduleId) {
@@ -91,7 +96,9 @@ class ESMSignalStorage {
       final file = await _storageImpl.localFile;
       assert(file.existsSync());
       for (var line in file.readAsLinesSync()) {
-        signals.add(jsonDecode(line));
+        try {
+          signals.add(jsonDecode(line));
+        } catch (_) {}
       }
     } catch (e) {
       print("Error reading esm signals: $e");

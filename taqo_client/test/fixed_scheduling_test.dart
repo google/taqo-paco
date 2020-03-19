@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/scheduling/action_schedule_generator.dart';
+import 'package:taqo_client/storage/esm_signal_storage.dart';
+import 'package:taqo_client/storage/flutter_file_storage.dart';
 
 List<Experiment> loadExperiments(String json) {
   try {
@@ -191,11 +193,12 @@ void main() async {
   // Exp 9 - Monthly 5th MF, repeat rate = 4, time = 1010pm
   // Exp 10 - Monthly 1st all, repeat rate = 2, time = 1159pm
   final fixedExperiments = loadExperiments('test/data/fixed_schedule_test_data.json');
+  final storageImpl = FlutterFileStorage(ESMSignalStorage.filename);
 
   for (var e in fixedExperiments) {
     for (var dt in testDateTimes) {
       test('Fixed ${e.title}: ${dt.toIso8601String()}', () async {
-        final nextAlarm = (await getNextAlarmTimesOrdered([e], now: dt)).first;
+        final nextAlarm = (await getNextAlarmTimesOrdered(storageImpl, [e], now: dt)).first;
         expect(nextAlarm.time, equals(expected[e.title][dt]));
       });
     }

@@ -108,7 +108,7 @@ snooze_count INTEGER
   }
 
   Future<int> insertNotification(NotificationHolder notificationHolder) async {
-    return _db.execute("""INSERT INTO notifications (alarm_time, experiment_id, notice_count, timeout_millis, notification_source, message, experiment_group_name, action_trigger_id, action_id, action_trigger_spec_id, snooze_time,snooze_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+    return _db.execute("""INSERT INTO notifications (alarm_time, experiment_id, notice_count, timeout_millis, notification_source, message, experiment_group_name, action_trigger_id, action_id, action_trigger_spec_id, snooze_time, snooze_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         params: [
           '${notificationHolder.alarmTime}',
           '${notificationHolder.experimentId}',
@@ -120,21 +120,38 @@ snooze_count INTEGER
           '${notificationHolder.actionTriggerId}',
           '${notificationHolder.actionId}',
           '${notificationHolder.actionTriggerSpecId}',
-          '${notificationHolder.snoozeTime}',
-          '${notificationHolder.snoozeCount}']);
+          '${notificationHolder.snoozeTime ?? 0}',
+          '${notificationHolder.snoozeCount ?? 0}']);
   }
+
+  NotificationHolder _buildNotificationHolder(Map<String, dynamic> json) =>
+      NotificationHolder.fromJson({
+        'id': json['_id'],
+        'alarmTime': json['alarm_time'],
+        'experimentId': json['experiment_id'],
+        'noticeCount': json['notice_count'],
+        'timeoutMillis': json['timeout_millis'],
+        'notificationSource': json['notification_source'],
+        'message': json['message'],
+        'experimentGroupName': json['experiment_group_name'],
+        'actionTriggerId': json['action_trigger_id'],
+        'actionId': json['action_id'],
+        'actionTriggerSpecId': json['action_trigger_spec_id'],
+        'snoozeTime': json['snooze_time'],
+        'snoozeCount': json['snooze_count'],
+      });
 
   Future<NotificationHolder> getNotification(int id) async {
     final stream = _db.query("""SELECT * FROM notifications WHERE _id = ${id}""");
     final notification = await stream.first;
-    return NotificationHolder.fromJson(notification.toMap());
+    return _buildNotificationHolder(notification.toMap());
   }
 
   Future<List<NotificationHolder>> getAllNotifications() async {
     final stream = _db.query("""SELECT * FROM notifications""");
     final notifications = <NotificationHolder>[];
     await for (var n in stream) {
-      notifications.add(NotificationHolder.fromJson(n.toMap()));
+      notifications.add(_buildNotificationHolder(n.toMap()));
     }
     return notifications;
   }
@@ -144,7 +161,7 @@ snooze_count INTEGER
     final stream = _db.query("""SELECT * FROM notifications WHERE experiment_id = ${experiment.id}""");
     final notifications = <NotificationHolder>[];
     await for (var n in stream) {
-      notifications.add(NotificationHolder.fromJson(n.toMap()));
+      notifications.add(_buildNotificationHolder(n.toMap()));
     }
     return notifications;
   }
