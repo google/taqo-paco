@@ -25,3 +25,28 @@ Future<List<Experiment>> readJoinedExperiments() async {
     return [];
   }
 }
+
+const _lastAlarmFile = 'last_alarm.txt';
+
+Future storeLastAlarmTime(String dt) async {
+  try {
+    final file = await File('$taqoDir/$_lastAlarmFile');
+    file.writeAsString(dt);
+  } catch (e) {
+    print('Error storing last alarm time: $e');
+  }
+}
+
+Future<String> readLastAlarmTime() async {
+  try {
+    final file = await File('$taqoDir/$_lastAlarmFile');
+    if (await file.exists()) {
+      return file.readAsString();
+    } else {
+      return null;
+    }
+  } catch (e) {
+    print('Error reading last alarm time: $e');
+    return null;
+  }
+}

@@ -1,7 +1,5 @@
 import 'dart:async';
 
-//import 'package:shared_preferences/shared_preferences.dart';
-
 import '../model/action_specification.dart';
 import '../model/event.dart';
 import '../model/notification_holder.dart';
@@ -13,8 +11,6 @@ import 'linux_database.dart';
 import 'linux_notification_manager.dart' as linux_notification_manager;
 import 'rpc_constants.dart';
 import 'util.dart';
-
-const _sharedPrefsLastAlarmTime = 'lastScheduledAlarm';
 
 final _alarms = <int, ActionSpecification>{};
 
@@ -41,9 +37,8 @@ void _notify(int alarmId) async {
     }
 
     // Store last shown notification time
-//    final sharedPreferences = await SharedPreferences.getInstance();
-//    print('Storing ${start.add(duration)}');
-//    sharedPreferences.setString(_sharedPrefsLastAlarmTime, start.add(duration).toIso8601String());
+    print('Storing ${start.add(duration)}');
+    storeLastAlarmTime(start.add(duration).toIso8601String());
   }
 
   // Cleanup alarm
@@ -113,7 +108,7 @@ Future<bool> _scheduleNotification(ActionSpecification actionSpec) async {
 }
 
 void _scheduleTimeout(ActionSpecification actionSpec) async {
-  final timeout = actionSpec.action.timeout;
+  final timeout = 1;//actionSpec.action.timeout;
   final alarmId = await _schedule(actionSpec, actionSpec.time.add(Duration(minutes: timeout)), expireMethod);
   print('_scheduleTimeout: alarmId: $alarmId'
       ' when: ${actionSpec.time.add(Duration(minutes: timeout))}');
@@ -121,12 +116,11 @@ void _scheduleTimeout(ActionSpecification actionSpec) async {
 
 void _scheduleNextNotification({DateTime from}) async {
   DateTime lastSchedule = DateTime.now();
-//  final sharedPreferences = await SharedPreferences.getInstance();
-//  final dt = sharedPreferences.getString(_sharedPrefsLastAlarmTime);
-//  print('loaded $dt');
-//  if (dt != null) {
-//    lastSchedule = DateTime.parse(dt).add(Duration(seconds: 1));
-//  }
+  final dt = await readLastAlarmTime();
+  print('loaded $dt');
+  if (dt != null) {
+    lastSchedule = DateTime.parse(dt).add(Duration(seconds: 1));
+  }
 
   // To avoid scheduling an alarm that was already shown by the logic in _notifyCallback
   from ??= DateTime.now();
@@ -137,10 +131,10 @@ void _scheduleNextNotification({DateTime from}) async {
   getNextAlarmTime(DartFileStorage(ESMSignalStorage.filename), experiments, now: from)
       .then((actionSpec) async {
     if (actionSpec != null) {
-      // Schedule a notification (android_alarm_manager)
+      // Schedule a notification
       _scheduleNotification(actionSpec).then((scheduled) {
         if (scheduled) {
-          // Schedule a timeout (android_alarm_manager)
+          // Schedule a timeout
           _scheduleTimeout(actionSpec);
         }
       });
