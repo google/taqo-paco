@@ -6,6 +6,7 @@ import 'package:taqo_email_plugin/taqo_email_plugin.dart' as taqo_email_plugin;
 import '../model/experiment.dart';
 import '../net/google_auth.dart';
 import '../service/experiment_service.dart';
+import '../storage/local_database.dart';
 import 'find_experiments_page.dart';
 import 'schedule_overview_page.dart';
 import 'survey_picker_page.dart';
@@ -31,12 +32,21 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
 
   var _experiments = <Experiment>[];
 
+  final _active = <int>{};
+
   @override
   void initState() {
     super.initState();
     ExperimentService.getInstance().then((service) {
       setState(() {
         _experiments = service.getJoinedExperiments();
+      });
+      LocalDatabase().getAllNotifications().then((all) {
+        final active = all.where((n) => n.isActive);
+        setState(() {
+          _active.clear();
+          _active.addAll(active.map((e) => e.experimentId));
+        });
       });
     });
 
@@ -101,7 +111,7 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
     for (var experiment in _experiments) {
       children.add(ChangeNotifierProvider<Experiment>.value(
         value: experiment,
-        child: ExperimentListItem(stopExperiment),
+        child: ExperimentListItem(_active.contains(experiment.id), stopExperiment),
       ));
     }
     return ListView(
@@ -157,19 +167,20 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
 }
 
 class ExperimentListItem extends StatelessWidget {
+  final bool _active;
   final stop;
-  ExperimentListItem(this.stop);
+  ExperimentListItem(this._active, this.stop);
 
   void _onTapExperiment(BuildContext context, Experiment experiment) {
-    if (experiment.getActiveSurveys().length == 1) {
+    if (experiment.getActiveSurveys().length < 1) {
       Navigator.pushNamed(context, SurveyPage.routeName,
           arguments: [
-            experiment, experiment.getActiveSurveys().elementAt(0).name, DateTime.now(),
+            experiment, experiment.getActiveSurveys().elementAt(0).name,
           ]
       );
-    } else if (experiment.getActiveSurveys().length > 1) {
+    } else if (experiment.getActiveSurveys().length >= 1) {
       Navigator.pushNamed(context, SurveyPickerPage.routeName,
-          arguments: [experiment, DateTime.now(), ]);
+          arguments: [experiment, ]);
     } else {
       // TODO no action for finished surveys
       _alertLog(context, "This experiment has finished.");
@@ -183,6 +194,9 @@ class ExperimentListItem extends StatelessWidget {
           return Card(
             child: Row(
               children: <Widget>[
+                if (_active) Padding(padding: EdgeInsets.all(4),
+                  child: Icon(Icons.notifications_active, color: Colors.redAccent,),),
+
                 Expanded(
                     child: InkWell(
                       child: Column(

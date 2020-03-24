@@ -25,14 +25,12 @@ class SurveyPage extends StatefulWidget {
       {Key key,
       this.title,
       @required this.experiment,
-      @required this.experimentGroupName,
-      this.fromLaunch = false})
+      @required this.experimentGroupName})
       : super(key: key);
 
   final String title;
   final Experiment experiment;
   final String experimentGroupName;
-  final bool fromLaunch;
 
   @override
   _SurveyPageState createState() =>
@@ -41,10 +39,6 @@ class SurveyPage extends StatefulWidget {
 
 class _SurveyPageState extends State<SurveyPage> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  static final snackBar = SnackBar(
-    content: Text("Survey was opened from active notification response period...",
-        style: TextStyle(fontSize: 20),),
-    duration: Duration(seconds: 8),);
 
   static const String FORM_DURATION_IN_SECONDS = "Form Duration";
   Experiment _experiment;
@@ -67,17 +61,6 @@ class _SurveyPageState extends State<SurveyPage> {
     _experimentGroup.inputs.forEach((input) {
       _visible[input.name] = !input.conditional;
     });
-
-    // TODO Is there a better way?
-    Future.delayed(Duration(milliseconds: 500), () {
-      if (widget.fromLaunch) {
-        _showSnackBar();
-      }
-    });
-  }
-
-  void _showSnackBar() {
-    _scaffoldKey.currentState.showSnackBar(snackBar);
   }
 
   @override

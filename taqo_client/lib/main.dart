@@ -68,26 +68,14 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   // If there is an active notification when the app is open,
-  // direct the user to the survey.
+  // direct the user to the RunningExperimentsPage.
   // This also solves the issue with not having Pending (launch) Intents on Linux
   void _checkActiveNotification() async {
     final activeNotifications = (await LocalDatabase().getAllNotifications())
-        .where((n) => n.isActive).toList(growable: false);
+        .where((n) => n.isActive);
 
     if (activeNotifications.isNotEmpty) {
-      final n = activeNotifications.first;
-      try {
-        final service = await ExperimentService.getInstance();
-        final e = service
-            .getJoinedExperiments()
-            .firstWhere((e) => e.id == n.experimentId);
-        e.groups.firstWhere((g) => g.name == n.experimentGroupName);
-        MyApp.navigatorKey.currentState.pushReplacementNamed(SurveyPage.routeName,
-            arguments: [e, n.experimentGroupName, true]);
-      } on StateError catch (e, stack) {
-        print('StateError: $e');
-        print(stack);
-      }
+      MyApp.navigatorKey.currentState.pushReplacementNamed(RunningExperimentsPage.routeName);
     }
   }
 
@@ -109,7 +97,6 @@ class _MyAppState extends State<MyApp> {
       routes: {
         LoginPage.routeName: (context) => LoginPage(),
         FeedbackPage.routeName: (context) => FeedbackPage(),
-        SurveyPickerPage.routeName: (context) => SurveyPickerPage(),
         FindExperimentsPage.routeName: (context) => FindExperimentsPage(),
         ExperimentDetailPage.routeName: (context) => ExperimentDetailPage(),
         InformedConsentPage.routeName: (context) => InformedConsentPage(),
@@ -125,11 +112,14 @@ class _MyAppState extends State<MyApp> {
       onGenerateRoute: (settings) {
         final List args = settings.arguments;
         switch (settings.name) {
+          case SurveyPickerPage.routeName:
+            return MaterialPageRoute(
+                builder: (context) => SurveyPickerPage(
+                    experiment: args[0]));
           case SurveyPage.routeName:
             return MaterialPageRoute(
                 builder: (context) => SurveyPage(
-                    experiment: args[0], experimentGroupName: args[1],
-                    fromLaunch: args.length > 2 ? args[2] : false));
+                    experiment: args[0], experimentGroupName: args[1]));
           case RunningExperimentsPage.routeName:
             return MaterialPageRoute(
                 builder: (context) => RunningExperimentsPage(
