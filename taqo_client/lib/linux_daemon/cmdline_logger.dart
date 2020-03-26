@@ -10,7 +10,7 @@ import 'pal_event_client.dart';
 // zsh: precmd() { eval 'RETURN_VAL=$?;echo "{\"uid\":\"$(whoami)\",\"pid\":$$,\"cmd_raw\":$(history | tail -1 | sed "s/^[ ]*[0-9]*[ ]*//"),\"ret\":$RETURN_VAL}" >> /tmp/log' }
 
 class CmdLineLogger {
-  static const _sendDelay = const Duration(seconds: 10);
+  static const _sendDelay = const Duration(seconds: 11);
   static final _instance = CmdLineLogger._();
 
   CmdLineLogger._() {
@@ -47,7 +47,9 @@ class CmdLineLogger {
 
   void _sendToPal(Timer _) {
     _readLoggedCommands().then((events) {
-      sendPacoEvent(events);
+      if (events != null && events.isNotEmpty) {
+        sendPacoEvent(events);
+      }
     });
   }
 }

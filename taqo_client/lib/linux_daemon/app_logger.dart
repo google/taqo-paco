@@ -80,7 +80,7 @@ void _appLoggerIsolate(SendPort sendPort) {
 }
 
 class AppLogger {
-  static const _sendDelay = const Duration(seconds: 10);
+  static const _sendDelay = const Duration(seconds: 9);
   static final _instance = AppLogger._();
 
   ReceivePort _receivePort;
@@ -115,7 +115,7 @@ class AppLogger {
       return;
     }
 
-    if (data is Map) {
+    if (data is Map && data.isNotEmpty) {
       createAppUsagePacoEvent(data).then((event) {
         _eventsToSend.add(event);
       });

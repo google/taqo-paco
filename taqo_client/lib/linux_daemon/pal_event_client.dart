@@ -5,6 +5,16 @@ import 'dart:io';
 import 'app_logger.dart' show appNameField, windowNameField;
 import 'util.dart';
 
+const _experimentId = 'experimentId';
+const _experimentName = 'experimentName';
+const _experimentVersion = 'experimentVersion';
+const _responseTime = 'responseTime';
+const _experimentGroupName = 'experimentGroupName';
+
+const _responses = 'responses';
+const _responseName = 'name';
+const _responseAnswer = 'answer';
+
 Future<Map<String, dynamic>> _createPacoEvent() async {
   final experiment = (await readJoinedExperiments()).firstWhere((_) => true, orElse: null);
   if (experiment == null) {
@@ -13,67 +23,76 @@ Future<Map<String, dynamic>> _createPacoEvent() async {
   }
 
   final json = <String, dynamic>{};
-  json['experimentId'] = experiment.id;
-  json['experimentName'] = experiment.title;
-  json['experimentVersion'] = experiment.version;
-  json['responseTime'] = DateTime.now().toIso8601String();
-  json['experimentGroupName'] = experiment.groups.first.name;
+  json[_experimentId] = experiment.id;
+  json[_experimentName] = experiment.title;
+  json[_experimentVersion] = experiment.version;
+  json[_responseTime] = DateTime.now().toIso8601String();
+  json[_experimentGroupName] = experiment.groups.first.name;
   return json;
 }
+
+const _appsUsedKey = 'apps_used';
+const _appContentKey = 'app_content';
+const _appsUsedRawKey = 'apps_used_raw';
 
 Future<Map<String, dynamic>> createAppUsagePacoEvent(Map<String, String> response) async {
   final json = await _createPacoEvent();
   final responses = <Map<String, String>>[];
 
   final appsUsed = <String, String>{};
-  appsUsed['name'] = 'apps_used';
-  appsUsed['answer'] =  response[appNameField];
+  appsUsed[_responseName] = _appsUsedKey;
+  appsUsed[_responseAnswer] =  response[appNameField];
   responses.add(appsUsed);
 
   final appContent = <String, String>{};
-  appContent['name'] = 'app_content';
-  appContent['answer'] =  response[windowNameField];
+  appContent[_responseName] = _appContentKey;
+  appContent[_responseAnswer] =  response[windowNameField];
   responses.add(appContent);
 
 //  final url = <String, String>{};
-//  url['name'] = 'url';
-//  url['answer'] =  response[];
+//  url[_responseName] = 'url';
+//  url[_responseAnswer] =  response['url'];
 //  responses.add(url);
 
   final appsUsedRaw = <String, String>{};
-  appsUsedRaw['name'] = 'apps_used_raw';
-  appsUsedRaw['answer'] =  '${response[appNameField]}:${response[windowNameField]}';
+  appsUsedRaw[_responseName] = _appsUsedRawKey;
+  appsUsedRaw[_responseAnswer] =  '${response[appNameField]}:${response[windowNameField]}';
   responses.add(appsUsedRaw);
 
-  json['responses'] = responses;
+  json[_responses] = responses;
   return json;
 }
+
+const _uidKey = 'uid';
+const _pidKey = 'pid';
+const _cmdRawKey = 'cmd_raw';
+const _cmdRetKey = 'cmd_ret';
 
 Future<Map<String, dynamic>> createCmdUsagePacoEvent(Map<String, dynamic> response) async {
   final json = await _createPacoEvent();
   final responses = <Map<String, String>>[];
 
   final cmdUid = <String, String>{};
-  cmdUid['name'] = 'uid';
-  cmdUid['answer'] =  response['uid'];
+  cmdUid[_responseName] = _uidKey;
+  cmdUid[_responseAnswer] =  response[_uidKey];
   responses.add(cmdUid);
 
   final cmdPid = <String, String>{};
-  cmdPid['name'] = 'pid';
-  cmdPid['answer'] =  '${response['pid']}';
+  cmdPid[_responseName] = _pidKey;
+  cmdPid[_responseAnswer] =  '${response[_pidKey]}';
   responses.add(cmdPid);
 
   final cmdUsedRaw = <String, String>{};
-  cmdUsedRaw['name'] = 'cmd_raw';
-  cmdUsedRaw['answer'] =  response['cmd_raw'].trim();
+  cmdUsedRaw[_responseName] = _cmdRawKey;
+  cmdUsedRaw[_responseAnswer] =  response[_cmdRawKey].trim();
   responses.add(cmdUsedRaw);
 
   final cmdRet = <String, String>{};
-  cmdRet['name'] = 'cmd_ret';
-  cmdRet['answer'] =  '${response['ret']}';
+  cmdRet[_responseName] = _cmdRetKey;
+  cmdRet[_responseAnswer] =  '${response[_cmdRetKey]}';
   responses.add(cmdRet);
 
-  json['responses'] = responses;
+  json[_responses] = responses;
   return json;
 }
 
