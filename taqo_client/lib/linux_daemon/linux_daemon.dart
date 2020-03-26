@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 
+import 'app_logger.dart';
 import 'rpc_constants.dart';
 import 'dbus_notifications.dart' as dbus;
 import 'linux_alarm_manager.dart' as linux_alarm_manager;
@@ -32,6 +33,9 @@ void _handleScheduleAlarm(json_rpc.Parameters args) {
 }
 
 void main() async {
+  // Log App Usage
+  AppLogger();
+
   // Monitor DBus for notification actions
   dbus.monitor();
 
