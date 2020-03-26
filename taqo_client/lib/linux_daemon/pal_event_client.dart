@@ -49,6 +49,34 @@ Future<Map<String, dynamic>> createAppUsagePacoEvent(Map<String, String> respons
   return json;
 }
 
+Future<Map<String, dynamic>> createCmdUsagePacoEvent(Map<String, dynamic> response) async {
+  final json = await _createPacoEvent();
+  final responses = <Map<String, String>>[];
+
+  final cmdUid = <String, String>{};
+  cmdUid['name'] = 'uid';
+  cmdUid['answer'] =  response['uid'];
+  responses.add(cmdUid);
+
+  final cmdPid = <String, String>{};
+  cmdPid['name'] = 'pid';
+  cmdPid['answer'] =  '${response['pid']}';
+  responses.add(cmdPid);
+
+  final cmdUsedRaw = <String, String>{};
+  cmdUsedRaw['name'] = 'cmd_raw';
+  cmdUsedRaw['answer'] =  response['cmd_raw'].trim();
+  responses.add(cmdUsedRaw);
+
+  final cmdRet = <String, String>{};
+  cmdRet['name'] = 'cmd_ret';
+  cmdRet['answer'] =  '${response['ret']}';
+  responses.add(cmdRet);
+
+  json['responses'] = responses;
+  return json;
+}
+
 void sendPacoEvent(List<Map<String, dynamic>> event) {
   // TODO get port dynamically once code is shared with PAL
   Socket.connect(InternetAddress.loopbackIPv4, 6666).then((socket) {
