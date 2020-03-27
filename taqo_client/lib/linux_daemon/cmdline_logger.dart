@@ -13,16 +13,24 @@ class CmdLineLogger {
   static const _sendDelay = const Duration(seconds: 11);
   static final _instance = CmdLineLogger._();
 
-  CmdLineLogger._() {
-    _start();
-  }
+  bool _active;
+
+  CmdLineLogger._();
 
   factory CmdLineLogger() {
     return _instance;
   }
 
-  void _start() async {
+  void start() {
+    if (_active) return;
+    print('Starting CmdLineLogger');
+    _active = true;
     Timer.periodic(_sendDelay, _sendToPal);
+  }
+
+  void stop() {
+    print('Stopping CmdLineLogger');
+    _active = false;
   }
 
   Future<List<Map<String, dynamic>>> _readLoggedCommands() async {
@@ -45,10 +53,13 @@ class CmdLineLogger {
     return [];
   }
 
-  void _sendToPal(Timer _) {
+  void _sendToPal(Timer timer) {
     _readLoggedCommands().then((events) {
       if (events != null && events.isNotEmpty) {
         sendPacoEvent(events);
+      }
+      if (_active) {
+        timer.cancel();
       }
     });
   }

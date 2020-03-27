@@ -8,6 +8,7 @@ import 'rpc_constants.dart';
 import 'dbus_notifications.dart' as dbus;
 import 'linux_alarm_manager.dart' as linux_alarm_manager;
 import 'socket_channel.dart';
+import 'util.dart';
 
 json_rpc.Peer _peer;
 
@@ -31,15 +32,25 @@ void _handleCancelAlarm(json_rpc.Parameters args) {
 
 void _handleScheduleAlarm(json_rpc.Parameters args) {
   linux_alarm_manager.scheduleNextNotification();
+
+  // Schedule is called when we join, pause, un-pause, and leave experiments.
+  // Configure app loggers appropriately here
+  readJoinedExperiments().then((experiments) {
+    final active = experiments.firstWhere((e) => !e.isOver() && !e.paused, orElse: () => null);
+    if (active != null) {
+      // Found a non-paused experiment
+      // Log App Usage
+      AppLogger().start();
+      // Log Cmdline Usage
+      CmdLineLogger().start();
+    } else {
+      AppLogger().stop();
+      CmdLineLogger().stop();
+    }
+  });
 }
 
 void main() async {
-  // Log App Usage
-  AppLogger();
-
-  // Log Cmdline Usage
-  CmdLineLogger();
-
   // Monitor DBus for notification actions
   dbus.monitor();
 

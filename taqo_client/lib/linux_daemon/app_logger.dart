@@ -87,21 +87,30 @@ class AppLogger {
   Isolate _isolate;
 
   final _eventsToSend = <Map<String, dynamic>>[];
+  bool _active;
 
-  AppLogger._() {
-    _start();
-  }
+  AppLogger._();
 
   factory AppLogger() {
     return _instance;
   }
 
-  void _start() async {
+  void stop() {
+    print('Stopping AppLogger');
+    _active = false;
+    _isolate?.kill();
+    _receivePort?.close();
+  }
+
+  void start() async {
+    if (_active) return;
+    print('Starting AppLogger');
     // Port for the main Isolate to receive msg from AppLogger Isolate
     _receivePort = ReceivePort();
     _isolate = await Isolate.spawn(_appLoggerIsolate, _receivePort.sendPort);
     _isolate.addOnExitListener(_receivePort.sendPort, response: null);
     _receivePort.listen(_listen);
+    _active = true;
 
     Timer.periodic(_sendDelay, _sendToPal);
   }
@@ -111,7 +120,10 @@ class AppLogger {
     if (data == null) {
       _receivePort.close();
       _isolate.kill();
-      _start();
+      if (_active) {
+        // Restart?
+        start();
+      }
       return;
     }
 
@@ -122,10 +134,13 @@ class AppLogger {
     }
   }
 
-  void _sendToPal(Timer _) {
+  void _sendToPal(Timer timer) {
     List<Map<String, dynamic>> events = List.of(_eventsToSend);
     _eventsToSend.clear();
     sendPacoEvent(events);
+    if (_active) {
+      timer.cancel();
+    }
   }
 }
 
