@@ -1,11 +1,13 @@
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
 import '../service/alarm/taqo_alarm.dart' as taqo_alarm;
+import '../storage/flutter_file_storage.dart';
 import 'experiment.dart';
 
+const sharedPrefsExperimentPauseKey = "paused";
+
 class ExperimentProvider with ChangeNotifier {
-  static const EXPERIMENT_PAUSED_KEY_PREFIX = "paused";
   final Experiment experiment;
 
   bool _paused;
@@ -15,8 +17,9 @@ class ExperimentProvider with ChangeNotifier {
   }
 
   set paused(bool value) {
-    SharedPreferences.getInstance().then((sharedPreferences) {
-      sharedPreferences.setBool("${EXPERIMENT_PAUSED_KEY_PREFIX}_${experiment.id}", value);
+    FlutterFileStorage.getLocalStorageDir().then((storageDir) async {
+      final sharedPreferences = TaqoSharedPrefs(storageDir.path);
+      await sharedPreferences.setBool("${sharedPrefsExperimentPauseKey}_${experiment.id}", value);
       _paused = value;
       notifyListeners();
       taqo_alarm.schedule();
@@ -25,8 +28,10 @@ class ExperimentProvider with ChangeNotifier {
   }
 
   ExperimentProvider(this.experiment) {
-    SharedPreferences.getInstance().then((sharedPreferences) {
-      _paused = sharedPreferences.getBool("${EXPERIMENT_PAUSED_KEY_PREFIX}_${experiment.id}") ?? false;
+    FlutterFileStorage.getLocalStorageDir().then((storageDir) async {
+      final sharedPreferences = TaqoSharedPrefs(storageDir.path);
+      _paused =
+          (await sharedPreferences.getBool("${sharedPrefsExperimentPauseKey}_${experiment.id}")) ?? false;
       notifyListeners();
     });
   }

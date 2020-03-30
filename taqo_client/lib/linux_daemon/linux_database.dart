@@ -37,7 +37,7 @@ class LinuxDatabase {
   }
 
   Future<Database> _initialize() async {
-    final dbPath = '$taqoDir/$_dbFile';
+    final dbPath = '${DartFileStorage.getLocalStorageDir().path}/$_dbFile';
     return File(dbPath).create(recursive: true).then((_) async {
       _db = Database(dbPath);
       await _createTables();

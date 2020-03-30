@@ -13,7 +13,7 @@ class CmdLineLogger {
   static const _sendDelay = const Duration(seconds: 11);
   static final _instance = CmdLineLogger._();
 
-  bool _active;
+  bool _active = false;
 
   CmdLineLogger._();
 
@@ -36,7 +36,7 @@ class CmdLineLogger {
   Future<List<Map<String, dynamic>>> _readLoggedCommands() async {
     final events = <Map<String, dynamic>>[];
     try {
-      final file = await File('$taqoDir/command.log');
+      final file = await File('${DartFileStorage.getLocalStorageDir().path}/command.log');
       if (await file.exists()) {
         final lines = await file.readAsLines();
         // TODO race condition here

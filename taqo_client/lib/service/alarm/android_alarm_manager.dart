@@ -1,7 +1,7 @@
 import 'dart:isolate';
 
 import 'package:android_alarm_manager/android_alarm_manager.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
 import '../../model/action_specification.dart';
 import '../../scheduling/action_schedule_generator.dart';
@@ -79,7 +79,8 @@ void _notifyCallback(int alarmId) async {
     }
 
     // Store last shown notification time
-    final sharedPreferences = await SharedPreferences.getInstance();
+    final storageDir = (await FlutterFileStorage.getLocalStorageDir()).path;
+    final sharedPreferences = TaqoSharedPrefs(storageDir);
     print('Storing ${start.add(duration)}');
     sharedPreferences.setString(SHARED_PREFS_LAST_ALARM_TIME, start.add(duration).toIso8601String());
   }
@@ -114,8 +115,9 @@ void _expireCallback(int alarmId) async {
 
 void _scheduleNextNotification({DateTime from}) async {
   DateTime lastSchedule;
-  final sharedPreferences = await SharedPreferences.getInstance();
-  final dt = sharedPreferences.getString(SHARED_PREFS_LAST_ALARM_TIME);
+  final storageDir = (await FlutterFileStorage.getLocalStorageDir()).path;
+  final sharedPreferences = TaqoSharedPrefs(storageDir);
+  final dt = await sharedPreferences.getString(SHARED_PREFS_LAST_ALARM_TIME);
   print('loaded $dt');
   if (dt != null) {
     lastSchedule = DateTime.parse(dt).add(Duration(seconds: 1));

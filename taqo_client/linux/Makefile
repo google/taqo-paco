@@ -34,7 +34,7 @@ FLUTTER_PLUGIN_NAMES=
 # Plugins to include from the taqo_client/plugins subdirectory.
 TAQO_PLUGIN_NAMES=time
 # Plugins to include from the taqo_client/plugins/flutter subdirectory.
-FLUTTER_TAQO_PLUGIN_NAMES=path_provider_linux url_launcher_linux shared_preferences_linux
+FLUTTER_TAQO_PLUGIN_NAMES=path_provider_linux url_launcher_linux
 FLUTTER_TAQO_PLUGIN_NAMES_2=sqflite
 
 

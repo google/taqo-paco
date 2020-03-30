@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
+
 import '../model/action_specification.dart';
 import '../model/event.dart';
 import '../model/notification_holder.dart';
@@ -11,6 +13,8 @@ import 'linux_database.dart';
 import 'linux_notification_manager.dart' as linux_notification_manager;
 import 'rpc_constants.dart';
 import 'util.dart';
+
+const _sharedPrefsLastAlarmKey = 'lastScheduledAlarm';
 
 final _alarms = <int, ActionSpecification>{};
 
@@ -37,8 +41,10 @@ void _notify(int alarmId) async {
     }
 
     // Store last shown notification time
+    final storageDir = DartFileStorage.getLocalStorageDir().path;
+    final sharedPreferences = TaqoSharedPrefs(storageDir);
     print('Storing ${start.add(duration)}');
-    storeLastAlarmTime(start.add(duration).toIso8601String());
+    sharedPreferences.setString(_sharedPrefsLastAlarmKey, start.add(duration).toIso8601String());
   }
 
   // Cleanup alarm
@@ -116,7 +122,9 @@ void _scheduleTimeout(ActionSpecification actionSpec) async {
 
 void _scheduleNextNotification({DateTime from}) async {
   DateTime lastSchedule = DateTime.now();
-  final dt = await readLastAlarmTime();
+  final storageDir = DartFileStorage.getLocalStorageDir().path;
+  final sharedPreferences = TaqoSharedPrefs(storageDir);
+  final dt = await sharedPreferences.getString(_sharedPrefsLastAlarmKey);
   print('loaded $dt');
   if (dt != null) {
     lastSchedule = DateTime.parse(dt).add(Duration(seconds: 1));

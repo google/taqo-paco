@@ -87,7 +87,7 @@ class AppLogger {
   Isolate _isolate;
 
   final _eventsToSend = <Map<String, dynamic>>[];
-  bool _active;
+  bool _active = false;
 
   AppLogger._();
 

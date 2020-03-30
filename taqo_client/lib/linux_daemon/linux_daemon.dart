@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
+import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
+import '../storage/dart_file_storage.dart';
 import 'app_logger.dart';
 import 'cmdline_logger.dart';
 import 'rpc_constants.dart';
@@ -9,6 +11,8 @@ import 'dbus_notifications.dart' as dbus;
 import 'linux_alarm_manager.dart' as linux_alarm_manager;
 import 'socket_channel.dart';
 import 'util.dart';
+
+const _sharedPrefsExperimentPauseKey = "paused";
 
 json_rpc.Peer _peer;
 
@@ -30,24 +34,30 @@ void _handleCancelAlarm(json_rpc.Parameters args) {
   linux_alarm_manager.cancel(id);
 }
 
-void _handleScheduleAlarm(json_rpc.Parameters args) {
+void _handleScheduleAlarm(json_rpc.Parameters args) async {
   linux_alarm_manager.scheduleNextNotification();
 
   // Schedule is called when we join, pause, un-pause, and leave experiments.
   // Configure app loggers appropriately here
-  readJoinedExperiments().then((experiments) {
-    final active = experiments.firstWhere((e) => !e.isOver() && !e.paused, orElse: () => null);
-    if (active != null) {
-      // Found a non-paused experiment
-      // Log App Usage
-      AppLogger().start();
-      // Log Cmdline Usage
-      CmdLineLogger().start();
-    } else {
-      AppLogger().stop();
-      CmdLineLogger().stop();
+  final storageDir = DartFileStorage.getLocalStorageDir().path;
+  final sharedPrefs = TaqoSharedPrefs(storageDir);
+  final experiments = await readJoinedExperiments();
+  bool active = false;
+  for (var e in experiments) {
+    final paused = await sharedPrefs.getBool("${_sharedPrefsExperimentPauseKey}_${e.id}");
+    if (!e.isOver() && !(paused ?? false)) {
+      active = true;
     }
-  });
+  }
+
+  if (active) {
+    // Found a non-paused experiment
+    AppLogger().start();
+    CmdLineLogger().start();
+  } else {
+    AppLogger().stop();
+    CmdLineLogger().stop();
+  }
 }
 
 void main() async {

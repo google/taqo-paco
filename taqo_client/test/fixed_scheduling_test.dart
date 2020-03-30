@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/scheduling/action_schedule_generator.dart';
 import 'package:taqo_client/storage/esm_signal_storage.dart';
@@ -179,7 +178,6 @@ final expected = <String, Map<DateTime, DateTime>>{
 
 void main() async {
   TestWidgetsFlutterBinding.ensureInitialized();
-  SharedPreferences.setMockInitialValues({});
 
   // Begin date for all is 2000-01-01
   // Exp 1 - Daily, repeat rate = 1, time = 10am

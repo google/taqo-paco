@@ -8,7 +8,7 @@ import 'local_file_storage.dart';
 class FlutterFileStorage implements ILocalFileStorage {
   final _localFileName;
 
-  Future<Directory> get localStorageDir async {
+  static Future<Directory> getLocalStorageDir() async {
     try {
       return await getApplicationSupportDirectory();
     } catch (e) {
@@ -16,6 +16,8 @@ class FlutterFileStorage implements ILocalFileStorage {
       return Directory.systemTemp;
     }
   }
+
+  Future<Directory> get localStorageDir => getLocalStorageDir();
 
   Future<String> get localPath async => (await localStorageDir).path;
 

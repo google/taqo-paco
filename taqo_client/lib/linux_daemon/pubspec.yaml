@@ -13,3 +13,5 @@ dependencies:
     git:
       url: git@github.com:mikemaksymowych/dart-sqlite2.git
       ref: fix
+  taqo_shared_prefs:
+    path: ../../../taqo_shared_prefs

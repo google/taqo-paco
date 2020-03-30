@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
+
 import '../model/event.dart';
 import '../model/experiment.dart';
+import '../model/experiment_provider.dart' show sharedPrefsExperimentPauseKey;
 import '../net/google_auth.dart';
 import '../net/invitation_response.dart';
 import '../storage/flutter_file_storage.dart';
@@ -123,6 +126,10 @@ class ExperimentService {
   bool isJoined(Experiment experiment) => _joined.containsKey(experiment.id);
 
   void stopExperiment(Experiment experiment) async {
+    final storageDir = await FlutterFileStorage.getLocalStorageDir();
+    final sharedPreferences = TaqoSharedPrefs(storageDir.path);
+    await sharedPreferences.remove("${sharedPrefsExperimentPauseKey}_${experiment.id}");
+
     _joined.remove(experiment.id);
     saveJoinedExperiments();
     final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));

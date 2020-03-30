@@ -4,21 +4,17 @@ import 'package:path/path.dart' as path;
 
 import '../storage/local_file_storage.dart';
 
-String get taqoDir {
-  final env = Platform.environment;
-  String home;
-  if (Platform.isLinux) {
-    home = env['HOME'];
-  } else {
-    throw UnsupportedError('Only supports Linux and MacOS');
-  }
-  return '$home/.taqo';
-}
-
 class DartFileStorage implements ILocalFileStorage {
   final _localFileName;
 
-  Future<Directory> get localStorageDir async => Directory(taqoDir);
+  static Directory getLocalStorageDir() {
+    if (Platform.isLinux) {
+      return Directory('${Platform.environment['HOME']}/.taqo');
+    }
+    throw UnsupportedError('Only supported on Linux');
+  }
+
+  Future<Directory> get localStorageDir async => getLocalStorageDir();
 
   Future<String> get localPath async => (await localStorageDir).path;
 
