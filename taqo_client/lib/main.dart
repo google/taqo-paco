@@ -18,10 +18,12 @@ import 'package:taqo_client/pages/invitation_entry_page.dart';
 import 'package:taqo_client/pages/login_page.dart';
 import 'package:taqo_client/platform/platform_logging.dart';
 import 'package:taqo_client/platform/platform_sync_service.dart';
+import 'package:taqo_client/service/experiment_service.dart';
 import 'package:taqo_client/service/logging_service.dart';
 
 import 'package:taqo_client/net/google_auth.dart';
 import 'package:taqo_client/storage/esm_signal_storage.dart';
+import 'package:taqo_client/storage/local_database.dart';
 
 import 'package:taqo_time_plugin/taqo_time_plugin.dart' as taqo_time_plugin;
 
@@ -57,8 +59,31 @@ void main() {
   });
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   static final navigatorKey = GlobalKey<NavigatorState>();
+
+  @override
+  State<StatefulWidget> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  // If there is an active notification when the app is open,
+  // direct the user to the RunningExperimentsPage.
+  // This also solves the issue with not having Pending (launch) Intents on Linux
+  void _checkActiveNotification() async {
+    final activeNotifications = (await LocalDatabase().getAllNotifications())
+        .where((n) => n.isActive);
+
+    if (activeNotifications.isNotEmpty) {
+      MyApp.navigatorKey.currentState.pushReplacementNamed(RunningExperimentsPage.routeName);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _checkActiveNotification();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,11 +93,10 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.indigo,
       ),
       initialRoute: '/welcome',
-      navigatorKey: navigatorKey,
+      navigatorKey: MyApp.navigatorKey,
       routes: {
         LoginPage.routeName: (context) => LoginPage(),
         FeedbackPage.routeName: (context) => FeedbackPage(),
-        SurveyPickerPage.routeName: (context) => SurveyPickerPage(),
         FindExperimentsPage.routeName: (context) => FindExperimentsPage(),
         ExperimentDetailPage.routeName: (context) => ExperimentDetailPage(),
         InformedConsentPage.routeName: (context) => InformedConsentPage(),
@@ -88,6 +112,10 @@ class MyApp extends StatelessWidget {
       onGenerateRoute: (settings) {
         final List args = settings.arguments;
         switch (settings.name) {
+          case SurveyPickerPage.routeName:
+            return MaterialPageRoute(
+                builder: (context) => SurveyPickerPage(
+                    experiment: args[0]));
           case SurveyPage.routeName:
             return MaterialPageRoute(
                 builder: (context) => SurveyPage(

@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
 
@@ -27,7 +25,7 @@ class SurveyPage extends StatefulWidget {
       {Key key,
       this.title,
       @required this.experiment,
-      @required this.experimentGroupName,})
+      @required this.experimentGroupName})
       : super(key: key);
 
   final String title;
@@ -40,6 +38,8 @@ class SurveyPage extends StatefulWidget {
 }
 
 class _SurveyPageState extends State<SurveyPage> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+
   static const String FORM_DURATION_IN_SECONDS = "Form Duration";
   Experiment _experiment;
   ExperimentGroup _experimentGroup;
@@ -66,6 +66,7 @@ class _SurveyPageState extends State<SurveyPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text("Survey: " + _experimentGroup.name),
         backgroundColor: Colors.indigo,

@@ -27,8 +27,8 @@ void setupSyncServiceMethodChannel() {
 }
 
 Future<void> notifySyncService() async {
-  // TODO on linux
-  if (Platform.isLinux) return;
+  // TODO on linux and Android
+  if (Platform.isLinux || Platform.isAndroid) return;
   try {
     await _platform.invokeMethod(_notifySyncServiceMethod);
   } on PlatformException catch (e) {
