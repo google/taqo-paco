@@ -75,7 +75,7 @@ Future schedule({bool cancelAndReschedule=true}) async {
 
 Future cancel(int id) async {
   if (Platform.isAndroid) {
-    android_alarm_manager.cancel(id);
+    flutter_local_notifications.cancelNotification(id);
   } else if (Platform.isIOS || Platform.isMacOS) {
     await flutter_local_notifications.cancelNotification(id);
     await schedule(cancelAndReschedule: false);
