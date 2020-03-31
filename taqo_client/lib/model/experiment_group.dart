@@ -190,6 +190,8 @@ class ExperimentGroup {
     return now.isBefore(parseYMDTime(startDate)) ? false : !isOver(now);
   }
 
+  bool get isAppUsageLoggingGroup => groupType == GroupTypeEnum.APPUSAGE_ANDROID;
+
   DateTime toMidnight(startDateCandidate) {
     return DateTime(startDateCandidate.year, startDateCandidate.month, startDateCandidate.day);
   }

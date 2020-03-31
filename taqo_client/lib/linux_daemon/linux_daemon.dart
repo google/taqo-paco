@@ -62,7 +62,7 @@ void _handleScheduleAlarm(json_rpc.Parameters args) async {
       continue;
     }
     for (var g in e.groups) {
-      if (g.groupType == GroupTypeEnum.APPUSAGE_ANDROID) {
+      if (g.isAppUsageLoggingGroup) {
         active = true;
         break;
       }
