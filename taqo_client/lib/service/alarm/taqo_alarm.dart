@@ -7,6 +7,7 @@ import '../../linux_daemon/rpc_constants.dart';
 import '../../linux_daemon/socket_channel.dart';
 import '../../main.dart';
 import '../../model/event.dart';
+import '../../model/experiment.dart';
 import '../../model/notification_holder.dart';
 import '../../pages/running_experiments_page.dart';
 import '../../pages/survey/survey_page.dart';
@@ -88,12 +89,25 @@ Future cancel(int id) async {
   }
 }
 
+Future cancelForExperiment(Experiment experiment) async {
+  if (Platform.isAndroid) {
+    flutter_local_notifications.cancelForExperiment(experiment);
+  } else if (Platform.isIOS || Platform.isMacOS) {
+    await flutter_local_notifications.cancelForExperiment(experiment);
+    await schedule(cancelAndReschedule: false);
+  } else if (Platform.isLinux) {
+    try {
+      _peer.sendNotification(cancelExperimentNotificationMethod, {'id': experiment.id,});
+    } catch (e) {
+      print(e);
+    }
+  }
+}
+
 Future timeout(int id) async {
   final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
   _createMissedEvent(await storage.getNotification(id));
-  if (Platform.isAndroid) {
-    return flutter_local_notifications.cancelNotification(id);
-  }
+  cancel(id);
 }
 
 void _handleOpenSurvey(json_rpc.Parameters args)  {

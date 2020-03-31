@@ -114,7 +114,7 @@ Future<bool> _scheduleNotification(ActionSpecification actionSpec) async {
 }
 
 void _scheduleTimeout(ActionSpecification actionSpec) async {
-  final timeout = 1;//actionSpec.action.timeout;
+  final timeout = actionSpec.action.timeout;
   final alarmId = await _schedule(actionSpec, actionSpec.time.add(Duration(minutes: timeout)), expireMethod);
   print('_scheduleTimeout: alarmId: $alarmId'
       ' when: ${actionSpec.time.add(Duration(minutes: timeout))}');
@@ -125,7 +125,7 @@ void _scheduleNextNotification({DateTime from}) async {
   final storageDir = DartFileStorage.getLocalStorageDir().path;
   final sharedPreferences = TaqoSharedPrefs(storageDir);
   final dt = await sharedPreferences.getString(_sharedPrefsLastAlarmKey);
-  print('loaded $dt');
+  //print('lastScheduledAlarm: $dt');
   if (dt != null) {
     lastSchedule = DateTime.parse(dt).add(Duration(seconds: 1));
   }

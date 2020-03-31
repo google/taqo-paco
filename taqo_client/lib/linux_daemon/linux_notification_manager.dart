@@ -34,7 +34,7 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
   if (cancelPending) {
     final database = await LinuxDatabase.get();
     final pendingNotifications = await database
-        .getAllNotificationsForExperiment(actionSpec.experiment);
+        .getAllNotificationsForExperiment(actionSpec.experiment.id);
     await Future.forEach(pendingNotifications, (pn) async {
       if (notificationHolder.sameGroupAs(pn)) {
         timeout(pn.id);
@@ -63,9 +63,9 @@ Future cancelNotification(int id) async {
 }
 
 /// Cancel all notifications for [experiment]
-Future cancelForExperiment(Experiment experiment) async {
+Future cancelForExperiment(int experimentId) async {
   final database = await LinuxDatabase.get();
-  return database.getAllNotificationsForExperiment(experiment)
+  return database.getAllNotificationsForExperiment(experimentId)
       .then((List<NotificationHolder> notifications) =>
       notifications.forEach((n) => cancelNotification(n.id)))
       .catchError((e, st) => "Error canceling notifications: $e");

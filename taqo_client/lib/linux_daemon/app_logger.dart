@@ -138,7 +138,7 @@ class AppLogger {
     List<Map<String, dynamic>> events = List.of(_eventsToSend);
     _eventsToSend.clear();
     sendPacoEvent(events);
-    if (_active) {
+    if (!_active) {
       timer.cancel();
     }
   }

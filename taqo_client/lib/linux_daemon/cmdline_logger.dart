@@ -58,7 +58,7 @@ class CmdLineLogger {
       if (events != null && events.isNotEmpty) {
         sendPacoEvent(events);
       }
-      if (_active) {
+      if (!_active) {
         timer.cancel();
       }
     });

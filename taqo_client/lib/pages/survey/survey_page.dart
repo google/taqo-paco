@@ -402,7 +402,7 @@ class _SurveyPageState extends State<SurveyPage> {
         // Clear any pending notification
         for (var notification in activeNotifications) {
           if (notification.matchesAction(alarm)) {
-            flutter_local_notifications.cancelNotification(notification.id);
+            await taqo_alarm.cancel(notification.id);
           }
         }
 

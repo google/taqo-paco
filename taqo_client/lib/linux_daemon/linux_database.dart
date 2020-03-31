@@ -195,9 +195,8 @@ answer TEXT
     return notifications;
   }
 
-  Future<List<NotificationHolder>> getAllNotificationsForExperiment(
-      Experiment experiment) async {
-    final stream = _db.query("""SELECT * FROM notifications WHERE experiment_id = ${experiment.id}""");
+  Future<List<NotificationHolder>> getAllNotificationsForExperiment(int experimentId) async {
+    final stream = _db.query("""SELECT * FROM notifications WHERE experiment_id = ${experimentId}""");
     final notifications = <NotificationHolder>[];
     await for (var n in stream) {
       notifications.add(_buildNotificationHolder(n.toMap()));

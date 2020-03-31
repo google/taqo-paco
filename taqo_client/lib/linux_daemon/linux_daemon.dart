@@ -3,12 +3,14 @@ import 'dart:io';
 import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
+import '../model/experiment_group.dart';
 import '../storage/dart_file_storage.dart';
 import 'app_logger.dart';
 import 'cmdline_logger.dart';
 import 'rpc_constants.dart';
 import 'dbus_notifications.dart' as dbus;
 import 'linux_alarm_manager.dart' as linux_alarm_manager;
+import 'linux_notification_manager.dart' as linux_notification_manager;
 import 'socket_channel.dart';
 import 'util.dart';
 
@@ -29,6 +31,16 @@ void openSurvey(int id) {
   }
 }
 
+void _handleCancelNotification(json_rpc.Parameters args) {
+  final id = (args.asMap)['id'];
+  linux_notification_manager.cancelNotification(id);
+}
+
+void _handleCancelExperimentNotification(json_rpc.Parameters args) {
+  final id = (args.asMap)['id'];
+  linux_notification_manager.cancelForExperiment(id);
+}
+
 void _handleCancelAlarm(json_rpc.Parameters args) {
   final id = (args.asMap)['id'];
   linux_alarm_manager.cancel(id);
@@ -37,7 +49,8 @@ void _handleCancelAlarm(json_rpc.Parameters args) {
 void _handleScheduleAlarm(json_rpc.Parameters args) async {
   linux_alarm_manager.scheduleNextNotification();
 
-  // Schedule is called when we join, pause, un-pause, and leave experiments.
+  // 'schedule' is called when we join, pause, un-pause, and leave experiments,
+  // the experiment schedule is edited, or the time zone changes.
   // Configure app loggers appropriately here
   final storageDir = DartFileStorage.getLocalStorageDir().path;
   final sharedPrefs = TaqoSharedPrefs(storageDir);
@@ -45,9 +58,16 @@ void _handleScheduleAlarm(json_rpc.Parameters args) async {
   bool active = false;
   for (var e in experiments) {
     final paused = await sharedPrefs.getBool("${_sharedPrefsExperimentPauseKey}_${e.id}");
-    if (!e.isOver() && !(paused ?? false)) {
-      active = true;
+    if (e.isOver() || (paused ?? false)) {
+      continue;
     }
+    for (var g in e.groups) {
+      if (g.groupType == GroupTypeEnum.APPUSAGE_ANDROID) {
+        active = true;
+        break;
+      }
+    }
+    if (active) break;
   }
 
   if (active) {
@@ -76,6 +96,8 @@ void main() async {
 
       _peer.registerMethod(scheduleAlarmMethod, _handleScheduleAlarm);
       _peer.registerMethod(cancelAlarmMethod, _handleCancelAlarm);
+      _peer.registerMethod(cancelNotificationMethod, _handleCancelNotification);
+      _peer.registerMethod(cancelExperimentNotificationMethod, _handleCancelExperimentNotification);
       _peer.listen();
 
       _peer.done.then((_) {

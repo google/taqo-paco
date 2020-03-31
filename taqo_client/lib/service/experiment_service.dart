@@ -135,7 +135,7 @@ class ExperimentService {
     final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
     storage.insertEvent(_createJoinEvent(experiment, joining: false));
 
-    flutter_local_notifications.cancelForExperiment(experiment);
+    taqo_alarm.cancelForExperiment(experiment);
   }
 
   void _mapifyExperimentsById(List<Experiment> experiments) {
