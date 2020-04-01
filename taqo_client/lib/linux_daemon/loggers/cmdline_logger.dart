@@ -2,11 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import '../storage/dart_file_storage.dart';
-import 'pal_event_client.dart';
+import '../../storage/dart_file_storage.dart';
+import '../pal_event_client.dart';
+import 'loggers.dart';
 
 // To start:
-// bash: export PROMPT_COMMAND='RETURN_VAL=$?;echo "{\"uid\":\"$(whoami)\",\"pid\":$$,\"cmd_raw\":\"$(history 1 | sed "s/^[ ]*[0-9]*[ ]*\[\([^]]*\)\][ ]*//")\",\"ret\":$RETURN_VAL}" >> ~/.taqo/command.log'
+// bash: export PROMPT_COMMAND='RETURN_VAL=$?;echo "{\"uid\":\"$(whoami)\",\"pid\":$$,\"cmd_raw\":\"$(history 1 | sed "s/^[ ]*[0-9]*[ ]*\[\([^]]*\)\][ ]*//")\",\"cmd_ret\":$RETURN_VAL}" >> ~/.taqo/command.log'
 // zsh: precmd() { eval 'RETURN_VAL=$?;echo "{\"uid\":\"$(whoami)\",\"pid\":$$,\"cmd_raw\":$(history | tail -1 | sed "s/^[ ]*[0-9]*[ ]*//"),\"ret\":$RETURN_VAL}" >> /tmp/log' }
 
 class CmdLineLogger {
@@ -42,7 +43,8 @@ class CmdLineLogger {
         // TODO race condition here
         await file.delete();
         for (var line in lines) {
-          events.add(await createCmdUsagePacoEvent(jsonDecode(line)));
+          // TODO Handle special characters in line
+          events.addAll(await createLoggerPacoEvents(jsonDecode(line), createCmdUsagePacoEvent));
         }
         return events;
       }

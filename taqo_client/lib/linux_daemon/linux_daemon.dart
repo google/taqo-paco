@@ -1,20 +1,15 @@
 import 'dart:io';
 
 import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
-import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
-import '../model/experiment_group.dart';
-import '../storage/dart_file_storage.dart';
-import 'app_logger.dart';
-import 'cmdline_logger.dart';
+import 'loggers/loggers.dart';
+import 'loggers/app_logger.dart';
+import 'loggers/cmdline_logger.dart';
 import 'rpc_constants.dart';
 import 'dbus_notifications.dart' as dbus;
 import 'linux_alarm_manager.dart' as linux_alarm_manager;
 import 'linux_notification_manager.dart' as linux_notification_manager;
 import 'socket_channel.dart';
-import 'util.dart';
-
-const _sharedPrefsExperimentPauseKey = "paused";
 
 json_rpc.Peer _peer;
 
@@ -52,25 +47,7 @@ void _handleScheduleAlarm(json_rpc.Parameters args) async {
   // 'schedule' is called when we join, pause, un-pause, and leave experiments,
   // the experiment schedule is edited, or the time zone changes.
   // Configure app loggers appropriately here
-  final storageDir = DartFileStorage.getLocalStorageDir().path;
-  final sharedPrefs = TaqoSharedPrefs(storageDir);
-  final experiments = await readJoinedExperiments();
-  bool active = false;
-  for (var e in experiments) {
-    final paused = await sharedPrefs.getBool("${_sharedPrefsExperimentPauseKey}_${e.id}");
-    if (e.isOver() || (paused ?? false)) {
-      continue;
-    }
-    for (var g in e.groups) {
-      if (g.isAppUsageLoggingGroup) {
-        active = true;
-        break;
-      }
-    }
-    if (active) break;
-  }
-
-  if (active) {
+  if (await shouldStartLoggers()) {
     // Found a non-paused experiment
     AppLogger().start();
     CmdLineLogger().start();

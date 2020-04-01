@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
-import 'pal_event_client.dart';
+import '../pal_event_client.dart';
+import 'loggers.dart';
 
 const _queryInterval = const Duration(seconds: 1);
 const _xpropCommand = 'xprop';
@@ -128,8 +129,8 @@ class AppLogger {
     }
 
     if (data is Map && data.isNotEmpty) {
-      createAppUsagePacoEvent(data).then((event) {
-        _eventsToSend.add(event);
+      createLoggerPacoEvents(data, createAppUsagePacoEvent).then((events) {
+        _eventsToSend.addAll(events);
       });
     }
   }
@@ -137,7 +138,9 @@ class AppLogger {
   void _sendToPal(Timer timer) {
     List<Map<String, dynamic>> events = List.of(_eventsToSend);
     _eventsToSend.clear();
-    sendPacoEvent(events);
+    if (events.isNotEmpty) {
+      sendPacoEvent(events);
+    }
     if (!_active) {
       timer.cancel();
     }

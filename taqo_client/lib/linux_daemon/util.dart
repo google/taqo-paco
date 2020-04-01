@@ -5,6 +5,8 @@ import 'dart:io';
 import '../model/experiment.dart';
 import '../storage/dart_file_storage.dart';
 
+const sharedPrefsExperimentPauseKey = "paused";
+
 Future<List<Experiment>> readJoinedExperiments() async {
   try {
     final file = await File('${DartFileStorage.getLocalStorageDir().path}/experiments.txt');
