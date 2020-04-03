@@ -267,3 +267,24 @@ class ExperimentListItem extends StatelessWidget {
 }
 
 enum ConfirmAction { CANCEL, ACCEPT }
+
+// This was on the old WelcomePage.
+// Putting it here to reference the ExperimentService Provider usage.
+//class RunningExperimentsList extends StatelessWidget {
+//  final bool _authenticated;
+//  RunningExperimentsList(this._authenticated);
+//
+//  @override
+//  Widget build(BuildContext context) {
+//    final service = Provider.of<ExperimentService>(context);
+//    bool isRunningExperiments() {
+//      return service != null && _authenticated && service.getJoinedExperiments().isNotEmpty;
+//    }
+//
+//    return RaisedButton(
+//      onPressed: isRunningExperiments() ?
+//          () => Navigator.pushReplacementNamed(context, RunningExperimentsPage.routeName) : null,
+//      child: const Text('Go to Joined Experiments'),
+//    );
+//  }
+//}
