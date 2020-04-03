@@ -7,7 +7,7 @@ import '../model/experiment.dart';
 import '../net/google_auth.dart';
 import '../service/experiment_service.dart';
 import '../storage/local_database.dart';
-import 'find_experiments_page.dart';
+import '../widgets/taqo_page.dart';
 import 'schedule_overview_page.dart';
 import 'survey_picker_page.dart';
 import 'survey/survey_page.dart';
@@ -73,36 +73,21 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(
-        title: Text('Running Experiments'),
-        backgroundColor: Colors.indigo,
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.search),
-            tooltip: 'Find Experiments to Join',
-            onPressed: () => Navigator.pushNamed(context, FindExperimentsPage.routeName)
+    // TODO Add refresh?
+    return TaqoScaffold(
+        title: 'Running Experiments',
+        body: Container(
+          padding: EdgeInsets.all(8.0),
+          child: Column(
+            children: <Widget>[
+              Divider(
+                height: 16.0,
+                color: Colors.black,
+              ),
+              _buildExperimentList(),
+            ],
           ),
-          IconButton(
-            icon: Icon(Icons.refresh),
-            tooltip: 'Update Experiments',
-            onPressed: updateExperiments,
-          )
-        ],
-      ),
-      body: Container(
-        padding: EdgeInsets.all(8.0),
-        child: Column(
-          children: <Widget>[
-            Divider(
-              height: 16.0,
-              color: Colors.black,
-            ),
-            _buildExperimentList(),
-          ],
         ),
-      ),
     );
   }
 
