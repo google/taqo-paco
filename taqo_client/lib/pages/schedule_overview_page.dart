@@ -25,7 +25,7 @@ class ScheduleRevision {
 }
 
 class ScheduleOverviewPage extends StatefulWidget {
-  static const routeName = '/schedule_overview';
+  static const routeName = 'schedule_overview';
 
   ScheduleOverviewPage({Key key}) : super(key: key);
 

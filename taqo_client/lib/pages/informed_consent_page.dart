@@ -6,7 +6,7 @@ import 'package:taqo_client/pages/schedule_overview_page.dart';
 import 'package:taqo_client/service/experiment_service.dart';
 
 class InformedConsentPage extends StatefulWidget {
-  static const routeName = "/informed_consent";
+  static const routeName = "informed_consent";
 
   InformedConsentPage({Key key}) : super(key: key);
 

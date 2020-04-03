@@ -15,7 +15,7 @@ class ScheduleDetailArguments {
 }
 
 class ScheduleDetailPage extends StatefulWidget {
-  static const routeName = '/schedule_details';
+  static const routeName = 'schedule_details';
 
   ScheduleDetailPage({Key key}) : super(key: key);
 

@@ -4,7 +4,7 @@ import 'package:taqo_client/model/experiment.dart';
 import 'informed_consent_page.dart';
 
 class ExperimentDetailPage extends StatefulWidget {
-  static const routeName = '/experiment_detail';
+  static const routeName = 'experiment_detail';
 
   ExperimentDetailPage({Key key}) : super(key: key);
 

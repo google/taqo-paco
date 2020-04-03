@@ -5,7 +5,7 @@ import 'package:taqo_client/service/experiment_service.dart';
 import 'experiment_detail_page.dart';
 
 class InvitationEntryPage extends StatefulWidget {
-  static const routeName = '/invitation_entry';
+  static const routeName = 'invitation_entry';
 
   InvitationEntryPage({Key key}) : super(key: key);
 

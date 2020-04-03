@@ -19,7 +19,7 @@ import 'multi_list_output.dart';
 import 'multi_select_dialog.dart';
 
 class SurveyPage extends StatefulWidget {
-  static const routeName = '/survey';
+  static const routeName = 'survey';
 
   SurveyPage(
       {Key key,

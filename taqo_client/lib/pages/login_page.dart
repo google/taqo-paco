@@ -8,7 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'find_experiments_page.dart';
 
 class LoginPage extends StatefulWidget {
-  static const routeName = '/login';
+  static const routeName = 'login';
 
 
   LoginPage({Key key}) : super(key: key);

@@ -4,7 +4,7 @@ import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/pages/running_experiments_page.dart';
 
 class PostJoinInstructionsPage extends StatefulWidget {
-  static const routeName = '/post_join_instructions';
+  static const routeName = 'post_join_instructions';
 
   PostJoinInstructionsPage({Key key}) : super(key: key);
 

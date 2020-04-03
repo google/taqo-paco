@@ -92,7 +92,7 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         primarySwatch: Colors.indigo,
       ),
-      initialRoute: '/welcome',
+      initialRoute: WelcomePage.routeName,
       navigatorKey: MyApp.navigatorKey,
       routes: {
         LoginPage.routeName: (context) => LoginPage(),

@@ -13,7 +13,7 @@ import 'survey_picker_page.dart';
 import 'survey/survey_page.dart';
 
 class RunningExperimentsPage extends StatefulWidget {
-  static const routeName = '/running_experiments';
+  static const routeName = 'running_experiments';
   final bool timeout;
 
   RunningExperimentsPage({this.timeout=false, Key key}) : super(key: key);

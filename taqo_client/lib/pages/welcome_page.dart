@@ -10,7 +10,7 @@ import 'running_experiments_page.dart';
 
 // Entry page for App
 class WelcomePage extends StatefulWidget {
-  static const routeName = '/welcome';
+  static const routeName = 'welcome';
 
   WelcomePage({Key key}) : super(key: key);
 

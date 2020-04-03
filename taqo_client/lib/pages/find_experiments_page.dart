@@ -8,7 +8,7 @@ import 'package:taqo_client/service/experiment_service.dart';
 import 'experiment_detail_page.dart';
 
 class FindExperimentsPage extends StatefulWidget {
-  static const routeName = '/find_experiments';
+  static const routeName = 'find_experiments';
 
   FindExperimentsPage({Key key}) : super(key: key);
 

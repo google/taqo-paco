@@ -6,7 +6,7 @@ import '../storage/local_database.dart';
 import 'survey/survey_page.dart';
 
 class SurveyPickerPage extends StatefulWidget {
-  static const routeName = '/survey_picker';
+  static const routeName = 'survey_picker';
 
   final Experiment experiment;
 
