@@ -45,7 +45,7 @@ class _TaqoAppDrawerWidget extends StatelessWidget {
           ),
           ListTile(
             leading: Icon(
-              Icons.alarm,
+              Icons.person_add,
               size: _listIconSize,
             ),
             title: const Text('Login or Join with Code'),
