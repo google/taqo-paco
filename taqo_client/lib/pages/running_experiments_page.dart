@@ -80,10 +80,6 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
           padding: EdgeInsets.all(8.0),
           child: Column(
             children: <Widget>[
-              Divider(
-                height: 16.0,
-                color: Colors.black,
-              ),
               _buildExperimentList(),
             ],
           ),
@@ -92,6 +88,13 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
   }
 
   Widget _buildExperimentList() {
+    if (_experiments.isEmpty) {
+      return Center(
+          child: const Text("""
+Join some Experiments to get started."""),
+      );
+    }
+
     final children = <Widget>[];
     for (var experiment in _experiments) {
       children.add(ChangeNotifierProvider<Experiment>.value(
