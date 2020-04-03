@@ -33,7 +33,7 @@ class GoogleAuth {
     return _instance;
   }
 
-  Future doIt(urlCallback, successCallback) async {
+  Future doIt(urlCallback) async {
     List<String> savedTokens = await readTokens();
 
     if (savedTokens == null || savedTokens.isEmpty) {
@@ -48,17 +48,9 @@ class GoogleAuth {
         print("refreshToken = $refreshToken");
 
         _authenticationStreamController.add(true);
-
-        if (successCallback != null) {
-          successCallback();
-        }
       });
     } else {
-      //TODO choose a Future or a callback not this mishmash
-      if (successCallback != null) {
-        successCallback();
-      }
-      //await getExperimentsWithSavedCredentials(savedTokens, scopes, client);
+      _authenticationStreamController.add(true);
     }
   }
 
@@ -244,11 +236,11 @@ void prompt(String url) {
   print("");
 }
 
-main(List<String> arguments) {
-  try {
-    var googleAuth = GoogleAuth();
-    googleAuth.doIt(prompt, googleAuth.getExperimentsWithSavedCredentials);
-  } catch (e) {
-    print(e);
-  }
-}
+//main(List<String> arguments) {
+//  try {
+//    var googleAuth = GoogleAuth();
+//    googleAuth.doIt(prompt, googleAuth.getExperimentsWithSavedCredentials);
+//  } catch (e) {
+//    print(e);
+//  }
+//}
