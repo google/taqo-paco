@@ -5,6 +5,8 @@ import 'package:taqo_client/pages/post_join_instructions_page.dart';
 import 'package:taqo_client/pages/schedule_overview_page.dart';
 import 'package:taqo_client/service/experiment_service.dart';
 
+import '../widgets/taqo_widgets.dart';
+
 class InformedConsentPage extends StatefulWidget {
   static const routeName = "informed_consent";
 
@@ -42,7 +44,7 @@ class _InformedConsentPageState extends State<InformedConsentPage> {
                 color: Colors.black,
               ),
               Row(mainAxisAlignment: MainAxisAlignment.end,
-                  children: <Widget>[RaisedButton(color: Colors.indigo,
+                  children: <Widget>[TaqoRoundButton(
                     child: const Text("Edit schedule", style: TextStyle(color: Colors.white),),
                     onPressed: experiment.userCanEditAtLeastOneSchedule() ? () {
                       Navigator.pushNamed(
@@ -54,18 +56,16 @@ class _InformedConsentPageState extends State<InformedConsentPage> {
           ),
         ),
         persistentFooterButtons: <Widget>[
-          RaisedButton(
+          TaqoRoundButton(
             child: Text("Agree", style: TextStyle(color: Colors.white)),
-            color: Colors.indigo,
             onPressed: () async {
               final service = await ExperimentService.getInstance();
               service.joinExperiment(experiment);
               Navigator.popAndPushNamed(context, PostJoinInstructionsPage.routeName, arguments: experiment);
             }
           ),
-          RaisedButton(
+          TaqoRoundButton(
               child: Text("Cancel", style: TextStyle(color: Colors.white)),
-              color: Colors.indigo,
               onPressed: () {
                 // TODO should this be a pop? Probably
                 Navigator.pop(context, experiment);

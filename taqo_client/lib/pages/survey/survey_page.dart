@@ -14,6 +14,7 @@ import '../../storage/local_database.dart';
 import '../../util/conditional_survey_parser.dart';
 import '../../util/date_time_util.dart';
 import '../../util/zoned_date_time.dart';
+import '../../widgets/taqo_widgets.dart';
 import '../running_experiments_page.dart';
 import 'multi_list_output.dart';
 import 'multi_select_dialog.dart';
@@ -257,7 +258,7 @@ class _SurveyPageState extends State<SurveyPage> {
 //    );
 //  }
 
-  RaisedButton buildMultiSelectListPopupDialog(
+  Widget buildMultiSelectListPopupDialog(
       BuildContext context, Input2 input) {
     var myPopupMultiListOutput = popupListResults[input.name];
     if (myPopupMultiListOutput == null) {
@@ -268,7 +269,7 @@ class _SurveyPageState extends State<SurveyPage> {
     var dialogButton = Text((myPopupMultiListOutput.countSelected() > 0)
         ? myPopupMultiListOutput.countSelected().toString() + " selected"
         : 'Please select');
-    var raisedButton = RaisedButton(
+    return TaqoRoundButton(
       onPressed: () {
         var result = showDialog(
             context: context,
@@ -288,7 +289,6 @@ class _SurveyPageState extends State<SurveyPage> {
       },
       child: dialogButton,
     );
-    return raisedButton;
   }
 
   Widget buildScale(Input2 input) {
@@ -469,7 +469,7 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   Widget buildLocationButton(Input2 input) {
-    return RaisedButton(
+    return TaqoRoundButton(
       child: Text("Get location"),
       onPressed: () {
         _alertLog("Not yet implemented");
@@ -484,7 +484,7 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   Widget buildPhotoButton(Input2 input) {
-    return RaisedButton(
+    return TaqoRoundButton(
       child: Text("Get Photo"),
       onPressed: () {
         _alertLog("Not yet implemented");
@@ -499,7 +499,7 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   Widget buildAudioButton(Input2 input) {
-    return RaisedButton(
+    return TaqoRoundButton(
       child: Text("Get Audio"),
       onPressed: () {
         _alertLog("Not yet implemented");

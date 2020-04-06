@@ -5,6 +5,8 @@ import 'package:taqo_client/model/signal_time.dart';
 import 'package:taqo_client/util/date_time_util.dart'
     show DAYS_SHORT_NAMES, ORDINAL_NUMBERS, getHourOffsetAsTimeString, getMsFromMidnight;
 
+import '../widgets/taqo_widgets.dart';
+
 typedef SetTimeFunction = void Function(int newTime);
 
 class ScheduleDetailArguments {
@@ -87,7 +89,7 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
     final time = TimeOfDay.fromDateTime(DateTime(0).add(Duration(milliseconds: msFromMidnight)));
     return Row(children: <Widget>[
       SizedBox(width: labelWidth, child: Text("$label: ")),
-      RaisedButton(onPressed: () async {
+      TaqoRoundButton(onPressed: () async {
         final newTime = await showTimePicker(context: context, initialTime: time);
         if (newTime != null) {
           _setStateAndMarkChanged(() => set(getMsFromMidnight(newTime)));

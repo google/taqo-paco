@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
 import '../widgets/taqo_page.dart';
+import '../widgets/taqo_widgets.dart';
 import 'invitation_entry_page.dart';
 
 class LoginPage extends StatelessWidget {
@@ -31,22 +32,42 @@ Taqo/Paco is a behavior research platform.
 To get started, please either login with a Google account or enter an invitation code if you have one.""");
   }
 
-  RaisedButton buildLoginButtonWidget(BuildContext context,
-      AuthProvider authProvider, bool isAuthenticated) {
-    return RaisedButton(
-      onPressed: isAuthenticated ? null : () {
-        authProvider.signIn();
-      },
-      child: const Text('Login with Google Id'),
+  Widget buildButtonWidget(BuildContext context, VoidCallback onPressed,
+      Widget child) {
+    return Container(
+      padding: EdgeInsets.only(
+        left: 64,
+        top: 8,
+        right: 64,
+        bottom: 8,
+      ),
+      child: TaqoRoundButton(
+        onPressed: onPressed,
+        child: child,
+        height: 48,
+      ),
     );
   }
 
-  RaisedButton buildInvitationButtonWidget(BuildContext context, bool isAuthenticated) {
-    return RaisedButton(
-      onPressed: isAuthenticated ? null : () {
+  Widget buildLoginButtonWidget(BuildContext context,
+      AuthProvider authProvider, bool isAuthenticated) {
+    return buildButtonWidget(
+      context,
+      isAuthenticated ? null : () {
+        authProvider.signIn();
+      },
+      const Text('Login with Google Id'),
+    );
+  }
+
+  Widget buildInvitationButtonWidget(BuildContext context,
+      bool isAuthenticated) {
+    return buildButtonWidget(
+      context,
+      isAuthenticated ? null : () {
         Navigator.pushNamed(context, InvitationEntryPage.routeName);
       },
-      child: const Text('Enter Invitation Code'),
+      const Text('Enter Invitation Code'),
     );
   }
 
@@ -63,7 +84,7 @@ To get started, please either login with a Google account or enter an invitation
           children: <Widget>[
             buildWelcomeTextWidget(),
             Divider(
-              height: 16.0,
+              height: 32.0,
               color: Colors.black,
             ),
             buildLoginButtonWidget(context, authProvider,
