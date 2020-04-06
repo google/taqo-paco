@@ -24,6 +24,29 @@ class TaqoAppDrawer extends StatelessWidget {
 const double _listIconSize = 36;
 
 class _TaqoAppDrawerWidget extends StatelessWidget {
+  Widget _profilePictureWidget(AuthProvider authProvider) {
+    const double size = 96;
+    if (authProvider.userInfoPhoto != null) {
+      return Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          image: DecorationImage(
+            fit: BoxFit.fill,
+            image: NetworkImage(authProvider.userInfoPhoto),
+          ),
+        ),
+      );
+    } else {
+      return Icon(
+        Icons.account_circle,
+        color: Colors.indigo.shade800,
+        size: size,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -36,10 +59,17 @@ class _TaqoAppDrawerWidget extends StatelessWidget {
             decoration: BoxDecoration(color: Colors.indigo),
             child: Padding(
               padding: const EdgeInsets.only(bottom: 16),
-              child: Icon(
-                Icons.account_circle,
-                color: Colors.indigo.shade800,
-                size: 96,
+              child: Column(
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 8),
+                    child: _profilePictureWidget(authProvider),
+                  ),
+                  Text(
+                    authProvider.userInfoName ?? '',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
               ),
             ),
           ),

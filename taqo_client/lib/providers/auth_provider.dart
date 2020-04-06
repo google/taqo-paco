@@ -11,8 +11,11 @@ import '../pages/running_experiments_page.dart';
 class AuthProvider with ChangeNotifier {
   static final _gAuth = GoogleAuth();
 
-  bool _authState = false;
   StreamSubscription<bool> _gAuthListener;
+
+  bool _authState = false;
+  String _userInfoName;
+  String _userPhotoUrl;
 
   AuthProvider() {
     // Listen for auth changes
@@ -28,6 +31,14 @@ class AuthProvider with ChangeNotifier {
     print('AuthProvider newAuthState: $newAuthState');
     _authState = newAuthState;
     notifyListeners();
+
+    if (_authState) {
+      _gAuth.getUserInfo().then((info) {
+        _userInfoName = info['name'];
+        _userPhotoUrl = info['picture'];
+        notifyListeners();
+      });
+    }
   }
 
   void _gAuthStateError(error) {
@@ -52,14 +63,21 @@ class AuthProvider with ChangeNotifier {
   }
 
   void signIn() {
-    _gAuth.doIt(_urlCallback);
-    MyApp.navigatorKey.currentState.pushNamed(RunningExperimentsPage.routeName);
+    _gAuth.doIt(_urlCallback).then((_) {
+      MyApp.navigatorKey.currentState.pushNamed(
+          RunningExperimentsPage.routeName);
+    });
   }
 
   void signOut() {
-    _gAuth.clearCredentials();
-    MyApp.navigatorKey.currentState.pushNamed(LoginPage.routeName);
+    _gAuth.clearCredentials().then((_) {
+      MyApp.navigatorKey.currentState.pushNamed(LoginPage.routeName);
+    });
   }
 
   bool get isAuthenticated => _authState;
+
+  String get userInfoName => _userInfoName;
+
+  String get userInfoPhoto => _userPhotoUrl;
 }
