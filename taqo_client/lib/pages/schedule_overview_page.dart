@@ -7,8 +7,9 @@ import 'package:taqo_client/model/schedule.dart';
 import 'package:taqo_client/model/schedule_trigger.dart';
 import 'package:taqo_client/pages/schedule_detail_page.dart';
 import 'package:taqo_client/service/experiment_service.dart';
-import 'package:taqo_client/storage/local_database.dart';
 import 'package:taqo_client/util/schedule_printer.dart' as schedule_printer;
+
+import '../widgets/taqo_widgets.dart';
 
 class ScheduleOverviewArguments {
   final Experiment experiment;
@@ -137,8 +138,7 @@ class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
                 )),
           ];
 
-          var experimentRow = Card(child: Padding(padding: EdgeInsets.all(8),
-              child: Row(children: rowChildren)));
+          var experimentRow = TaqoCard(child: Row(children: rowChildren));
           widgets.add(experimentRow);
         }
       }

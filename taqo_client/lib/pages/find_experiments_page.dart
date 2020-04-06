@@ -5,6 +5,7 @@ import 'package:taqo_client/net/google_auth.dart';
 import 'package:taqo_client/service/experiment_service.dart';
 
 import '../widgets/taqo_page.dart';
+import '../widgets/taqo_widgets.dart';
 import 'experiment_detail_page.dart';
 
 class FindExperimentsPage extends StatefulWidget {
@@ -60,7 +61,7 @@ class ExperimentList extends StatelessWidget {
 
     if (experiments != null) {
       for (var experiment in experiments) {
-        var experimentRow = Card(
+        var experimentRow = TaqoCard(
             child: InkWell(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,7 +78,8 @@ class ExperimentList extends StatelessWidget {
               onTap: () {
                 Navigator.pushNamed(context, ExperimentDetailPage.routeName, arguments: experiment);
               },
-            ));
+            )
+        );
 
         listItems.add(experimentRow);
       }

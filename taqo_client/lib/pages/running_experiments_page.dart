@@ -8,6 +8,7 @@ import '../net/google_auth.dart';
 import '../service/experiment_service.dart';
 import '../storage/local_database.dart';
 import '../widgets/taqo_page.dart';
+import '../widgets/taqo_widgets.dart';
 import 'schedule_overview_page.dart';
 import 'survey_picker_page.dart';
 import 'survey/survey_page.dart';
@@ -179,11 +180,14 @@ class ExperimentListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<Experiment>(
         builder: (BuildContext context, Experiment experiment, _) {
-          return Card(
+          return TaqoCard(
             child: Row(
               children: <Widget>[
-                if (_active) Padding(padding: EdgeInsets.all(4),
-                  child: Icon(Icons.notifications_active, color: Colors.redAccent,),),
+                if (_active) Padding(
+                  padding: EdgeInsets.only(right: 8),
+                  child: Icon(
+                    Icons.notifications_active, color: Colors.redAccent),
+                ),
 
                 Expanded(
                     child: InkWell(
