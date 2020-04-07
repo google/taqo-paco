@@ -267,24 +267,16 @@ class _TespDecoderSink extends ByteConversionSinkBase {
 
   void _foundTespMessage() {
     var tespMessage;
-    if (!_hasPayload) {
-      try {
-        tespMessage = TespMessage.fromCode(_code);
-      } on ArgumentError {
-        throw TespUndefinedCodeException(_code);
-      } finally {
-        _reset();
-      }
-    } else {
-      try {
-        tespMessage = TespMessage.fromCode(_code, _encodedPayload);
-      } on ArgumentError {
-        throw TespUndefinedCodeException(_code);
-      } on FormatException catch (e) {
-        throw TespPayloadDecodingException(e);
-      } finally {
-        _reset();
-      }
+
+    try {
+      tespMessage =
+          TespMessage.fromCode(_code, _hasPayload ? _encodedPayload : null);
+    } on ArgumentError {
+      throw TespUndefinedCodeException(_code);
+    } on FormatException catch (e) {
+      throw TespPayloadDecodingException(e);
+    } finally {
+      _reset();
     }
     _outputSink.add(tespMessage);
   }

@@ -1,5 +1,16 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+
+import 'package:taqo_event_server_protocol/src/tesp_server.dart';
+
+abstract class TespCommandExecutor {
+  FutureOr<TespResponse> addEvent(String eventPayload);
+  FutureOr<TespResponse> pause();
+  FutureOr<TespResponse> resume();
+  FutureOr<TespResponse> whiteListDataOnly();
+  FutureOr<TespResponse> allData();
+}
 
 abstract class TespMessage {
   /// The response/request code for the message, which must fit in an 8-bit
@@ -11,6 +22,7 @@ abstract class TespMessage {
   static const tespCodeRequestResume = 0x04;
   static const tespCodeRequestWhiteListDataOnly = 0x06;
   static const tespCodeRequestAllData = 0x08;
+  static const tespCodeRequestPing = 0x0A;
   static const tespCodeResponseSuccess = 0x80;
   static const tespCodeResponseError = 0x81;
   static const tespCodeResponsePaused = 0x82;
@@ -33,6 +45,8 @@ abstract class TespMessage {
         return TespRequestWhiteListDataOnly();
       case tespCodeRequestAllData:
         return TespRequestAllData();
+      case tespCodeRequestPing:
+        return TespRequestPing();
       case tespCodeResponseSuccess:
         return TespResponseSuccess();
       case tespCodeResponseError:
@@ -49,7 +63,9 @@ abstract class TespMessage {
   }
 }
 
-abstract class TespRequest extends TespMessage {}
+abstract class TespRequest extends TespMessage {
+  FutureOr<TespResponse> executeCommand(TespCommandExecutor tespCommandExecutor);
+}
 
 abstract class TespResponse extends TespMessage {}
 
@@ -103,30 +119,68 @@ class TespRequestAddEvent extends TespMessageWithStringPayload
   TespRequestAddEvent.withPayload(String payload) : super.withPayload(payload);
   TespRequestAddEvent.withEncodedPayload(Uint8List encodedPayload)
       : super.withEncodedPayload(encodedPayload);
+
+  @override
+  FutureOr<TespResponse> executeCommand(TespCommandExecutor tespCommandExecutor) {
+    return tespCommandExecutor.addEvent(payload);
+  }
 }
 
 class TespRequestPause extends TespMessageWithoutPayload
     implements TespRequest {
   @override
   final code = TespMessage.tespCodeRequestPause;
+
+  @override
+  FutureOr<TespResponse> executeCommand(TespCommandExecutor tespCommandExecutor) {
+    return tespCommandExecutor.pause();
+  }
+
+
 }
 
 class TespRequestResume extends TespMessageWithoutPayload
     implements TespRequest {
   @override
   final code = TespMessage.tespCodeRequestResume;
+
+  @override
+  FutureOr<TespResponse> executeCommand(TespCommandExecutor tespCommandExecutor) {
+    return tespCommandExecutor.resume();
+  }
 }
 
 class TespRequestWhiteListDataOnly extends TespMessageWithoutPayload
     implements TespRequest {
   @override
   final code = TespMessage.tespCodeRequestWhiteListDataOnly;
+
+  @override
+  FutureOr<TespResponse> executeCommand(TespCommandExecutor tespCommandExecutor) {
+    return tespCommandExecutor.whiteListDataOnly();
+  }
 }
 
 class TespRequestAllData extends TespMessageWithoutPayload
     implements TespRequest {
   @override
   final code = TespMessage.tespCodeRequestAllData;
+
+  @override
+  FutureOr<TespResponse> executeCommand(TespCommandExecutor tespCommandExecutor) {
+    return tespCommandExecutor.allData();
+  }
+}
+
+class TespRequestPing extends TespMessageWithoutPayload
+    implements TespRequest {
+  @override
+  final code = TespMessage.tespCodeRequestPing;
+
+  @override
+  TespResponse executeCommand(TespCommandExecutor tespCommandExecutor) {
+    return TespResponseSuccess();
+  }
 }
 
 class TespResponseSuccess extends TespMessageWithoutPayload
@@ -140,9 +194,41 @@ class TespResponseError extends TespMessageWithStringPayload
   @override
   final code = TespMessage.tespCodeResponseError;
 
-  TespResponseError.withPayload(String payload) : super.withPayload(payload);
+  static const tespErrorUnknown = 'unknown';
+
+  static const _jsonKeyCode = 'code';
+  static const _jsonKeyMessage = 'message';
+  static const _jsonKeyDetails = 'details';
+
+  String _errorCode;
+  String _errorMessage;
+  String _errorDetails;
+
+  String get errorCode => _errorCode;
+  String get errorMessage => _errorMessage;
+  String get errorDetails => _errorDetails;
+
+  TespResponseError._withPayload(String payload) : super.withPayload(payload);
   TespResponseError.withEncodedPayload(Uint8List encodedPayload)
-      : super.withEncodedPayload(encodedPayload);
+      : super.withEncodedPayload(encodedPayload) {
+    var error = json.decode(payload);
+    _errorCode = error[_jsonKeyCode];
+    _errorMessage = error[_jsonKeyMessage];
+    _errorDetails = error[_jsonKeyDetails];
+  }
+
+  factory TespResponseError(String errorCode, [String errorMessage, String errorDetails]) {
+    var payload = json.encode({
+      _jsonKeyCode: errorCode,
+      _jsonKeyMessage: errorMessage,
+      _jsonKeyDetails: errorDetails
+    });
+    var tespResponseError = TespResponseError._withPayload(payload);
+    tespResponseError._errorCode = errorCode;
+    tespResponseError._errorMessage = errorMessage;
+    tespResponseError._errorDetails = errorDetails;
+    return tespResponseError;
+  }
 }
 
 class TespResponsePaused extends TespMessageWithoutPayload
@@ -171,3 +257,4 @@ class TespResponseAnswer extends TespMessageWithStringPayload
   TespResponseAnswer.withEncodedPayload(Uint8List encodedPayload)
       : super.withEncodedPayload(encodedPayload);
 }
+
