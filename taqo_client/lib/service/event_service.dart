@@ -1,4 +1,4 @@
-import 'package:taqo_client/model/event.dart';
+import '../model/event.dart';
 
 class EventService {
 

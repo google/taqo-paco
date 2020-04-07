@@ -1,9 +1,9 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:taqo_client/model/experiment.dart';
-import 'package:taqo_client/model/experiment_group.dart';
-import 'package:taqo_client/model/paco_notification_action.dart';
 
 import 'action_trigger.dart';
+import 'experiment.dart';
+import 'experiment_group.dart';
+import 'paco_notification_action.dart';
 
 part 'action_specification.g.dart';
 

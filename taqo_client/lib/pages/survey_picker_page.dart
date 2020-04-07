@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../model/experiment.dart';
+import '../storage/flutter_file_storage.dart';
 import '../storage/local_database.dart';
 import 'survey/survey_page.dart';
 
@@ -26,11 +27,13 @@ class _SurveyPickerPageState extends State<SurveyPickerPage> {
   void initState() {
     super.initState();
 
-    LocalDatabase().getAllNotificationsForExperiment(widget.experiment).then((all) {
-      final active = all.where((n) => n.isActive);
-      setState(() {
-        _active.clear();
-        _active.addAll(active.map((e) => e.experimentGroupName));
+    LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename)).then((storage) {
+      storage.getAllNotificationsForExperiment(widget.experiment).then((all) {
+        final active = all.where((n) => n.isActive);
+        setState(() {
+          _active.clear();
+          _active.addAll(active.map((e) => e.experimentGroupName));
+        });
       });
     });
   }

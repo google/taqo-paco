@@ -2,14 +2,18 @@ import 'dart:async';
 
 import '../../model/notification_holder.dart';
 import '../../scheduling/action_schedule_generator.dart';
+import '../../storage/esm_signal_storage.dart';
+import '../../storage/flutter_file_storage.dart';
 import '../../storage/local_database.dart';
+import '../experiment_service.dart';
 import 'flutter_local_notifications.dart' as flutter_local_notifications;
 import 'taqo_alarm.dart' as taqo_alarm;
 
 const _maxNotifications = 64;
 
 Future<int> _clearExpiredNotifications() async {
-  final pendingNotifications = await LocalDatabase().getAllNotifications();
+  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+  final pendingNotifications = await storage.getAllNotifications();
   var count = pendingNotifications.length;
 
   await Future.forEach(pendingNotifications, (NotificationHolder pn) async {
@@ -27,7 +31,8 @@ Future schedule() async {
   print('Scheduling $count notification(s)');
 
   // Find last already scheduled and start scheduling from there
-  final pendingNotifications = await LocalDatabase().getAllNotifications();
+  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+  final pendingNotifications = await storage.getAllNotifications();
   var max = DateTime.now().millisecondsSinceEpoch;
   pendingNotifications.forEach((element) {
     if (element.alarmTime > max) {
@@ -36,7 +41,10 @@ Future schedule() async {
   });
   final dt = DateTime.fromMillisecondsSinceEpoch(max);
 
-  final alarms = await getNextNAlarmTimes(n: count, now: dt);
+  final service = await ExperimentService.getInstance();
+  final experiments = service.getJoinedExperiments();
+  final alarms = await getNextNAlarmTimes(FlutterFileStorage(ESMSignalStorage.filename),
+      experiments, n: count, now: dt);
   for (var a in alarms) {
     await flutter_local_notifications.scheduleNotification(a, cancelPending: false);
   }

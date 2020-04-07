@@ -10,6 +10,7 @@ import '../../pages/survey/feedback_page.dart';
 import '../../platform/platform_sync_service.dart';
 import '../../service/alarm/flutter_local_notifications.dart' as flutter_local_notifications;
 import '../../service/alarm/taqo_alarm.dart' as taqo_alarm;
+import '../../storage/flutter_file_storage.dart';
 import '../../storage/local_database.dart';
 import '../../util/conditional_survey_parser.dart';
 import '../../util/date_time_util.dart';
@@ -377,7 +378,8 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   Future<void> submitSurvey() async {
-    final pendingAlarms = await LocalDatabase().getAllAlarms();
+    final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+    final pendingAlarms = await storage.getAllAlarms();
 
     for (var entry in pendingAlarms.entries) {
       final id = entry.key;
@@ -396,11 +398,11 @@ class _SurveyPageState extends State<SurveyPage> {
         // We cancel here both for self-report as well as coming from a notification
         taqo_alarm.cancel(id);
         final activeNotifications =
-            await LocalDatabase().getAllNotificationsForExperiment(_experiment);
+            await storage.getAllNotificationsForExperiment(_experiment);
         // Clear any pending notification
         for (var notification in activeNotifications) {
           if (notification.matchesAction(alarm)) {
-            flutter_local_notifications.cancelNotification(notification.id);
+            await taqo_alarm.cancel(notification.id);
           }
         }
 
@@ -412,7 +414,7 @@ class _SurveyPageState extends State<SurveyPage> {
     // The implication here is that the actual timeout/expiration time is
     // the min of the explicit timeout and the time until the next notification
     // for the same survey fires
-    final pendingNotifications = (await LocalDatabase()
+    final pendingNotifications = (await storage
         .getAllNotificationsForExperiment(_experiment))
         .where((e) => e.experimentGroupName == _experimentGroup.name);
 
@@ -445,8 +447,7 @@ class _SurveyPageState extends State<SurveyPage> {
     _event.responseTime.dateTime.difference(_startTime).inSeconds;
     var savedOK = validateResponses();
     // TODO Validate answers and store locally.
-    var db = LocalDatabase();
-    await db.insertEvent(_event);
+    await storage.insertEvent(_event);
     notifySyncService();
     // If should be uploaded alert sync service
     if (savedOK) {

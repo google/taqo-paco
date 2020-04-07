@@ -1,15 +1,16 @@
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
 
-import 'package:taqo_client/net/google_auth.dart';
-import 'package:taqo_client/storage/local_database.dart';
+import '../net/google_auth.dart';
+import '../storage/flutter_file_storage.dart';
+import '../storage/local_database.dart';
 
 final logger = Logger('SyncService');
 
 Future<bool> syncData() async {
   logger.info("Start syncing data...");
-  final db = LocalDatabase();
-  final events = await db.getUnuploadedEvents();
+  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+  final events = await storage.getUnuploadedEvents();
   final gAuth = GoogleAuth();
 
   // TODO: handle upload limit size
@@ -20,7 +21,7 @@ Future<bool> syncData() async {
     final response = await gAuth.postEvents(events).catchError(
         (e) => http.Response('${e}', 600, reasonPhrase: 'Flutter Exception'));
     if (response.statusCode == 200) {
-      await db.markEventsAsUploaded(events);
+      await storage.markEventsAsUploaded(events);
       logger.info('Syncing complete.');
       return true;
     } else if (response.statusCode == 600) {
