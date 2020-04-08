@@ -557,27 +557,24 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   List<Widget> buildSmileyButtons(Input2 input) {
-    Widget getIconWidget(IconData icon, Color color, int value) {
-      final doColor = _event.responses[input.name] == value;
+    Widget getIconWidget(AssetImage asset, Color color, int value) {
+      final blendMode = _event.responses[input.name] == value ? BlendMode.multiply : BlendMode.dst;
       return IconButton(
         icon: ClipRRect(
-          borderRadius: BorderRadius.circular(42),
-          child: Container(
-            child: Icon(icon, color: doColor ? null : Colors.black.withOpacity(0.6)),
-            color: doColor ? color.withOpacity(.8) : null,
-          ),
+          borderRadius: BorderRadius.circular(44),
+          child: Image(image: asset, color: color.withOpacity(0.9), colorBlendMode: blendMode),
         ),
-        iconSize: 48,
+        iconSize: 44,
         onPressed: () => setState(() => _event.responses[input.name] = value),
       );
     }
 
     return <Widget>[
-      getIconWidget(Icons.sentiment_very_dissatisfied, Colors.red, 1),
-      getIconWidget(Icons.sentiment_dissatisfied, Colors.orange, 2),
-      getIconWidget(Icons.sentiment_neutral, Colors.yellow, 3),
-      getIconWidget(Icons.sentiment_satisfied, Colors.blue, 4),
-      getIconWidget(Icons.sentiment_very_satisfied, Colors.green, 5),
+      getIconWidget(AssetImage('assets/sentiment_very_dissatisfied.png'), Colors.red, 1),
+      getIconWidget(AssetImage('assets/sentiment_dissatisfied.png'), Colors.orange, 2),
+      getIconWidget(AssetImage('assets/sentiment_neutral.png'), Colors.yellow, 3),
+      getIconWidget(AssetImage('assets/sentiment_satisfied.png'), Colors.blue, 4),
+      getIconWidget(AssetImage('assets/sentiment_very_satisfied.png'), Colors.green, 5),
     ];
   }
 
