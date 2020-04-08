@@ -91,19 +91,15 @@ class GoogleAuth {
           _id, AccessCredentials(accessToken, savedTokens.elementAt(0), _scopes), client);
       _saveCredentials(newCredentials);
       return {"Authorization": "Bearer ${newCredentials.accessToken.data}"};
-    } catch (e) {
+    } catch (_) {
       clearCredentials();
       rethrow;
     }
   }
 
-  Future<http.Response> _get(http.Client client, String url, Map<String, String> headers) async {
-    try {
-      final response = await client.get(url, headers: headers);
-      return response;
-    } catch (e) {
-      rethrow;
-    }
+  Future<http.Response> _get(http.Client client, String url,
+      Map<String, String> headers) {
+    return client.get(url, headers: headers);
   }
 
   Future<http.Response> _refreshAndGet(String url, {String defValue = ""}) async {
@@ -111,7 +107,7 @@ class GoogleAuth {
     try {
       final headers = await _refreshCredentials(client);
       return _get(client, url, headers);
-    } catch (e) {
+    } catch (_) {
       rethrow;
     } finally {
       client.close();
@@ -119,13 +115,8 @@ class GoogleAuth {
   }
 
   Future<http.Response> _post(http.Client client, Uri url,
-      Map<String, String> headers, String body) async {
-    try {
-      final response = await client.post(url, headers: headers, body: body);
-      return response;
-    } catch (e) {
-      rethrow;
-    }
+      Map<String, String> headers, String body) {
+    return client.post(url, headers: headers, body: body);
   }
 
   Future<http.Response> _refreshAndPost(Uri url, String body) async {
@@ -133,7 +124,7 @@ class GoogleAuth {
     try {
       final headers = await _refreshCredentials(client);
       return _post(client, url, headers, body);
-    } catch (e) {
+    } catch (_) {
       rethrow;
     } finally {
       client.close();
@@ -162,10 +153,24 @@ class GoogleAuth {
   }
 
   Future<http.Response> checkInvitationWithSavedCredentials(String code) {
-    return _get(http.Client(), "$_inviteUrl$code", null);
+    final client = http.Client();
+    try {
+      return _get(http.Client(), "$_inviteUrl$code", null);
+    } catch (_) {
+      rethrow;
+    } finally {
+      client.close();
+    }
   }
 
   Future<http.Response> getPubExperimentById(int experimentId) {
-    return _get(http.Client(), "$_pubExperimentByIdUrl$experimentId", null);
+    final client = http.Client();
+    try {
+      return _get(http.Client(), "$_pubExperimentByIdUrl$experimentId", null);
+    } catch (_) {
+      rethrow;
+    } finally {
+      client.close();
+    }
   }
 }

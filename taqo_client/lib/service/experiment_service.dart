@@ -42,7 +42,8 @@ class ExperimentService {
 
   Future<List<Experiment>> getExperimentsFromServer() async {
     return _gAuth.getExperimentsWithSavedCredentials()
-        .then((experimentJson) {
+        .then((response) {
+          final experimentJson = response.body;
           final List experimentJsonList = jsonDecode(experimentJson);
           final experiments = <Experiment>[];
           for (var experimentJson in experimentJsonList) {
@@ -65,7 +66,8 @@ class ExperimentService {
 
   Future<Experiment> getExperimentFromServerById(experimentId) async {
     return _gAuth.getExperimentByIdWithSavedCredentials(experimentId)
-        .then((experimentJson) {
+        .then((response) {
+          final experimentJson = response.body;
           var experimentJsonObj = jsonDecode(experimentJson).elementAt(0);
           return Experiment.fromJson(experimentJsonObj);
         })
@@ -74,7 +76,8 @@ class ExperimentService {
 
   Future<Experiment> getPubExperimentFromServerById(experimentId) async {
     return _gAuth.getPubExperimentById(experimentId)
-        .then((experimentJson) {
+        .then((response) {
+          final experimentJson = response.body;
           var experimentJsonObj = jsonDecode(experimentJson).elementAt(0);
           return Experiment.fromJson(experimentJsonObj);
         })
@@ -83,7 +86,8 @@ class ExperimentService {
 
   Future<List<Experiment>> updateJoinedExperiments() async {
     return _gAuth.getExperimentsByIdWithSavedCredentials(_joined.keys.toList())
-        .then((experimentJson) {
+        .then((response) {
+          final experimentJson = response.body;
           final List experimentJsonList = jsonDecode(experimentJson);
           final experiments = <Experiment>[];
           for (var experimentJson in experimentJsonList) {
@@ -150,18 +154,19 @@ class ExperimentService {
 
   Future<InvitationResponse> checkCode(String code) async {
     return _gAuth.checkInvitationWithSavedCredentials(code)
-        .then((jsonResponse) {
-          var response = jsonDecode(jsonResponse);
+        .then((response) {
+          final jsonResponse = response.body;
+          var decodedResponse = jsonDecode(jsonResponse);
           var errorMessage;
           var participantId;
           var experimentId;
 
           if (jsonResponse.startsWith('[')) {
-            response = response.elementAt(0);
-            errorMessage = response["errorMessage"];
+            decodedResponse = decodedResponse.elementAt(0);
+            errorMessage = decodedResponse["errorMessage"];
           } else {
-            participantId = response["participantId"];
-            experimentId = response["experimentId"];
+            participantId = decodedResponse["participantId"];
+            experimentId = decodedResponse["experimentId"];
           }
 
           return InvitationResponse(
