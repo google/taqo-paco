@@ -219,6 +219,10 @@ class _TespDecoderSink extends ByteConversionSinkBase {
           TespDecoder.checkProtocolVersion(chunk[i]);
         } else if (_headerIndex == TespCodec.codeOffset) {
           _code = chunk[i];
+          if (!TespMessage.tespCodeToConstructorMap.containsKey(_code)){
+            _reset();
+            throw TespUndefinedCodeException(_code);
+          }
           _hasPayload = TespDecoder.isCodeForTespMessageWithPayload(_code);
           if (!_hasPayload) {
             _foundTespMessage();
@@ -271,8 +275,6 @@ class _TespDecoderSink extends ByteConversionSinkBase {
     try {
       tespMessage =
           TespMessage.fromCode(_code, _hasPayload ? _encodedPayload : null);
-    } on ArgumentError {
-      throw TespUndefinedCodeException(_code);
     } on FormatException catch (e) {
       throw TespPayloadDecodingException(e);
     } finally {
@@ -285,32 +287,36 @@ class _TespDecoderSink extends ByteConversionSinkBase {
 // Exceptions
 const _errorHeader = 'TESP v${TespCodec.protocolVersion}: ';
 
-class TespUndefinedCodeException extends FormatException {
-  TespUndefinedCodeException(int code, [source, int offset])
-      : super(_errorHeader + 'undefined message code: $code.}', source, offset);
+class TespDecodingException extends FormatException {
+  TespDecodingException(String message, [source, int offset])
+  : super(_errorHeader + message, source, offset);
 }
 
-class TespPayloadDecodingException extends FormatException {
+class TespUndefinedCodeException extends TespDecodingException {
+  TespUndefinedCodeException(int code, [source, int offset])
+      : super('undefined message code: $code.}', source, offset);
+}
+
+class TespPayloadDecodingException extends TespDecodingException {
   TespPayloadDecodingException(FormatException e, [source, int offset])
-      : super(_errorHeader + 'unable to decode the payload: ${e.message}',
+      : super('unable to decode the payload: ${e.message}',
             source, offset);
 }
 
-class TespLengthException extends FormatException {
+class TespLengthException extends TespDecodingException {
   TespLengthException(String message, [source])
-      : super(_errorHeader + message, source);
+      : super(message, source);
 }
 
-class TespVersionException extends FormatException {
+class TespVersionException extends TespDecodingException {
   TespVersionException(int unsupportedVersion, [source, int offset])
       : super(
-            _errorHeader +
-                'unsupported protocol version: ${unsupportedVersion}.',
+            'unsupported protocol version: ${unsupportedVersion}.',
             source,
             offset);
 }
 
-class TespIncompleteMessageException extends FormatException {
+class TespIncompleteMessageException extends TespDecodingException {
   TespIncompleteMessageException()
-      : super(_errorHeader + 'stream is closed before a message is finished.');
+      : super('stream is closed before a message is finished.');
 }

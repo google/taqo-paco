@@ -29,42 +29,42 @@ abstract class TespMessage {
   static const tespCodeResponseInvalidRequest = 0x83;
   static const tespCodeResponseAnswer = 0x85;
 
+  static final tespCodeToConstructorMap =
+      <int, TespMessage Function(Uint8List encodedPayload)>{
+    tespCodeRequestAddEvent: (encodedPayload) =>
+        TespRequestAddEvent.withEncodedPayload(encodedPayload),
+    tespCodeRequestPause: (encodedPayload) => TespRequestPause(),
+    tespCodeRequestResume: (encodedPayload) => TespRequestResume(),
+    tespCodeRequestWhiteListDataOnly: (encodedPayload) =>
+        TespRequestWhiteListDataOnly(),
+    tespCodeRequestAllData: (encodedPayload) => TespRequestAllData(),
+    tespCodeRequestPing: (encodedPayload) => TespRequestPing(),
+    tespCodeResponseSuccess: (encodedPayload) => TespResponseSuccess(),
+    tespCodeResponseError: (encodedPayload) =>
+        TespResponseError.withEncodedPayload(encodedPayload),
+    tespCodeResponsePaused: (encodedPayload) => TespResponsePaused(),
+    tespCodeResponseInvalidRequest: (encodedPayload) =>
+        TespResponseInvalidRequest.withEncodedPayload(encodedPayload),
+    tespCodeResponseAnswer: (encodedPayload) =>
+        TespResponseAnswer.withEncodedPayload(encodedPayload)
+  };
+
   TespMessage();
 
   /// Create an instance of [TespMessage] with proper subtype corresponding to the
   /// message [code].
   factory TespMessage.fromCode(int code, [Uint8List encodedPayload]) {
-    switch (code) {
-      case tespCodeRequestAddEvent:
-        return TespRequestAddEvent.withEncodedPayload(encodedPayload);
-      case tespCodeRequestPause:
-        return TespRequestPause();
-      case tespCodeRequestResume:
-        return TespRequestResume();
-      case tespCodeRequestWhiteListDataOnly:
-        return TespRequestWhiteListDataOnly();
-      case tespCodeRequestAllData:
-        return TespRequestAllData();
-      case tespCodeRequestPing:
-        return TespRequestPing();
-      case tespCodeResponseSuccess:
-        return TespResponseSuccess();
-      case tespCodeResponseError:
-        return TespResponseError.withEncodedPayload(encodedPayload);
-      case tespCodeResponsePaused:
-        return TespResponsePaused();
-      case tespCodeResponseInvalidRequest:
-        return TespResponseInvalidRequest.withEncodedPayload(encodedPayload);
-      case tespCodeResponseAnswer:
-        return TespResponseAnswer.withEncodedPayload(encodedPayload);
-      default:
-        throw ArgumentError.value(code, null, 'Invalid message code');
+    var constructor = tespCodeToConstructorMap[code];
+    if (constructor == null) {
+      throw ArgumentError.value(code, null, 'Invalid message code');
     }
+    return constructor(encodedPayload);
   }
 }
 
 abstract class TespRequest extends TespMessage {
-  FutureOr<TespResponse> executeCommand(TespCommandExecutor tespCommandExecutor);
+  FutureOr<TespResponse> executeCommand(
+      TespCommandExecutor tespCommandExecutor);
 }
 
 abstract class TespResponse extends TespMessage {}
@@ -109,6 +109,11 @@ abstract class TespMessageWithStringPayload
     _encodedPayload = encodedPayload;
     _payload = utf8.decode(_encodedPayload);
   }
+
+  @override
+  String toString() {
+    return super.toString() + 'with payload: $payload';
+  }
 }
 
 class TespRequestAddEvent extends TespMessageWithStringPayload
@@ -121,7 +126,8 @@ class TespRequestAddEvent extends TespMessageWithStringPayload
       : super.withEncodedPayload(encodedPayload);
 
   @override
-  FutureOr<TespResponse> executeCommand(TespCommandExecutor tespCommandExecutor) {
+  FutureOr<TespResponse> executeCommand(
+      TespCommandExecutor tespCommandExecutor) {
     return tespCommandExecutor.addEvent(payload);
   }
 }
@@ -132,11 +138,10 @@ class TespRequestPause extends TespMessageWithoutPayload
   final code = TespMessage.tespCodeRequestPause;
 
   @override
-  FutureOr<TespResponse> executeCommand(TespCommandExecutor tespCommandExecutor) {
+  FutureOr<TespResponse> executeCommand(
+      TespCommandExecutor tespCommandExecutor) {
     return tespCommandExecutor.pause();
   }
-
-
 }
 
 class TespRequestResume extends TespMessageWithoutPayload
@@ -145,7 +150,8 @@ class TespRequestResume extends TespMessageWithoutPayload
   final code = TespMessage.tespCodeRequestResume;
 
   @override
-  FutureOr<TespResponse> executeCommand(TespCommandExecutor tespCommandExecutor) {
+  FutureOr<TespResponse> executeCommand(
+      TespCommandExecutor tespCommandExecutor) {
     return tespCommandExecutor.resume();
   }
 }
@@ -156,7 +162,8 @@ class TespRequestWhiteListDataOnly extends TespMessageWithoutPayload
   final code = TespMessage.tespCodeRequestWhiteListDataOnly;
 
   @override
-  FutureOr<TespResponse> executeCommand(TespCommandExecutor tespCommandExecutor) {
+  FutureOr<TespResponse> executeCommand(
+      TespCommandExecutor tespCommandExecutor) {
     return tespCommandExecutor.whiteListDataOnly();
   }
 }
@@ -167,13 +174,13 @@ class TespRequestAllData extends TespMessageWithoutPayload
   final code = TespMessage.tespCodeRequestAllData;
 
   @override
-  FutureOr<TespResponse> executeCommand(TespCommandExecutor tespCommandExecutor) {
+  FutureOr<TespResponse> executeCommand(
+      TespCommandExecutor tespCommandExecutor) {
     return tespCommandExecutor.allData();
   }
 }
 
-class TespRequestPing extends TespMessageWithoutPayload
-    implements TespRequest {
+class TespRequestPing extends TespMessageWithoutPayload implements TespRequest {
   @override
   final code = TespMessage.tespCodeRequestPing;
 
@@ -217,7 +224,8 @@ class TespResponseError extends TespMessageWithStringPayload
     _errorDetails = error[_jsonKeyDetails];
   }
 
-  factory TespResponseError(String errorCode, [String errorMessage, String errorDetails]) {
+  factory TespResponseError(String errorCode,
+      [String errorMessage, String errorDetails]) {
     var payload = json.encode({
       _jsonKeyCode: errorCode,
       _jsonKeyMessage: errorMessage,
@@ -257,4 +265,3 @@ class TespResponseAnswer extends TespMessageWithStringPayload
   TespResponseAnswer.withEncodedPayload(Uint8List encodedPayload)
       : super.withEncodedPayload(encodedPayload);
 }
-

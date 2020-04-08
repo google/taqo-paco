@@ -4,6 +4,6 @@
 library taqo_event_server_protocol;
 
 export 'src/tesp_message.dart';
-// export 'src/tesp_server.dart';
-// export 'src/tesp_client.dart';
+export 'src/tesp_server.dart';
+//export 'src/tesp_client.dart';
 

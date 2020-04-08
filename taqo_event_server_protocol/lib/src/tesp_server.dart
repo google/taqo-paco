@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:io';
-import 'tesp_io.dart';
+import 'tesp_message_socket.dart';
 import 'tesp_message.dart';
 
 import 'tesp_codec.dart';
@@ -23,24 +23,15 @@ class TespServer {
         backlog: backlog, v6Only: v6Only, shared: shared);
 
     _serverSocket.listen((socket) {
-      var sink = TespMessageSink<TespResponse>(socket);
+      var tespSocket = TespMessageSocket<TespRequest, TespResponse>(socket);
       StreamSubscription<TespMessage> subscription;
 
-      subscription = socket.cast<List<int>>().transform(tesp.decoder).listen(
-          (tespMessage) {
-        TespRequest tespRequest;
-        try {
-          tespRequest = tespMessage as TespRequest;
-        } catch (e) {
-          sink.add(TespResponseInvalidRequest.withPayload(e.toString()));
-          return;
-        }
-
+      subscription = tespSocket.listen((tespRequest) {
         FutureOr<TespResponse> tespResponse;
         try {
           tespResponse = tespRequest.executeCommand(_tespCommandExecutor);
         } catch (e) {
-          sink.add(TespResponseError(
+          tespSocket.add(TespResponseError(
               TespResponseError.tespErrorUnknown, e.toString()));
           return;
         }
@@ -49,20 +40,20 @@ class TespServer {
           subscription.pause();
           tespResponse
               .then((value) => socket.add(tesp.encode(value)),
-                  onError: (e) => sink.add(TespResponseError(
+                  onError: (e) => tespSocket.add(TespResponseError(
                       TespResponseError.tespErrorUnknown, e.toString())))
               .whenComplete(subscription.resume);
         } else {
-          sink.add(tespResponse);
+          tespSocket.add(tespResponse);
         }
       }, onError: (e) {
-        sink.add(TespResponseInvalidRequest.withPayload(e.toString()));
-        subscription.cancel();
-        sink.close();
-        socket.close();
+        tespSocket.add(TespResponseInvalidRequest.withPayload(e.toString()));
+        if (!(e is CastError)) {
+          subscription.cancel();
+          tespSocket.close();
+        }
       }, onDone: () {
-        sink.close();
-        socket.close();
+        tespSocket.close();
       });
     });
   }
