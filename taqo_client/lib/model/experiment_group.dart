@@ -3,11 +3,11 @@ import 'dart:collection';
 import 'package:intl/intl.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import 'package:taqo_client/model/action_trigger.dart';
-import 'package:taqo_client/model/feedback.dart';
-import 'package:taqo_client/model/input2.dart';
-import 'package:taqo_client/model/validator.dart';
-import 'package:taqo_client/util/date_time_util.dart';
+import 'action_trigger.dart';
+import 'feedback.dart';
+import 'input2.dart';
+import 'validator.dart';
+import '../util/date_time_util.dart';
 
 part 'experiment_group.g.dart';
 
@@ -189,6 +189,8 @@ class ExperimentGroup {
     }
     return now.isBefore(parseYMDTime(startDate)) ? false : !isOver(now);
   }
+
+  bool get isAppUsageLoggingGroup => groupType == GroupTypeEnum.APPUSAGE_ANDROID;
 
   DateTime toMidnight(startDateCandidate) {
     return DateTime(startDateCandidate.year, startDateCandidate.month, startDateCandidate.day);

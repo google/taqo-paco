@@ -1,15 +1,15 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:taqo_client/model/action_trigger.dart';
-import 'package:taqo_client/model/experiment.dart';
-import 'package:taqo_client/model/schedule.dart';
-import 'package:taqo_client/model/schedule_trigger.dart';
-import 'package:taqo_client/pages/schedule_detail_page.dart';
-import 'package:taqo_client/service/experiment_service.dart';
-import 'package:taqo_client/util/schedule_printer.dart' as schedule_printer;
 
+import '../model/action_trigger.dart';
+import '../model/experiment.dart';
+import '../model/schedule.dart';
+import '../model/schedule_trigger.dart';
+import '../service/experiment_service.dart';
+import '../util/schedule_printer.dart' as schedule_printer;
 import '../widgets/taqo_widgets.dart';
+import 'schedule_detail_page.dart';
 
 class ScheduleOverviewArguments {
   final Experiment experiment;

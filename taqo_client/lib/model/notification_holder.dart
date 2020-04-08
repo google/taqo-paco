@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:taqo_client/model/action_specification.dart';
+
+import 'action_specification.dart';
 
 part 'notification_holder.g.dart';
 

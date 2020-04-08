@@ -5,8 +5,10 @@ import "package:googleapis/oauth2/v2.dart";
 import "package:googleapis_auth/auth_io.dart";
 import 'package:googleapis_auth/src/auth_http_utils.dart';
 import "package:http/http.dart" as http;
-import 'package:taqo_client/model/event.dart';
-import 'package:taqo_client/storage/unsecure_token_storage.dart';
+
+import '../model/event.dart';
+import '../storage/flutter_file_storage.dart';
+import '../storage/unsecure_token_storage.dart';
 
 class GoogleAuth {
   static const String AUTH_TOKEN_TYPE_USERINFO_EMAIL =
@@ -20,8 +22,6 @@ class GoogleAuth {
   static final id = new ClientId(_clientId, _secret);
   static const scopes = [AUTH_TOKEN_TYPE_USERINFO_EMAIL,
     AUTH_TOKEN_TYPE_USERINFO_PROFILE, ];
-
-  var tokenStore = new UnsecureTokenStorage();
 
   StreamController<bool> _authenticationStreamController =
       StreamController<bool>.broadcast();
@@ -57,17 +57,20 @@ class GoogleAuth {
     }
   }
 
-  void saveCredentials(credentials) {
+  void saveCredentials(credentials) async {
+    final tokenStore = await UnsecureTokenStorage.get(FlutterFileStorage(UnsecureTokenStorage.filename));
     tokenStore.saveTokens(credentials.refreshToken,
         credentials.accessToken.data, credentials.accessToken.expiry);
   }
 
   Future<bool> isAuthenticated() async {
+    final tokenStore = await UnsecureTokenStorage.get(FlutterFileStorage(UnsecureTokenStorage.filename));
     var tokens = await tokenStore.readTokens();
     return Future.value(tokens != null && tokens.isNotEmpty);
   }
 
   Future<List<String>> readTokens() async {
+    final tokenStore = await UnsecureTokenStorage.get(FlutterFileStorage(UnsecureTokenStorage.filename));
     var savedTokens = await tokenStore.readTokens();
     return savedTokens;
   }
@@ -115,6 +118,7 @@ class GoogleAuth {
   }
 
   Future<void> clearCredentials() async {
+    final tokenStore = await UnsecureTokenStorage.get(FlutterFileStorage(UnsecureTokenStorage.filename));
     var clearTokens = await tokenStore.clear();
     _authenticationStreamController.add(false);
     return clearTokens;

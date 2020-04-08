@@ -4,8 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:taqo_email_plugin/taqo_email_plugin.dart' as taqo_email_plugin;
 
 import '../model/experiment.dart';
+import '../model/experiment_provider.dart';
 import '../net/google_auth.dart';
 import '../service/experiment_service.dart';
+import '../storage/flutter_file_storage.dart';
 import '../storage/local_database.dart';
 import '../widgets/taqo_page.dart';
 import '../widgets/taqo_widgets.dart';
@@ -31,7 +33,7 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
 
   var gAuth = GoogleAuth();
 
-  var _experiments = <Experiment>[];
+  var _experiments = <ExperimentProvider>[];
 
   final _active = <int>{};
 
@@ -40,13 +42,15 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
     super.initState();
     ExperimentService.getInstance().then((service) {
       setState(() {
-        _experiments = service.getJoinedExperiments();
+        _experiments = service.getJoinedExperiments().map((e) => ExperimentProvider(e)).toList();
       });
-      LocalDatabase().getAllNotifications().then((all) {
-        final active = all.where((n) => n.isActive);
-        setState(() {
-          _active.clear();
-          _active.addAll(active.map((e) => e.experimentId));
+      LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename)).then((storage) {
+        storage.getAllNotifications().then((all) {
+          final active = all.where((n) => n.isActive);
+          setState(() {
+            _active.clear();
+            _active.addAll(active.map((e) => e.experimentId));
+          });
         });
       });
     });
@@ -98,9 +102,9 @@ Join some Experiments to get started."""),
 
     final children = <Widget>[];
     for (var experiment in _experiments) {
-      children.add(ChangeNotifierProvider<Experiment>.value(
+      children.add(ChangeNotifierProvider<ExperimentProvider>.value(
         value: experiment,
-        child: ExperimentListItem(_active.contains(experiment.id), stopExperiment),
+        child: ExperimentListItem(_active.contains(experiment.experiment.id), stopExperiment),
       ));
     }
     return ListView(
@@ -114,7 +118,7 @@ Join some Experiments to get started."""),
     final service = await ExperimentService.getInstance();
     service.updateJoinedExperiments().then((List<Experiment> experiments) {
       setState(() {
-        _experiments = experiments;
+        _experiments = experiments.map((e) => ExperimentProvider(e)).toList();
       });
     });
   }
@@ -125,7 +129,7 @@ Join some Experiments to get started."""),
         final service = await ExperimentService.getInstance();
         service.stopExperiment(experiment);
         setState(() {
-          _experiments = service.getJoinedExperiments();
+          _experiments = service.getJoinedExperiments().map((e) => ExperimentProvider(e)).toList();
         });
       }
     });
@@ -161,13 +165,13 @@ class ExperimentListItem extends StatelessWidget {
   ExperimentListItem(this._active, this.stop);
 
   void _onTapExperiment(BuildContext context, Experiment experiment) {
-    if (experiment.getActiveSurveys().length < 1) {
+    if (experiment.getActiveSurveys().length == 1) {
       Navigator.pushNamed(context, SurveyPage.routeName,
           arguments: [
             experiment, experiment.getActiveSurveys().elementAt(0).name,
           ]
       );
-    } else if (experiment.getActiveSurveys().length >= 1) {
+    } else if (experiment.getActiveSurveys().length > 1) {
       Navigator.pushNamed(context, SurveyPickerPage.routeName,
           arguments: [experiment, ]);
     } else {
@@ -178,8 +182,9 @@ class ExperimentListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<Experiment>(
-        builder: (BuildContext context, Experiment experiment, _) {
+    return Consumer<ExperimentProvider>(
+        builder: (BuildContext context, ExperimentProvider provider, _) {
+          final experiment = provider.experiment;
           return TaqoCard(
             child: Row(
               children: <Widget>[
@@ -208,8 +213,8 @@ class ExperimentListItem extends StatelessWidget {
                 ),
 
                 IconButton(
-                    icon: Icon(experiment.paused ? Icons.play_arrow : Icons.pause),
-                    onPressed: () => experiment.paused = !experiment.paused
+                    icon: Icon(provider.paused ? Icons.play_arrow : Icons.pause),
+                    onPressed: () => provider.paused = !provider.paused
                 ),
                 IconButton(
                     icon: Icon(Icons.edit),

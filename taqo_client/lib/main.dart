@@ -2,35 +2,34 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:taqo_client/pages/experiment_detail_page.dart';
-import 'package:taqo_client/pages/find_experiments_page.dart';
-import 'package:taqo_client/pages/informed_consent_page.dart';
-import 'package:taqo_client/pages/post_join_instructions_page.dart';
-import 'package:taqo_client/pages/running_experiments_page.dart';
-import 'package:taqo_client/pages/schedule_detail_page.dart';
-import 'package:taqo_client/pages/schedule_overview_page.dart';
-import 'package:taqo_client/pages/survey/feedback_page.dart';
-
-import 'package:taqo_client/pages/survey/survey_page.dart';
-import 'package:taqo_client/pages/survey_picker_page.dart';
-import 'package:taqo_client/pages/invitation_entry_page.dart';
-import 'package:taqo_client/pages/login_page.dart';
-import 'package:taqo_client/platform/platform_logging.dart';
-import 'package:taqo_client/platform/platform_sync_service.dart';
-import 'package:taqo_client/service/logging_service.dart';
-
-import 'package:taqo_client/net/google_auth.dart';
-import 'package:taqo_client/storage/esm_signal_storage.dart';
-import 'package:taqo_client/storage/local_database.dart';
-
 import 'package:taqo_time_plugin/taqo_time_plugin.dart' as taqo_time_plugin;
 
+import 'net/google_auth.dart';
+import 'pages/experiment_detail_page.dart';
+import 'pages/find_experiments_page.dart';
+import 'pages/informed_consent_page.dart';
+import 'pages/invitation_entry_page.dart';
+import 'pages/login_page.dart';
+import 'pages/post_join_instructions_page.dart';
+import 'pages/running_experiments_page.dart';
+import 'pages/schedule_detail_page.dart';
+import 'pages/schedule_overview_page.dart';
+import 'pages/survey/feedback_page.dart';
+import 'pages/survey/survey_page.dart';
+import 'pages/survey_picker_page.dart';
+import 'platform/platform_logging.dart';
+import 'platform/platform_sync_service.dart';
 import 'service/alarm/taqo_alarm.dart' as taqo_alarm;
+import 'service/logging_service.dart';
+import 'storage/esm_signal_storage.dart';
+import 'storage/flutter_file_storage.dart';
+import 'storage/local_database.dart';
 
 void _onTimeChange() async {
   /// TODO Currently provides no info on how the time was changed
   print('time [zone] changed, rescheduling');
-  await ESMSignalStorage().deleteAllSignals();
+  final storage = await ESMSignalStorage.get(FlutterFileStorage(ESMSignalStorage.filename));
+  storage.deleteAllSignals();
   taqo_alarm.schedule();
 }
 
@@ -38,7 +37,8 @@ void _onTimeChange() async {
 // direct the user to the RunningExperimentsPage.
 // This also solves the issue with not having Pending (launch) Intents on Linux
 Future<bool> _checkActiveNotification() async {
-  final activeNotifications = (await LocalDatabase().getAllNotifications())
+  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+  final activeNotifications = (await storage.getAllNotifications())
       .where((n) => n.isActive);
 
   return activeNotifications.isNotEmpty;

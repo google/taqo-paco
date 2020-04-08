@@ -1,9 +1,10 @@
-import 'package:taqo_client/model/paco_notification_action.dart';
-import 'package:taqo_client/model/signal_time.dart';
-import 'package:taqo_client/model/validatable.dart';
-import 'package:taqo_client/model/validator.dart';
-import 'minimum_bufferable.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import 'minimum_bufferable.dart';
+import 'paco_notification_action.dart';
+import 'signal_time.dart';
+import 'validatable.dart';
+import 'validator.dart';
 
 part 'schedule.g.dart';
 

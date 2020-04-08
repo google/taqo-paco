@@ -1,10 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
+
 import '../model/event.dart';
 import '../model/experiment.dart';
+import '../model/experiment_provider.dart' show sharedPrefsExperimentPauseKey;
 import '../net/google_auth.dart';
 import '../net/invitation_response.dart';
+import '../storage/flutter_file_storage.dart';
 import '../storage/joined_experiments_storage.dart';
 import '../storage/local_database.dart';
 import '../util/schedule_printer.dart' as schedule_printer;
@@ -35,10 +39,12 @@ class ExperimentService {
     return Future.value(_instance);
   }
 
-  Future<void> _loadJoinedExperiments() async =>
-      JoinedExperimentsStorage().readJoinedExperiments().then((List<Experiment> experiments) {
-        _mapifyExperimentsById(experiments);
-      });
+  Future<void> _loadJoinedExperiments() async {
+    final storage = await JoinedExperimentsStorage.get(FlutterFileStorage(JoinedExperimentsStorage.filename));
+    return storage.readJoinedExperiments().then((List<Experiment> experiments) {
+      _mapifyExperimentsById(experiments);
+    });
+  }
 
   Future<List<Experiment>> getExperimentsFromServer() async {
     return _gAuth.getExperimentsWithSavedCredentials().then((experimentJson) {
@@ -110,20 +116,26 @@ class ExperimentService {
     return event;
   }
 
-  void joinExperiment(Experiment experiment) {
+  void joinExperiment(Experiment experiment) async {
     _joined[experiment.id] = experiment;
     saveJoinedExperiments();
-    LocalDatabase().insertEvent(_createJoinEvent(experiment, joining: true));
+    final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+    storage.insertEvent(_createJoinEvent(experiment, joining: true));
   }
 
   bool isJoined(Experiment experiment) => _joined.containsKey(experiment.id);
 
-  void stopExperiment(Experiment experiment) {
+  void stopExperiment(Experiment experiment) async {
+    final storageDir = await FlutterFileStorage.getLocalStorageDir();
+    final sharedPreferences = TaqoSharedPrefs(storageDir.path);
+    await sharedPreferences.remove("${sharedPrefsExperimentPauseKey}_${experiment.id}");
+
     _joined.remove(experiment.id);
     saveJoinedExperiments();
-    LocalDatabase().insertEvent(_createJoinEvent(experiment, joining: false));
+    final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+    storage.insertEvent(_createJoinEvent(experiment, joining: false));
 
-    flutter_local_notifications.cancelForExperiment(experiment);
+    taqo_alarm.cancelForExperiment(experiment);
   }
 
   void _mapifyExperimentsById(List<Experiment> experiments) {
@@ -131,7 +143,8 @@ class ExperimentService {
   }
 
   void saveJoinedExperiments() async {
-    await JoinedExperimentsStorage().saveJoinedExperiments(_joined.values.toList());
+    final storage = await JoinedExperimentsStorage.get(FlutterFileStorage(JoinedExperimentsStorage.filename));
+    await storage.saveJoinedExperiments(_joined.values.toList());
     taqo_alarm.schedule();
   }
 
@@ -160,6 +173,7 @@ class ExperimentService {
 
   Future<void> clear() async {
     _joined.clear();
-    await JoinedExperimentsStorage().clear();
+    final storage = await JoinedExperimentsStorage.get(FlutterFileStorage(JoinedExperimentsStorage.filename));
+    await storage.clear();
   }
 }
