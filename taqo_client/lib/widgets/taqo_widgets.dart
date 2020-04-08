@@ -18,9 +18,11 @@ class TaqoRoundButton extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(_buttonRadius),
         ),
+        child: child,
         color: Colors.indigo,
         textColor: Colors.white,
-        child: child,
+        disabledColor: Colors.indigo.withOpacity(.6),
+        disabledTextColor: Colors.white.withOpacity(.8),
       ),
     );
   }

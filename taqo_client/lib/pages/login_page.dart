@@ -64,7 +64,7 @@ To get started, please either login with a Google account or enter an invitation
       bool isAuthenticated) {
     return buildButtonWidget(
       context,
-      isAuthenticated ? null : () {
+      () {
         Navigator.pushNamed(context, InvitationEntryPage.routeName);
       },
       const Text('Enter Invitation Code'),

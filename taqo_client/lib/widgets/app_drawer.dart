@@ -81,7 +81,6 @@ class _TaqoAppDrawerWidget extends StatelessWidget {
             title: const Text('Login or Join with Code'),
             onTap: () =>
                 MyApp.navigatorKey.currentState.pushNamed(LoginPage.routeName),
-            enabled: !authProvider.isAuthenticated,
           ),
           ListTile(
             leading: Icon(
