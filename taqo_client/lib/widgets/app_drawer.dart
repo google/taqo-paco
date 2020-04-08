@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -34,7 +35,7 @@ class _TaqoAppDrawerWidget extends StatelessWidget {
           shape: BoxShape.circle,
           image: DecorationImage(
             fit: BoxFit.fill,
-            image: NetworkImage(authProvider.userInfoPhoto),
+            image: CachedNetworkImageProvider(authProvider.userInfoPhoto),
           ),
         ),
       );
