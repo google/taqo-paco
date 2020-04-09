@@ -49,7 +49,7 @@ class ExperimentService {
   Future<List<Experiment>> getExperimentsFromServer() {
     return _gAuth.getExperimentsWithSavedCredentials()
         .then((response) {
-          if (response.statusCode != pacoResponseSuccess) {
+          if (!response.isSuccess) {
             return <Experiment>[];
           }
           final experimentJson = response.body;
@@ -82,7 +82,7 @@ class ExperimentService {
   Future<Experiment> getExperimentFromServerById(experimentId) {
     return _gAuth.getExperimentByIdWithSavedCredentials(experimentId)
         .then((response) {
-          if (response.statusCode != pacoResponseSuccess) {
+          if (!response.isSuccess) {
             return null;
           }
           final experimentJson = response.body;
@@ -100,7 +100,7 @@ class ExperimentService {
   Future<Experiment> getPubExperimentFromServerById(experimentId) {
     return _gAuth.getPubExperimentById(experimentId)
         .then((response) {
-          if (response.statusCode != pacoResponseSuccess) {
+          if (!response.isSuccess) {
             return null;
           }
           final experimentJson = response.body;
@@ -118,7 +118,7 @@ class ExperimentService {
   Future<List<Experiment>> updateJoinedExperiments() {
     return _gAuth.getExperimentsByIdWithSavedCredentials(_joined.keys.toList())
         .then((response) {
-          if (response.statusCode != pacoResponseSuccess) {
+          if (!response.isSuccess) {
             final experiments = <Experiment>[];
             _mapifyExperimentsById(experiments);
             saveJoinedExperiments();
@@ -200,7 +200,7 @@ class ExperimentService {
   Future<InvitationResponse> checkCode(String code) async {
     return _gAuth.checkInvitationWithSavedCredentials(code)
         .then((response) {
-          if (response.statusCode != pacoResponseSuccess) {
+          if (!response.isSuccess) {
             return null;
           }
           final jsonResponse = response.body;

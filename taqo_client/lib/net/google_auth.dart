@@ -138,22 +138,22 @@ class GoogleAuth {
   Future<PacoResponse> postEvents(String body) async {
     return _refreshAndPost(_eventsUri, body).then((response) {
       if (response.statusCode == 200) {
-        return PacoResponse(pacoResponseSuccess, 'Success', body: response.body);
+        return PacoResponse(PacoResponse.success, 'Success', body: response.body);
       }
-      return PacoResponse(pacoResponseFailure, response.reasonPhrase);
+      return PacoResponse(PacoResponse.failure, response.reasonPhrase);
     }).catchError((e) {
-      return PacoResponse(pacoResponseException, e.toString());
+      return PacoResponse(PacoResponse.exception, e.toString());
     });
   }
 
   Future<PacoResponse> _refreshAndGetPacoResponse(String url) {
     return _refreshAndGet(url).then((response) {
       if (response.statusCode == 200) {
-        return PacoResponse(pacoResponseSuccess, 'Success', body: response.body);
+        return PacoResponse(PacoResponse.success, 'Success', body: response.body);
       }
-      return PacoResponse(pacoResponseFailure, response.reasonPhrase);
+      return PacoResponse(PacoResponse.failure, response.reasonPhrase);
     }).catchError((e) {
-      return PacoResponse(pacoResponseException, e.toString());
+      return PacoResponse(PacoResponse.exception, e.toString());
     });
   }
 
@@ -177,11 +177,11 @@ class GoogleAuth {
     try {
       final response = await _get(client, url);
       if (response.statusCode == 200) {
-        return PacoResponse(pacoResponseSuccess, 'Success', body: response.body);
+        return PacoResponse(PacoResponse.success, 'Success', body: response.body);
       }
-      return PacoResponse(pacoResponseFailure, response.reasonPhrase);
+      return PacoResponse(PacoResponse.failure, response.reasonPhrase);
     } catch (e) {
-      return PacoResponse(pacoResponseException, e.toString());
+      return PacoResponse(PacoResponse.exception, e.toString());
     } finally {
       client.close();
     }
@@ -228,15 +228,19 @@ class GoogleAuth {
   }
 }
 
-const pacoResponseSuccess = 0;
-const pacoResponseFailure = -1;
-const pacoResponseException = -2;
-
 class PacoResponse {
+  static const success = 0;
+  static const failure = -1;
+  static const exception = -2;
+
   final int statusCode;
   final String statusMsg;
 
   final String body;
 
   PacoResponse(this.statusCode, this.statusMsg, {this.body});
+
+  bool get isSuccess => statusCode == success;
+  bool get isFailure => statusCode == failure;
+  bool get isException => statusCode == exception;
 }
