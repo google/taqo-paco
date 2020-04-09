@@ -40,17 +40,27 @@ class ExperimentService {
         _mapifyExperimentsById(experiments);
       });
 
-  Future<List<Experiment>> getExperimentsFromServer() async {
+  Future<List<Experiment>> getExperimentsFromServer() {
     return _gAuth.getExperimentsWithSavedCredentials()
         .then((response) {
+          if (response.statusCode != pacoResponseSuccess) {
+            return <Experiment>[];
+          }
           final experimentJson = response.body;
-          final List experimentJsonList = jsonDecode(experimentJson);
+          List experimentJsonList;
+          try {
+            experimentJsonList = jsonDecode(experimentJson);
+          } catch (e) {
+            print('Error decoding Experiments response: $e');
+            print ('Response was: "$experimentJson"');
+            return <Experiment>[];
+          }
           final experiments = <Experiment>[];
           for (var experimentJson in experimentJsonList) {
             var experiment;
             try {
               experiment = Experiment.fromJson(experimentJson);
-            } catch(e) {
+            } catch (e) {
               print('Error parsing experiment ${experimentJson['id']}: $e');
               continue;
             }
@@ -60,46 +70,68 @@ class ExperimentService {
             }
           }
           return experiments;
-        })
-        .catchError((e) => <Experiment>[]);
+        });
   }
 
-  Future<Experiment> getExperimentFromServerById(experimentId) async {
+  Future<Experiment> getExperimentFromServerById(experimentId) {
     return _gAuth.getExperimentByIdWithSavedCredentials(experimentId)
         .then((response) {
+          if (response.statusCode != pacoResponseSuccess) {
+            return null;
+          }
           final experimentJson = response.body;
-          var experimentJsonObj = jsonDecode(experimentJson).elementAt(0);
-          return Experiment.fromJson(experimentJsonObj);
-        })
-        .catchError((_) => null);
+          try {
+            var experimentJsonObj = jsonDecode(experimentJson).elementAt(0);
+            return Experiment.fromJson(experimentJsonObj);
+          } catch (e) {
+            print('Error decoding Experiments response: $e');
+            print ('Response was: "$experimentJson"');
+            return null;
+          }
+        });
   }
 
-  Future<Experiment> getPubExperimentFromServerById(experimentId) async {
+  Future<Experiment> getPubExperimentFromServerById(experimentId) {
     return _gAuth.getPubExperimentById(experimentId)
         .then((response) {
+          if (response.statusCode != pacoResponseSuccess) {
+            return null;
+          }
           final experimentJson = response.body;
-          var experimentJsonObj = jsonDecode(experimentJson).elementAt(0);
-          return Experiment.fromJson(experimentJsonObj);
-        })
-        .catchError((_) => null);
+          try {
+            var experimentJsonObj = jsonDecode(experimentJson).elementAt(0);
+            return Experiment.fromJson(experimentJsonObj);
+          } catch (e) {
+            print('Error decoding Experiments response: $e');
+            print ('Response was: "$experimentJson"');
+            return null;
+          }
+        });
   }
 
-  Future<List<Experiment>> updateJoinedExperiments() async {
+  Future<List<Experiment>> updateJoinedExperiments() {
     return _gAuth.getExperimentsByIdWithSavedCredentials(_joined.keys.toList())
         .then((response) {
+          if (response.statusCode != pacoResponseSuccess) {
+            final experiments = <Experiment>[];
+            _mapifyExperimentsById(experiments);
+            saveJoinedExperiments();
+            return experiments;
+          }
           final experimentJson = response.body;
-          final List experimentJsonList = jsonDecode(experimentJson);
+          List experimentJsonList;
+          try {
+            experimentJsonList = jsonDecode(experimentJson);
+          } catch (e) {
+            print('Error decoding Experiments response: $e');
+            print ('Response was: "$experimentJson"');
+            return <Experiment>[];
+          }
           final experiments = <Experiment>[];
           for (var experimentJson in experimentJsonList) {
             experiments.add(Experiment.fromJson(experimentJson));
           }
 
-          _mapifyExperimentsById(experiments);
-          saveJoinedExperiments();
-          return experiments;
-        })
-        .catchError((_) {
-          final experiments = <Experiment>[];
           _mapifyExperimentsById(experiments);
           saveJoinedExperiments();
           return experiments;
@@ -155,6 +187,9 @@ class ExperimentService {
   Future<InvitationResponse> checkCode(String code) async {
     return _gAuth.checkInvitationWithSavedCredentials(code)
         .then((response) {
+          if (response.statusCode != pacoResponseSuccess) {
+            return null;
+          }
           final jsonResponse = response.body;
           var decodedResponse = jsonDecode(jsonResponse);
           var errorMessage;
@@ -173,8 +208,7 @@ class ExperimentService {
               errorMessage: errorMessage,
               participantId: participantId,
               experimentId: experimentId);
-        })
-        .catchError((_) => null);
+        });
   }
 
   Future<void> clear() async {

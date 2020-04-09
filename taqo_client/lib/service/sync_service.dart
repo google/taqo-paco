@@ -1,4 +1,5 @@
-import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 import 'package:logging/logging.dart';
 
 import 'package:taqo_client/net/google_auth.dart';
@@ -17,21 +18,20 @@ Future<bool> syncData() async {
     // We use a customized HTTP status code 600 to represent Flutter exception.
     // This is not a true HTTP status because in that case the HTTP connection
     // was not successful and hence there are no real HTTP response.
-    final response = await gAuth.postEvents(events).catchError(
-        (e) => http.Response('${e}', 600, reasonPhrase: 'Flutter Exception'));
-    if (response.statusCode == 200) {
+    final response = await gAuth.postEvents(jsonEncode(events));
+    if (response.statusCode == pacoResponseSuccess) {
       await db.markEventsAsUploaded(events);
       logger.info('Syncing complete.');
       return true;
-    } else if (response.statusCode == 600) {
+    } else if (response.statusCode == pacoResponseFailure) {
       logger.warning('Could not complete upload of events '
-          'becuase of the following error: '
+          'because of the following error: '
           '${response.body}\n');
       return false;
     } else {
       logger.warning('Could not complete upload of events. '
           'The server returns the following response: '
-          '${response.statusCode} ${response.reasonPhrase}\n${response.body}\n');
+          '${response.statusCode} ${response.statusMsg}\n${response.body}\n');
       return false;
     }
   } else {

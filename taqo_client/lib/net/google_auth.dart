@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
 
-import '../model/event.dart';
 import '../service/experiment_service.dart';
 import '../storage/unsecure_token_storage.dart';
 
@@ -73,8 +71,10 @@ class GoogleAuth {
   /// Logout
   Future<void> clearCredentials() async {
     await _tokenStore.clear();
-    (await ExperimentService.getInstance()).clear();
     _authenticationStreamController.add(false);
+
+    // TODO ExperimentService should observe this somehow
+    (await ExperimentService.getInstance()).clear();
   }
 
   Future<Map<String, String>> _refreshCredentials(http.Client client) async {
@@ -98,7 +98,7 @@ class GoogleAuth {
   }
 
   Future<http.Response> _get(http.Client client, String url,
-      Map<String, String> headers) {
+      {Map<String, String> headers}) {
     return client.get(url, headers: headers);
   }
 
@@ -106,7 +106,7 @@ class GoogleAuth {
     final client = http.Client();
     try {
       final headers = await _refreshCredentials(client);
-      return _get(client, url, headers);
+      return _get(client, url, headers: headers);
     } catch (_) {
       rethrow;
     } finally {
@@ -133,44 +133,76 @@ class GoogleAuth {
 
   // Public API
 
-  Future<http.Response> postEvents(Iterable<Event> events) async {
-    return _refreshAndPost(_eventsUri, jsonEncode(events));
+  Future<PacoResponse> postEvents(String body) async {
+    return _refreshAndPost(_eventsUri, body).then((response) {
+      if (response.statusCode == 200) {
+        return PacoResponse(pacoResponseSuccess, 'Success', body: response.body);
+      }
+      return PacoResponse(pacoResponseFailure, response.reasonPhrase);
+    }).catchError((e) {
+      return PacoResponse(pacoResponseException, e.toString());
+    });
+  }
+
+  Future<PacoResponse> _refreshAndGetPacoResponse(String url) {
+    return _refreshAndGet(url).then((response) {
+      if (response.statusCode == 200) {
+        return PacoResponse(pacoResponseSuccess, 'Success', body: response.body);
+      }
+      return PacoResponse(pacoResponseFailure, response.reasonPhrase);
+    }).catchError((e) {
+      return PacoResponse(pacoResponseException, e.toString());
+    });
   }
 
   /// Gets all Experiments
-  Future<http.Response> getExperimentsWithSavedCredentials() {
-    return _refreshAndGet(_experimentUrl);
+  Future<PacoResponse> getExperimentsWithSavedCredentials() {
+    return _refreshAndGetPacoResponse(_experimentUrl);
   }
 
   /// Gets the Experiment with id [experimentId]
-  Future<http.Response> getExperimentByIdWithSavedCredentials(int experimentId) {
-    return _refreshAndGet("$_experimentByIdUrl$experimentId");
+  Future<PacoResponse> getExperimentByIdWithSavedCredentials(int experimentId) {
+    return _refreshAndGetPacoResponse("$_experimentByIdUrl$experimentId");
   }
 
   /// Gets the Experiments with ids [ids]
-  Future<http.Response> getExperimentsByIdWithSavedCredentials(Iterable<int> ids) {
-    return _refreshAndGet("$_experimentByIdUrl${ids.join(',')}");
+  Future<PacoResponse> getExperimentsByIdWithSavedCredentials(Iterable<int> ids) {
+    return _refreshAndGetPacoResponse("$_experimentByIdUrl${ids.join(',')}");
   }
 
-  Future<http.Response> checkInvitationWithSavedCredentials(String code) {
+  Future<PacoResponse> _getPacoResponse(String url) async {
     final client = http.Client();
     try {
-      return _get(http.Client(), "$_inviteUrl$code", null);
-    } catch (_) {
-      rethrow;
+      final response = await _get(client, url);
+      if (response.statusCode == 200) {
+        return PacoResponse(pacoResponseSuccess, 'Success', body: response.body);
+      }
+      return PacoResponse(pacoResponseFailure, response.reasonPhrase);
+    } catch (e) {
+      return PacoResponse(pacoResponseException, e.toString());
     } finally {
       client.close();
     }
   }
 
-  Future<http.Response> getPubExperimentById(int experimentId) {
-    final client = http.Client();
-    try {
-      return _get(http.Client(), "$_pubExperimentByIdUrl$experimentId", null);
-    } catch (_) {
-      rethrow;
-    } finally {
-      client.close();
-    }
+  Future<PacoResponse> checkInvitationWithSavedCredentials(String code) {
+    return _getPacoResponse("$_inviteUrl$code");
   }
+
+  Future<PacoResponse> getPubExperimentById(int experimentId) {
+    return _getPacoResponse("$_pubExperimentByIdUrl$experimentId");
+  }
+}
+
+const pacoResponseSuccess = 0;
+const pacoResponseFailure = -1;
+const pacoResponseException = -2;
+
+class PacoResponse {
+  final int statusCode;
+  final String statusMsg;
+
+  final String body;
+
+  PacoResponse(this.statusCode, this.statusMsg, {this.body});
 }
