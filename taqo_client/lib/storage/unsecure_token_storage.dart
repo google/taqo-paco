@@ -1,20 +1,41 @@
+import 'dart:async';
 import 'dart:io';
 
-import 'package:taqo_client/storage/local_storage.dart';
+import 'local_file_storage.dart';
 
-class UnsecureTokenStorage extends LocalFileStorage {
+class UnsecureTokenStorage {
   static const filename = 'tokens.txt';
-  static final _instance = UnsecureTokenStorage._();
 
-  UnsecureTokenStorage._() : super(filename);
+  static Completer<UnsecureTokenStorage> _completer;
+  static UnsecureTokenStorage _instance;
 
-  factory UnsecureTokenStorage() {
-    return _instance;
+  ILocalFileStorage _storageImpl;
+
+  UnsecureTokenStorage._();
+
+  static Future<UnsecureTokenStorage> get(ILocalFileStorage storageImpl) {
+    if (_completer != null && !_completer.isCompleted) {
+      return _completer.future;
+    }
+    if (_instance == null) {
+      _completer = Completer<UnsecureTokenStorage>();
+      final temp = UnsecureTokenStorage._();
+      temp._initialize(storageImpl).then((_) {
+        _instance = temp;
+        _completer.complete(_instance);
+      });
+      return _completer.future;
+    }
+    return Future.value(_instance);
+  }
+
+  Future _initialize(ILocalFileStorage storageImpl) async {
+    _storageImpl = storageImpl;
   }
 
   Future<List<String>> readTokens() async {
     try {
-      final file = await localFile;
+      final file = await _storageImpl.localFile;
       if (await file.exists()) {
         String contents = await file.readAsString();
         var variables = contents.split("\n");
@@ -31,5 +52,8 @@ class UnsecureTokenStorage extends LocalFileStorage {
   }
 
   Future<File> saveTokens(String refreshToken, String accessToken, DateTime expiry) async =>
-      (await localFile).writeAsString("$refreshToken\n$accessToken\n${expiry.toIso8601String()}");
+      (await _storageImpl.localFile)
+          .writeAsString("$refreshToken\n$accessToken\n${expiry.toIso8601String()}");
+
+  Future clear() => _storageImpl.clear();
 }

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:taqo_client/net/invitation_response.dart';
-import 'package:taqo_client/service/experiment_service.dart';
 
+import '../net/invitation_response.dart';
+import '../service/experiment_service.dart';
 import 'experiment_detail_page.dart';
 
 class InvitationEntryPage extends StatefulWidget {
-  static const routeName = '/invitation_entry';
+  static const routeName = 'invitation_entry';
 
   InvitationEntryPage({Key key}) : super(key: key);
 

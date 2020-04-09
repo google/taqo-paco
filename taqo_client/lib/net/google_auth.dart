@@ -1,15 +1,17 @@
 import 'dart:async';
 
-import 'package:googleapis_auth/auth_io.dart';
-import 'package:http/http.dart' as http;
+import "package:googleapis/oauth2/v2.dart";
+import "package:googleapis_auth/auth_io.dart";
+import 'package:googleapis_auth/src/auth_http_utils.dart';
+import "package:http/http.dart" as http;
 
-import '../service/experiment_service.dart';
+import '../storage/flutter_file_storage.dart';
 import '../storage/unsecure_token_storage.dart';
 
 class GoogleAuth {
-  static const _authTokenTypeUserInfoEmail = "https://www.googleapis.com/auth/userinfo.email";
   static const _scopes = [
-    _authTokenTypeUserInfoEmail,
+    Oauth2Api.UserinfoEmailScope,
+    Oauth2Api.UserinfoProfileScope,
   ];
 
   //static const _stagingServer = "http://quantifiedself-staging.appspot.com";
@@ -26,8 +28,6 @@ class GoogleAuth {
   static const _secret = "LOwVPys7lruBjjsI8erzh7KK";
   static final _id = ClientId(_clientId, _secret);
 
-  static final _tokenStore = UnsecureTokenStorage();
-
   final _authenticationStreamController = StreamController<bool>.broadcast();
   Stream<bool> get onAuthChanged => _authenticationStreamController.stream;
 
@@ -39,12 +39,16 @@ class GoogleAuth {
     return _instance;
   }
 
-  void _saveCredentials(credentials) {
-    _tokenStore.saveTokens(
-        credentials.refreshToken, credentials.accessToken.data, credentials.accessToken.expiry);
+  void _saveCredentials(credentials) async {
+    final tokenStore = await UnsecureTokenStorage.get(FlutterFileStorage(UnsecureTokenStorage.filename));
+    tokenStore.saveTokens(credentials.refreshToken,
+        credentials.accessToken.data, credentials.accessToken.expiry);
   }
 
-  Future<List<String>> _readTokens() => _tokenStore.readTokens();
+  Future<List<String>> _readTokens() async {
+    final tokenStore = await UnsecureTokenStorage.get(FlutterFileStorage(UnsecureTokenStorage.filename));
+    return tokenStore.readTokens();
+  }
 
   Future<bool> get isAuthenticated async {
     final tokens = await _readTokens();
@@ -70,11 +74,9 @@ class GoogleAuth {
 
   /// Logout
   Future<void> clearCredentials() async {
-    await _tokenStore.clear();
+    final tokenStore = await UnsecureTokenStorage.get(FlutterFileStorage(UnsecureTokenStorage.filename));
+    tokenStore.clear();
     _authenticationStreamController.add(false);
-
-    // TODO ExperimentService should observe this somehow
-    (await ExperimentService.getInstance()).clear();
   }
 
   Future<Map<String, String>> _refreshCredentials(http.Client client) async {
@@ -191,6 +193,38 @@ class GoogleAuth {
 
   Future<PacoResponse> getPubExperimentById(int experimentId) {
     return _getPacoResponse("$_pubExperimentByIdUrl$experimentId");
+  }
+
+  // I created a PR to have this merged into the googleapis plugin 2 years ago,
+  // and it was never accepted:
+  // https://github.com/dart-lang/googleapis_auth/pull/44
+  // To avoid using another forked plugin, we're importing auth_http_utils.dart
+  // to just have this as a method. It's not best practice to import that file.
+  AutoRefreshingClient clientViaStoredCredentials(ClientId clientId,
+      AccessCredentials accessCredentials, {http.Client baseClient}) {
+    bool closeUnderlyingClient = false;
+    if (baseClient == null) {
+      baseClient = http.Client();
+      closeUnderlyingClient = true;
+    }
+    return AutoRefreshingClient(baseClient, clientId, accessCredentials,
+        closeUnderlyingClient: closeUnderlyingClient);
+  }
+
+  Future<Map<String, String>> getUserInfo() async {
+    final savedTokens = await _readTokens();
+    final accessToken = AccessToken('Bearer', savedTokens.elementAt(1),
+        DateTime.parse(savedTokens.elementAt(2)));
+    final accessCredentials = AccessCredentials(accessToken,
+        savedTokens.elementAt(0), _scopes);
+    final client = clientViaStoredCredentials(_id, accessCredentials);
+    final oauth2 = Oauth2Api(client);
+    return oauth2.userinfo.get().then((userInfoPlus) {
+      return {
+        'name': userInfoPlus.name,
+        'picture': userInfoPlus.picture,
+      };
+    });
   }
 }
 

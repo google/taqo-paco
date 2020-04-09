@@ -4,15 +4,19 @@ import 'package:provider/provider.dart';
 import 'package:taqo_email_plugin/taqo_email_plugin.dart' as taqo_email_plugin;
 
 import '../model/experiment.dart';
+import '../model/experiment_provider.dart';
 import '../net/google_auth.dart';
 import '../service/experiment_service.dart';
-import 'find_experiments_page.dart';
+import '../storage/flutter_file_storage.dart';
+import '../storage/local_database.dart';
+import '../widgets/taqo_page.dart';
+import '../widgets/taqo_widgets.dart';
 import 'schedule_overview_page.dart';
 import 'survey_picker_page.dart';
 import 'survey/survey_page.dart';
 
 class RunningExperimentsPage extends StatefulWidget {
-  static const routeName = '/running_experiments';
+  static const routeName = 'running_experiments';
   final bool timeout;
 
   RunningExperimentsPage({this.timeout=false, Key key}) : super(key: key);
@@ -29,14 +33,25 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
 
   var gAuth = GoogleAuth();
 
-  var _experiments = <Experiment>[];
+  var _experiments = <ExperimentProvider>[];
+
+  final _active = <int>{};
 
   @override
   void initState() {
     super.initState();
     ExperimentService.getInstance().then((service) {
       setState(() {
-        _experiments = service.getJoinedExperiments();
+        _experiments = service.getJoinedExperiments().map((e) => ExperimentProvider(e)).toList();
+      });
+      LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename)).then((storage) {
+        storage.getAllNotifications().then((all) {
+          final active = all.where((n) => n.isActive);
+          setState(() {
+            _active.clear();
+            _active.addAll(active.map((e) => e.experimentId));
+          });
+        });
       });
     });
 
@@ -63,45 +78,33 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(
-        title: Text('Running Experiments'),
-        backgroundColor: Colors.indigo,
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.search),
-            tooltip: 'Find Experiments to Join',
-            onPressed: () => Navigator.pushNamed(context, FindExperimentsPage.routeName)
+    // TODO Add refresh?
+    return TaqoScaffold(
+        title: 'Running Experiments',
+        body: Container(
+          padding: EdgeInsets.all(8.0),
+          child: Column(
+            children: <Widget>[
+              _buildExperimentList(),
+            ],
           ),
-          IconButton(
-            icon: Icon(Icons.refresh),
-            tooltip: 'Update Experiments',
-            onPressed: updateExperiments,
-          )
-        ],
-      ),
-      body: Container(
-        padding: EdgeInsets.all(8.0),
-        child: Column(
-          children: <Widget>[
-            Divider(
-              height: 16.0,
-              color: Colors.black,
-            ),
-            _buildExperimentList(),
-          ],
         ),
-      ),
     );
   }
 
   Widget _buildExperimentList() {
+    if (_experiments.isEmpty) {
+      return Center(
+          child: const Text("""
+Join some Experiments to get started."""),
+      );
+    }
+
     final children = <Widget>[];
     for (var experiment in _experiments) {
-      children.add(ChangeNotifierProvider<Experiment>.value(
+      children.add(ChangeNotifierProvider<ExperimentProvider>.value(
         value: experiment,
-        child: ExperimentListItem(stopExperiment),
+        child: ExperimentListItem(_active.contains(experiment.experiment.id), stopExperiment),
       ));
     }
     return ListView(
@@ -115,7 +118,7 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
     final service = await ExperimentService.getInstance();
     service.updateJoinedExperiments().then((List<Experiment> experiments) {
       setState(() {
-        _experiments = experiments;
+        _experiments = experiments.map((e) => ExperimentProvider(e)).toList();
       });
     });
   }
@@ -126,7 +129,7 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
         final service = await ExperimentService.getInstance();
         service.stopExperiment(experiment);
         setState(() {
-          _experiments = service.getJoinedExperiments();
+          _experiments = service.getJoinedExperiments().map((e) => ExperimentProvider(e)).toList();
         });
       }
     });
@@ -157,19 +160,20 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
 }
 
 class ExperimentListItem extends StatelessWidget {
+  final bool _active;
   final stop;
-  ExperimentListItem(this.stop);
+  ExperimentListItem(this._active, this.stop);
 
   void _onTapExperiment(BuildContext context, Experiment experiment) {
     if (experiment.getActiveSurveys().length == 1) {
       Navigator.pushNamed(context, SurveyPage.routeName,
           arguments: [
-            experiment, experiment.getActiveSurveys().elementAt(0).name, DateTime.now(),
+            experiment, experiment.getActiveSurveys().elementAt(0).name,
           ]
       );
     } else if (experiment.getActiveSurveys().length > 1) {
       Navigator.pushNamed(context, SurveyPickerPage.routeName,
-          arguments: [experiment, DateTime.now(), ]);
+          arguments: [experiment, ]);
     } else {
       // TODO no action for finished surveys
       _alertLog(context, "This experiment has finished.");
@@ -178,11 +182,18 @@ class ExperimentListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<Experiment>(
-        builder: (BuildContext context, Experiment experiment, _) {
-          return Card(
+    return Consumer<ExperimentProvider>(
+        builder: (BuildContext context, ExperimentProvider provider, _) {
+          final experiment = provider.experiment;
+          return TaqoCard(
             child: Row(
               children: <Widget>[
+                if (_active) Padding(
+                  padding: EdgeInsets.only(right: 8),
+                  child: Icon(
+                    Icons.notifications_active, color: Colors.redAccent),
+                ),
+
                 Expanded(
                     child: InkWell(
                       child: Column(
@@ -202,8 +213,8 @@ class ExperimentListItem extends StatelessWidget {
                 ),
 
                 IconButton(
-                    icon: Icon(experiment.paused ? Icons.play_arrow : Icons.pause),
-                    onPressed: () => experiment.paused = !experiment.paused
+                    icon: Icon(provider.paused ? Icons.play_arrow : Icons.pause),
+                    onPressed: () => provider.paused = !provider.paused
                 ),
                 IconButton(
                     icon: Icon(Icons.edit),
@@ -268,3 +279,24 @@ class ExperimentListItem extends StatelessWidget {
 }
 
 enum ConfirmAction { CANCEL, ACCEPT }
+
+// This was on the old WelcomePage.
+// Putting it here to reference the ExperimentService Provider usage.
+//class RunningExperimentsList extends StatelessWidget {
+//  final bool _authenticated;
+//  RunningExperimentsList(this._authenticated);
+//
+//  @override
+//  Widget build(BuildContext context) {
+//    final service = Provider.of<ExperimentService>(context);
+//    bool isRunningExperiments() {
+//      return service != null && _authenticated && service.getJoinedExperiments().isNotEmpty;
+//    }
+//
+//    return RaisedButton(
+//      onPressed: isRunningExperiments() ?
+//          () => Navigator.pushReplacementNamed(context, RunningExperimentsPage.routeName) : null,
+//      child: const Text('Go to Joined Experiments'),
+//    );
+//  }
+//}

@@ -1,5 +1,4 @@
-
-import 'package:taqo_client/model/validator.dart';
+import 'validator.dart';
 
 abstract class Validatable {
   void validateWith(Validator validator);

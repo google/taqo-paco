@@ -1,36 +1,59 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:taqo_client/pages/survey/survey_page.dart';
+
+import '../model/experiment.dart';
+import '../storage/flutter_file_storage.dart';
+import '../storage/local_database.dart';
+import '../widgets/taqo_widgets.dart';
+import 'survey/survey_page.dart';
 
 class SurveyPickerPage extends StatefulWidget {
-  static const routeName = '/survey_picker';
+  static const routeName = 'survey_picker';
 
-  SurveyPickerPage({Key key}) : super(key: key);
+  final Experiment experiment;
+
+  SurveyPickerPage({
+    Key key,
+    @required this.experiment
+  }) : super(key: key);
 
   @override
   _SurveyPickerPageState createState() => _SurveyPickerPageState();
 }
 
 class _SurveyPickerPageState extends State<SurveyPickerPage> {
+  final _active = <String>{};
+
+  @override
+  void initState() {
+    super.initState();
+
+    LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename)).then((storage) {
+      storage.getAllNotificationsForExperiment(widget.experiment).then((all) {
+        final active = all.where((n) => n.isActive);
+        setState(() {
+          _active.clear();
+          _active.addAll(active.map((e) => e.experimentGroupName));
+        });
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final List<dynamic> args = ModalRoute.of(context).settings.arguments;
-    final experiment = args[0];
-    final selfReportTime = args.length > 1 ? args[1] : null;
-
     var rowChildren = <Widget>[
-      buildPickSurveyPromptRow(experiment),
+      buildPickSurveyPromptRow(widget.experiment),
       Divider(
         height: 16.0,
         color: Colors.black,
       ),
     ];
 
-    rowChildren.addAll(buildSurveyList(experiment, selfReportTime));
+    rowChildren.addAll(buildSurveyList(widget.experiment));
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(experiment.title + "Choose Survey"),
+        title: Text("${widget.experiment.title}: Choose Survey"),
         backgroundColor: Colors.indigo,
       ),
       body: Container(
@@ -45,16 +68,19 @@ class _SurveyPickerPageState extends State<SurveyPickerPage> {
   }
 
   Widget buildPickSurveyPromptRow(experiment) {
-    return Text(
+    return const Text(
       "Please pick the survey to respond",
       style: TextStyle(fontWeight: FontWeight.bold),
     );
   }
 
-  List<Widget> buildSurveyList(experiment, selfReportTime) {
+  List<Widget> buildSurveyList(experiment) {
     List<Widget> widgets = [];
     for (var survey in experiment.getActiveSurveys()) {
       var rowChildren = <Widget>[
+        if (_active.contains(survey.name)) Padding(padding: EdgeInsets.all(4),
+          child: Icon(Icons.notifications_active, color: Colors.redAccent,),),
+
         Expanded(
             child: InkWell(
           child: Column(
@@ -65,13 +91,14 @@ class _SurveyPickerPageState extends State<SurveyPickerPage> {
           ),
           onTap: () {
             Navigator.pushNamed(context, SurveyPage.routeName,
-                arguments: [experiment, survey.name, selfReportTime]);
+                arguments: [experiment, survey.name]);
           },
         )),
       ];
 
-      widgets.add(Card(child: Row(children: rowChildren)));
+      widgets.add(TaqoCard(child: Row(children: rowChildren)));
     }
+
     return widgets;
   }
 }

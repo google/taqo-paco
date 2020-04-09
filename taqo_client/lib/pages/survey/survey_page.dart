@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
 
@@ -12,22 +10,24 @@ import '../../pages/survey/feedback_page.dart';
 import '../../platform/platform_sync_service.dart';
 import '../../service/alarm/flutter_local_notifications.dart' as flutter_local_notifications;
 import '../../service/alarm/taqo_alarm.dart' as taqo_alarm;
+import '../../storage/flutter_file_storage.dart';
 import '../../storage/local_database.dart';
 import '../../util/conditional_survey_parser.dart';
 import '../../util/date_time_util.dart';
 import '../../util/zoned_date_time.dart';
+import '../../widgets/taqo_widgets.dart';
 import '../running_experiments_page.dart';
 import 'multi_list_output.dart';
 import 'multi_select_dialog.dart';
 
 class SurveyPage extends StatefulWidget {
-  static const routeName = '/survey';
+  static const routeName = 'survey';
 
   SurveyPage(
       {Key key,
       this.title,
       @required this.experiment,
-      @required this.experimentGroupName,})
+      @required this.experimentGroupName})
       : super(key: key);
 
   final String title;
@@ -40,6 +40,8 @@ class SurveyPage extends StatefulWidget {
 }
 
 class _SurveyPageState extends State<SurveyPage> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+
   static const String FORM_DURATION_IN_SECONDS = "Form Duration";
   Experiment _experiment;
   ExperimentGroup _experimentGroup;
@@ -66,6 +68,7 @@ class _SurveyPageState extends State<SurveyPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text("Survey: " + _experimentGroup.name),
         backgroundColor: Colors.indigo,
@@ -256,7 +259,7 @@ class _SurveyPageState extends State<SurveyPage> {
 //    );
 //  }
 
-  RaisedButton buildMultiSelectListPopupDialog(
+  Widget buildMultiSelectListPopupDialog(
       BuildContext context, Input2 input) {
     var myPopupMultiListOutput = popupListResults[input.name];
     if (myPopupMultiListOutput == null) {
@@ -267,7 +270,7 @@ class _SurveyPageState extends State<SurveyPage> {
     var dialogButton = Text((myPopupMultiListOutput.countSelected() > 0)
         ? myPopupMultiListOutput.countSelected().toString() + " selected"
         : 'Please select');
-    var raisedButton = RaisedButton(
+    return TaqoRoundButton(
       onPressed: () {
         var result = showDialog(
             context: context,
@@ -287,7 +290,6 @@ class _SurveyPageState extends State<SurveyPage> {
       },
       child: dialogButton,
     );
-    return raisedButton;
   }
 
   Widget buildScale(Input2 input) {
@@ -376,7 +378,8 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   Future<void> submitSurvey() async {
-    final pendingAlarms = await LocalDatabase().getAllAlarms();
+    final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+    final pendingAlarms = await storage.getAllAlarms();
 
     for (var entry in pendingAlarms.entries) {
       final id = entry.key;
@@ -395,11 +398,11 @@ class _SurveyPageState extends State<SurveyPage> {
         // We cancel here both for self-report as well as coming from a notification
         taqo_alarm.cancel(id);
         final activeNotifications =
-            await LocalDatabase().getAllNotificationsForExperiment(_experiment);
+            await storage.getAllNotificationsForExperiment(_experiment);
         // Clear any pending notification
         for (var notification in activeNotifications) {
           if (notification.matchesAction(alarm)) {
-            flutter_local_notifications.cancelNotification(notification.id);
+            await taqo_alarm.cancel(notification.id);
           }
         }
 
@@ -411,7 +414,7 @@ class _SurveyPageState extends State<SurveyPage> {
     // The implication here is that the actual timeout/expiration time is
     // the min of the explicit timeout and the time until the next notification
     // for the same survey fires
-    final pendingNotifications = (await LocalDatabase()
+    final pendingNotifications = (await storage
         .getAllNotificationsForExperiment(_experiment))
         .where((e) => e.experimentGroupName == _experimentGroup.name);
 
@@ -444,8 +447,7 @@ class _SurveyPageState extends State<SurveyPage> {
     _event.responseTime.dateTime.difference(_startTime).inSeconds;
     var savedOK = validateResponses();
     // TODO Validate answers and store locally.
-    var db = LocalDatabase();
-    await db.insertEvent(_event);
+    await storage.insertEvent(_event);
     notifySyncService();
     // If should be uploaded alert sync service
     if (savedOK) {
@@ -468,7 +470,7 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   Widget buildLocationButton(Input2 input) {
-    return RaisedButton(
+    return TaqoRoundButton(
       child: Text("Get location"),
       onPressed: () {
         _alertLog("Not yet implemented");
@@ -483,7 +485,7 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   Widget buildPhotoButton(Input2 input) {
-    return RaisedButton(
+    return TaqoRoundButton(
       child: Text("Get Photo"),
       onPressed: () {
         _alertLog("Not yet implemented");
@@ -498,7 +500,7 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   Widget buildAudioButton(Input2 input) {
-    return RaisedButton(
+    return TaqoRoundButton(
       child: Text("Get Audio"),
       onPressed: () {
         _alertLog("Not yet implemented");
@@ -559,20 +561,20 @@ class _SurveyPageState extends State<SurveyPage> {
       final blendMode = _event.responses[input.name] == value ? BlendMode.multiply : BlendMode.dst;
       return IconButton(
         icon: ClipRRect(
-          borderRadius: BorderRadius.circular(24),
-          child: Image(image: asset, color: color, colorBlendMode: blendMode,),
+          borderRadius: BorderRadius.circular(44),
+          child: Image(image: asset, color: color.withOpacity(0.9), colorBlendMode: blendMode),
         ),
-        iconSize: 40,
+        iconSize: 44,
         onPressed: () => setState(() => _event.responses[input.name] = value),
       );
     }
 
     return <Widget>[
-      getIconWidget(AssetImage("assets/smile_icon1.png"), Colors.red, 1),
-      getIconWidget(AssetImage("assets/smile_icon2.png"), Colors.orange, 2),
-      getIconWidget(AssetImage("assets/smile_icon3.png"), Colors.yellow, 3),
-      getIconWidget(AssetImage("assets/smile_icon4.png"), Colors.lightGreen, 4),
-      getIconWidget(AssetImage("assets/smile_icon5.png"), Colors.green, 5),
+      getIconWidget(AssetImage('assets/sentiment_very_dissatisfied.png'), Colors.red, 1),
+      getIconWidget(AssetImage('assets/sentiment_dissatisfied.png'), Colors.orange, 2),
+      getIconWidget(AssetImage('assets/sentiment_neutral.png'), Colors.yellow, 3),
+      getIconWidget(AssetImage('assets/sentiment_satisfied.png'), Colors.blue, 4),
+      getIconWidget(AssetImage('assets/sentiment_very_satisfied.png'), Colors.green, 5),
     ];
   }
 

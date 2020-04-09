@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:taqo_client/model/experiment.dart';
-import 'package:taqo_client/model/experiment_group.dart';
 
-import '../running_experiments_page.dart';
+import '../../model/experiment.dart';
+import '../../model/experiment_group.dart';
 import '../../service/alarm/flutter_local_notifications.dart' as flutter_local_notifications;
+import '../running_experiments_page.dart';
 
 class FeedbackPage extends StatefulWidget {
-  static const routeName = '/feedback';
+  static const routeName = 'feedback';
 
   FeedbackPage({Key key}) : super(key: key);
 
