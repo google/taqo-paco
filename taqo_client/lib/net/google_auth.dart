@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
+import "package:googleapis/oauth2/v2.dart";
 import "package:googleapis_auth/auth_io.dart";
+import 'package:googleapis_auth/src/auth_http_utils.dart';
 import "package:http/http.dart" as http;
 
 import '../model/event.dart';
@@ -10,15 +12,16 @@ import '../storage/unsecure_token_storage.dart';
 
 class GoogleAuth {
   static const String AUTH_TOKEN_TYPE_USERINFO_EMAIL =
-      "https://www.googleapis.com/auth/userinfo.email";
+      Oauth2Api.UserinfoEmailScope;
 
   static const String AUTH_TOKEN_TYPE_USERINFO_PROFILE =
-      "https://www.googleapis.com/auth/userinfo.profile";
+      Oauth2Api.UserinfoProfileScope;
 
   static const _clientId = "619519633889.apps.googleusercontent.com";
   static const _secret = "LOwVPys7lruBjjsI8erzh7KK";
   static final id = new ClientId(_clientId, _secret);
-  static const scopes = [AUTH_TOKEN_TYPE_USERINFO_EMAIL];
+  static const scopes = [AUTH_TOKEN_TYPE_USERINFO_EMAIL,
+    AUTH_TOKEN_TYPE_USERINFO_PROFILE, ];
 
   StreamController<bool> _authenticationStreamController =
       StreamController<bool>.broadcast();
@@ -33,7 +36,7 @@ class GoogleAuth {
     return _instance;
   }
 
-  Future doIt(urlCallback, successCallback) async {
+  Future doIt(urlCallback) async {
     List<String> savedTokens = await readTokens();
 
     if (savedTokens == null || savedTokens.isEmpty) {
@@ -48,17 +51,9 @@ class GoogleAuth {
         print("refreshToken = $refreshToken");
 
         _authenticationStreamController.add(true);
-
-        if (successCallback != null) {
-          successCallback();
-        }
       });
     } else {
-      //TODO choose a Future or a callback not this mishmash
-      if (successCallback != null) {
-        successCallback();
-      }
-      //await getExperimentsWithSavedCredentials(savedTokens, scopes, client);
+      _authenticationStreamController.add(true);
     }
   }
 
@@ -240,6 +235,38 @@ class GoogleAuth {
           headers: headers, body: jsonEncode(events));
     });
   }
+
+  // I created a PR to have this merged into the googleapis plugin 2 years ago,
+  // and it was never accepted:
+  // https://github.com/dart-lang/googleapis_auth/pull/44
+  // To avoid using another forked plugin, we're importing auth_http_utils.dart
+  // to just have this as a method. It's not best practice to import that file.
+  AutoRefreshingClient clientViaStoredCredentials(ClientId clientId,
+      AccessCredentials accessCredentials, {http.Client baseClient}) {
+    bool closeUnderlyingClient = false;
+    if (baseClient == null) {
+      baseClient = http.Client();
+      closeUnderlyingClient = true;
+    }
+    return AutoRefreshingClient(baseClient, clientId, accessCredentials,
+        closeUnderlyingClient: closeUnderlyingClient);
+  }
+
+  Future<Map<String, String>> getUserInfo() async {
+    final savedTokens = await readTokens();
+    final accessToken = AccessToken('Bearer', savedTokens.elementAt(1),
+        DateTime.parse(savedTokens.elementAt(2)));
+    final accessCredentials = AccessCredentials(accessToken,
+        savedTokens.elementAt(0), [AUTH_TOKEN_TYPE_USERINFO_PROFILE, ]);
+    final client = clientViaStoredCredentials(id, accessCredentials);
+    final oauth2 = Oauth2Api(client);
+    return oauth2.userinfo.get().then((userInfoPlus) {
+      return {
+        'name': userInfoPlus.name,
+        'picture': userInfoPlus.picture,
+      };
+    });
+  }
 }
 
 void prompt(String url) {
@@ -248,11 +275,11 @@ void prompt(String url) {
   print("");
 }
 
-main(List<String> arguments) {
-  try {
-    var googleAuth = GoogleAuth();
-    googleAuth.doIt(prompt, googleAuth.getExperimentsWithSavedCredentials);
-  } catch (e) {
-    print(e);
-  }
-}
+//main(List<String> arguments) {
+//  try {
+//    var googleAuth = GoogleAuth();
+//    googleAuth.doIt(prompt, googleAuth.getExperimentsWithSavedCredentials);
+//  } catch (e) {
+//    print(e);
+//  }
+//}

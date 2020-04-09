@@ -5,7 +5,7 @@ import '../model/experiment.dart';
 import 'running_experiments_page.dart';
 
 class PostJoinInstructionsPage extends StatefulWidget {
-  static const routeName = '/post_join_instructions';
+  static const routeName = 'post_join_instructions';
 
   PostJoinInstructionsPage({Key key}) : super(key: key);
 

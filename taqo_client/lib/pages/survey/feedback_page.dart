@@ -7,7 +7,7 @@ import '../../service/alarm/flutter_local_notifications.dart' as flutter_local_n
 import '../running_experiments_page.dart';
 
 class FeedbackPage extends StatefulWidget {
-  static const routeName = '/feedback';
+  static const routeName = 'feedback';
 
   FeedbackPage({Key key}) : super(key: key);
 

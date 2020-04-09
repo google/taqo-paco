@@ -17,7 +17,6 @@ import 'pages/schedule_overview_page.dart';
 import 'pages/survey/feedback_page.dart';
 import 'pages/survey/survey_page.dart';
 import 'pages/survey_picker_page.dart';
-import 'pages/welcome_page.dart';
 import 'platform/platform_logging.dart';
 import 'platform/platform_sync_service.dart';
 import 'service/alarm/taqo_alarm.dart' as taqo_alarm;
@@ -25,8 +24,6 @@ import 'service/logging_service.dart';
 import 'storage/esm_signal_storage.dart';
 import 'storage/flutter_file_storage.dart';
 import 'storage/local_database.dart';
-
-var gAuth = GoogleAuth();
 
 void _onTimeChange() async {
   /// TODO Currently provides no info on how the time was changed
@@ -36,7 +33,18 @@ void _onTimeChange() async {
   taqo_alarm.schedule();
 }
 
-void main() {
+// If there is an active notification when the app is open,
+// direct the user to the RunningExperimentsPage.
+// This also solves the issue with not having Pending (launch) Intents on Linux
+Future<bool> _checkActiveNotification() async {
+  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+  final activeNotifications = (await storage.getAllNotifications())
+      .where((n) => n.isActive);
+
+  return activeNotifications.isNotEmpty;
+}
+
+void main() async {
   // See https://github.com/flutter/flutter/wiki/Desktop-shells#target-platform-override
   if (!kIsWeb && (Platform.isLinux || Platform.isWindows)) {
     debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
@@ -50,38 +58,36 @@ void main() {
 
   // LoggingService.init() and taqo_alarm.init() should be called once and only once
   // Calling them here ensures that they complete before the app launches
-  LoggingService.init().then((_) {
-    taqo_alarm.init().then((_) {
-      runApp(MyApp());
-    });
-  });
+  await LoggingService.init();
+  await taqo_alarm.init();
+
+  final activeNotification = await _checkActiveNotification();
+  final authState = await GoogleAuth().isAuthenticated();
+  runApp(MyApp(activeNotification: activeNotification, authState: authState));
 }
 
 class MyApp extends StatefulWidget {
   static final navigatorKey = GlobalKey<NavigatorState>();
+
+  bool activeNotification;
+  bool authState;
+
+  MyApp({this.activeNotification, this.authState});
 
   @override
   State<StatefulWidget> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  // If there is an active notification when the app is open,
-  // direct the user to the RunningExperimentsPage.
-  // This also solves the issue with not having Pending (launch) Intents on Linux
-  void _checkActiveNotification() async {
-    final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-    final activeNotifications = (await storage.getAllNotifications())
-        .where((n) => n.isActive);
-
-    if (activeNotifications.isNotEmpty) {
-      MyApp.navigatorKey.currentState.pushReplacementNamed(RunningExperimentsPage.routeName);
-    }
-  }
+  String _initialRoute = LoginPage.routeName;
 
   @override
   void initState() {
     super.initState();
-    _checkActiveNotification();
+
+    if (widget.authState) {
+      _initialRoute = RunningExperimentsPage.routeName;
+    }
   }
 
   @override
@@ -91,7 +97,7 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         primarySwatch: Colors.indigo,
       ),
-      initialRoute: '/welcome',
+      initialRoute: _initialRoute,
       navigatorKey: MyApp.navigatorKey,
       routes: {
         LoginPage.routeName: (context) => LoginPage(),
@@ -102,7 +108,6 @@ class _MyAppState extends State<MyApp> {
         ScheduleOverviewPage.routeName: (context) => ScheduleOverviewPage(),
         ScheduleDetailPage.routeName: (context) => ScheduleDetailPage(),
         InvitationEntryPage.routeName: (context) => InvitationEntryPage(),
-        WelcomePage.routeName: (context) => WelcomePage(),
         PostJoinInstructionsPage.routeName: (context) => PostJoinInstructionsPage(),
       },
       // Here the route for SurveyPage is configured separately in onGenerateRoute(),

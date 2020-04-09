@@ -8,6 +8,7 @@ import '../model/schedule.dart';
 import '../model/schedule_trigger.dart';
 import '../service/experiment_service.dart';
 import '../util/schedule_printer.dart' as schedule_printer;
+import '../widgets/taqo_widgets.dart';
 import 'schedule_detail_page.dart';
 
 class ScheduleOverviewArguments {
@@ -25,7 +26,7 @@ class ScheduleRevision {
 }
 
 class ScheduleOverviewPage extends StatefulWidget {
-  static const routeName = '/schedule_overview';
+  static const routeName = 'schedule_overview';
 
   ScheduleOverviewPage({Key key}) : super(key: key);
 
@@ -137,8 +138,7 @@ class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
                 )),
           ];
 
-          var experimentRow = Card(child: Padding(padding: EdgeInsets.all(8),
-              child: Row(children: rowChildren)));
+          var experimentRow = TaqoCard(child: Row(children: rowChildren));
           widgets.add(experimentRow);
         }
       }
