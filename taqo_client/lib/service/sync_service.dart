@@ -33,6 +33,9 @@ List<Event> _getUploadedEvents(List<Event> allEvents,
   for (var i = 0; i < outcomes.length; i++) {
     if (outcomes[i].status) {
       uploaded.add(allEvents[i]);
+    } else {
+      logger.warning('Event failed to upload: ${outcomes[i].errorMessage}'
+          'Event was: ${allEvents[i].toString()}');
     }
   }
   return uploaded;
