@@ -1,0 +1,234 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:sqlite3/sqlite.dart';
+
+import '../../model/action_specification.dart';
+import '../../model/event.dart';
+import '../../model/notification_holder.dart';
+import '../../storage/dart_file_storage.dart';
+import 'sql_commands.dart';
+
+class LinuxDatabase {
+  static const _dbFile = 'experiments.db';
+
+  static Completer<LinuxDatabase> _completer;
+  static LinuxDatabase _instance;
+
+  Database _db;
+
+  LinuxDatabase._();
+
+  static Future<LinuxDatabase> get() {
+    if (_completer != null && !_completer.isCompleted) {
+      return _completer.future;
+    }
+    if (_instance == null) {
+      _completer = Completer<LinuxDatabase>();
+      final temp = LinuxDatabase._();
+      temp._initialize().then((db) {
+        _instance = temp;
+        _completer.complete(_instance);
+      });
+      return _completer.future;
+    }
+    return Future.value(_instance);
+  }
+
+  Future<Database> _initialize() async {
+    final dbPath = '${DartFileStorage.getLocalStorageDir().path}/$_dbFile';
+    return File(dbPath).create(recursive: true).then((_) async {
+      _db = Database(dbPath);
+      await _createTables();
+      return _db;
+    });
+  }
+
+  String _checkTableExistsQuery(String tableName) =>
+      "SELECT COUNT(1) FROM sqlite_master WHERE type='table' AND name='$tableName'";
+
+  final _createTableStatement = <String, String>{
+    'alarms': createAlarmsTable,
+    'notifications': createNotificationsTable,
+    'events': createEventsTable,
+    'outputs': createOutputsTable,
+  };
+
+  Future _maybeCreateTable(String tableName) async {
+    final result = _db.query(_checkTableExistsQuery(tableName));
+    final row = await result.first;
+    final exists = row.readColumnByIndexAsInt(0) > 0;
+    if (exists == 0) {
+      await _db.execute(_createTableStatement[tableName]);
+    }
+  }
+
+  Future _createTables() async {
+    for (var table in _createTableStatement.keys) {
+      _maybeCreateTable(table);
+    }
+  }
+
+  Future<int> insertAlarm(ActionSpecification actionSpecification) async {
+    return _db.execute(insertAlarmCommand,
+        params: [jsonEncode(actionSpecification)]);
+  }
+
+  Future<ActionSpecification> getAlarm(int id) async {
+    final result = _db.query("""SELECT * FROM alarms WHERE _id = ${id}""");
+    final row = await result.first;
+    final json = row.readColumnAsText('json');
+    return ActionSpecification.fromJson(jsonDecode(json));
+  }
+
+  Future<Map<int, ActionSpecification>> getAllAlarms() async {
+    final result = _db.query("""SELECT * FROM alarms""");
+    final alarms = <int, ActionSpecification>{};
+    for (var row in result) {
+      final id = row.readColumnByIndexAsInt(0);
+      final json = row.readColumnAsText('json');
+      alarms[id] = ActionSpecification.fromJson(jsonDecode(json));
+    }
+    return alarms;
+  }
+
+  void removeAlarm(int id) {
+    _db.execute("""DELETE FROM alarms WHERE _id = ${id}""");
+  }
+
+  Future<int> insertNotification(NotificationHolder notificationHolder) async {
+    return _db.execute(insertNotificationCommand,
+        params: [
+          '${notificationHolder.alarmTime}',
+          '${notificationHolder.experimentId}',
+          '${notificationHolder.noticeCount}',
+          '${notificationHolder.timeoutMillis}',
+          '${notificationHolder.notificationSource}',
+          notificationHolder.message,
+          notificationHolder.experimentGroupName,
+          '${notificationHolder.actionTriggerId}',
+          '${notificationHolder.actionId}',
+          '${notificationHolder.actionTriggerSpecId}',
+          '${notificationHolder.snoozeTime ?? 0}',
+          '${notificationHolder.snoozeCount ?? 0}']);
+  }
+
+  NotificationHolder _buildNotificationHolder(Map<String, dynamic> json) =>
+      NotificationHolder.fromJson({
+        'id': json['_id'],
+        'alarmTime': json['alarm_time'],
+        'experimentId': json['experiment_id'],
+        'noticeCount': json['notice_count'],
+        'timeoutMillis': json['timeout_millis'],
+        'notificationSource': json['notification_source'],
+        'message': json['message'],
+        'experimentGroupName': json['experiment_group_name'],
+        'actionTriggerId': json['action_trigger_id'],
+        'actionId': json['action_id'],
+        'actionTriggerSpecId': json['action_trigger_spec_id'],
+        'snoozeTime': json['snooze_time'],
+        'snoozeCount': json['snooze_count'],
+      });
+
+  Future<NotificationHolder> getNotification(int id) async {
+    final result = _db.query("""SELECT * FROM notifications WHERE _id = ${id}""");
+    if (result.length > 0) {
+      final row = await result.first;
+      return _buildNotificationHolder({
+        '_id': row.readColumnByIndexAsInt(0),
+        'alarm_time': row.readColumnByIndexAsInt(1),
+        'experiment_id': row.readColumnByIndexAsInt(2),
+        'notice_count': row.readColumnByIndexAsInt(3),
+        'timeout_millis': row.readColumnByIndexAsInt(4),
+        'notification_source': row.readColumnByIndexAsText(5),
+        'message': row.readColumnByIndexAsText(6),
+        'experiment_group_name': row.readColumnByIndexAsText(7),
+        'action_trigger_id': row.readColumnByIndexAsInt(8),
+        'action_id': row.readColumnByIndexAsInt(9),
+        'action_trigger_spec_id': row.readColumnByIndexAsInt(10),
+        'snooze_time': row.readColumnByIndexAsInt(11),
+        'snooze_count': row.readColumnByIndexAsInt(12),
+      });
+    }
+    return null;
+  }
+
+  Future<List<NotificationHolder>> getAllNotifications() async {
+    final result = _db.query("""SELECT * FROM notifications""");
+    final notifications = <NotificationHolder>[];
+    for (var row in result) {
+      notifications.add(_buildNotificationHolder({
+        '_id': row.readColumnByIndexAsInt(0),
+        'alarm_time': row.readColumnByIndexAsInt(1),
+        'experiment_id': row.readColumnByIndexAsInt(2),
+        'notice_count': row.readColumnByIndexAsInt(3),
+        'timeout_millis': row.readColumnByIndexAsInt(4),
+        'notification_source': row.readColumnByIndexAsText(5),
+        'message': row.readColumnByIndexAsText(6),
+        'experiment_group_name': row.readColumnByIndexAsText(7),
+        'action_trigger_id': row.readColumnByIndexAsInt(8),
+        'action_id': row.readColumnByIndexAsInt(9),
+        'action_trigger_spec_id': row.readColumnByIndexAsInt(10),
+        'snooze_time': row.readColumnByIndexAsInt(11),
+        'snooze_count': row.readColumnByIndexAsInt(12),
+      }));
+    }
+    return notifications;
+  }
+
+  Future<List<NotificationHolder>> getAllNotificationsForExperiment(int experimentId) async {
+    final result = _db.query("""SELECT * FROM notifications WHERE experiment_id = ${experimentId}""");
+    final notifications = <NotificationHolder>[];
+    for (var row in result) {
+      notifications.add(_buildNotificationHolder({
+        '_id': row.readColumnByIndexAsInt(0),
+        'alarm_time': row.readColumnByIndexAsInt(1),
+        'experiment_id': row.readColumnByIndexAsInt(2),
+        'notice_count': row.readColumnByIndexAsInt(3),
+        'timeout_millis': row.readColumnByIndexAsInt(4),
+        'notification_source': row.readColumnByIndexAsText(5),
+        'message': row.readColumnByIndexAsText(6),
+        'experiment_group_name': row.readColumnByIndexAsText(7),
+        'action_trigger_id': row.readColumnByIndexAsInt(8),
+        'action_id': row.readColumnByIndexAsInt(9),
+        'action_trigger_spec_id': row.readColumnByIndexAsInt(10),
+        'snooze_time': row.readColumnByIndexAsInt(11),
+        'snooze_count': row.readColumnByIndexAsInt(12),
+      }));
+    }
+    return notifications;
+  }
+
+  Future<void> removeNotification(int id) async {
+    _db.execute("""DELETE FROM notifications WHERE _id = ${id}""");
+  }
+
+  Future<void> removeAllNotifications() async {
+    _db.execute("""DELETE FROM notifications""");
+  }
+
+  Future<int> insertEvent(Event event) async {
+    event.id = await _db.execute(insertEventCommand,
+        params: [
+          '${event.experimentId}',
+          '${event.experimentServerId}',
+          event.experimentName,
+          '${event.experimentVersion}',
+          event.scheduleTime?.toIso8601String(withColon: true),
+          event.responseTime?.toIso8601String(withColon: true),
+          '${event.uploaded}',
+          event.groupName,
+          '${event.actionTriggerId}',
+          '${event.actionTriggerSpecId}',
+          '${event.actionId}']);
+    for (var responseEntry in event.responses.entries) {
+      await _db.execute(insertOutputCommand,
+          params: [
+            '${event.id}',
+            '${responseEntry.key}',
+            '${responseEntry.value}']);
+    }
+    return event.id;
+  }
+}

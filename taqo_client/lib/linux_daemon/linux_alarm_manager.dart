@@ -9,7 +9,7 @@ import '../scheduling/action_schedule_generator.dart';
 import '../storage/dart_file_storage.dart';
 import '../storage/esm_signal_storage.dart';
 import '../util/date_time_util.dart';
-import 'linux_database.dart';
+import 'database/linux_database.dart';
 import 'linux_notification_manager.dart' as linux_notification_manager;
 import 'rpc_constants.dart';
 import 'util.dart';

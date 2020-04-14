@@ -5,7 +5,7 @@ import '../model/experiment.dart';
 import '../model/notification_holder.dart';
 import 'dbus_notifications.dart';
 import 'linux_alarm_manager.dart' show timeout;
-import 'linux_database.dart';
+import 'database/linux_database.dart';
 
 const _appName = 'Taqo';
 
