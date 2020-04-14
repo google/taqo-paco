@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:taqo_client/model/experiment.dart';
-import 'package:taqo_client/net/google_auth.dart';
-import 'package:taqo_client/pages/welcome_page.dart';
-import 'package:taqo_client/service/experiment_service.dart';
 
+import '../model/experiment.dart';
+import '../net/google_auth.dart';
+import '../service/experiment_service.dart';
+import '../widgets/taqo_page.dart';
+import '../widgets/taqo_widgets.dart';
 import 'experiment_detail_page.dart';
 
 class FindExperimentsPage extends StatefulWidget {
-  static const routeName = '/find_experiments';
+  static const routeName = 'find_experiments';
 
   FindExperimentsPage({Key key}) : super(key: key);
 
@@ -21,23 +22,10 @@ class _FindExperimentsPageState extends State<FindExperimentsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Find Experiments to Join'),
-        backgroundColor: Colors.indigo,
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.home),
-            tooltip: 'Welcome Page',
-            onPressed: () {
-              Navigator.pushNamed(context, WelcomePage.routeName);
-            },
-          )
-        ],
-      ),
+    return TaqoScaffold(
+      title: 'Find Experiments to Join',
       body: Container(
         padding: EdgeInsets.all(8.0),
-        //margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
         child: Column(
           children: <Widget>[
             buildWelcomeTextWidget(),
@@ -73,7 +61,7 @@ class ExperimentList extends StatelessWidget {
 
     if (experiments != null) {
       for (var experiment in experiments) {
-        var experimentRow = Card(
+        var experimentRow = TaqoCard(
             child: InkWell(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,7 +78,8 @@ class ExperimentList extends StatelessWidget {
               onTap: () {
                 Navigator.pushNamed(context, ExperimentDetailPage.routeName, arguments: experiment);
               },
-            ));
+            )
+        );
 
         listItems.add(experimentRow);
       }

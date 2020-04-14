@@ -1,6 +1,7 @@
-import 'package:taqo_client/model/viz_variable.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:taqo_client/util/zoned_date_time.dart';
+
+import '../util/zoned_date_time.dart';
+import 'viz_variable.dart';
 
 part 'visualization.g.dart';
 

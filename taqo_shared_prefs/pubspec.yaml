@@ -1,0 +1,8 @@
+name: taqo_shared_prefs
+version: 0.1.0
+description: Pure-dart implementation of shared preferences
+dependencies:
+  #sembast: ^2.3.0
+  path: ^1.6.4
+environment:
+  sdk: '>=2.1.0 <3.0.0'

@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:taqo_client/model/schedule.dart';
 
 import '../model/schedule.dart';
 import '../util/zoned_date_time.dart';
@@ -12,8 +10,6 @@ DateTime getLater(DateTime dt1, DateTime dt2) {
   if (dt1 == null || dt2 == null) return dt1 ?? dt2;
   return dt1.isAfter(dt2) ? dt1 : dt2;
 }
-
-int getMsFromMidnight(TimeOfDay time) => (60 * time.hour + time.minute) * 60 * 1000;
 
 String getHourOffsetAsTimeString(int millisFromMidnight) {
   final hourFormatter = DateFormat('hh:mma');

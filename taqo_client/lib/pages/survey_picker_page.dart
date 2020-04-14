@@ -2,11 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../model/experiment.dart';
+import '../storage/flutter_file_storage.dart';
 import '../storage/local_database.dart';
+import '../widgets/taqo_widgets.dart';
 import 'survey/survey_page.dart';
 
 class SurveyPickerPage extends StatefulWidget {
-  static const routeName = '/survey_picker';
+  static const routeName = 'survey_picker';
 
   final Experiment experiment;
 
@@ -26,11 +28,13 @@ class _SurveyPickerPageState extends State<SurveyPickerPage> {
   void initState() {
     super.initState();
 
-    LocalDatabase().getAllNotificationsForExperiment(widget.experiment).then((all) {
-      final active = all.where((n) => n.isActive);
-      setState(() {
-        _active.clear();
-        _active.addAll(active.map((e) => e.experimentGroupName));
+    LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename)).then((storage) {
+      storage.getAllNotificationsForExperiment(widget.experiment).then((all) {
+        final active = all.where((n) => n.isActive);
+        setState(() {
+          _active.clear();
+          _active.addAll(active.map((e) => e.experimentGroupName));
+        });
       });
     });
   }
@@ -49,7 +53,7 @@ class _SurveyPickerPageState extends State<SurveyPickerPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.experiment.title + "Choose Survey"),
+        title: Text("${widget.experiment.title}: Choose Survey"),
         backgroundColor: Colors.indigo,
       ),
       body: Container(
@@ -64,7 +68,7 @@ class _SurveyPickerPageState extends State<SurveyPickerPage> {
   }
 
   Widget buildPickSurveyPromptRow(experiment) {
-    return Text(
+    return const Text(
       "Please pick the survey to respond",
       style: TextStyle(fontWeight: FontWeight.bold),
     );
@@ -92,8 +96,9 @@ class _SurveyPickerPageState extends State<SurveyPickerPage> {
         )),
       ];
 
-      widgets.add(Card(child: Row(children: rowChildren)));
+      widgets.add(TaqoCard(child: Row(children: rowChildren)));
     }
+
     return widgets;
   }
 }

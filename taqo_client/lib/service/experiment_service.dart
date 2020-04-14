@@ -1,10 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
+
 import '../model/event.dart';
 import '../model/experiment.dart';
+import '../model/experiment_provider.dart' show sharedPrefsExperimentPauseKey;
 import '../net/google_auth.dart';
 import '../net/invitation_response.dart';
+import '../storage/flutter_file_storage.dart';
 import '../storage/joined_experiments_storage.dart';
 import '../storage/local_database.dart';
 import '../util/schedule_printer.dart' as schedule_printer;
@@ -35,58 +39,109 @@ class ExperimentService {
     return Future.value(_instance);
   }
 
-  Future<void> _loadJoinedExperiments() async =>
-      JoinedExperimentsStorage().readJoinedExperiments().then((List<Experiment> experiments) {
-        _mapifyExperimentsById(experiments);
-      });
-
-  Future<List<Experiment>> getExperimentsFromServer() async {
-    return _gAuth.getExperimentsWithSavedCredentials().then((experimentJson) {
-      final List experimentJsonList = jsonDecode(experimentJson);
-      final experiments = <Experiment>[];
-      for (var experimentJson in experimentJsonList) {
-        var experiment;
-        try {
-          experiment = Experiment.fromJson(experimentJson);
-        } catch(e) {
-          print('Error parsing experiment ${experimentJson['id']}: $e');
-          continue;
-        }
-        // Don't show Experiments already joined
-        if (!_joined.containsKey(experiment.id)) {
-          experiments.add(experiment);
-        }
-      }
-      return experiments;
-    });
-  }
-
-  Future<Experiment> getExperimentFromServerById(experimentId) async {
-    return _gAuth.getExperimentById(experimentId).then((experimentJson) {
-      var experimentJsonObj = jsonDecode(experimentJson).elementAt(0);
-      return Experiment.fromJson(experimentJsonObj);
-    });
-  }
-
-  Future<Experiment> getPubExperimentFromServerById(experimentId) async {
-    return _gAuth.getPubExperimentById(experimentId).then((experimentJson) {
-      var experimentJsonObj = jsonDecode(experimentJson).elementAt(0);
-      return Experiment.fromJson(experimentJsonObj);
-    });
-  }
-
-  Future<List<Experiment>> updateJoinedExperiments() async {
-    return _gAuth.getExperimentsByIdWithSavedCredentials(_joined.keys).then((experimentJson) {
-      final List experimentJsonList = jsonDecode(experimentJson);
-      final experiments = <Experiment>[];
-      for (var experimentJson in experimentJsonList) {
-        experiments.add(Experiment.fromJson(experimentJson));
-      }
-
+  Future<void> _loadJoinedExperiments() async {
+    final storage = await JoinedExperimentsStorage.get(FlutterFileStorage(JoinedExperimentsStorage.filename));
+    return storage.readJoinedExperiments().then((List<Experiment> experiments) {
       _mapifyExperimentsById(experiments);
-      saveJoinedExperiments();
-      return experiments;
     });
+  }
+
+  Future<List<Experiment>> getExperimentsFromServer() {
+    return _gAuth.getExperimentsWithSavedCredentials()
+        .then((response) {
+          if (!response.isSuccess) {
+            return <Experiment>[];
+          }
+          final experimentJson = response.body;
+          List experimentJsonList;
+          try {
+            experimentJsonList = jsonDecode(experimentJson);
+          } catch (e) {
+            print('Error decoding Experiments response: $e');
+            print ('Response was: "$experimentJson"');
+            return <Experiment>[];
+          }
+          final experiments = <Experiment>[];
+          for (var experimentJson in experimentJsonList) {
+            var experiment;
+            try {
+              experiment = Experiment.fromJson(experimentJson);
+            } catch (e) {
+              print('Error parsing experiment ${experimentJson['id']}: $e');
+              continue;
+            }
+            // Don't show Experiments already joined
+            if (experiment != null && !_joined.containsKey(experiment.id)) {
+              experiments.add(experiment);
+            }
+          }
+          return experiments;
+        });
+  }
+
+  Future<Experiment> getExperimentFromServerById(experimentId) {
+    return _gAuth.getExperimentByIdWithSavedCredentials(experimentId)
+        .then((response) {
+          if (!response.isSuccess) {
+            return null;
+          }
+          final experimentJson = response.body;
+          try {
+            var experimentJsonObj = jsonDecode(experimentJson).elementAt(0);
+            return Experiment.fromJson(experimentJsonObj);
+          } catch (e) {
+            print('Error decoding Experiments response: $e');
+            print ('Response was: "$experimentJson"');
+            return null;
+          }
+        });
+  }
+
+  Future<Experiment> getPubExperimentFromServerById(experimentId) {
+    return _gAuth.getPubExperimentById(experimentId)
+        .then((response) {
+          if (!response.isSuccess) {
+            return null;
+          }
+          final experimentJson = response.body;
+          try {
+            var experimentJsonObj = jsonDecode(experimentJson).elementAt(0);
+            return Experiment.fromJson(experimentJsonObj);
+          } catch (e) {
+            print('Error decoding Experiments response: $e');
+            print ('Response was: "$experimentJson"');
+            return null;
+          }
+        });
+  }
+
+  Future<List<Experiment>> updateJoinedExperiments() {
+    return _gAuth.getExperimentsByIdWithSavedCredentials(_joined.keys.toList())
+        .then((response) {
+          if (!response.isSuccess) {
+            final experiments = <Experiment>[];
+            _mapifyExperimentsById(experiments);
+            saveJoinedExperiments();
+            return experiments;
+          }
+          final experimentJson = response.body;
+          List experimentJsonList;
+          try {
+            experimentJsonList = jsonDecode(experimentJson);
+          } catch (e) {
+            print('Error decoding Experiments response: $e');
+            print ('Response was: "$experimentJson"');
+            return <Experiment>[];
+          }
+          final experiments = <Experiment>[];
+          for (var experimentJson in experimentJsonList) {
+            experiments.add(Experiment.fromJson(experimentJson));
+          }
+
+          _mapifyExperimentsById(experiments);
+          saveJoinedExperiments();
+          return experiments;
+        });
   }
 
   List<Experiment> getJoinedExperiments() => List<Experiment>.from(_joined.values);
@@ -110,20 +165,26 @@ class ExperimentService {
     return event;
   }
 
-  void joinExperiment(Experiment experiment) {
+  void joinExperiment(Experiment experiment) async {
     _joined[experiment.id] = experiment;
     saveJoinedExperiments();
-    LocalDatabase().insertEvent(_createJoinEvent(experiment, joining: true));
+    final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+    storage.insertEvent(_createJoinEvent(experiment, joining: true));
   }
 
   bool isJoined(Experiment experiment) => _joined.containsKey(experiment.id);
 
-  void stopExperiment(Experiment experiment) {
+  void stopExperiment(Experiment experiment) async {
+    final storageDir = await FlutterFileStorage.getLocalStorageDir();
+    final sharedPreferences = TaqoSharedPrefs(storageDir.path);
+    await sharedPreferences.remove("${sharedPrefsExperimentPauseKey}_${experiment.id}");
+
     _joined.remove(experiment.id);
     saveJoinedExperiments();
-    LocalDatabase().insertEvent(_createJoinEvent(experiment, joining: false));
+    final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+    storage.insertEvent(_createJoinEvent(experiment, joining: false));
 
-    flutter_local_notifications.cancelForExperiment(experiment);
+    taqo_alarm.cancelForExperiment(experiment);
   }
 
   void _mapifyExperimentsById(List<Experiment> experiments) {
@@ -131,35 +192,41 @@ class ExperimentService {
   }
 
   void saveJoinedExperiments() async {
-    await JoinedExperimentsStorage().saveJoinedExperiments(_joined.values.toList());
+    final storage = await JoinedExperimentsStorage.get(FlutterFileStorage(JoinedExperimentsStorage.filename));
+    await storage.saveJoinedExperiments(_joined.values.toList());
     taqo_alarm.schedule();
   }
 
   Future<InvitationResponse> checkCode(String code) async {
-    return _gAuth.checkInvitationWithSavedCredentials(code).then((jsonResponse) {
-      var response = jsonDecode(jsonResponse);
+    return _gAuth.checkInvitationWithSavedCredentials(code)
+        .then((response) {
+          if (!response.isSuccess) {
+            return null;
+          }
+          final jsonResponse = response.body;
+          var decodedResponse = jsonDecode(jsonResponse);
+          var errorMessage;
+          var participantId;
+          var experimentId;
 
-      var errorMessage;
-      var participantId;
-      var experimentId;
+          if (jsonResponse.startsWith('[')) {
+            decodedResponse = decodedResponse.elementAt(0);
+            errorMessage = decodedResponse["errorMessage"];
+          } else {
+            participantId = decodedResponse["participantId"];
+            experimentId = decodedResponse["experimentId"];
+          }
 
-      if (jsonResponse.startsWith('[')) {
-        response = response.elementAt(0);
-        errorMessage = response["errorMessage"];
-      } else {
-        participantId = response["participantId"];
-        experimentId = response["experimentId"];
-      }
-
-      return InvitationResponse(
-          errorMessage: errorMessage,
-          participantId: participantId,
-          experimentId: experimentId);
-    });
+          return InvitationResponse(
+              errorMessage: errorMessage,
+              participantId: participantId,
+              experimentId: experimentId);
+        });
   }
 
   Future<void> clear() async {
     _joined.clear();
-    await JoinedExperimentsStorage().clear();
+    final storage = await JoinedExperimentsStorage.get(FlutterFileStorage(JoinedExperimentsStorage.filename));
+    await storage.clear();
   }
 }

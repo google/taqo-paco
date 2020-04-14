@@ -1,6 +1,7 @@
-import 'package:taqo_client/model/validatable.dart';
-import 'package:taqo_client/model/validator.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import 'validatable.dart';
+import 'validator.dart';
 
 part 'interrupt_cue.g.dart';
 

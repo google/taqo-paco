@@ -3,6 +3,7 @@ import 'dart:math';
 
 import '../model/experiment.dart';
 import '../model/schedule.dart';
+import '../storage/local_file_storage.dart';
 import '../storage/esm_signal_storage.dart';
 import '../util/date_time_util.dart';
 
@@ -15,10 +16,11 @@ class ESMScheduleGenerator {
   final int triggerId;
   final Schedule schedule;
 
+  final ILocalFileStorage _storageImpl;
   final Completer _lock;
 
-  ESMScheduleGenerator(this.startTime, this.experiment, this.groupName, this.triggerId,
-      this.schedule) : _lock = Completer() {
+  ESMScheduleGenerator(this._storageImpl, this.startTime, this.experiment, this.groupName,
+      this.triggerId, this.schedule) : _lock = Completer() {
     _generate();
   }
 
@@ -34,12 +36,13 @@ class ESMScheduleGenerator {
   Future<List<DateTime>> allScheduleTimes() async {
     await _lock.future;
     final periodStart = _getPeriodStart();
-    final signals = await ESMSignalStorage().getSignals(
+    final storage = await ESMSignalStorage.get(_storageImpl);
+    final signals = await storage.getSignals(
         periodStart, experiment.id, groupName, triggerId, schedule.id);
     if (signals != null) {
       return signals;
     }
-    return ESMSignalStorage().getSignals(
+    return storage.getSignals(
         _getNextPeriodStart(periodStart), experiment.id, groupName, triggerId, schedule.id);
   }
 
@@ -91,7 +94,8 @@ class ESMScheduleGenerator {
 
   /// Retrieve the next scheduled alarm time for [periodStart] from storage
   Future<DateTime> _lookupNextESMScheduleTime(DateTime periodStart) async {
-    final signals = await ESMSignalStorage()
+    final storage = await ESMSignalStorage.get(_storageImpl);
+    final signals = await storage
         .getSignals(periodStart, experiment.id, groupName, triggerId, schedule.id);
 
     if (signals.isEmpty) {
@@ -115,7 +119,8 @@ class ESMScheduleGenerator {
       return;
     }
 
-    final signals = await ESMSignalStorage()
+    final storage = await ESMSignalStorage.get(_storageImpl);
+    final signals = await storage
         .getSignals(periodStart, experiment.id, groupName, triggerId, schedule.id);
 
     if (signals.isNotEmpty) {
@@ -126,7 +131,7 @@ class ESMScheduleGenerator {
 
     final signalTimes = _generateESMTimesForSchedule(periodStart);
     for (var signal in signalTimes) {
-      await ESMSignalStorage()
+      await storage
           .storeSignal(periodStart, experiment.id, signal, groupName, triggerId, schedule.id);
     }
   }

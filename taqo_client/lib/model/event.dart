@@ -1,7 +1,8 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:taqo_client/model/experiment.dart';
-import 'package:taqo_client/model/experiment_group.dart';
-import 'package:taqo_client/util/zoned_date_time.dart';
+
+import 'experiment.dart';
+import 'experiment_group.dart';
+import '../util/zoned_date_time.dart';
 
 part 'event.g.dart';
 
@@ -81,4 +82,9 @@ class Event {
       string == null ? null : ZonedDateTime.fromString(string);
   static String _zonedDateTimeToString(ZonedDateTime zonedDateTime) =>
       zonedDateTime?.toString();
+
+  @override
+  String toString() {
+    return '$experimentName - $groupName: ${responses.toString()}';
+  }
 }

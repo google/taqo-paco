@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:taqo_client/model/experiment.dart';
-import 'package:taqo_client/model/schedule.dart';
-import 'package:taqo_client/model/signal_time.dart';
-import 'package:taqo_client/util/date_time_util.dart'
-    show DAYS_SHORT_NAMES, ORDINAL_NUMBERS, getHourOffsetAsTimeString, getMsFromMidnight;
+
+import '../model/experiment.dart';
+import '../model/schedule.dart';
+import '../model/signal_time.dart';
+import '../util/date_time_util.dart';
+
+import '../widgets/taqo_widgets.dart';
 
 typedef SetTimeFunction = void Function(int newTime);
 
@@ -15,7 +17,7 @@ class ScheduleDetailArguments {
 }
 
 class ScheduleDetailPage extends StatefulWidget {
-  static const routeName = '/schedule_details';
+  static const routeName = 'schedule_details';
 
   ScheduleDetailPage({Key key}) : super(key: key);
 
@@ -87,10 +89,10 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
     final time = TimeOfDay.fromDateTime(DateTime(0).add(Duration(milliseconds: msFromMidnight)));
     return Row(children: <Widget>[
       SizedBox(width: labelWidth, child: Text("$label: ")),
-      RaisedButton(onPressed: () async {
+      TaqoRoundButton(onPressed: () async {
         final newTime = await showTimePicker(context: context, initialTime: time);
         if (newTime != null) {
-          _setStateAndMarkChanged(() => set(getMsFromMidnight(newTime)));
+          _setStateAndMarkChanged(() => set(msFromMidnight));
         }
       },
         child: Text(getHourOffsetAsTimeString(msFromMidnight))),

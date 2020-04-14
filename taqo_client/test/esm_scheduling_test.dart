@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taqo_client/model/experiment.dart';
 import 'package:taqo_client/scheduling/action_schedule_generator.dart';
 import 'package:taqo_client/storage/esm_signal_storage.dart';
+import 'package:taqo_client/storage/flutter_file_storage.dart';
 
 List<Experiment> _loadExperiments(String json) {
   try {
@@ -118,17 +118,18 @@ final m = {
 
 void main() async {
   TestWidgetsFlutterBinding.ensureInitialized();
-  SharedPreferences.setMockInitialValues({});
 
   final esmExperiments = _loadExperiments('test/data/esm_schedule_test_data.json');
+  final storageImpl = FlutterFileStorage(ESMSignalStorage.filename);
+  final storage = await ESMSignalStorage.get(storageImpl);
 
   for (var e in esmExperiments) {
-    await ESMSignalStorage().deleteAllSignals();
+    await storage.deleteAllSignals();
 
     for (var dt in _testDateTimes) {
       test('ESM ${e.title}: ${dt.toIso8601String()}', () async {
-        await getNextAlarmTimesOrdered(experiments: [e], now: dt);
-        final signals = await ESMSignalStorage().getAllSignals();
+        await getNextAlarmTimesOrdered(storageImpl, [e], now: dt);
+        final signals = await storage.getAllSignals();
         expect(m[e.title][dt].verify(signals), true);
       });
     }

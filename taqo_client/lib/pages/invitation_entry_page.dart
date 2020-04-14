@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:taqo_client/net/invitation_response.dart';
-import 'package:taqo_client/service/experiment_service.dart';
 
+import '../net/invitation_response.dart';
+import '../service/experiment_service.dart';
 import 'experiment_detail_page.dart';
 
 class InvitationEntryPage extends StatefulWidget {
-  static const routeName = '/invitation_entry';
+  static const routeName = 'invitation_entry';
 
   InvitationEntryPage({Key key}) : super(key: key);
 
@@ -95,7 +95,7 @@ class _InvitationEntryPageState extends State<InvitationEntryPage> {
     var response = await sendCodetoServer(textEditController.text);
     // parse json result
     // if error show error message
-    if (response.errorMessage != null) {
+    if (response == null || response.errorMessage != null) {
       _alertLog(response.errorMessage);
     } else {
       _alertLog(response.participantId.toString() + " " + response.experimentId.toString() + "\nNow fetching experiment.");
@@ -103,7 +103,12 @@ class _InvitationEntryPageState extends State<InvitationEntryPage> {
       _experimentId = response.experimentId;
       final service = await ExperimentService.getInstance();
       var experiment = await service.getPubExperimentFromServerById(_experimentId);
-      Navigator.pushReplacementNamed(context, ExperimentDetailPage.routeName, arguments: experiment);
+      if (experiment != null) {
+        Navigator.pushReplacementNamed(
+            context, ExperimentDetailPage.routeName, arguments: experiment);
+      } else {
+        // TODO Show error?
+      }
     }
     // if success
     // parse participant ID and experiment ID.
@@ -118,9 +123,8 @@ class _InvitationEntryPageState extends State<InvitationEntryPage> {
       _participantId = 88;
       _experimentId = 5238446861320192;
       final service = await ExperimentService.getInstance();
-      var experiment = await service.getPubExperimentFromServerById(
-          _experimentId);
-      if (service.isJoined(experiment)) {
+      var experiment = await service.getPubExperimentFromServerById(_experimentId);
+      if (experiment == null || service.isJoined(experiment)) {
         // TODO Show msg: "already joined" or disable button entirely
         return;
       }

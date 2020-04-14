@@ -1,7 +1,7 @@
-import 'package:taqo_client/model/validation_message.dart';
-
-import 'package:taqo_client/model/validator.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import 'validation_message.dart';
+import 'validator.dart';
 
 part 'experiment_validator.g.dart';
 

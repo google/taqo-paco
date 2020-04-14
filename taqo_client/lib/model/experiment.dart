@@ -1,8 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import '../service/alarm/taqo_alarm.dart' as taqo_alarm;
 import '../util/date_time_util.dart';
 import 'experiment_core.dart';
 import 'experiment_group.dart';
@@ -14,14 +11,13 @@ import 'visualization.dart';
 part 'experiment.g.dart';
 
 @JsonSerializable()
-class Experiment extends ExperimentCore with ChangeNotifier {
+class Experiment extends ExperimentCore {
 
   static const DEFAULT_POST_INSTALL_INSTRUCTIONS = "<b>You have successfully joined the experiment!</b><br/><br/>"
       + "No need to do anything else for now.<br/><br/>"
       +
       "Paco will send you a notification when it is time to participate.<br/><br/>"
       + "Be sure your ringer/buzzer is on so you will hear the notification.";
-  static const EXPERIMENT_PAUSED_KEY_PREFIX = "paused";
 
   String modifyDate;
   bool published;
@@ -35,35 +31,14 @@ class Experiment extends ExperimentCore with ChangeNotifier {
   bool anonymousPublic;
   List<Visualization> visualizations;
 
-  @JsonKey(ignore: true)
-  bool _paused;
-
-  @JsonKey(ignore: true)
-  bool get paused {
-    return _paused ?? false;
-  }
-
-  @JsonKey(ignore: true)
-  set paused(bool value) {
-    SharedPreferences.getInstance().then((sharedPreferences) {
-      sharedPreferences.setBool("${EXPERIMENT_PAUSED_KEY_PREFIX}_$id", value);
-      _paused = value;
-      notifyListeners();
-      taqo_alarm.schedule();
-    });
-  }
-
-  Experiment() {
-    SharedPreferences.getInstance().then((sharedPreferences) {
-      _paused = sharedPreferences.getBool("${EXPERIMENT_PAUSED_KEY_PREFIX}_$id") ?? false;
-      notifyListeners();
-    });
-  }
+  Experiment();
 
   factory Experiment.fromJson(Map<String, dynamic> json) => _$ExperimentFromJson(json);
 
   Map<String, dynamic> toJson() => _$ExperimentToJson(this);
 
+  @JsonKey(ignore: true)
+  bool paused = false;
 
   List<ExperimentGroup> getSurveys() {
     return groups.where((group) => group.groupType == GroupTypeEnum.SURVEY ||
