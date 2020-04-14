@@ -82,4 +82,9 @@ class Event {
       string == null ? null : ZonedDateTime.fromString(string);
   static String _zonedDateTimeToString(ZonedDateTime zonedDateTime) =>
       zonedDateTime?.toString();
+
+  @override
+  String toString() {
+    return '$experimentName - $groupName: ${responses.toString()}';
+  }
 }
