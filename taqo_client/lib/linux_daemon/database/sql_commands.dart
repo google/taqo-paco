@@ -95,3 +95,19 @@ insert into outputs (
 ) values (
   ?, ?, ?
 );''';
+
+const selectAlarmByIdCommand = 'select * from alarms where _id = ?';
+
+const selectAllAlarmsCommand = 'select * from alarms';
+
+const deleteAlarmByIdCommand = 'delete from alarms where _id = ?;';
+
+const selectNotificationByIdCommand = 'select * from notifications where _id = ?';
+
+const selectNotificationByExperimentCommand = 'select * from notifications where experiment_id = ?';
+
+const selectAllNotificationsCommand = 'select * from notifications';
+
+const deleteNotificationByIdCommand = 'delete from notifications where _id = ?;';
+
+const deleteAllNotificationsCommand = 'delete from notifications;';

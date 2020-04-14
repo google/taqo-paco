@@ -59,7 +59,7 @@ class LinuxDatabase {
     final result = _db.query(_checkTableExistsQuery(tableName));
     final row = await result.first;
     final exists = row.readColumnByIndexAsInt(0) > 0;
-    if (exists == 0) {
+    if (!exists) {
       await _db.execute(_createTableStatement[tableName]);
     }
   }
@@ -76,14 +76,14 @@ class LinuxDatabase {
   }
 
   Future<ActionSpecification> getAlarm(int id) async {
-    final result = _db.query("""SELECT * FROM alarms WHERE _id = ${id}""");
+    final result = _db.query(selectAlarmByIdCommand, params: [id]);
     final row = await result.first;
     final json = row.readColumnAsText('json');
     return ActionSpecification.fromJson(jsonDecode(json));
   }
 
   Future<Map<int, ActionSpecification>> getAllAlarms() async {
-    final result = _db.query("""SELECT * FROM alarms""");
+    final result = _db.query(selectAllAlarmsCommand);
     final alarms = <int, ActionSpecification>{};
     for (var row in result) {
       final id = row.readColumnByIndexAsInt(0);
@@ -94,7 +94,7 @@ class LinuxDatabase {
   }
 
   void removeAlarm(int id) {
-    _db.execute("""DELETE FROM alarms WHERE _id = ${id}""");
+    _db.execute(deleteAlarmByIdCommand, params: [id]);
   }
 
   Future<int> insertNotification(NotificationHolder notificationHolder) async {
@@ -114,28 +114,8 @@ class LinuxDatabase {
           '${notificationHolder.snoozeCount ?? 0}']);
   }
 
-  NotificationHolder _buildNotificationHolder(Map<String, dynamic> json) =>
+  NotificationHolder _buildNotificationHolder(Row row) =>
       NotificationHolder.fromJson({
-        'id': json['_id'],
-        'alarmTime': json['alarm_time'],
-        'experimentId': json['experiment_id'],
-        'noticeCount': json['notice_count'],
-        'timeoutMillis': json['timeout_millis'],
-        'notificationSource': json['notification_source'],
-        'message': json['message'],
-        'experimentGroupName': json['experiment_group_name'],
-        'actionTriggerId': json['action_trigger_id'],
-        'actionId': json['action_id'],
-        'actionTriggerSpecId': json['action_trigger_spec_id'],
-        'snoozeTime': json['snooze_time'],
-        'snoozeCount': json['snooze_count'],
-      });
-
-  Future<NotificationHolder> getNotification(int id) async {
-    final result = _db.query("""SELECT * FROM notifications WHERE _id = ${id}""");
-    if (result.length > 0) {
-      final row = await result.first;
-      return _buildNotificationHolder({
         '_id': row.readColumnByIndexAsInt(0),
         'alarm_time': row.readColumnByIndexAsInt(1),
         'experiment_id': row.readColumnByIndexAsInt(2),
@@ -150,62 +130,40 @@ class LinuxDatabase {
         'snooze_time': row.readColumnByIndexAsInt(11),
         'snooze_count': row.readColumnByIndexAsInt(12),
       });
+
+  Future<NotificationHolder> getNotification(int id) async {
+    final result = _db.query(selectNotificationByIdCommand, params: [id]);
+    if (result.length > 0) {
+      final row = await result.first;
+      return _buildNotificationHolder(row);
     }
     return null;
   }
 
   Future<List<NotificationHolder>> getAllNotifications() async {
-    final result = _db.query("""SELECT * FROM notifications""");
+    final result = _db.query(selectAllNotificationsCommand);
     final notifications = <NotificationHolder>[];
     for (var row in result) {
-      notifications.add(_buildNotificationHolder({
-        '_id': row.readColumnByIndexAsInt(0),
-        'alarm_time': row.readColumnByIndexAsInt(1),
-        'experiment_id': row.readColumnByIndexAsInt(2),
-        'notice_count': row.readColumnByIndexAsInt(3),
-        'timeout_millis': row.readColumnByIndexAsInt(4),
-        'notification_source': row.readColumnByIndexAsText(5),
-        'message': row.readColumnByIndexAsText(6),
-        'experiment_group_name': row.readColumnByIndexAsText(7),
-        'action_trigger_id': row.readColumnByIndexAsInt(8),
-        'action_id': row.readColumnByIndexAsInt(9),
-        'action_trigger_spec_id': row.readColumnByIndexAsInt(10),
-        'snooze_time': row.readColumnByIndexAsInt(11),
-        'snooze_count': row.readColumnByIndexAsInt(12),
-      }));
+      notifications.add(_buildNotificationHolder(row));
     }
     return notifications;
   }
 
   Future<List<NotificationHolder>> getAllNotificationsForExperiment(int experimentId) async {
-    final result = _db.query("""SELECT * FROM notifications WHERE experiment_id = ${experimentId}""");
+    final result = _db.query(selectNotificationByExperimentCommand, params: [experimentId]);
     final notifications = <NotificationHolder>[];
     for (var row in result) {
-      notifications.add(_buildNotificationHolder({
-        '_id': row.readColumnByIndexAsInt(0),
-        'alarm_time': row.readColumnByIndexAsInt(1),
-        'experiment_id': row.readColumnByIndexAsInt(2),
-        'notice_count': row.readColumnByIndexAsInt(3),
-        'timeout_millis': row.readColumnByIndexAsInt(4),
-        'notification_source': row.readColumnByIndexAsText(5),
-        'message': row.readColumnByIndexAsText(6),
-        'experiment_group_name': row.readColumnByIndexAsText(7),
-        'action_trigger_id': row.readColumnByIndexAsInt(8),
-        'action_id': row.readColumnByIndexAsInt(9),
-        'action_trigger_spec_id': row.readColumnByIndexAsInt(10),
-        'snooze_time': row.readColumnByIndexAsInt(11),
-        'snooze_count': row.readColumnByIndexAsInt(12),
-      }));
+      notifications.add(_buildNotificationHolder(row));
     }
     return notifications;
   }
 
   Future<void> removeNotification(int id) async {
-    _db.execute("""DELETE FROM notifications WHERE _id = ${id}""");
+    _db.execute(deleteNotificationByIdCommand, params: [id]);
   }
 
   Future<void> removeAllNotifications() async {
-    _db.execute("""DELETE FROM notifications""");
+    _db.execute(deleteAllNotificationsCommand);
   }
 
   Future<int> insertEvent(Event event) async {

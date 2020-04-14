@@ -115,7 +115,7 @@ class Database {
   }
 
   /// Evaluate a query and return the resulting rows as an iterable.
-  Result query(String query) {
+  Result query(String query, {List params}) {
     Pointer<Pointer<Statement>> statementOut = allocate();
     Pointer<Utf8> queryC = Utf8.toUtf8(query);
     int resultCode = bindings.sqlite3_prepare_v2(
@@ -123,6 +123,29 @@ class Database {
     Pointer<Statement> statement = statementOut.value;
     free(statementOut);
     free(queryC);
+
+    if (params != null) {
+      for (var i = 0; i < params.length; i++) {
+        final param = params[i];
+        if (param is int) {
+          resultCode = bindings.sqlite3_bind_int64(statement, i+1, param);
+          if (resultCode != Errors.SQLITE_OK) {
+            print('Error binding int64 param[$i]: $param');
+          }
+          ;        } else if (param is double) {
+          resultCode = bindings.sqlite3_bind_double(statement, i+1, param);
+          if (resultCode != Errors.SQLITE_OK) {
+            print('Error binding double param[$i]: $param');
+          }
+        } else if (param is String) {
+          resultCode = bindings.sqlite3_bind_text(
+              statement, i+1, Utf8.toUtf8(param), -1, Flags.SQLITE_STATIC);
+          if (resultCode != Errors.SQLITE_OK) {
+            print('Error binding text param[$i]: $param');
+          }
+        }
+      }
+    }
 
     if (resultCode != Errors.SQLITE_OK) {
       bindings.sqlite3_finalize(statement);

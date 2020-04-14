@@ -84,6 +84,11 @@ void main() {
   } on SQLiteException catch (e) {
     print("expected this query to fail: $e");
   }
+  result = d.query("""select name from Cookies where id = ?;""", params: [2]);
+  for (Row r in result) {
+    String name = r.readColumnByIndex(0);
+    print(name);
+  }
   d.execute("drop table Cookies;");
   d.close();
 }
