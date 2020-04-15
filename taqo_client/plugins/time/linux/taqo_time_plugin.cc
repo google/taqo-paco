@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include "plugins/time/linux/taqo_time_plugin.h"
+#include "taqo_time_plugin.h"
 
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar.h>

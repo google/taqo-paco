@@ -1,49 +1,10 @@
-# Copyright 2018 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+include app_configuration.mk
 
-# Executable name.
-BINARY_NAME=taqo_survey
-# Any extra source files to build.
-EXTRA_SOURCES=
-# Paths of any additional libraries to be bundled in the output directory.
-EXTRA_BUNDLED_LIBRARIES=
-# Extra flags (e.g., for library dependencies).
-SYSTEM_LIBRARIES=
-EXTRA_CXXFLAGS=
-EXTRA_CPPFLAGS=
-EXTRA_LDFLAGS=
-
-# The location of the flutter-desktop-embedding repository.
-FDE_ROOT=$(CURDIR)/../..
-# Plugins to include from the flutter-desktop-embedding plugins/ directory.
-PLUGIN_NAMES=
-# Additional plugins to include from the plugins/flutter_plugins subdirectory.
-# Do not include the _fde suffix.
-FLUTTER_PLUGIN_NAMES=
-# Plugins to include from the taqo_client/plugins subdirectory.
-TAQO_PLUGIN_NAMES=time
-# Plugins to include from the taqo_client/plugins/flutter subdirectory.
-FLUTTER_TAQO_PLUGIN_NAMES=path_provider_linux url_launcher_linux
-FLUTTER_TAQO_PLUGIN_NAMES_2=sqflite
-
-
-# Default build type. For a release build, set BUILD=release.
-# Currently this only sets NDEBUG, and not the complation settings
-# (e.g., optimization level) of the C++ code.
+# Default build type.
 BUILD=debug
 
-FLUTTER_EPHEMERAL_DIR=flutter/ephemeral
+FLUTTER_MANAGED_DIR=flutter
+FLUTTER_EPHEMERAL_DIR=$(FLUTTER_MANAGED_DIR)/ephemeral
 
 # Configuration provided via flutter tool.
 FLUTTER_CONFIG_FILE=$(FLUTTER_EPHEMERAL_DIR)/generated_config.mk
@@ -70,28 +31,6 @@ ICU_DATA_SOURCE=$(FLUTTER_EPHEMERAL_DIR)/$(ICU_DATA_NAME)
 FLUTTER_ASSETS_NAME=flutter_assets
 FLUTTER_ASSETS_SOURCE=$(FLUTTER_APP_BUILD_DIR)/$(FLUTTER_ASSETS_NAME)
 
-# Plugin-related additions
-# Currently plugins are refenced by direct source path. Eventually this should
-# be pub-based instead as on other platforms.
-PLUGINS_DIR=$(FDE_ROOT)/plugins
-FLUTTER_PLUGINS_DIR=$(PLUGINS_DIR)/flutter_plugins
-TAQO_PLUGINS_DIR=$(CURDIR)/../plugins
-FLUTTER_TAQO_PLUGINS_DIR=$(CURDIR)/../plugins/flutter
-# The name of each plugin library is the name of its directory with _plugin
-# appended.
-PLUGIN_LIB_NAMES=$(foreach plugin,$(PLUGIN_NAMES) $(FLUTTER_PLUGIN_NAMES),$(plugin)_plugin)
-# Taqo plugin library name is taqo_<name>_plugin
-PLUGIN_LIB_NAMES+=$(foreach plugin,$(TAQO_PLUGIN_NAMES),taqo_$(plugin)_plugin)
-# Flutter Taqo plugin library name is <name>
-PLUGIN_LIB_NAMES+=$(foreach plugin,$(FLUTTER_TAQO_PLUGIN_NAMES),$(plugin))
-PLUGIN_LIB_NAMES+=$(foreach plugin,$(FLUTTER_TAQO_PLUGIN_NAMES_2),$(plugin)_plugin)
-
-PLUGIN_LIBS=$(foreach plugin,$(PLUGIN_LIB_NAMES),$(OUT_DIR)/lib$(plugin).so)
-EXTRA_BUNDLED_LIBRARIES+=$(PLUGIN_LIBS)
-EXTRA_LDFLAGS+=$(patsubst %,-l%,$(PLUGIN_LIB_NAMES))
-# The plugin builds place all published headers in a top-level include/.
-EXTRA_CPPFLAGS+=-I$(OUT_DIR)/include
-
 # Bundle structure
 BUNDLE_OUT_DIR=$(OUT_DIR)/$(BUILD)
 BUNDLE_DATA_DIR=$(BUNDLE_OUT_DIR)/data
@@ -116,8 +55,9 @@ WRAPPER_SOURCES= \
 
 # Use abspath for extra sources, which may also contain relative paths (see
 # note above about WRAPPER_ROOT).
-SOURCES=main.cc flutter/generated_plugin_registrant.cc $(WRAPPER_SOURCES) \
-	$(abspath $(EXTRA_SOURCES))
+SOURCES=main.cc window_configuration.cc \
+	flutter/generated_plugin_registrant.cc \
+	$(WRAPPER_SOURCES) $(abspath $(EXTRA_SOURCES))
 
 # Headers
 WRAPPER_INCLUDE_DIR=$(WRAPPER_ROOT)/include
@@ -128,10 +68,14 @@ ifneq ($(strip $(SYSTEM_LIBRARIES)),)
 EXTRA_CPPFLAGS+=$(patsubst -I%,-isystem%,$(shell pkg-config --cflags $(SYSTEM_LIBRARIES)))
 EXTRA_LDFLAGS+=$(shell pkg-config --libs $(SYSTEM_LIBRARIES))
 endif
-CXX=clang++ $(EXTRA_CXXFLAGS)
-CXXFLAGS.release=-DNDEBUG
-CXXFLAGS=-std=c++14 -Wall -Werror $(CXXFLAGS.$(BUILD))
-CPPFLAGS=$(patsubst %,-I%,$(INCLUDE_DIRS)) $(EXTRA_CPPFLAGS)
+CXX=clang++
+CPPFLAGS.release=-DNDEBUG
+CPPFLAGS.profile=$(CPPFLAGS.release)
+CXXFLAGS.release=-O2
+CXXFLAGS.profile=$(CXXFLAGS.release)
+CXXFLAGS=-std=c++14 -Wall -Werror $(CXXFLAGS.$(BUILD)) $(EXTRA_CXXFLAGS)
+CPPFLAGS=$(patsubst %,-I%,$(INCLUDE_DIRS)) \
+	$(CPPFLAGS.$(BUILD)) $(EXTRA_CPPFLAGS)
 LDFLAGS=-L$(BUNDLE_LIB_DIR) \
 	-l$(FLUTTER_LIB_NAME) \
 	$(EXTRA_LDFLAGS) \
@@ -145,6 +89,12 @@ DEPENDENCY_FILES=$(OBJ_FILES:%.o=%.d)
 
 .PHONY: all
 all: $(BIN_OUT) bundle
+
+# Add the plugin targets, and their associated settings.
+include $(FLUTTER_MANAGED_DIR)/generated_plugins.mk
+EXTRA_BUNDLED_LIBRARIES+=$(PLUGIN_LIBRARIES)
+EXTRA_LDFLAGS+=$(PLUGIN_LDFLAGS)
+EXTRA_CPPFLAGS+=$(PLUGIN_CPPFLAGS)
 
 # This is a phony target because the flutter tool cannot describe
 # its inputs and outputs yet.
@@ -160,61 +110,7 @@ $(BIN_OUT): $(OBJ_FILES) $(ALL_LIBS_OUT)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OBJ_FILES) $(LDFLAGS) -o $@
 
 $(WRAPPER_SOURCES) $(FLUTTER_LIB) $(ICU_DATA_SOURCE) $(FLUTTER_ASSETS_SOURCE) \
-	$(PLUGIN_NAMES) $(FLUTTER_PLUGIN_NAMES) \
-	$(TAQO_PLUGIN_NAMES) $(FLUTTER_TAQO_PLUGIN_NAMES) $(FLUTTER_TAQO_PLUGIN_NAMES_2): | sync
-
-# Implicit rules won't match phony targets, so list plugin builds explicitly.
-# Plugins
-#$(OUT_DIR)/libsample_plugin.so: | sample
-#$(OUT_DIR)/libcolor_panel_plugin.so: | color_panel
-#$(OUT_DIR)/libfile_chooser_plugin.so: | file_chooser
-#$(OUT_DIR)/libmenubar_plugin.so: | menubar
-#$(OUT_DIR)/libwindow_size_plugin.so: | window_size
-# Flutter plugins
-#$(OUT_DIR)/liburl_launcher_plugin.so: | url_launcher
-# Taqo plugins
-$(OUT_DIR)/libtaqo_time_plugin.so: | time
-$(OUT_DIR)/libtaqo_notify_plugin.so: | notify
-# Flutter Taqo plugins
-$(OUT_DIR)/libsqflite_plugin.so: | sqflite
-$(OUT_DIR)/libpath_provider_linux.so: | path_provider_linux
-$(OUT_DIR)/liburl_launcher_linux.so: | url_launcher_linux
-$(OUT_DIR)/libshared_preferences_linux.so: | shared_preferences_linux
-
-# Compilation depends on plugin headers that are copied as part of the
-# plugin builds, so ensure those happen first.
-# TODO: Restructure to avoid the need for this.
-$(OBJ_FILES) : | $(EXTRA_BUNDLED_LIBRARIES)
-
-.PHONY: $(PLUGIN_NAMES)
-$(PLUGIN_NAMES):
-	make -C $(PLUGINS_DIR)/$@/linux \
-		OUT_DIR=$(OUT_DIR) \
-		FLUTTER_EPHEMERAL_DIR="$(abspath $(FLUTTER_EPHEMERAL_DIR))"
-
-.PHONY: $(FLUTTER_PLUGIN_NAMES)
-$(FLUTTER_PLUGIN_NAMES):
-	make -C $(FLUTTER_PLUGINS_DIR)/$@_fde/linux \
-		OUT_DIR=$(OUT_DIR) \
-		FLUTTER_EPHEMERAL_DIR="$(abspath $(FLUTTER_EPHEMERAL_DIR))"
-
-.PHONY: $(TAQO_PLUGIN_NAMES)
-$(TAQO_PLUGIN_NAMES):
-	make -C $(TAQO_PLUGINS_DIR)/$@/linux \
-		OUT_DIR=$(OUT_DIR) \
-		FLUTTER_EPHEMERAL_DIR="$(abspath $(FLUTTER_EPHEMERAL_DIR))"
-
-.PHONY: $(FLUTTER_TAQO_PLUGIN_NAMES)
-$(FLUTTER_TAQO_PLUGIN_NAMES):
-	make -C $(FLUTTER_TAQO_PLUGINS_DIR)/$@/linux \
-		OUT_DIR=$(OUT_DIR) \
-		FLUTTER_EPHEMERAL_DIR="$(abspath $(FLUTTER_EPHEMERAL_DIR))"
-
-.PHONY: $(FLUTTER_TAQO_PLUGIN_NAMES_2)
-$(FLUTTER_TAQO_PLUGIN_NAMES_2):
-	make -C $(FLUTTER_TAQO_PLUGINS_DIR)/$@/linux \
-		OUT_DIR=$(OUT_DIR) \
-		FLUTTER_EPHEMERAL_DIR="$(abspath $(FLUTTER_EPHEMERAL_DIR))"
+	$(PLUGIN_TARGETS): | sync
 
 # Plugin library bundling pattern.
 $(BUNDLE_LIB_DIR)/%: $(OUT_DIR)/%
@@ -237,8 +133,7 @@ $(OBJ_DIR)/%.o : %.cc | sync
 
 # Fully re-copy the assets directory on each build to avoid having to keep a
 # comprehensive list of all asset files here, which would be fragile to changes
-# in the Flutter example (e.g., adding a new font to pubspec.yaml would require
-# changes here).
+# in other files (e.g., adding a new font to pubspec.yaml).
 .PHONY: bundleflutterassets
 bundleflutterassets: $(FLUTTER_ASSETS_SOURCE)
 	mkdir -p $(BUNDLE_DATA_DIR)

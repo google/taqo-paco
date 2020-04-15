@@ -1,239 +1,200 @@
 import 'dart:async';
-import 'dart:convert';
 
 import "package:googleapis/oauth2/v2.dart";
 import "package:googleapis_auth/auth_io.dart";
 import 'package:googleapis_auth/src/auth_http_utils.dart';
 import "package:http/http.dart" as http;
 
-import '../model/event.dart';
 import '../storage/flutter_file_storage.dart';
 import '../storage/unsecure_token_storage.dart';
 
 class GoogleAuth {
-  static const String AUTH_TOKEN_TYPE_USERINFO_EMAIL =
-      Oauth2Api.UserinfoEmailScope;
+  static const _scopes = [
+    Oauth2Api.UserinfoEmailScope,
+    Oauth2Api.UserinfoProfileScope,
+  ];
 
-  static const String AUTH_TOKEN_TYPE_USERINFO_PROFILE =
-      Oauth2Api.UserinfoProfileScope;
+  //static const _stagingServer = "http://quantifiedself-staging.appspot.com";
+  static const _prodServer = "https://www.pacoapp.com";
+  static const _server = _prodServer;
+
+  static const _experimentUrl = "$_server/experiments?mine&limit=100";
+  static const _experimentByIdUrl = "$_server/experiments?id=";
+  static const _pubExperimentByIdUrl = "$_server/pubexperiments?id=";
+  static const _inviteUrl = "$_server/invite?code=";
+  static final _eventsUri = Uri.https('www.pacoapp.com', '/events');
 
   static const _clientId = "619519633889.apps.googleusercontent.com";
   static const _secret = "LOwVPys7lruBjjsI8erzh7KK";
-  static final id = new ClientId(_clientId, _secret);
-  static const scopes = [AUTH_TOKEN_TYPE_USERINFO_EMAIL,
-    AUTH_TOKEN_TYPE_USERINFO_PROFILE, ];
+  static final _id = ClientId(_clientId, _secret);
 
-  StreamController<bool> _authenticationStreamController =
-      StreamController<bool>.broadcast();
-
+  final _authenticationStreamController = StreamController<bool>.broadcast();
   Stream<bool> get onAuthChanged => _authenticationStreamController.stream;
 
-  GoogleAuth._privateConstructor();
+  static final _instance = GoogleAuth._();
 
-  static final GoogleAuth _instance = GoogleAuth._privateConstructor();
+  GoogleAuth._();
 
   factory GoogleAuth() {
     return _instance;
   }
 
-  Future doIt(urlCallback) async {
-    List<String> savedTokens = await readTokens();
+  void _saveCredentials(credentials) async {
+    final tokenStore = await UnsecureTokenStorage.get(FlutterFileStorage(UnsecureTokenStorage.filename));
+    tokenStore.saveTokens(credentials.refreshToken,
+        credentials.accessToken.data, credentials.accessToken.expiry);
+  }
 
-    if (savedTokens == null || savedTokens.isEmpty) {
-      var client = new http.Client();
-      obtainAccessCredentialsViaUserConsent(id, scopes, client, urlCallback)
-          .then((AccessCredentials credentials) async {
-        saveCredentials(credentials);
-        var accessToken = credentials.accessToken.data;
-        var refreshToken = credentials.refreshToken;
+  Future<List<String>> _readTokens() async {
+    final tokenStore = await UnsecureTokenStorage.get(FlutterFileStorage(UnsecureTokenStorage.filename));
+    return tokenStore.readTokens();
+  }
 
-        print("accessToken = $accessToken");
-        print("refreshToken = $refreshToken");
+  Future<bool> get isAuthenticated async {
+    final tokens = await _readTokens();
+    return tokens != null && tokens.isNotEmpty;
+  }
 
+  /// Authenticate
+  Future<void> authenticate(urlCallback) async {
+    if (!(await isAuthenticated)) {
+      final client = http.Client();
+      obtainAccessCredentialsViaUserConsent(_id, _scopes, client, urlCallback)
+          .then((AccessCredentials credentials) {
+        _saveCredentials(credentials);
         _authenticationStreamController.add(true);
+      }).catchError((e) {
+        print("Authentication error: $e");
+        _authenticationStreamController.add(false);
       });
     } else {
       _authenticationStreamController.add(true);
     }
   }
 
-  void saveCredentials(credentials) async {
-    final tokenStore = await UnsecureTokenStorage.get(FlutterFileStorage(UnsecureTokenStorage.filename));
-    tokenStore.saveTokens(credentials.refreshToken,
-        credentials.accessToken.data, credentials.accessToken.expiry);
-  }
-
-  Future<bool> isAuthenticated() async {
-    final tokenStore = await UnsecureTokenStorage.get(FlutterFileStorage(UnsecureTokenStorage.filename));
-    var tokens = await tokenStore.readTokens();
-    return Future.value(tokens != null && tokens.isNotEmpty);
-  }
-
-  Future<List<String>> readTokens() async {
-    final tokenStore = await UnsecureTokenStorage.get(FlutterFileStorage(UnsecureTokenStorage.filename));
-    var savedTokens = await tokenStore.readTokens();
-    return savedTokens;
-  }
-
-  Future<String> getExperimentsWithSavedCredentials() async {
-    var scopes = [AUTH_TOKEN_TYPE_USERINFO_EMAIL];
-
-    var client = new http.Client();
-
-    List<String> savedTokens = await readTokens();
-
-    var accessToken = new AccessToken("Bearer", savedTokens.elementAt(1),
-        DateTime.parse(savedTokens.elementAt(2)));
-    return await refreshCredentials(
-            id,
-            new AccessCredentials(
-                accessToken, savedTokens.elementAt(0), scopes),
-            client)
-        .then((newCredentials) {
-      saveCredentials(newCredentials);
-      var at = newCredentials.accessToken.data;
-      var headers = {"Authorization": "Bearer $at"};
-      return getExperiments(client, headers);
-    });
-  }
-
-  Future<String> getExperimentsWithSavedCredentialsWithoutRefresh() async {
-    List<String> savedTokens = await readTokens();
-    var at = savedTokens.elementAt(1);
-    var headers = {"Authorization": "Bearer $at"};
-    var client = new http.Client();
-    return getExperiments(client, headers);
-  }
-
-  Future<String> getExperiments(
-      http.Client client, Map<String, String> headers) async {
-    return await client
-        .get("https://www.pacoapp.com/experiments?mine&limit=100",
-            headers: headers)
-        .then((response) {
-      print(response.body);
-      client.close();
-      return response.body;
-    });
-  }
-
+  /// Logout
   Future<void> clearCredentials() async {
     final tokenStore = await UnsecureTokenStorage.get(FlutterFileStorage(UnsecureTokenStorage.filename));
-    var clearTokens = await tokenStore.clear();
+    tokenStore.clear();
     _authenticationStreamController.add(false);
-    return clearTokens;
   }
 
-  Future<String> checkInvitationWithSavedCredentials(String code) async {
-//    List<String> savedTokens = await readTokens();
-//    var at = savedTokens.elementAt(1);
-//    var headers = {"Authorization": "Bearer $at"};
-    var client = new http.Client();
-    return await client
-        .get("https://www.pacoapp.com/invite?code=$code")
-        .then((response) {
-      print(response.body);
+  Future<Map<String, String>> _refreshCredentials(http.Client client) async {
+    final savedTokens = await _readTokens();
+    if (savedTokens == null || savedTokens.length < 3) {
+      clearCredentials();
+      throw Exception("Couldn't read tokens or invalid tokens read");
+    }
+
+    try {
+      final accessToken =
+          AccessToken("Bearer", savedTokens.elementAt(1), DateTime.parse(savedTokens.elementAt(2)));
+      final newCredentials = await refreshCredentials(
+          _id, AccessCredentials(accessToken, savedTokens.elementAt(0), _scopes), client);
+      _saveCredentials(newCredentials);
+      return {"Authorization": "Bearer ${newCredentials.accessToken.data}"};
+    } catch (_) {
+      clearCredentials();
+      rethrow;
+    }
+  }
+
+  Future<http.Response> _get(http.Client client, String url,
+      {Map<String, String> headers}) {
+    return client.get(url, headers: headers);
+  }
+
+  Future<http.Response> _refreshAndGet(String url, {String defValue = ""}) async {
+    final client = http.Client();
+    try {
+      final headers = await _refreshCredentials(client);
+      final response = await _get(client, url, headers: headers);
+      return response;
+    } catch (_) {
+      rethrow;
+    } finally {
       client.close();
-      return response.body;
-    });
+    }
   }
 
-  Future<String> getExperimentById(int experimentId) async {
-    var scopes = [AUTH_TOKEN_TYPE_USERINFO_EMAIL];
-    var client = new http.Client();
-    List<String> savedTokens = await readTokens();
-
-    var accessToken = new AccessToken("Bearer", savedTokens.elementAt(1),
-        DateTime.parse(savedTokens.elementAt(2)));
-    return await refreshCredentials(
-            id,
-            new AccessCredentials(
-                accessToken, savedTokens.elementAt(0), scopes),
-            client)
-        .then((newCredentials) {
-      saveCredentials(newCredentials);
-      var at = newCredentials.accessToken.data;
-      var headers = {"Authorization": "Bearer $at"};
-      return _getExperimentById(client, headers, experimentId);
-    });
+  Future<http.Response> _post(http.Client client, Uri url,
+      Map<String, String> headers, String body) {
+    return client.post(url, headers: headers, body: body);
   }
 
-  Future<String> _getExperimentById(
-      http.Client client, Map<String, String> headers, int experimentId) async {
-    return await client
-        .get("https://www.pacoapp.com/experiments?id=$experimentId",
-            headers: headers)
-        .then((response) {
-      print(response.body);
+  Future<http.Response> _refreshAndPost(Uri url, String body) async {
+    final client = http.Client();
+    try {
+      final headers = await _refreshCredentials(client);
+      final response = await _post(client, url, headers, body);
+      return response;
+    } catch (_) {
+      rethrow;
+    } finally {
       client.close();
-      return response.body;
+    }
+  }
+
+  // Public API
+
+  Future<PacoResponse> postEvents(String body) async {
+    return _refreshAndPost(_eventsUri, body).then((response) {
+      if (response.statusCode == 200) {
+        return PacoResponse(PacoResponse.success, 'Success', body: response.body);
+      }
+      return PacoResponse(PacoResponse.failure, response.reasonPhrase);
+    }).catchError((e) {
+      return PacoResponse(PacoResponse.exception, e.toString());
     });
   }
 
-  Future<String> _getExperimentsByIds(http.Client client,
-      Map<String, String> headers, Iterable<int> experimentIds) async {
-    var experimentIdsAsString = experimentIds.join(",");
-    return await client
-        .get("https://www.pacoapp.com/experiments?id=$experimentIdsAsString",
-            headers: headers)
-        .then((response) {
-      print(response.body);
+  Future<PacoResponse> _refreshAndGetPacoResponse(String url) {
+    return _refreshAndGet(url).then((response) {
+      if (response.statusCode == 200) {
+        return PacoResponse(PacoResponse.success, 'Success', body: response.body);
+      }
+      return PacoResponse(PacoResponse.failure, response.reasonPhrase);
+    }).catchError((e) {
+      return PacoResponse(PacoResponse.exception, e.toString());
+    });
+  }
+
+  /// Gets all Experiments
+  Future<PacoResponse> getExperimentsWithSavedCredentials() {
+    return _refreshAndGetPacoResponse(_experimentUrl);
+  }
+
+  /// Gets the Experiment with id [experimentId]
+  Future<PacoResponse> getExperimentByIdWithSavedCredentials(int experimentId) {
+    return _refreshAndGetPacoResponse("$_experimentByIdUrl$experimentId");
+  }
+
+  /// Gets the Experiments with ids [ids]
+  Future<PacoResponse> getExperimentsByIdWithSavedCredentials(Iterable<int> ids) {
+    return _refreshAndGetPacoResponse("$_experimentByIdUrl${ids.join(',')}");
+  }
+
+  Future<PacoResponse> _getPacoResponse(String url) async {
+    final client = http.Client();
+    try {
+      final response = await _get(client, url);
+      if (response.statusCode == 200) {
+        return PacoResponse(PacoResponse.success, 'Success', body: response.body);
+      }
+      return PacoResponse(PacoResponse.failure, response.reasonPhrase);
+    } catch (e) {
+      return PacoResponse(PacoResponse.exception, e.toString());
+    } finally {
       client.close();
-      return response.body;
-    });
+    }
   }
 
-  Future<String> getPubExperimentById(int experimentId) async {
-    var client = new http.Client();
-    return await client
-        .get("https://www.pacoapp.com/pubexperiments?id=$experimentId")
-        .then((response) {
-      print(response.body);
-      client.close();
-      return response.body;
-    });
+  Future<PacoResponse> checkInvitationWithSavedCredentials(String code) {
+    return _getPacoResponse("$_inviteUrl$code");
   }
 
-  Future<String> getExperimentsByIdWithSavedCredentials(
-      Iterable<int> keys) async {
-    var scopes = [AUTH_TOKEN_TYPE_USERINFO_EMAIL];
-    var client = new http.Client();
-    List<String> savedTokens = await readTokens();
-
-    var accessToken = new AccessToken("Bearer", savedTokens.elementAt(1),
-        DateTime.parse(savedTokens.elementAt(2)));
-    return await refreshCredentials(
-            id,
-            new AccessCredentials(
-                accessToken, savedTokens.elementAt(0), scopes),
-            client)
-        .then((newCredentials) {
-      saveCredentials(newCredentials);
-      var at = newCredentials.accessToken.data;
-      var headers = {"Authorization": "Bearer $at"};
-      return _getExperimentsByIds(client, headers, keys);
-    });
-  }
-
-  Future<http.Response> postEvents(Iterable<Event> events) async {
-    var scopes = [AUTH_TOKEN_TYPE_USERINFO_EMAIL];
-    var client = new http.Client();
-    List<String> savedTokens = await readTokens();
-
-    var accessToken = new AccessToken("Bearer", savedTokens.elementAt(1),
-        DateTime.parse(savedTokens.elementAt(2)));
-    return await refreshCredentials(
-            id,
-            new AccessCredentials(
-                accessToken, savedTokens.elementAt(0), scopes),
-            client)
-        .then((newCredentials) {
-      saveCredentials(newCredentials);
-      var at = newCredentials.accessToken.data;
-      var headers = {"Authorization": "Bearer $at"};
-      return client.post(Uri.https('www.pacoapp.com', '/events'),
-          headers: headers, body: jsonEncode(events));
-    });
+  Future<PacoResponse> getPubExperimentById(int experimentId) {
+    return _getPacoResponse("$_pubExperimentByIdUrl$experimentId");
   }
 
   // I created a PR to have this merged into the googleapis plugin 2 years ago,
@@ -253,12 +214,12 @@ class GoogleAuth {
   }
 
   Future<Map<String, String>> getUserInfo() async {
-    final savedTokens = await readTokens();
+    final savedTokens = await _readTokens();
     final accessToken = AccessToken('Bearer', savedTokens.elementAt(1),
         DateTime.parse(savedTokens.elementAt(2)));
     final accessCredentials = AccessCredentials(accessToken,
-        savedTokens.elementAt(0), [AUTH_TOKEN_TYPE_USERINFO_PROFILE, ]);
-    final client = clientViaStoredCredentials(id, accessCredentials);
+        savedTokens.elementAt(0), _scopes);
+    final client = clientViaStoredCredentials(_id, accessCredentials);
     final oauth2 = Oauth2Api(client);
     return oauth2.userinfo.get().then((userInfoPlus) {
       return {
@@ -269,17 +230,19 @@ class GoogleAuth {
   }
 }
 
-void prompt(String url) {
-  print("Please go to the following URL and grant access:");
-  print("  => $url");
-  print("");
-}
+class PacoResponse {
+  static const success = 0;
+  static const failure = -1;
+  static const exception = -2;
 
-//main(List<String> arguments) {
-//  try {
-//    var googleAuth = GoogleAuth();
-//    googleAuth.doIt(prompt, googleAuth.getExperimentsWithSavedCredentials);
-//  } catch (e) {
-//    print(e);
-//  }
-//}
+  final int statusCode;
+  final String statusMsg;
+
+  final String body;
+
+  PacoResponse(this.statusCode, this.statusMsg, {this.body});
+
+  bool get isSuccess => statusCode == success;
+  bool get isFailure => statusCode == failure;
+  bool get isException => statusCode == exception;
+}
