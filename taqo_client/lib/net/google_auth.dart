@@ -108,7 +108,8 @@ class GoogleAuth {
     final client = http.Client();
     try {
       final headers = await _refreshCredentials(client);
-      return _get(client, url, headers: headers);
+      final response = await _get(client, url, headers: headers);
+      return response;
     } catch (_) {
       rethrow;
     } finally {
@@ -125,7 +126,8 @@ class GoogleAuth {
     final client = http.Client();
     try {
       final headers = await _refreshCredentials(client);
-      return _post(client, url, headers, body);
+      final response = await _post(client, url, headers, body);
+      return response;
     } catch (_) {
       rethrow;
     } finally {
