@@ -68,7 +68,7 @@ typedef sqlite3_column_value_native_t = Pointer<Value> Function(
 typedef sqlite3_column_double_native_t = Double Function(
     Pointer<Statement> statement, Int32 columnIndex);
 
-typedef sqlite3_column_int_native_t = Int32 Function(
+typedef sqlite3_column_int_native_t = Int64 Function(
     Pointer<Statement> statement, Int32 columnIndex);
 
 typedef sqlite3_column_text_native_t = Pointer<Utf8> Function(

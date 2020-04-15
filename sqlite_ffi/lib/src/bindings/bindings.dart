@@ -430,7 +430,7 @@ class _SQLiteBindings {
         .asFunction();
     sqlite3_column_int = sqlite
         .lookup<NativeFunction<sqlite3_column_int_native_t>>(
-            "sqlite3_column_int")
+            "sqlite3_column_int64")
         .asFunction();
     sqlite3_column_text = sqlite
         .lookup<NativeFunction<sqlite3_column_text_native_t>>(
