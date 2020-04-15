@@ -8,8 +8,11 @@ const cancelAlarmMethod = 'cancel';
 const postNotificationMethod = 'notify';
 const cancelNotificationMethod = 'cancelNotify';
 const cancelExperimentNotificationMethod = 'cancelExperimentNotify';
+const checkActiveNotificationMethod = 'checkActiveNotification';
 
 const notifyMethod = 'notify';
 const expireMethod = 'expire';
+
+const createMissedEventMethod = 'missedEvent';
 
 const openSurveyMethod = 'openSurvey';

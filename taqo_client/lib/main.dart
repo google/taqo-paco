@@ -33,17 +33,6 @@ void _onTimeChange() async {
   taqo_alarm.schedule();
 }
 
-// If there is an active notification when the app is open,
-// direct the user to the RunningExperimentsPage.
-// This also solves the issue with not having Pending (launch) Intents on Linux
-Future<bool> _checkActiveNotification() async {
-  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-  final activeNotifications = (await storage.getAllNotifications())
-      .where((n) => n.isActive);
-
-  return activeNotifications.isNotEmpty;
-}
-
 void main() async {
   // See https://github.com/flutter/flutter/wiki/Desktop-shells#target-platform-override
   if (!kIsWeb && (Platform.isLinux || Platform.isWindows)) {
@@ -61,7 +50,10 @@ void main() async {
   await LoggingService.init();
   await taqo_alarm.init();
 
-  final activeNotification = await _checkActiveNotification();
+  // If there is an active notification when the app is open,
+  // direct the user to the RunningExperimentsPage.
+  // This also solves the issue with not having Pending (launch) Intents on Linux
+  final activeNotification = await taqo_alarm.checkActiveNotification();
   final authState = await GoogleAuth().isAuthenticated;
   runApp(MyApp(activeNotification: activeNotification, authState: authState));
 }

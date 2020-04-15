@@ -120,19 +120,19 @@ class LinuxDatabase {
 
   NotificationHolder _buildNotificationHolder(Row row) =>
       NotificationHolder.fromJson({
-        '_id': row.readColumnByIndexAsInt(0),
-        'alarm_time': row.readColumnByIndexAsInt(1),
-        'experiment_id': row.readColumnByIndexAsInt(2),
-        'notice_count': row.readColumnByIndexAsInt(3),
-        'timeout_millis': row.readColumnByIndexAsInt(4),
-        'notification_source': row.readColumnByIndexAsText(5),
+        'id': row.readColumnByIndexAsInt(0),
+        'alarmTime': row.readColumnByIndexAsInt(1),
+        'experimentId': row.readColumnByIndexAsInt(2),
+        'noticeCount': row.readColumnByIndexAsInt(3),
+        'timeoutMillis': row.readColumnByIndexAsInt(4),
+        'notificationSource': row.readColumnByIndexAsText(5),
         'message': row.readColumnByIndexAsText(6),
-        'experiment_group_name': row.readColumnByIndexAsText(7),
-        'action_trigger_id': row.readColumnByIndexAsInt(8),
-        'action_id': row.readColumnByIndexAsInt(9),
-        'action_trigger_spec_id': row.readColumnByIndexAsInt(10),
-        'snooze_time': row.readColumnByIndexAsInt(11),
-        'snooze_count': row.readColumnByIndexAsInt(12),
+        'experimentGroupName': row.readColumnByIndexAsText(7),
+        'actionTriggerId': row.readColumnByIndexAsInt(8),
+        'actionId': row.readColumnByIndexAsInt(9),
+        'actionTriggerSpecId': row.readColumnByIndexAsInt(10),
+        'snoozeTime': row.readColumnByIndexAsInt(11),
+        'snoozeCount': row.readColumnByIndexAsInt(12),
       });
 
   Future<NotificationHolder> getNotification(int id) async {

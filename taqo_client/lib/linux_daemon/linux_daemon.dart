@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 
+import '../model/event.dart';
+import 'database/linux_database.dart';
 import 'loggers/loggers.dart';
 import 'loggers/app_logger.dart';
 import 'loggers/cmdline_logger.dart';
@@ -24,6 +27,19 @@ void openSurvey(int id) {
     // build/linux/debug/taqo_survey
     Process.run('taqo_survey', []);
   }
+}
+
+void _handleCreateMissedEvent(json_rpc.Parameters args) async {
+  final event = (args.asMap)['event'];
+  final database = await LinuxDatabase.get();
+  database.insertEvent(Event.fromJson(event));
+}
+
+Future<bool> _handleCheckActiveNotification(json_rpc.Parameters args) async {
+  final database = await LinuxDatabase.get();
+  final activeNotifications = (await database.getAllNotifications())
+      .where((n) => n.isActive);
+  return activeNotifications.isNotEmpty;
 }
 
 void _handleCancelNotification(json_rpc.Parameters args) {
@@ -75,6 +91,9 @@ void main() async {
       _peer.registerMethod(cancelAlarmMethod, _handleCancelAlarm);
       _peer.registerMethod(cancelNotificationMethod, _handleCancelNotification);
       _peer.registerMethod(cancelExperimentNotificationMethod, _handleCancelExperimentNotification);
+      _peer.registerMethod(checkActiveNotificationMethod, _handleCheckActiveNotification);
+
+      _peer.registerMethod(createMissedEventMethod, _handleCreateMissedEvent);
       _peer.listen();
 
       _peer.done.then((_) {
