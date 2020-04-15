@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 
-class ExampleEventServer implements TespCommandExecutor {
+class ExampleEventServer with TespRequestHandlerMixin {
   TespServer _tespServer;
 
   ExampleEventServer() {

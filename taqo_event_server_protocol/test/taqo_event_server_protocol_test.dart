@@ -404,7 +404,7 @@ void main() {
   });
 }
 
-class TestingEventServer implements TespCommandExecutor {
+class TestingEventServer with TespRequestHandlerMixin {
   TespServer _tespServer;
 
   TestingEventServer() {

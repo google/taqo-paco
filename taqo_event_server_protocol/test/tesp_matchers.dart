@@ -12,11 +12,11 @@ class HasPayload extends CustomMatcher {
   HasPayload(matcher)
       : super('TespMessage with payload that is', 'payload', matcher);
   @override
-  Object featureValueOf(actual) => (actual as TespMessageWithPayload).payload;
+  Object featureValueOf(actual) => (actual as Payload).payload;
 }
 
 Matcher equalsTespMessage(TespMessage message) {
-  if (message is TespMessageWithPayload) {
+  if (message is Payload) {
     return allOf(HasRuntimeType(equals(message.runtimeType)),
         HasPayload(equals(message.payload)));
   } else {

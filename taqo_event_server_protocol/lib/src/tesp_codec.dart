@@ -48,7 +48,7 @@ class TespEncoder extends Converter<TespMessage, List<int>> {
   @override
   Uint8List convert(TespMessage message) {
     var header = Uint8List.fromList([TespCodec.protocolVersion, message.code]);
-    if (message is TespMessageWithPayload) {
+    if (message is StringPayload) {
       if (message.encodedPayload.length > UINT32_MAX) {
         throw TespLengthException(
             'TESP cannot encode messages with payload larger than UINT32_MAX bytes.',
@@ -219,10 +219,6 @@ class _TespDecoderSink extends ByteConversionSinkBase {
           TespDecoder.checkProtocolVersion(chunk[i]);
         } else if (_headerIndex == TespCodec.codeOffset) {
           _code = chunk[i];
-          if (!TespMessage.tespCodeToConstructorMap.containsKey(_code)){
-            _reset();
-            throw TespUndefinedCodeException(_code);
-          }
           _hasPayload = TespDecoder.isCodeForTespMessageWithPayload(_code);
           if (!_hasPayload) {
             _foundTespMessage();
@@ -275,6 +271,8 @@ class _TespDecoderSink extends ByteConversionSinkBase {
     try {
       tespMessage =
           TespMessage.fromCode(_code, _hasPayload ? _encodedPayload : null);
+    } on ArgumentError {
+      throw TespUndefinedCodeException(_code);
     } on FormatException catch (e) {
       throw TespPayloadDecodingException(e);
     } finally {
@@ -289,7 +287,7 @@ const _errorHeader = 'TESP v${TespCodec.protocolVersion}: ';
 
 class TespDecodingException extends FormatException {
   TespDecodingException(String message, [source, int offset])
-  : super(_errorHeader + message, source, offset);
+      : super(_errorHeader + message, source, offset);
 }
 
 class TespUndefinedCodeException extends TespDecodingException {
@@ -299,20 +297,16 @@ class TespUndefinedCodeException extends TespDecodingException {
 
 class TespPayloadDecodingException extends TespDecodingException {
   TespPayloadDecodingException(FormatException e, [source, int offset])
-      : super('unable to decode the payload: ${e.message}',
-            source, offset);
+      : super('unable to decode the payload: ${e.message}', source, offset);
 }
 
 class TespLengthException extends TespDecodingException {
-  TespLengthException(String message, [source])
-      : super(message, source);
+  TespLengthException(String message, [source]) : super(message, source);
 }
 
 class TespVersionException extends TespDecodingException {
   TespVersionException(int unsupportedVersion, [source, int offset])
-      : super(
-            'unsupported protocol version: ${unsupportedVersion}.',
-            source,
+      : super('unsupported protocol version: ${unsupportedVersion}.', source,
             offset);
 }
 

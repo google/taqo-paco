@@ -47,7 +47,7 @@ void main() {
     final payload =
         '{"a": "b", "c": 1, "d": [1, 2, 3, "e"], "f": "Îñţérñåţîöñåļîžåţîờñ" }';
     final msgRequestAddEvent = TespRequestAddEvent.withPayload(payload);
-    final msgResponseError = TespResponseError('error','message','details');
+    final msgResponseError = TespResponseError('error', 'message', 'details');
     final msgResponseInvalidRequest =
         TespResponseInvalidRequest.withPayload(''); // Empty payload on purpose
     final msgResponseAnswer = TespResponseAnswer.withPayload(payload);
@@ -118,7 +118,8 @@ void main() {
       expect(
           Stream.fromIterable(messages)
               .transform(tesp.encoder)
-              .transform(ChunkedTransformer([3,1,4,1,5,9,2,6,5,3,5,8,9,7,9]))
+              .transform(ChunkedTransformer(
+                  [3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7, 9]))
               .transform(tesp.decoder),
           matcher);
       expect(
@@ -202,5 +203,3 @@ class ChunkedTransformSink implements EventSink<List<int>> {
     _outputSink.close();
   }
 }
-
-

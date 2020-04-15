@@ -5,11 +5,45 @@ import 'tesp_message.dart';
 
 import 'tesp_codec.dart';
 
+abstract class TespRequestHandler {
+  FutureOr<TespResponse> handle(TespRequest tespRequest);
+}
+
+mixin TespRequestHandlerMixin implements TespRequestHandler {
+  FutureOr<TespResponse> addEvent(String eventPayload);
+  FutureOr<TespResponse> pause();
+  FutureOr<TespResponse> resume();
+  FutureOr<TespResponse> whiteListDataOnly();
+  FutureOr<TespResponse> allData();
+
+  TespResponse ping() {
+    return TespResponseSuccess();
+  }
+
+  @override
+  FutureOr<TespResponse> handle(TespRequest tespRequest) {
+    switch (tespRequest.runtimeType) {
+      case TespRequestAddEvent:
+        return addEvent((tespRequest as TespRequestAddEvent).payload);
+      case TespRequestPause:
+        return pause();
+      case TespRequestResume:
+        return resume();
+      case TespRequestWhiteListDataOnly:
+        return whiteListDataOnly();
+      case TespRequestAllData:
+        return allData();
+      case TespRequestPing:
+        return ping();
+    }
+  }
+}
+
 class TespServer {
-  final TespCommandExecutor _tespCommandExecutor;
+  final TespRequestHandler _tespRequestHandler;
   ServerSocket _serverSocket;
 
-  TespServer(this._tespCommandExecutor);
+  TespServer(this._tespRequestHandler);
 
   int get port => _serverSocket?.port;
 
@@ -29,7 +63,7 @@ class TespServer {
       subscription = tespSocket.listen((tespRequest) {
         FutureOr<TespResponse> tespResponse;
         try {
-          tespResponse = tespRequest.executeCommand(_tespCommandExecutor);
+          tespResponse = _tespRequestHandler.handle(tespRequest);
         } catch (e) {
           tespSocket.add(TespResponseError(
               TespResponseError.tespErrorUnknown, e.toString()));
