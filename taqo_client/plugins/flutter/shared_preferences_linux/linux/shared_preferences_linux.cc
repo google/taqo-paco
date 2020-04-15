@@ -18,7 +18,7 @@
 
 #include "leveldb/db.h"
 
-#include "plugins/flutter/shared_preferences_linux/linux/shared_preferences_linux.h"
+#include "shared_preferences_plugin.h"
 
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar.h>

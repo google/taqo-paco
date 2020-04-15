@@ -13,16 +13,17 @@
 # limitations under the License.
 
 # The name of the plugin.
-# The primary source file is assumed to be $(PLUGIN_NAME).cc, with
-# $(PLUGIN_NAME).h as the public header meant for inclusion by the application.
 PLUGIN_NAME=shared_preferences_linux
+# This is changed from the stock Makefile since the class name doesn't match
+# the plugin name. This will need to be made more flexible when Linux plugin
+# structure is revisited.
+PLUGIN_SOURCE_NAME=shared_preferences_linux
 # Any files other than the plugin class files that need to be compiled.
 EXTRA_SOURCES=
 # Extra flags (e.g., for library dependencies).
 SYSTEM_LIBRARIES=
 EXTRA_CXXFLAGS=
-EXTRA_CPPFLAGS=-I. -I../../../.. \
-	$(patsubst -I%,-isystem%,$(shell pkg-config --cflags $(SYSTEM_LIBRARIES)))
+EXTRA_CPPFLAGS=-I. $(patsubst -I%,-isystem%,$(shell pkg-config --cflags $(SYSTEM_LIBRARIES)))
 EXTRA_LDFLAGS=$(shell pkg-config --libs $(SYSTEM_LIBRARIES))
 
 # Default build type. For a release build, set BUILD=release.
@@ -63,9 +64,7 @@ WRAPPER_SOURCES= \
 
 # Use abspath for extra sources, which may also contain relative paths (see
 # note above about WRAPPER_ROOT).
-SOURCES=$(PLUGIN_NAME).cc $(WRAPPER_SOURCES) $(abspath $(EXTRA_SOURCES))
-PRIVATE_HEADER=$(PLUGIN_NAME).h
-PUBLIC_HEADER=shared_preferences_plugin.h
+SOURCES=$(PLUGIN_SOURCE_NAME).cc $(WRAPPER_SOURCES) $(abspath $(EXTRA_SOURCES))
 
 WRAPPER_INCLUDE_DIR=$(WRAPPER_ROOT)/include
 INCLUDE_DIRS=$(FLUTTER_EPHEMERAL_DIR) $(WRAPPER_INCLUDE_DIR)
@@ -79,8 +78,7 @@ CPPFLAGS=$(patsubst %,-I%,$(INCLUDE_DIRS)) $(EXTRA_CPPFLAGS)
 LDFLAGS=-shared -L$(FLUTTER_EPHEMERAL_DIR) -l$(FLUTTER_LIB_NAME) $(EXTRA_LDFLAGS)
 
 # Final output files that will be used by applications.
-LIBRARY_OUT=$(OUT_DIR)/lib$(PLUGIN_NAME).so
-HEADER_OUT=$(OUT_DIR)/include/$(PUBLIC_HEADER)
+LIBRARY_OUT=$(OUT_DIR)/lib$(PLUGIN_NAME)_plugin.so
 
 # Intermediate files.
 OBJ_FILES=$(SOURCES:%.cc=$(OBJ_DIR)/%.o)
@@ -92,15 +90,11 @@ DEPENDENCY_FILES=$(OBJ_FILES:%.o=%.d)
 all: $(PLUGIN_NAME)
 
 .PHONY: $(PLUGIN_NAME)
-$(PLUGIN_NAME) : $(LIBRARY_OUT) $(HEADER_OUT)
+$(PLUGIN_NAME) : $(LIBRARY_OUT)
 
 $(LIBRARY_OUT): $(OBJ_FILES)
 	mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $^ ../lib/libleveldb.a $(LDFLAGS) -o $@
-
-$(HEADER_OUT): $(PRIVATE_HEADER)
-	mkdir -p $(@D)
-	cp $< $(HEADER_OUT)
 
 -include $(DEPENDENCY_FILES)
 
@@ -110,5 +104,5 @@ $(OBJ_DIR)/%.o : %.cc
 
 .PHONY: clean
 clean:
-	rm -f $(LIBRARY_OUT) $(HEADER_OUT)
+	rm -f $(LIBRARY_OUT)
 	rm -rf $(PLUGINOUT_DIR)
