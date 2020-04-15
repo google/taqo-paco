@@ -24,7 +24,7 @@ class AuthProvider with ChangeNotifier {
         onError: _gAuthStateError);
 
     // Check and set initial state
-    _gAuth.isAuthenticated().then(_gAuthStateListener);
+    _gAuth.isAuthenticated.then(_gAuthStateListener);
   }
 
   void _gAuthStateListener(bool newAuthState) {
@@ -63,7 +63,7 @@ class AuthProvider with ChangeNotifier {
   }
 
   void signIn() {
-    _gAuth.doIt(_urlCallback).then((_) {
+    _gAuth.authenticate(_urlCallback).then((_) {
       MyApp.navigatorKey.currentState.pushNamed(
           RunningExperimentsPage.routeName);
     });

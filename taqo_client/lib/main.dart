@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:taqo_time_plugin/taqo_time_plugin.dart' as taqo_time_plugin;
 
 import 'net/google_auth.dart';
@@ -62,7 +62,7 @@ void main() async {
   await taqo_alarm.init();
 
   final activeNotification = await _checkActiveNotification();
-  final authState = await GoogleAuth().isAuthenticated();
+  final authState = await GoogleAuth().isAuthenticated;
   runApp(MyApp(activeNotification: activeNotification, authState: authState));
 }
 
