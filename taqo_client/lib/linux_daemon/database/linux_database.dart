@@ -57,8 +57,10 @@ class LinuxDatabase {
 
   Future _maybeCreateTable(String tableName) async {
     final result = _db.query(_checkTableExistsQuery(tableName));
-    final row = await result.first;
-    final exists = row.readColumnByIndexAsInt(0) > 0;
+    bool exists = true;
+    for (Row row in result) {
+      exists = row.readColumnByIndexAsInt(0) > 0;
+    }
     if (!exists) {
       await _db.execute(_createTableStatement[tableName]);
     }
@@ -77,8 +79,10 @@ class LinuxDatabase {
 
   Future<ActionSpecification> getAlarm(int id) async {
     final result = _db.query(selectAlarmByIdCommand, params: [id]);
-    final row = await result.first;
-    final json = row.readColumnAsText('json');
+    var json;
+    for (Row row in result) {
+      json = row.readColumnAsText('json');
+    }
     return ActionSpecification.fromJson(jsonDecode(json));
   }
 
@@ -133,11 +137,11 @@ class LinuxDatabase {
 
   Future<NotificationHolder> getNotification(int id) async {
     final result = _db.query(selectNotificationByIdCommand, params: [id]);
-    if (result.length > 0) {
-      final row = await result.first;
-      return _buildNotificationHolder(row);
+    var notification;
+    for (Row row in result) {
+      notification = _buildNotificationHolder(row);
     }
-    return null;
+    return notification;
   }
 
   Future<List<NotificationHolder>> getAllNotifications() async {

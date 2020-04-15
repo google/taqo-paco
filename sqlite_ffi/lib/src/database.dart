@@ -124,6 +124,11 @@ class Database {
     free(statementOut);
     free(queryC);
 
+    if (resultCode != Errors.SQLITE_OK) {
+      bindings.sqlite3_finalize(statement);
+      throw _loadError(resultCode);
+    }
+
     if (params != null) {
       for (var i = 0; i < params.length; i++) {
         final param = params[i];
@@ -145,11 +150,6 @@ class Database {
           }
         }
       }
-    }
-
-    if (resultCode != Errors.SQLITE_OK) {
-      bindings.sqlite3_finalize(statement);
-      throw _loadError(resultCode);
     }
 
     Map<String, int> columnIndices = {};
