@@ -30,6 +30,8 @@ class _SQLiteBindings {
   int Function(Pointer<Utf8> filename, Pointer<Pointer<Database>> databaseOut,
       int flags, Pointer<Utf8> vfs) sqlite3_open_v2;
 
+  int Function(Pointer<Database> database, int ms) sqlite3_busy_timeout;
+
   int Function(Pointer<Database> database) sqlite3_close_v2;
 
   /// Compiling An SQL Statement
@@ -361,6 +363,9 @@ class _SQLiteBindings {
     sqlite = dlopenPlatformSpecific("sqlite3");
     sqlite3_open_v2 = sqlite
         .lookup<NativeFunction<sqlite3_open_v2_native_t>>("sqlite3_open_v2")
+        .asFunction();
+    sqlite3_busy_timeout = sqlite
+        .lookup<NativeFunction<sqlite3_busy_timeout_native_t>>("sqlite3_busy_timeout")
         .asFunction();
     sqlite3_close_v2 = sqlite
         .lookup<NativeFunction<sqlite3_close_v2_native_t>>("sqlite3_close_v2")

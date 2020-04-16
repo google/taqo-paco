@@ -23,11 +23,12 @@ import "collections/closable_iterator.dart";
 /// This database interacts with SQLite synchonously.
 class Database {
   Pointer<types.Database> _database;
+  int _timeout;
   bool _open = false;
 
   /// Open a database located at the file [path].
   Database(String path,
-      [int flags = Flags.SQLITE_OPEN_READWRITE | Flags.SQLITE_OPEN_CREATE]) {
+      [int flags = Flags.SQLITE_OPEN_READWRITE | Flags.SQLITE_OPEN_CREATE, int timeout = 5000]) {
     Pointer<Pointer<types.Database>> dbOut = allocate();
     final pathC = Utf8.toUtf8(path);
     final int resultCode =
@@ -38,6 +39,8 @@ class Database {
 
     if (resultCode == Errors.SQLITE_OK) {
       _open = true;
+      _timeout = timeout;
+      bindings.sqlite3_busy_timeout(_database, _timeout);
     } else {
       // Even if "open" fails, sqlite3 will still create a database object. We
       // can just destroy it.

@@ -45,6 +45,15 @@ class LinuxDatabase {
     });
   }
 
+  Future close() async {
+    if (_db != null) {
+      _db.close();
+      _db = null;
+    }
+    _instance = null;
+    _completer = null;
+  }
+
   String _checkTableExistsQuery(String tableName) =>
       "SELECT COUNT(1) FROM sqlite_master WHERE type='table' AND name='$tableName'";
 

@@ -11,6 +11,8 @@ import "types.dart";
 typedef sqlite3_open_v2_native_t = Int32 Function(Pointer<Utf8> filename,
     Pointer<Pointer<Database>> ppDb, Int32 flags, Pointer<Utf8> vfs);
 
+typedef sqlite3_busy_timeout_native_t = Int32 Function(Pointer<Database> database, Int64 ms);
+
 typedef sqlite3_close_v2_native_t = Int32 Function(Pointer<Database> database);
 
 typedef sqlite3_prepare_v2_native_t = Int32 Function(
