@@ -11,9 +11,9 @@ import '../pages/running_experiments_page.dart';
 class AuthProvider with ChangeNotifier {
   static final _gAuth = GoogleAuth();
 
-  StreamSubscription<bool> _gAuthListener;
+  StreamSubscription<AuthState> _gAuthListener;
 
-  bool _authState = false;
+  AuthState _authState = AuthState.notAuthenticated;
   String _userInfoName;
   String _userPhotoUrl;
 
@@ -24,15 +24,17 @@ class AuthProvider with ChangeNotifier {
         onError: _gAuthStateError);
 
     // Check and set initial state
-    _gAuth.isAuthenticated.then(_gAuthStateListener);
+    _gAuth.isAuthenticated.then((bool b) {
+      _gAuthStateListener(b ? AuthState.authenticated: AuthState.notAuthenticated);
+    });
   }
 
-  void _gAuthStateListener(bool newAuthState) {
-    print('AuthProvider newAuthState: $newAuthState');
+  void _gAuthStateListener(AuthState newAuthState) {
+    //print('AuthProvider newAuthState: $newAuthState');
     _authState = newAuthState;
     notifyListeners();
 
-    if (_authState) {
+    if (_authState == AuthState.authenticated) {
       _gAuth.getUserInfo().then((info) {
         _userInfoName = info['name'];
         _userPhotoUrl = info['picture'];
@@ -49,7 +51,6 @@ class AuthProvider with ChangeNotifier {
   void dispose() {
     if (_gAuthListener != null) {
       _gAuthListener.cancel();
-      _authState = false;
     }
     super.dispose();
   }
@@ -75,7 +76,7 @@ class AuthProvider with ChangeNotifier {
     });
   }
 
-  bool get isAuthenticated => _authState;
+  bool get isAuthenticated => _authState == AuthState.authenticated;
 
   String get userInfoName => _userInfoName;
 

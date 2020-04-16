@@ -8,28 +8,23 @@ import "package:http/http.dart" as http;
 import '../storage/flutter_file_storage.dart';
 import '../storage/unsecure_token_storage.dart';
 
+enum AuthState {
+  authenticated,
+  notAuthenticated,
+}
+
 class GoogleAuth {
   static const _scopes = [
     Oauth2Api.UserinfoEmailScope,
     Oauth2Api.UserinfoProfileScope,
   ];
 
-  //static const _stagingServer = "http://quantifiedself-staging.appspot.com";
-  static const _prodServer = "https://www.pacoapp.com";
-  static const _server = _prodServer;
-
-  static const _experimentUrl = "$_server/experiments?mine&limit=100";
-  static const _experimentByIdUrl = "$_server/experiments?id=";
-  static const _pubExperimentByIdUrl = "$_server/pubexperiments?id=";
-  static const _inviteUrl = "$_server/invite?code=";
-  static final _eventsUri = Uri.https('www.pacoapp.com', '/events');
-
   static const _clientId = "619519633889.apps.googleusercontent.com";
   static const _secret = "LOwVPys7lruBjjsI8erzh7KK";
   static final _id = ClientId(_clientId, _secret);
 
-  final _authenticationStreamController = StreamController<bool>.broadcast();
-  Stream<bool> get onAuthChanged => _authenticationStreamController.stream;
+  final _authenticationStreamController = StreamController<AuthState>.broadcast();
+  Stream<AuthState> get onAuthChanged => _authenticationStreamController.stream;
 
   static final _instance = GoogleAuth._();
 
@@ -62,13 +57,13 @@ class GoogleAuth {
       obtainAccessCredentialsViaUserConsent(_id, _scopes, client, urlCallback)
           .then((AccessCredentials credentials) {
         _saveCredentials(credentials);
-        _authenticationStreamController.add(true);
+        _authenticationStreamController.add(AuthState.authenticated);
       }).catchError((e) {
         print("Authentication error: $e");
-        _authenticationStreamController.add(false);
+        _authenticationStreamController.add(AuthState.notAuthenticated);
       });
     } else {
-      _authenticationStreamController.add(true);
+      _authenticationStreamController.add(AuthState.authenticated);
     }
   }
 
@@ -76,10 +71,10 @@ class GoogleAuth {
   Future<void> clearCredentials() async {
     final tokenStore = await UnsecureTokenStorage.get(FlutterFileStorage(UnsecureTokenStorage.filename));
     tokenStore.clear();
-    _authenticationStreamController.add(false);
+    _authenticationStreamController.add(AuthState.notAuthenticated);
   }
 
-  Future<Map<String, String>> _refreshCredentials(http.Client client) async {
+  Future<Map<String, String>> getAuthHeaders(http.Client client) async {
     final savedTokens = await _readTokens();
     if (savedTokens == null || savedTokens.length < 3) {
       clearCredentials();
@@ -97,104 +92,6 @@ class GoogleAuth {
       clearCredentials();
       rethrow;
     }
-  }
-
-  Future<http.Response> _get(http.Client client, String url,
-      {Map<String, String> headers}) {
-    return client.get(url, headers: headers);
-  }
-
-  Future<http.Response> _refreshAndGet(String url, {String defValue = ""}) async {
-    final client = http.Client();
-    try {
-      final headers = await _refreshCredentials(client);
-      final response = await _get(client, url, headers: headers);
-      return response;
-    } catch (_) {
-      rethrow;
-    } finally {
-      client.close();
-    }
-  }
-
-  Future<http.Response> _post(http.Client client, Uri url,
-      Map<String, String> headers, String body) {
-    return client.post(url, headers: headers, body: body);
-  }
-
-  Future<http.Response> _refreshAndPost(Uri url, String body) async {
-    final client = http.Client();
-    try {
-      final headers = await _refreshCredentials(client);
-      final response = await _post(client, url, headers, body);
-      return response;
-    } catch (_) {
-      rethrow;
-    } finally {
-      client.close();
-    }
-  }
-
-  // Public API
-
-  Future<PacoResponse> postEvents(String body) async {
-    return _refreshAndPost(_eventsUri, body).then((response) {
-      if (response.statusCode == 200) {
-        return PacoResponse(PacoResponse.success, 'Success', body: response.body);
-      }
-      return PacoResponse(PacoResponse.failure, response.reasonPhrase);
-    }).catchError((e) {
-      return PacoResponse(PacoResponse.exception, e.toString());
-    });
-  }
-
-  Future<PacoResponse> _refreshAndGetPacoResponse(String url) {
-    return _refreshAndGet(url).then((response) {
-      if (response.statusCode == 200) {
-        return PacoResponse(PacoResponse.success, 'Success', body: response.body);
-      }
-      return PacoResponse(PacoResponse.failure, response.reasonPhrase);
-    }).catchError((e) {
-      return PacoResponse(PacoResponse.exception, e.toString());
-    });
-  }
-
-  /// Gets all Experiments
-  Future<PacoResponse> getExperimentsWithSavedCredentials() {
-    return _refreshAndGetPacoResponse(_experimentUrl);
-  }
-
-  /// Gets the Experiment with id [experimentId]
-  Future<PacoResponse> getExperimentByIdWithSavedCredentials(int experimentId) {
-    return _refreshAndGetPacoResponse("$_experimentByIdUrl$experimentId");
-  }
-
-  /// Gets the Experiments with ids [ids]
-  Future<PacoResponse> getExperimentsByIdWithSavedCredentials(Iterable<int> ids) {
-    return _refreshAndGetPacoResponse("$_experimentByIdUrl${ids.join(',')}");
-  }
-
-  Future<PacoResponse> _getPacoResponse(String url) async {
-    final client = http.Client();
-    try {
-      final response = await _get(client, url);
-      if (response.statusCode == 200) {
-        return PacoResponse(PacoResponse.success, 'Success', body: response.body);
-      }
-      return PacoResponse(PacoResponse.failure, response.reasonPhrase);
-    } catch (e) {
-      return PacoResponse(PacoResponse.exception, e.toString());
-    } finally {
-      client.close();
-    }
-  }
-
-  Future<PacoResponse> checkInvitationWithSavedCredentials(String code) {
-    return _getPacoResponse("$_inviteUrl$code");
-  }
-
-  Future<PacoResponse> getPubExperimentById(int experimentId) {
-    return _getPacoResponse("$_pubExperimentByIdUrl$experimentId");
   }
 
   // I created a PR to have this merged into the googleapis plugin 2 years ago,
@@ -228,21 +125,4 @@ class GoogleAuth {
       };
     });
   }
-}
-
-class PacoResponse {
-  static const success = 0;
-  static const failure = -1;
-  static const exception = -2;
-
-  final int statusCode;
-  final String statusMsg;
-
-  final String body;
-
-  PacoResponse(this.statusCode, this.statusMsg, {this.body});
-
-  bool get isSuccess => statusCode == success;
-  bool get isFailure => statusCode == failure;
-  bool get isException => statusCode == exception;
 }

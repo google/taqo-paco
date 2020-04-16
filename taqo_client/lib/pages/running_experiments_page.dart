@@ -31,8 +31,6 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
       "The survey for the notification selected has expired. "
       "Please respond sooner next time.";
 
-  var gAuth = GoogleAuth();
-
   var _experiments = <ExperimentProvider>[];
 
   final _active = <int>{};
