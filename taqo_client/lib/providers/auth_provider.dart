@@ -6,7 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../main.dart';
 import '../net/google_auth.dart';
 import '../pages/login_page.dart';
-import '../pages/running_experiments_page.dart';
+import '../pages/find_experiments_page.dart';
 
 class AuthProvider with ChangeNotifier {
   static final _gAuth = GoogleAuth();
@@ -66,7 +66,7 @@ class AuthProvider with ChangeNotifier {
   void signIn() {
     _gAuth.authenticate(_urlCallback).then((_) {
       MyApp.navigatorKey.currentState.pushNamed(
-          RunningExperimentsPage.routeName);
+          FindExperimentsPage.routeName);
     });
   }
 
