@@ -35,6 +35,8 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
         return allData();
       case TespRequestPing:
         return ping();
+      default:
+        return TespResponseInvalidRequest.withPayload('Unsupported TespRequest type');
     }
   }
 }
@@ -45,7 +47,7 @@ class TespServer {
   final Duration waitingTimeLimit;
 
   TespServer(this._tespRequestHandler,
-      [this.waitingTimeLimit = const Duration(milliseconds: 500)]);
+      {this.waitingTimeLimit = const Duration(milliseconds: 500)});
 
   int get port => _serverSocket?.port;
 
@@ -60,7 +62,7 @@ class TespServer {
 
     _serverSocket.listen((socket) {
       var tespSocket = TespMessageSocket<TespRequest, TespResponse>(
-          socket, waitingTimeLimit);
+          socket, waitingTimeLimit: waitingTimeLimit);
       StreamSubscription<TespMessage> subscription;
 
       subscription = tespSocket.listen((tespRequest) {
@@ -83,7 +85,7 @@ class TespServer {
         } else {
           tespSocket.add(tespResponse);
         }
-      }, onError: (e) {
+      }, onError: (e, st) {
         tespSocket.add(TespResponseInvalidRequest.withPayload(e.toString()));
         if (!(e is CastError)) {
           subscription.cancel();

@@ -106,7 +106,13 @@ mixin StringPayload implements Payload<String> {
 
   @override
   String toString() {
-    return super.toString() + ' with payload: $payload';
+    String payloadDisplay;
+    if (payload.length<1000) {
+      payloadDisplay = payload;
+    } else {
+      payloadDisplay = payload.substring(0, 500) + '<...content omitted because the payload is too large to display...>' + payload.substring(payload.length-500,payload.length);
+    }
+    return super.toString() + ' with payload: $payloadDisplay';
   }
 }
 
@@ -215,4 +221,11 @@ class TespResponseAnswer extends TespResponse with StringPayload {
   TespResponseAnswer.withEncodedPayload(Uint8List encodedPayload) {
     setPayloadWithEncoded(encodedPayload);
   }
+}
+
+/// This type of message should never be encoded or transported. It can be added
+/// to a stream of TespMessage as an event to be processed.
+class TespEventMessageFound implements TespResponse, TespRequest {
+  @override
+  final code = null;
 }

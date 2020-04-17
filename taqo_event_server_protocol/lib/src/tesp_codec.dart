@@ -35,6 +35,9 @@ class TespCodec extends Codec<TespMessage, List<int>> {
   @override
   Converter<List<int>, TespMessage> get decoder => const TespDecoder();
 
+  Converter<List<int>, TespMessage> get decoderAddingEvent =>
+      const TespDecoder(addingEvent: true);
+
   @override
   Converter<TespMessage, List<int>> get encoder => const TespEncoder();
 }
@@ -80,7 +83,8 @@ class TespEncoder extends Converter<TespMessage, List<int>> {
 /// This class converts UTF-8 code units (lists of unsigned 8-bit integers)
 /// to a TESP message.
 class TespDecoder extends Converter<List<int>, TespMessage> {
-  const TespDecoder();
+  final bool addingEvent;
+  const TespDecoder({this.addingEvent = false});
 
   static bool isCodeForTespMessageWithPayload(int code) {
     return (code & 0x01 == 0x01);
@@ -182,7 +186,7 @@ class TespDecoder extends Converter<List<int>, TespMessage> {
 
   @override
   ByteConversionSink startChunkedConversion(Sink<TespMessage> sink) {
-    return _TespDecoderSink(sink);
+    return _TespDecoderSink(sink, addingEvent: addingEvent);
   }
 
   // Override the base-classes bind, to provide a better type.
@@ -191,10 +195,11 @@ class TespDecoder extends Converter<List<int>, TespMessage> {
 }
 
 class _TespDecoderSink extends ByteConversionSinkBase {
-  Sink<TespMessage> _outputSink;
-  _TespDecoderSink(this._outputSink);
+  final Sink<TespMessage> _outputSink;
+  final bool addingEvent;
+  _TespDecoderSink(this._outputSink, {this.addingEvent = false});
 
-  Uint8List _headerWithPayloadSize = Uint8List(TespCodec.payloadOffset);
+  final Uint8List _headerWithPayloadSize = Uint8List(TespCodec.payloadOffset);
   int _headerIndex = 0;
   int _code;
   bool _hasPayload;
@@ -268,6 +273,11 @@ class _TespDecoderSink extends ByteConversionSinkBase {
   void _foundTespMessage() {
     var tespMessage;
 
+    // sending out an event before the payload get decoded, so that the stream
+    // consumer can know that a message is received as soon as possible
+    if (addingEvent && _hasPayload) {
+      _outputSink.add(TespEventMessageFound());
+    }
     try {
       tespMessage =
           TespMessage.fromCode(_code, _hasPayload ? _encodedPayload : null);

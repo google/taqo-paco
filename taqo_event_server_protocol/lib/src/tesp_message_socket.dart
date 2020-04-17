@@ -13,7 +13,7 @@ class TespMessageSocket<S extends TespMessage, T extends TespMessage>
   // The time limit to wait for next available data while reading one message.
   final Duration waitingTimeLimit;
   TespMessageSocket(this._socket,
-      [this.waitingTimeLimit = const Duration(milliseconds: 500)]);
+      {this.waitingTimeLimit = const Duration(milliseconds: 500)});
 
   @override
   void add(T tespMessage) {
@@ -62,8 +62,7 @@ class TespMessageSocket<S extends TespMessage, T extends TespMessage>
       timeout = () {
         controller.addError(
             TimeoutException(
-                'more data expected or wrong message format', waitingTimeLimit),
-            null);
+                'more data expected or wrong message format', waitingTimeLimit), null);
       };
 
       subscription =
@@ -94,14 +93,16 @@ class TespMessageSocket<S extends TespMessage, T extends TespMessage>
 
     return controller.stream
         .cast<List<int>>()
-        .transform(tesp.decoder)
+        .transform(tesp.decoderAddingEvent)
         .cast<S>()
         .listen((S event) {
       timer.cancel();
-      onData(event);
-    }, onError: (e) {
+      if (!(event is TespEventMessageFound)) {
+        onData(event);
+      }
+    }, onError: (e, st) {
       timer.cancel();
-      onError(e);
+      onError(e, st);
     }, onDone: onDone, cancelOnError: cancelOnError);
   }
 }
