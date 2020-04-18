@@ -7,8 +7,9 @@ import 'tesp_message.dart';
 
 typedef _TimerCallback = void Function();
 
-class TespMessageSocket<S extends TespMessage, T extends TespMessage>
-    extends Stream<S> implements Sink<T> {
+// R for receiving type, S for sending type
+class TespMessageSocket<R extends TespMessage, S extends TespMessage>
+    extends Stream<R> implements Sink<S> {
   final Socket _socket;
   // The time limit to wait for next available data while reading one message.
   final Duration waitingTimeLimit;
@@ -16,7 +17,7 @@ class TespMessageSocket<S extends TespMessage, T extends TespMessage>
       {this.waitingTimeLimit = const Duration(milliseconds: 500)});
 
   @override
-  void add(T tespMessage) {
+  void add(S tespMessage) {
     _socket.add(tesp.encode(tespMessage));
   }
 
@@ -26,7 +27,7 @@ class TespMessageSocket<S extends TespMessage, T extends TespMessage>
   }
 
   @override
-  StreamSubscription<S> listen(void Function(S event) onData,
+  StreamSubscription<R> listen(void Function(R event) onData,
       {Function onError, void Function() onDone, bool cancelOnError}) {
     // The following code managing timeout is based on the source code for Stream.timeout() method.
     StreamController<Uint8List> controller;
@@ -94,8 +95,8 @@ class TespMessageSocket<S extends TespMessage, T extends TespMessage>
     return controller.stream
         .cast<List<int>>()
         .transform(tesp.decoder)
-        .cast<S>()
-        .listen((S event) {
+        .cast<R>()
+        .listen((R event) {
       timer?.cancel();
       if (!(event is TespEventMessageFound)) {
         onData(event);
