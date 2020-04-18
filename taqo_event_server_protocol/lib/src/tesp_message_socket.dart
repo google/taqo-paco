@@ -30,26 +30,26 @@ class TespMessageSocket<S extends TespMessage, T extends TespMessage>
       {Function onError, void Function() onDone, bool cancelOnError}) {
     // The following code managing timeout is based on the source code for Stream.timeout() method.
     StreamController<Uint8List> controller;
+    Timer timer;
     // The following variables are set in _onListen().
     StreamSubscription<Uint8List> subscription;
-    Timer timer;
     Zone zone;
     _TimerCallback timeout;
 
     void _onData(Uint8List event) {
-      timer.cancel();
+      timer?.cancel();
       timer = zone.createTimer(waitingTimeLimit, timeout);
       controller.add(event);
     }
 
     void _onError(error, StackTrace stackTrace) {
-      timer.cancel();
+      timer?.cancel();
       controller.addError(error, stackTrace); // Avoid Zone error replacement.
       timer = zone.createTimer(waitingTimeLimit, timeout);
     }
 
     void _onDone() {
-      timer.cancel();
+      timer?.cancel();
       controller.close();
     }
 
@@ -62,12 +62,12 @@ class TespMessageSocket<S extends TespMessage, T extends TespMessage>
       timeout = () {
         controller.addError(
             TimeoutException(
-                'more data expected or wrong message format', waitingTimeLimit), null);
+                'more data expected or wrong message format', waitingTimeLimit),
+            null);
       };
 
       subscription =
           _socket.listen(_onData, onError: _onError, onDone: _onDone);
-      timer = zone.createTimer(waitingTimeLimit, timeout);
     }
 
     Future _onCancel() {
@@ -81,7 +81,7 @@ class TespMessageSocket<S extends TespMessage, T extends TespMessage>
         onListen: _onListen,
         onPause: () {
           // Don't null the timer, onCancel may call cancel again.
-          timer.cancel();
+          timer?.cancel();
           subscription.pause();
         },
         onResume: () {
@@ -93,15 +93,15 @@ class TespMessageSocket<S extends TespMessage, T extends TespMessage>
 
     return controller.stream
         .cast<List<int>>()
-        .transform(tesp.decoderAddingEvent)
+        .transform(tesp.decoder)
         .cast<S>()
         .listen((S event) {
-      timer.cancel();
+      timer?.cancel();
       if (!(event is TespEventMessageFound)) {
         onData(event);
       }
     }, onError: (e, st) {
-      timer.cancel();
+      timer?.cancel();
       onError(e, st);
     }, onDone: onDone, cancelOnError: cancelOnError);
   }

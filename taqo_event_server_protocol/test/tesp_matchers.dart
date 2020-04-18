@@ -9,10 +9,21 @@ class HasRuntimeType extends CustomMatcher {
 }
 
 class HasPayload extends CustomMatcher {
+  static const _featureDescription='TespMessage with payload that is';
+  final Matcher _matcher;
+
   HasPayload(matcher)
-      : super('TespMessage with payload that is', 'payload', matcher);
+      : _matcher=matcher, super(_featureDescription, 'payload', matcher);
+
   @override
   Object featureValueOf(actual) => (actual as Payload).payload;
+
+  @override
+  Description describe(Description description) {
+    var matcherDesciption=StringDescription();
+    _matcher.describe(matcherDesciption);
+    description.add(_featureDescription).add(' ').add(_truncateString(matcherDesciption.toString()));
+  }
 }
 
 Matcher equalsTespMessage(TespMessage message) {
@@ -23,3 +34,7 @@ Matcher equalsTespMessage(TespMessage message) {
     return HasRuntimeType(equals(message.runtimeType));
   }
 }
+
+String _truncateString(String string) => string.length <= 1000
+    ? string
+    : '${string.substring(0, 1000)}<... ${string.length - 1000} characters not displayed>';

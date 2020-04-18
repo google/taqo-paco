@@ -103,17 +103,6 @@ mixin StringPayload implements Payload<String> {
     setPayload(utf8.decode(encodedPayload));
     _encodedPayload = encodedPayload;
   }
-
-  @override
-  String toString() {
-    String payloadDisplay;
-    if (payload.length<1000) {
-      payloadDisplay = payload;
-    } else {
-      payloadDisplay = payload.substring(0, 500) + '<...content omitted because the payload is too large to display...>' + payload.substring(payload.length-500,payload.length);
-    }
-    return super.toString() + ' with payload: $payloadDisplay';
-  }
 }
 
 class TespRequestAddEvent extends TespRequest with StringPayload {

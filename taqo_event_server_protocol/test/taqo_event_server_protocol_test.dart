@@ -28,7 +28,7 @@ void main() {
       await server.serve();
       port = server.port;
       socket = await Socket.connect('127.0.0.1', port);
-      tespSocket = TespMessageSocket(socket);
+      tespSocket = TespMessageSocket(socket, waitingTimeLimit: Duration(milliseconds: 500));
     });
 
     tearDown(() async {
@@ -108,7 +108,10 @@ void main() {
       tespSocket.close();
     });
 
-    test('handle large payload', () {
+    test('handle large payload', () async {
+      var tespStream = tespSocket.asBroadcastStream(
+          onCancel: (subscription) => subscription.pause(),
+          onListen: (subscription) => subscription.resume());
       // Constructing large encoded message
       // Target payload size in bytes
       final targetSize = 256*1024*1024;
@@ -125,13 +128,12 @@ void main() {
       for (var i = 0; i<repeatingTimes; i++) {
        socket.add(largePayloadEncoded);
       }
-      expect(tespSocket, emitsInOrder([
-        equalsTespMessage(TespResponseAnswer.withPayload('${_stringAddEvent}: $realPayload')),
-        emitsDone
-      ]));
+      await expectLater(tespStream, emits(
+        equalsTespMessage(TespResponseAnswer.withPayload('${_stringAddEvent}: $realPayload'))
+      ));
       tespSocket.close();
-
-    });
+      expect(tespStream, emitsDone);
+    }, timeout: Timeout(Duration(seconds: 120)));
 
     test('error handling - wrong version', () {
       tespSocket.add(TespRequestAddEvent.withPayload('test'));
