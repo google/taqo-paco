@@ -18,8 +18,6 @@ class FindExperimentsPage extends StatefulWidget {
 }
 
 class _FindExperimentsPageState extends State<FindExperimentsPage> {
-  var gAuth = GoogleAuth();
-
   @override
   Widget build(BuildContext context) {
     return TaqoScaffold(

@@ -4,7 +4,7 @@ import 'package:logging/logging.dart';
 
 import '../model/event.dart';
 import '../model/event_save_outcome.dart';
-import '../net/google_auth.dart';
+import '../net/paco_api.dart';
 import '../storage/flutter_file_storage.dart';
 import '../storage/local_database.dart';
 
@@ -45,11 +45,11 @@ Future<bool> syncData() async {
   logger.info("Start syncing data...");
   final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
   final events = await storage.getUnuploadedEvents();
-  final gAuth = GoogleAuth();
+  final pacoApi = PacoApi();
 
   // TODO: handle upload limit size
   if (events.length > 0) {
-    final response = await gAuth.postEvents(jsonEncode(events));
+    final response = await pacoApi.postEvents(jsonEncode(events));
     if (response.isSuccess) {
       final outcomes = _parseSyncResponse(response);
       if (outcomes.length == events.length) {
