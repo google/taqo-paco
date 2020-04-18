@@ -32,9 +32,9 @@ void main() {
     });
 
     tearDown(() async {
-      tespSocket.close();
-      socket.destroy();
+      await tespSocket.close();
       await server.close();
+      socket.destroy();
       port = null;
       tespSocket = null;
       socket = null;
@@ -131,7 +131,7 @@ void main() {
       await expectLater(tespStream, emits(
         equalsTespMessage(TespResponseAnswer.withPayload('${_stringAddEvent}: $realPayload'))
       ));
-      tespSocket.close();
+      await tespSocket.close();
       expect(tespStream, emitsDone);
     }, timeout: Timeout(Duration(seconds: 120)));
 
@@ -241,8 +241,8 @@ void main() {
 
     tearDown(() async {
       await server.close();
-      tespSocket1.close();
-      tespSocket2.close();
+      await tespSocket1.close();
+      await tespSocket2.close();
       socket1.destroy();
       socket2.destroy();
       port = null;

@@ -22,8 +22,9 @@ class TespMessageSocket<R extends TespMessage, S extends TespMessage>
   }
 
   @override
-  void close() {
-    _socket.flush().then((_) => _socket.close());
+  Future<void> close() async {
+    await _socket.flush();
+    await _socket.close();
   }
 
   @override
