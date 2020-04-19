@@ -255,13 +255,16 @@ class _TespDecoderSink extends ByteConversionSinkBase {
     if (isLast) close();
   }
 
-  @override
-  void close() {
+  void flush() {
     if (_headerIndex > 0) {
       _reset();
-      _outputSink.close();
       throw TespIncompleteMessageException();
     }
+  }
+
+  @override
+  void close() {
+    flush();
     _outputSink.close();
   }
 

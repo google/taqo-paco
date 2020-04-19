@@ -27,6 +27,8 @@ class TespMessageSocket<R extends TespMessage, S extends TespMessage>
     await _socket.close();
   }
 
+  Future get done => _socket.done;
+
   @override
   StreamSubscription<R> listen(void Function(R event) onData,
       {Function onError, void Function() onDone, bool cancelOnError}) {
@@ -73,7 +75,7 @@ class TespMessageSocket<R extends TespMessage, S extends TespMessage>
     }
 
     Future _onCancel() {
-      timer.cancel();
+      timer?.cancel();
       var result = subscription.cancel();
       subscription = null;
       return result;
@@ -88,7 +90,6 @@ class TespMessageSocket<R extends TespMessage, S extends TespMessage>
         },
         onResume: () {
           subscription.resume();
-          timer = zone.createTimer(waitingTimeLimit, timeout);
         },
         onCancel: _onCancel,
         sync: true);
