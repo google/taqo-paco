@@ -31,9 +31,6 @@ rm -rf ${OUT}
 mkdir -p ${OUT}/usr/local/taqo
 cp -R ${RELEASE}/* ${OUT}/usr/local/taqo/
 
-mkdir -p ${OUT}/usr/local/lib
-cp lib/linux_daemon/libdart_sqlite.so ${OUT}/usr/local/lib/
-
 mkdir -p ${OUT}/usr/share/applications
 touch ${OUT}/usr/share/applications/taqo_survey.desktop
 cat > ${OUT}/usr/share/applications/taqo_survey.desktop <<- EOM

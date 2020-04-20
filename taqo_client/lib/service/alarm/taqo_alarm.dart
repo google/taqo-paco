@@ -55,6 +55,24 @@ Future init() {
   }
 }
 
+Future<bool> checkActiveNotification() async {
+  if (Platform.isLinux) {
+    try {
+      final active = await _peer.sendRequest(checkActiveNotificationMethod);
+      return active is bool ? active : false;
+    } catch (e) {
+      print('Error checking for active notifications: $e');
+      return false;
+    }
+  } else {
+    final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+    final activeNotifications = (await storage.getAllNotifications())
+      .where((n) => n.isActive);
+
+    return activeNotifications.isNotEmpty;
+  }
+}
+
 Future schedule({bool cancelAndReschedule=true}) async {
   // TODO schedule alarms in background
   // TODO the calculate() API currently doesn't support using plugins
@@ -166,6 +184,11 @@ void _createMissedEvent(NotificationHolder notification) async {
   event.actionTriggerSpecId = notification.actionTriggerSpecId;
   event.experimentVersion = experiment.version;
   event.scheduleTime = getZonedDateTime(DateTime.fromMillisecondsSinceEpoch(notification.alarmTime));
-  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-  storage.insertEvent(event);
+
+  if (Platform.isLinux) {
+    _peer.sendNotification(createMissedEventMethod, {'event': event.toJson(), });
+  } else {
+    final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
+    storage.insertEvent(event);
+  }
 }
