@@ -3,8 +3,6 @@ import 'dart:io';
 import 'tesp_message_socket.dart';
 import 'tesp_message.dart';
 
-import 'tesp_codec.dart';
-
 abstract class TespRequestHandler {
   FutureOr<TespResponse> handle(TespRequest tespRequest);
 }
@@ -53,11 +51,11 @@ class TespServer {
   int get port => _serverSocket?.port;
 
   Future<void> serve(
-      {dynamic address: "127.0.0.1",
-      int port: 0,
-      int backlog: 0,
-      bool v6Only: false,
-      bool shared: false}) async {
+      {dynamic address = '127.0.0.1',
+      int port = 0,
+      int backlog = 0,
+      bool v6Only = false,
+      bool shared = false}) async {
     _serverSocket = await ServerSocket.bind(address, port,
         backlog: backlog, v6Only: v6Only, shared: shared);
 
@@ -95,9 +93,10 @@ class TespServer {
       }, onDone: () {
         tespSocket.close();
       });
+
       tespSocket.done.catchError((e) {
-        tespSocket.close();
         subscription.cancel();
+        socket.close();
       }, test: (e) => e is SocketException);
     });
   }

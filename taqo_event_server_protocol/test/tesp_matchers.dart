@@ -22,7 +22,7 @@ class HasPayload extends CustomMatcher {
   Description describe(Description description) {
     var matcherDesciption=StringDescription();
     _matcher.describe(matcherDesciption);
-    description.add(_featureDescription).add(' ').add(_truncateString(matcherDesciption.toString()));
+    return description.add(_featureDescription).add(' ').add(_truncateString(matcherDesciption.toString()));
   }
 }
 

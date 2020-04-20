@@ -11,7 +11,7 @@ class ExampleEventServer with TespRequestHandlerMixin {
 
   int get port => _tespServer.port;
 
-  Future<void> serve({dynamic address: "127.0.0.1", int port: 0}) async {
+  Future<void> serve({dynamic address = '127.0.0.1', int port = 0}) async {
     await _tespServer.serve(address: address, port: port);
   }
 

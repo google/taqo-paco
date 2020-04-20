@@ -5,8 +5,6 @@ import 'dart:typed_data';
 import 'tesp_codec.dart';
 import 'tesp_message.dart';
 
-typedef _TimerCallback = void Function();
-
 // R for receiving type, S for sending type
 class TespMessageSocket<R extends TespMessage, S extends TespMessage>
     extends Stream<R> implements Sink<S> {
@@ -32,79 +30,53 @@ class TespMessageSocket<R extends TespMessage, S extends TespMessage>
   @override
   StreamSubscription<R> listen(void Function(R event) onData,
       {Function onError, void Function() onDone, bool cancelOnError}) {
-    // The following code managing timeout is based on the source code for Stream.timeout() method.
-    StreamController<Uint8List> controller;
-    Timer timer;
-    // The following variables are set in _onListen().
-    StreamSubscription<Uint8List> subscription;
-    Zone zone;
-    _TimerCallback timeout;
+    StreamController<Uint8List> timeoutController;
+    StreamController<Uint8List> outputController;
+    StreamSubscription timeoutSubscription;
+    StreamSubscription socketSubscription;
 
-    void _onData(Uint8List event) {
-      timer?.cancel();
-      timer = zone.createTimer(waitingTimeLimit, timeout);
-      controller.add(event);
+    timeoutController =
+        StreamController(onCancel: () => socketSubscription.cancel());
+    outputController =
+        StreamController(onCancel: () => timeoutSubscription.cancel());
+
+    timeoutSubscription = timeoutController.stream
+        .timeout(waitingTimeLimit)
+        .listen((event) => outputController.add(event),
+            onError: (e, st) => outputController.addError(e, st),
+            onDone: outputController.close);
+
+    // There should be no timeout until data comes in
+    timeoutSubscription.pause();
+
+    socketSubscription = _socket.listen((event) {
+      timeoutSubscription.resume();
+      timeoutController.add(event);
+    }, onError: (e, st) {
+      timeoutSubscription.resume();
+      timeoutController.addError(e, st);
+    }, onDone: () {
+      timeoutSubscription.resume();
+      timeoutController.close();
+    });
+
+    void pauseTimer() {
+      if (!timeoutSubscription.isPaused) {
+        timeoutSubscription.pause();
+      }
     }
 
-    void _onError(error, StackTrace stackTrace) {
-      timer?.cancel();
-      controller.addError(error, stackTrace); // Avoid Zone error replacement.
-      timer = zone.createTimer(waitingTimeLimit, timeout);
-    }
-
-    void _onDone() {
-      timer?.cancel();
-      controller.close();
-    }
-
-    void _onListen() {
-      // This is the onListen callback for of controller.
-      // It runs in the same zone that the subscription was created in.
-      // Use that zone for creating timers and running the onTimeout
-      // callback.
-      zone = Zone.current;
-      timeout = () {
-        controller.addError(
-            TimeoutException(
-                'more data expected or wrong message format', waitingTimeLimit),
-            null);
-      };
-
-      subscription =
-          _socket.listen(_onData, onError: _onError, onDone: _onDone);
-    }
-
-    Future _onCancel() {
-      timer?.cancel();
-      var result = subscription.cancel();
-      subscription = null;
-      return result;
-    }
-
-    controller = StreamController(
-        onListen: _onListen,
-        onPause: () {
-          // Don't null the timer, onCancel may call cancel again.
-          timer?.cancel();
-          subscription.pause();
-        },
-        onResume: () {
-          subscription.resume();
-        },
-        onCancel: _onCancel,
-        sync: true);
-
-    return controller.stream
+    return outputController.stream
         .cast<List<int>>()
-        .transform(tesp.decoder)
+        .transform(tesp.decoderAddingEvent)
         .cast<R>()
         .listen((R event) {
-      timer?.cancel();
+      pauseTimer();
       if (!(event is TespEventMessageFound)) {
         onData(event);
       }
     }, onError: (e, st) {
-      timer?.cancel();
+      pauseTimer();
       onError(e, st);
     }, onDone: onDone, cancelOnError: cancelOnError);
   }
