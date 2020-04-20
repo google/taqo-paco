@@ -29,7 +29,7 @@ void main() {
       port = server.port;
       socket = await Socket.connect('127.0.0.1', port);
       tespSocket = TespMessageSocket(socket,
-          waitingTimeLimit: Duration(milliseconds: 500));
+          timeoutMillis: Duration(milliseconds: 500));
     });
 
     tearDown(() async {
@@ -468,7 +468,7 @@ class TestingEventServer with TespRequestHandlerMixin {
 
   TestingEventServer() {
     _tespServer =
-        TespServer(this, waitingTimeLimit: Duration(milliseconds: 500));
+        TespServer(this, timeoutMillis: Duration(milliseconds: 500));
   }
 
   int get port => _tespServer.port;

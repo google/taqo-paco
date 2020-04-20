@@ -10,9 +10,9 @@ class TespMessageSocket<R extends TespMessage, S extends TespMessage>
     extends Stream<R> implements Sink<S> {
   final Socket _socket;
   // The time limit to wait for next available data while reading one message.
-  final Duration waitingTimeLimit;
+  final Duration timeoutMillis;
   TespMessageSocket(this._socket,
-      {this.waitingTimeLimit = const Duration(milliseconds: 500)});
+      {this.timeoutMillis = const Duration(milliseconds: 500)});
 
   @override
   void add(S tespMessage) {
@@ -41,7 +41,7 @@ class TespMessageSocket<R extends TespMessage, S extends TespMessage>
         StreamController(onCancel: () => timeoutSubscription.cancel());
 
     timeoutSubscription = timeoutController.stream
-        .timeout(waitingTimeLimit)
+        .timeout(timeoutMillis)
         .listen((event) => outputController.add(event),
             onError: (e, st) => outputController.addError(e, st),
             onDone: outputController.close);

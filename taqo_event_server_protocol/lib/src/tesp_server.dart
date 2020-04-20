@@ -43,10 +43,10 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
 class TespServer {
   final TespRequestHandler _tespRequestHandler;
   ServerSocket _serverSocket;
-  final Duration waitingTimeLimit;
+  final Duration timeoutMillis;
 
   TespServer(this._tespRequestHandler,
-      {this.waitingTimeLimit = const Duration(milliseconds: 500)});
+      {this.timeoutMillis = const Duration(milliseconds: 500)});
 
   int get port => _serverSocket?.port;
 
@@ -61,7 +61,7 @@ class TespServer {
 
     _serverSocket.listen((socket) {
       var tespSocket = TespMessageSocket<TespRequest, TespResponse>(socket,
-          waitingTimeLimit: waitingTimeLimit);
+          timeoutMillis: timeoutMillis);
       StreamSubscription<TespMessage> subscription;
       subscription = tespSocket.listen((tespRequest) {
         FutureOr<TespResponse> tespResponse;
