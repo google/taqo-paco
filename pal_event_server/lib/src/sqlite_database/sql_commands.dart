@@ -45,6 +45,31 @@ create table outputs (
   answer text
 );''';
 
+const insertAlarmCommand = '''
+insert into alarms (
+  json
+) values (
+  ?
+);''';
+
+const insertNotificationCommand = '''
+insert into notifications (
+  alarm_time,
+  experiment_id,
+  notice_count,
+  timeout_millis,
+  notification_source,
+  message,
+  experiment_group_name,
+  action_trigger_id,
+  action_id,
+  action_trigger_spec_id,
+  snooze_time,
+  snooze_count
+) values (
+  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+);''';
+
 const insertEventCommand = '''
 insert into events (
   experiment_id,
@@ -70,3 +95,19 @@ insert into outputs (
 ) values (
   ?, ?, ?
 );''';
+
+const selectAlarmByIdCommand = 'select * from alarms where _id = ?';
+
+const selectAllAlarmsCommand = 'select * from alarms';
+
+const deleteAlarmByIdCommand = 'delete from alarms where _id = ?;';
+
+const selectNotificationByIdCommand = 'select * from notifications where _id = ?';
+
+const selectNotificationByExperimentCommand = 'select * from notifications where experiment_id = ?';
+
+const selectAllNotificationsCommand = 'select * from notifications';
+
+const deleteNotificationByIdCommand = 'delete from notifications where _id = ?;';
+
+const deleteAllNotificationsCommand = 'delete from notifications;';

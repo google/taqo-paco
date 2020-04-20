@@ -1,6 +1,7 @@
-import 'package:pal_event_server/src/user_preferences.dart';
+import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
-import 'constants.dart';
+import 'pal_server/pal_constants.dart';
+import 'utils.dart';
 
 bool isPalCommandMessage(dynamic eventJson) =>
     eventJson is Map<String, dynamic> && eventJson[palCommandKey] != null;
@@ -18,42 +19,39 @@ bool isAllDataMessage(dynamic eventJson) =>
     isPalCommandMessage(eventJson) && eventJson[palCommandKey] == allCommand;
 
 void pauseDataUpload() {
-  UserDefaults.get().then((userPreferences) {
-    userPreferences[pauseCommand] = true;
-  });
+  final sharedPreferences = TaqoSharedPrefs(taqoDir);
+  sharedPreferences.setBool(pauseCommand, true);
 }
 
 void resumeDataUpload() {
-  UserDefaults.get().then((userPreferences) {
-    userPreferences[pauseCommand] = false;
-  });
+  final sharedPreferences = TaqoSharedPrefs(taqoDir);
+  sharedPreferences.setBool(pauseCommand, false);
 }
 
 void setWhitelistedDataOnly() {
-  UserDefaults.get().then((userPreferences) {
-    userPreferences[whiteListCommand] = true;
-  });
+  final sharedPreferences = TaqoSharedPrefs(taqoDir);
+  sharedPreferences.setBool(whiteListCommand, true);
 }
 
 void setAllDataOnly() {
-  UserDefaults.get().then((userPreferences) {
-    userPreferences[whiteListCommand] = false;
-  });
+  final sharedPreferences = TaqoSharedPrefs(taqoDir);
+  sharedPreferences.setBool(whiteListCommand, false);
 }
 
 Future<bool> isPaused() async {
-  final userPreferences = await UserDefaults.get();
-  final paused = await userPreferences[pauseCommand];
+  final sharedPreferences = TaqoSharedPrefs(taqoDir);
+  final paused = await sharedPreferences.getBool(pauseCommand);
   return paused ?? false;
 }
 
 Future<bool> isRunning() async {
-  final userPreferences = await UserDefaults.get();
-  return (await userPreferences[experimentKey]) != null;
+  final sharedPreferences = TaqoSharedPrefs(taqoDir);
+  final experiment = await sharedPreferences.getBool(experimentKey);
+  return experiment != null;
 }
 
 Future<bool> isWhitelistedDataOnly() async {
-  final userPreferences = await UserDefaults.get();
-  final whiteList = await userPreferences[whiteListCommand];
+  final sharedPreferences = TaqoSharedPrefs(taqoDir);
+  final whiteList = await sharedPreferences.getBool(whiteListCommand);
   return whiteList ?? false;
 }

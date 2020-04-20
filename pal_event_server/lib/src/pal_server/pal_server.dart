@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'constants.dart';
-import 'event_uploader.dart';
-import 'pal_command.dart';
-import 'whitelist.dart';
+import '../pal_command.dart';
+import '../rpc/rpc_constants.dart';
+import '../sqlite_database/sqlite_database.dart';
+import '../sqlite_database/sqlite_server.dart';
+import '../whitelist.dart';
 
 class PALLocalServer {
   final _whitelist = Whitelist();
@@ -46,14 +47,22 @@ class PALLocalServer {
     } else if (!(await isPaused())) {
       if (await isWhitelistedDataOnly()) {
         var whiteListJson = _whitelist.blackOutData(eventJson);
-        await storeEvent(whiteListJson);
+        await _storeEvent(whiteListJson);
       } else {
-        await storeEvent(eventJson);
+        await _storeEvent(eventJson);
       }
     }
 
     socket.write('OK\n');
     socket.flush();
+  }
+
+  Future _storeEvent(List events) async {
+    final database = await SqliteDatabase.get();
+    for (var e in events) {
+      print('storeEvent: $e');
+      await database.insertEvent(e);
+    }
   }
 
   void _onError(Socket socket, dynamic error) {
@@ -69,6 +78,11 @@ class PALLocalServer {
   void _addNewConnection(Socket socket) {
     print('Server: client connected');
     _connectedSockets.add(socket);
+
+    print('Starting sqlite server...');
+    final _ = SqliteServer.get(socket);
+    print('done');
+
     socket.listen((bytes) => _listen(socket, bytes),
         onError: (err) => _onError(socket, err), onDone: () => _onDone(socket));
   }

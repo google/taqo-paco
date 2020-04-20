@@ -1,5 +1,4 @@
 const pacoUrl = 'https://pacoapp.com/pubexperiments';
-const localServerPort = 6666;
 
 // Preference keys
 const experimentKey = 'experiment';
