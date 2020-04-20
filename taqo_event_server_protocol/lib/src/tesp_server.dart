@@ -63,40 +63,39 @@ class TespServer {
       var tespSocket = TespMessageSocket<TespRequest, TespResponse>(socket,
           waitingTimeLimit: waitingTimeLimit);
       StreamSubscription<TespMessage> subscription;
-
       subscription = tespSocket.listen((tespRequest) {
         FutureOr<TespResponse> tespResponse;
         try {
           tespResponse = _tespRequestHandler.handle(tespRequest);
         } catch (e) {
-          tespSocket.add(TespResponseError(
+          tespSocket?.add(TespResponseError(
               TespResponseError.tespErrorUnknown, e.toString()));
           return;
         }
 
         if (tespResponse is Future<TespResponse>) {
           subscription.pause();
+
           tespResponse
-              .then((value) => tespSocket.add(value),
-                  onError: (e) => tespSocket.add(TespResponseError(
+              .then((value) => tespSocket?.add(value),
+                  onError: (e) => tespSocket?.add(TespResponseError(
                       TespResponseError.tespErrorUnknown, e.toString())))
               .whenComplete(subscription.resume);
         } else {
-          tespSocket.add(tespResponse);
+          tespSocket?.add(tespResponse);
         }
       }, onError: (e, st) {
-        tespSocket.add(TespResponseInvalidRequest.withPayload(e.toString()));
+        tespSocket?.add(TespResponseInvalidRequest.withPayload(e.toString()));
         if (!(e is CastError)) {
           subscription.cancel();
-          tespSocket.close();
+          tespSocket?.close();
         }
-      }, onDone: () {
-        tespSocket.close();
-      });
+      }, onDone: () => tespSocket?.close());
 
       tespSocket.done.catchError((e) {
         subscription.cancel();
         socket.close();
+        tespSocket = null;
       }, test: (e) => e is SocketException);
     });
   }

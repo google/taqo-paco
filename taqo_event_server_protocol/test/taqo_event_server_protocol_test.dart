@@ -231,22 +231,18 @@ void main() {
     });
 
     test('client closing early do not break the server', () async {
-      tespSocket.add(TespRequestPause());
-      tespSocket.add(TespRequestAddEvent.withPayload('test'));
+      tespSocket.add(TespRequestAddEvent.withPayload('test1'));
       tespSocket.add(TespRequestAddEvent.withPayload('test2'));
+      tespSocket.add(TespRequestAddEvent.withPayload('test3'));
       await socket.flush();
       socket.destroy();
       socket = await Socket.connect('127.0.0.1', port);
       tespSocket = TespMessageSocket(socket);
-      tespSocket.add(TespRequestAddEvent.withPayload('will be ignored'));
-      tespSocket.add(TespRequestResume());
       tespSocket.add(TespRequestAddEvent.withPayload('OK'));
       await tespSocket.close();
       await expectLater(
           tespSocket,
           emitsInOrder([
-                TespResponsePaused(),
-                TespResponseAnswer.withPayload('$_stringResume'),
                 TespResponseAnswer.withPayload('${_stringAddEvent}: OK')
               ].map((e) => equalsTespMessage(e)).toList() +
               [emitsDone]));
