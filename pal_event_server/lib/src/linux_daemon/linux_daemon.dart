@@ -2,17 +2,17 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
+import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/rpc/socket_channel.dart';
+import 'package:taqo_common/rpc/rpc_constants.dart';
 
-import '../model/event.dart';
-import 'database/linux_database.dart';
+import '../sqlite_database/sqlite_database.dart';
 import 'loggers/loggers.dart';
 import 'loggers/app_logger.dart';
 import 'loggers/cmdline_logger.dart';
-import 'rpc_constants.dart';
 import 'dbus_notifications.dart' as dbus;
 import 'linux_alarm_manager.dart' as linux_alarm_manager;
 import 'linux_notification_manager.dart' as linux_notification_manager;
-import 'socket_channel.dart';
 
 json_rpc.Peer _peer;
 
@@ -31,12 +31,12 @@ void openSurvey(int id) {
 
 void _handleCreateMissedEvent(json_rpc.Parameters args) async {
   final event = (args.asMap)['event'];
-  final database = await LinuxDatabase.get();
+  final database = await SqliteDatabase.get();
   database.insertEvent(Event.fromJson(event));
 }
 
 Future<bool> _handleCheckActiveNotification(json_rpc.Parameters args) async {
-  final database = await LinuxDatabase.get();
+  final database = await SqliteDatabase.get();
   final activeNotifications = (await database.getAllNotifications())
       .where((n) => n.isActive);
   return activeNotifications.isNotEmpty;
@@ -73,40 +73,32 @@ void _handleScheduleAlarm(json_rpc.Parameters args) async {
   }
 }
 
-void main() async {
+void start(Socket socket) async {
+  print('Starting linux daemon');
+
   // Monitor DBus for notification actions
   dbus.monitor();
 
-  // Open a Socket for alarm scheduling
-  ServerSocket.bind(localServerHost, localServerPort).then((serverSocket) {
-    print('Listening');
-    serverSocket.listen((socket) {
-      print('Connected');
-
-      _peer = json_rpc.Peer(SocketChannel(socket), onUnhandledError: (e, st) {
-        print('linux_daemon socket error: $e');
-      });
-
-      _peer.registerMethod(scheduleAlarmMethod, _handleScheduleAlarm);
-      _peer.registerMethod(cancelAlarmMethod, _handleCancelAlarm);
-      _peer.registerMethod(cancelNotificationMethod, _handleCancelNotification);
-      _peer.registerMethod(cancelExperimentNotificationMethod, _handleCancelExperimentNotification);
-      _peer.registerMethod(checkActiveNotificationMethod, _handleCheckActiveNotification);
-
-      _peer.registerMethod(createMissedEventMethod, _handleCreateMissedEvent);
-      _peer.listen();
-
-      _peer.done.then((_) {
-        print('linux_daemon client socket closed');
-        _peer = null;
-      });
-
-      // Only allow one connection?
-      //serverSocket.close();
-    },
-    onDone: () {
-      print('linux_daemon server socket closed');
-      _peer = null;
-    });
+  _peer = json_rpc.Peer(SocketChannel(socket), onUnhandledError: (e, st) {
+    print('linux_daemon socket error: $e');
   });
+
+  _peer.registerMethod(scheduleAlarmMethod, _handleScheduleAlarm);
+  _peer.registerMethod(cancelAlarmMethod, _handleCancelAlarm);
+  _peer.registerMethod(cancelNotificationMethod, _handleCancelNotification);
+  _peer.registerMethod(cancelExperimentNotificationMethod, _handleCancelExperimentNotification);
+  _peer.registerMethod(checkActiveNotificationMethod, _handleCheckActiveNotification);
+
+  _peer.registerMethod(createMissedEventMethod, _handleCreateMissedEvent);
+  _peer.listen();
+
+  _peer.done.then((_) {
+    print('linux_daemon client socket closed');
+    _peer = null;
+  });
+}
+
+void stop() {
+  _peer.close();
+  _peer = null;
 }

@@ -1,7 +1,6 @@
-import 'package:intl/intl.dart';
 import 'package:test/test.dart';
 
-import 'package:taqo_client/util/zoned_date_time.dart';
+import 'package:taqo_common/util/zoned_date_time.dart';
 
 void main() {
   group('formatTimeZoneOffset()', () {

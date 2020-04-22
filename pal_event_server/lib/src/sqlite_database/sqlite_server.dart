@@ -2,10 +2,13 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:json_rpc_2/json_rpc_2.dart';
+import 'package:taqo_common/model/action_specification.dart';
+import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/notification_holder.dart';
+import 'package:taqo_common/rpc/socket_channel.dart';
+import 'package:taqo_common/rpc/rpc_constants.dart';
 
 import '../sqlite_database/sqlite_database.dart';
-import '../rpc/rpc_constants.dart';
-import '../rpc/socket_channel.dart';
 
 class SqliteServer {
   final Socket _socket;
@@ -46,51 +49,51 @@ class SqliteServer {
     _server?.close();
   }
 
-  Future _insertAlarm(Parameters args) {
-    final alarm = args as String;
+  Future<int> _insertAlarm(Parameters args) {
+    final alarm = ActionSpecification.fromJson(args.asMap);
     return _database.insertAlarm(alarm);
   }
 
-  Future _insertNotification(Parameters args) {
-    final notification = args.asMap;
+  Future<int> _insertNotification(Parameters args) {
+    final notification = NotificationHolder.fromJson(args.asMap);
     return _database.insertNotification(notification);
   }
 
   Future<int> _insertEvent(Parameters args) {
-    final event = args.asMap;
+    final event = Event.fromJson(args.asMap);
     return _database.insertEvent(event);
   }
 
-  Future<Map<String, dynamic>> _selectAlarmById(Parameters args) {
-    final id = args as int;
+  Future<ActionSpecification> _selectAlarmById(Parameters args) {
+    final id = args.asMap['id'];
     return _database.getAlarm(id);
   }
 
-  Future<Map<int, Map<String, dynamic>>> _selectAllAlarms(Parameters args) {
+  Future<Map<int, ActionSpecification>> _selectAllAlarms(Parameters args) {
     return _database.getAllAlarms();
   }
 
   Future _removeAlarmById(Parameters args) {
-    final id = args as int;
+    final id = args.asMap['id'];
     return _database.removeAlarm(id);
   }
 
-  Future<Map<String, dynamic>> _selectNotificationById(Parameters args) {
-    final id = args as int;
+  Future<NotificationHolder> _selectNotificationById(Parameters args) {
+    final id = args.asMap['id'];
     return _database.getNotification(id);
   }
 
-  Future<List<Map<String, dynamic>>> _selectNotificationsByExperiment(Parameters args) {
-    final id = args as int;
+  Future<List<NotificationHolder>> _selectNotificationsByExperiment(Parameters args) {
+    final id = args.asMap['id'];
     return _database.getAllNotificationsForExperiment(id);
   }
 
-  Future<List<Map<String, dynamic>>> _selectAllNotifications(Parameters args) {
+  Future<List<NotificationHolder>> _selectAllNotifications(Parameters args) {
     return _database.getAllNotifications();
   }
 
   Future _removeNotificationById(Parameters args) {
-    final id = args as int;
+    final id = args.asMap['id'];
     return _database.removeNotification(id);
   }
 

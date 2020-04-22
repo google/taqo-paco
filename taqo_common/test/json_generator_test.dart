@@ -1,12 +1,11 @@
-//import "package:test/test.dart";
-import 'package:flutter_test/flutter_test.dart';
-import 'package:taqo_client/model/experiment_core.dart';
 import 'dart:convert';
-import 'package:taqo_client/model/experiment.dart';
-import 'package:taqo_client/model/visualization.dart';
+
+import 'package:taqo_common/model/experiment_core.dart';
+import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/model/visualization.dart';
+import "package:test/test.dart";
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
   test("generate json for ExperimentCore", () {
 
     String jsonString = "{"+

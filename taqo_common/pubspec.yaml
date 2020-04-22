@@ -1,0 +1,11 @@
+name: taqo_common
+environment:
+  sdk: '>=2.7.0 <3.0.0'
+dependencies:
+  intl: ^0.16.1
+  json_annotation: ^3.0.1
+  petitparser: ^2.4.0
+dev_dependencies:
+  build_runner: ^1.8.1
+  json_serializable: ^3.3.0
+  test: any

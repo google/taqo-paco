@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../model/experiment.dart';
-import '../../model/experiment_group.dart';
+import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/model/experiment_group.dart';
 import '../../service/alarm/flutter_local_notifications.dart' as flutter_local_notifications;
 import '../running_experiments_page.dart';
 

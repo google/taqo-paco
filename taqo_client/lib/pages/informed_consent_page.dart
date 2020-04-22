@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 
-import '../model/experiment.dart';
+import 'package:taqo_common/model/experiment.dart';
 import '../service/experiment_service.dart';
 import 'post_join_instructions_page.dart';
 import 'schedule_overview_page.dart';

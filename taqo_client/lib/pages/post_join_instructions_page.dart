@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 
-import '../model/experiment.dart';
+import 'package:taqo_common/model/experiment.dart';
 import 'running_experiments_page.dart';
 
 class PostJoinInstructionsPage extends StatefulWidget {

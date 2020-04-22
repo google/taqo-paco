@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:math';
 
-import '../model/experiment.dart';
-import '../model/schedule.dart';
-import '../storage/local_file_storage.dart';
-import '../storage/esm_signal_storage.dart';
-import '../util/date_time_util.dart';
+import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/model/schedule.dart';
+import 'package:taqo_common/storage/local_file_storage.dart';
+import 'package:taqo_common/storage/esm_signal_storage.dart';
+import 'package:taqo_common/util/date_time_util.dart';
 
 class ESMScheduleGenerator {
   static const int _maxRandomAttempts = 1000;

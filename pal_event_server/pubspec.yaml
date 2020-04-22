@@ -5,5 +5,8 @@ dependencies:
   sembast: ^2.3.0
   sqlite3:
     path: ../sqlite_ffi
+
+  taqo_common:
+    path: ../taqo_common
   taqo_shared_prefs:
     path: ../taqo_shared_prefs

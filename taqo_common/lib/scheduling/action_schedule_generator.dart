@@ -1,15 +1,16 @@
 import 'dart:math';
 
-import '../model/action_specification.dart';
-import '../model/experiment.dart';
-import '../model/experiment_group.dart';
-import '../model/paco_notification_action.dart';
-import '../model/schedule.dart';
-import '../model/schedule_trigger.dart';
-import '../scheduling/esm_schedule_generator.dart';
-import '../scheduling/fixed_schedule_generator.dart';
-import '../storage/local_file_storage.dart';
-import '../util/date_time_util.dart';
+import 'package:taqo_common/model/action_specification.dart';
+import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/model/experiment_group.dart';
+import 'package:taqo_common/model/paco_notification_action.dart';
+import 'package:taqo_common/model/schedule.dart';
+import 'package:taqo_common/model/schedule_trigger.dart';
+import 'package:taqo_common/storage/local_file_storage.dart';
+import 'package:taqo_common/util/date_time_util.dart';
+
+import 'esm_schedule_generator.dart';
+import 'fixed_schedule_generator.dart';
 
 Future<List<ActionSpecification>> _getAllAlarmTimesForExperiment(ILocalFileStorage storageImpl,
     Experiment experiment, DateTime start, DateTime end) async {

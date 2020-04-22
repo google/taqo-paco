@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
+import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
 import '../service/alarm/taqo_alarm.dart' as taqo_alarm;
 import '../storage/flutter_file_storage.dart';
-import 'experiment.dart';
 
 const sharedPrefsExperimentPauseKey = "paused";
 

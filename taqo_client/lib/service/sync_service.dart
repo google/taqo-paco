@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:logging/logging.dart';
 
-import '../model/event.dart';
-import '../model/event_save_outcome.dart';
+import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/event_save_outcome.dart';
 import '../net/paco_api.dart';
 import '../storage/flutter_file_storage.dart';
 import '../storage/local_database.dart';

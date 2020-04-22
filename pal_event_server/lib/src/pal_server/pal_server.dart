@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
-import '../pal_command.dart';
-import '../rpc/rpc_constants.dart';
+import 'package:taqo_common/rpc/rpc_constants.dart';
+
+import '../linux_daemon/linux_daemon.dart' as linux_daemon;
 import '../sqlite_database/sqlite_database.dart';
 import '../sqlite_database/sqlite_server.dart';
 import '../whitelist.dart';
+import 'pal_command.dart';
 
 class PALLocalServer {
   final _whitelist = Whitelist();
@@ -20,6 +22,7 @@ class PALLocalServer {
           print('Server: listening...');
       _serverSocket = serverSocket;
       serverSocket.listen((Socket socket) {
+        linux_daemon.start(socket);
         _addNewConnection(socket);
       }, onError: (e) {
         print('Error is serverSocket.listen(): $e');
@@ -27,6 +30,25 @@ class PALLocalServer {
     }).catchError((e) {
       print('Error in ServerSocket.bind(): $e');
     });
+  }
+
+  void shutdownServer() {
+    for (var socket in _connectedSockets) {
+      socket.close();
+    }
+    _serverSocket.close();
+  }
+
+  void _addNewConnection(Socket socket) {
+    print('Server: client connected');
+    _connectedSockets.add(socket);
+
+    print('Starting sqlite server...');
+    final _ = SqliteServer.get(socket);
+    print('done');
+
+    socket.listen((bytes) => _listen(socket, bytes),
+        onError: (err) => _onError(socket, err), onDone: () => _onDone(socket));
   }
 
   void _listen(Socket socket, dynamic bytes) async {
@@ -71,26 +93,8 @@ class PALLocalServer {
 
   void _onDone(Socket socket) {
     print('Server: client disconnected');
+    linux_daemon.stop();
     socket.close();
     _connectedSockets.remove(socket);
-  }
-
-  void _addNewConnection(Socket socket) {
-    print('Server: client connected');
-    _connectedSockets.add(socket);
-
-    print('Starting sqlite server...');
-    final _ = SqliteServer.get(socket);
-    print('done');
-
-    socket.listen((bytes) => _listen(socket, bytes),
-        onError: (err) => _onError(socket, err), onDone: () => _onDone(socket));
-  }
-
-  void _shutdownServer() {
-    for (var socket in _connectedSockets) {
-      socket.close();
-    }
-    _serverSocket.close();
   }
 }
