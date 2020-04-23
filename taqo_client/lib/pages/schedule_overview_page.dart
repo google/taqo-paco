@@ -1,13 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:taqo_common/model/action_trigger.dart';
+import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/model/schedule.dart';
+import 'package:taqo_common/model/schedule_trigger.dart';
+import 'package:taqo_common/util/schedule_printer.dart' as schedule_printer;
 
-import '../model/action_trigger.dart';
-import '../model/experiment.dart';
-import '../model/schedule.dart';
-import '../model/schedule_trigger.dart';
 import '../service/experiment_service.dart';
-import '../util/schedule_printer.dart' as schedule_printer;
 import '../widgets/taqo_widgets.dart';
 import 'schedule_detail_page.dart';
 

@@ -3,17 +3,18 @@ import 'dart:io';
 
 import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
 
-import '../../linux_daemon/rpc_constants.dart';
-import '../../linux_daemon/socket_channel.dart';
+import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/model/notification_holder.dart';
+import 'package:taqo_common/rpc/socket_channel.dart';
+import 'package:taqo_common/rpc/rpc_constants.dart';
+import 'package:taqo_common/util/date_time_util.dart';
+
 import '../../main.dart';
-import '../../model/event.dart';
-import '../../model/experiment.dart';
-import '../../model/notification_holder.dart';
 import '../../pages/running_experiments_page.dart';
 import '../../pages/survey/survey_page.dart';
 import '../../storage/flutter_file_storage.dart';
 import '../../storage/local_database.dart';
-import '../../util/date_time_util.dart';
 import '../experiment_service.dart';
 import 'android_alarm_manager.dart' as android_alarm_manager;
 import 'flutter_local_notifications.dart' as flutter_local_notifications;

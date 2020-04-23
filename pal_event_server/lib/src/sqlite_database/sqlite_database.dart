@@ -3,9 +3,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:sqlite3/sqlite.dart';
+import 'package:taqo_common/model/action_specification.dart';
+import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/notification_holder.dart';
+import 'package:taqo_common/storage/dart_file_storage.dart';
 
 import 'sql_commands.dart';
-import '../utils.dart';
 
 class SqliteDatabase {
   static const _dbFile = 'experiments.db';
@@ -34,6 +37,7 @@ class SqliteDatabase {
   }
 
   Future<Database> _initialize() async {
+    final taqoDir = DartFileStorage.getLocalStorageDir().path;
     final dbPath = '$taqoDir/$_dbFile';
     return File(dbPath).create(recursive: true).then((_) async {
       _db = Database(dbPath);
@@ -78,56 +82,54 @@ class SqliteDatabase {
     }
   }
 
-  // TODO Share Taqo model (e.g. Event class, etc.) with pal_event_server
-
-  Future<int> insertAlarm(String actionSpecification) async {
+  Future<int> insertAlarm(ActionSpecification actionSpecification) async {
     return _db.execute(insertAlarmCommand,
-        params: [actionSpecification]);
+        params: [jsonEncode(actionSpecification)]);
   }
 
-  Future<Map<String, dynamic>> getAlarm(int id) async {
+  Future<ActionSpecification> getAlarm(int id) async {
     final result = _db.query(selectAlarmByIdCommand, params: [id]);
     var json;
     for (Row row in result) {
       json = row.readColumnAsText('json');
     }
-    return jsonDecode(json);
+    return ActionSpecification.fromJson(jsonDecode(json));
   }
 
-  Future<Map<int, Map<String, dynamic>>> getAllAlarms() async {
+  Future<Map<int, ActionSpecification>> getAllAlarms() async {
     final result = _db.query(selectAllAlarmsCommand);
-    final alarms = <int, Map<String, dynamic>>{};
+    final alarms = <int, ActionSpecification>{};
     for (var row in result) {
       final id = row.readColumnByIndexAsInt(0);
       final json = row.readColumnAsText('json');
-      alarms[id] = jsonDecode(json);
+      alarms[id] = ActionSpecification.fromJson(jsonDecode(json));
     }
     return alarms;
   }
 
   Future removeAlarm(int id) async {
-    return _db.execute(deleteAlarmByIdCommand, params: [id]);
+    _db.execute(deleteAlarmByIdCommand, params: [id]);
   }
 
-  Future<int> insertNotification(Map<String, dynamic> notificationHolder) async {
+  Future<int> insertNotification(NotificationHolder notificationHolder) async {
     return _db.execute(insertNotificationCommand,
         params: [
-          '${notificationHolder['alarmTime']}',
-          '${notificationHolder['experimentId']}',
-          '${notificationHolder['noticeCount']}',
-          '${notificationHolder['timeoutMillis']}',
-          '${notificationHolder['notificationSource']}',
-          '${notificationHolder['message']}',
-          '${notificationHolder['experimentGroupName']}',
-          '${notificationHolder['actionTriggerId']}',
-          '${notificationHolder['actionId']}',
-          '${notificationHolder['actionTriggerSpecId']}',
-          '${notificationHolder['snoozeTime'] ?? 0}',
-          '${notificationHolder['snoozeCount'] ?? 0}'
-        ]);
+          '${notificationHolder.alarmTime}',
+          '${notificationHolder.experimentId}',
+          '${notificationHolder.noticeCount}',
+          '${notificationHolder.timeoutMillis}',
+          '${notificationHolder.notificationSource}',
+          notificationHolder.message,
+          notificationHolder.experimentGroupName,
+          '${notificationHolder.actionTriggerId}',
+          '${notificationHolder.actionId}',
+          '${notificationHolder.actionTriggerSpecId}',
+          '${notificationHolder.snoozeTime ?? 0}',
+          '${notificationHolder.snoozeCount ?? 0}']);
   }
 
-  Map<String, dynamic> _buildNotificationHolder(Row row) => {
+  NotificationHolder _buildNotificationHolder(Row row) =>
+      NotificationHolder.fromJson({
         'id': row.readColumnByIndexAsInt(0),
         'alarmTime': row.readColumnByIndexAsInt(1),
         'experimentId': row.readColumnByIndexAsInt(2),
@@ -141,9 +143,9 @@ class SqliteDatabase {
         'actionTriggerSpecId': row.readColumnByIndexAsInt(10),
         'snoozeTime': row.readColumnByIndexAsInt(11),
         'snoozeCount': row.readColumnByIndexAsInt(12),
-  };
+      });
 
-  Future<Map<String, dynamic>> getNotification(int id) async {
+  Future<NotificationHolder> getNotification(int id) async {
     final result = _db.query(selectNotificationByIdCommand, params: [id]);
     var notification;
     for (Row row in result) {
@@ -152,54 +154,53 @@ class SqliteDatabase {
     return notification;
   }
 
-  Future<List<Map<String, dynamic>>> getAllNotifications() async {
+  Future<List<NotificationHolder>> getAllNotifications() async {
     final result = _db.query(selectAllNotificationsCommand);
-    final notifications = <Map<String, dynamic>>[];
+    final notifications = <NotificationHolder>[];
     for (var row in result) {
       notifications.add(_buildNotificationHolder(row));
     }
     return notifications;
   }
 
-  Future<List<Map<String, dynamic>>> getAllNotificationsForExperiment(int experimentId) async {
+  Future<List<NotificationHolder>> getAllNotificationsForExperiment(int experimentId) async {
     final result = _db.query(selectNotificationByExperimentCommand, params: [experimentId]);
-    final notifications = <Map<String, dynamic>>[];
+    final notifications = <NotificationHolder>[];
     for (var row in result) {
       notifications.add(_buildNotificationHolder(row));
     }
     return notifications;
   }
 
-  Future removeNotification(int id) async {
-    return _db.execute(deleteNotificationByIdCommand, params: [id]);
+  Future<void> removeNotification(int id) async {
+    _db.execute(deleteNotificationByIdCommand, params: [id]);
   }
 
-  Future removeAllNotifications() async {
-    return _db.execute(deleteAllNotificationsCommand);
+  Future<void> removeAllNotifications() async {
+    _db.execute(deleteAllNotificationsCommand);
   }
 
-  Future<int> insertEvent(Map<String, dynamic> event) async {
-    final eventId = await _db.execute(insertEventCommand,
+  Future<int> insertEvent(Event event) async {
+    event.id = await _db.execute(insertEventCommand,
         params: [
-          '${event['experimentId']}',
-          '${event['experimentId']}',
-          '${event['experimentName']}',
-          '${event['experimentVersion']}',
-          '${event['scheduleTime']}',
-          '${event['responseTime']}',
-          '${event['uploaded']}',
-          '${event['experimentGroupName']}',
-          '${event['actionTriggerId']}',
-          '${event['actionTriggerSpecId']}',
-          '${event['actionId']}'
-        ]);
-    for (var responseEntry in event['responses']) {
+          '${event.experimentId}',
+          '${event.experimentServerId}',
+          event.experimentName,
+          '${event.experimentVersion}',
+          event.scheduleTime?.toIso8601String(withColon: true),
+          event.responseTime?.toIso8601String(withColon: true),
+          '${event.uploaded}',
+          event.groupName,
+          '${event.actionTriggerId}',
+          '${event.actionTriggerSpecId}',
+          '${event.actionId}']);
+    for (var responseEntry in event.responses.entries) {
       await _db.execute(insertOutputCommand,
           params: [
-            '$eventId',
-            '${responseEntry['name']}',
-            '${responseEntry['answer']}']);
+            '${event.id}',
+            '${responseEntry.key}',
+            '${responseEntry.value}']);
     }
-    return eventId;
+    return event.id;
   }
 }

@@ -1,13 +1,15 @@
 import 'dart:async';
 
+import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
-import '../../model/experiment.dart';
-import '../../storage/dart_file_storage.dart';
-import '../util.dart';
+import '../../utils.dart';
 
 typedef CreateEventFunc = Future<Map<String, dynamic>> Function(
     Experiment experiment, String groupname, Map<String, dynamic> response);
+
+const sharedPrefsExperimentPauseKey = "paused";
 
 Future<List<Map<String, dynamic>>> createLoggerPacoEvents(
     Map<String, dynamic> response, CreateEventFunc func) async {

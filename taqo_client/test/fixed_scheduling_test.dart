@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:taqo_client/model/experiment.dart';
-import 'package:taqo_client/scheduling/action_schedule_generator.dart';
-import 'package:taqo_client/storage/esm_signal_storage.dart';
 import 'package:taqo_client/storage/flutter_file_storage.dart';
+import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/scheduling/action_schedule_generator.dart';
+import 'package:taqo_common/storage/esm_signal_storage.dart';
 
 List<Experiment> loadExperiments(String json) {
   try {

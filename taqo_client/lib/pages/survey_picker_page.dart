@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:taqo_common/model/experiment.dart';
 
-import '../model/experiment.dart';
 import '../storage/flutter_file_storage.dart';
 import '../storage/local_database.dart';
 import '../widgets/taqo_widgets.dart';

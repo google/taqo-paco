@@ -1,7 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:taqo_client/model/schedule.dart';
-import 'package:taqo_client/model/signal_time.dart';
-import 'package:taqo_client/util/schedule_printer.dart' as schedule_printer;
+import 'package:taqo_common/model/schedule.dart';
+import 'package:taqo_common/model/signal_time.dart';
+import 'package:taqo_common/util/schedule_printer.dart' as schedule_printer;
+import 'package:test/test.dart';
 
 /// Constructs a [SignalTime] object (with default values)
 SignalTime _getSignalTime(int type, int fixedTimeMillisFromMidnight,

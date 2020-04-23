@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../model/input2.dart';
+import 'package:taqo_common/model/input2.dart';
 import 'multi_list_output.dart';
 
 class MultiSelectListDialog extends StatefulWidget {

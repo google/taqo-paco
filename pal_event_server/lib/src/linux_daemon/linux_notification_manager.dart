@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import '../model/action_specification.dart';
-import '../model/experiment.dart';
-import '../model/notification_holder.dart';
+import 'package:taqo_common/model/action_specification.dart';
+import 'package:taqo_common/model/notification_holder.dart';
+
+import '../sqlite_database/sqlite_database.dart';
 import 'dbus_notifications.dart';
 import 'linux_alarm_manager.dart' show timeout;
-import 'database/linux_database.dart';
 
 const _appName = 'Taqo';
 
@@ -32,7 +32,7 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
   // We don't want to do this on iOS where we are aggressively pre-scheduling
   // notifications
   if (cancelPending) {
-    final database = await LinuxDatabase.get();
+    final database = await SqliteDatabase.get();
     final pendingNotifications = await database
         .getAllNotificationsForExperiment(actionSpec.experiment.id);
     await Future.forEach(pendingNotifications, (pn) async {
@@ -42,7 +42,7 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
     });
   }
 
-  final database = await LinuxDatabase.get();
+  final database = await SqliteDatabase.get();
   final id = await database.insertNotification(notificationHolder);
   await notify(id, _appName, 0, actionSpec.experiment.title, notificationHolder.message);
   return id;
@@ -58,13 +58,13 @@ Future<int> showNotification(ActionSpecification actionSpec) async {
 /// Cancel notification with [id]
 Future cancelNotification(int id) async {
   cancel(id);
-  final database = await LinuxDatabase.get();
+  final database = await SqliteDatabase.get();
   return database.removeNotification(id);
 }
 
 /// Cancel all notifications for [experiment]
 Future cancelForExperiment(int experimentId) async {
-  final database = await LinuxDatabase.get();
+  final database = await SqliteDatabase.get();
   return database.getAllNotificationsForExperiment(experimentId)
       .then((List<NotificationHolder> notifications) =>
       notifications.forEach((n) => cancelNotification(n.id)))
@@ -73,7 +73,7 @@ Future cancelForExperiment(int experimentId) async {
 
 /// Cancel all notifications, except ones that fired and are still pending
 Future cancelAllNotifications() async {
-  final database = await LinuxDatabase.get();
+  final database = await SqliteDatabase.get();
   return database.getAllNotifications()
       .then(((List<NotificationHolder> notifications) {
     for (var n in notifications) {

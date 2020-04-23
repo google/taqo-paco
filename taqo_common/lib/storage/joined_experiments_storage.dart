@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import '../model/experiment.dart';
+import 'package:taqo_common/model/experiment.dart';
+
 import 'local_file_storage.dart';
 
 class JoinedExperimentsStorage {

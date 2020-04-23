@@ -1,5 +1,5 @@
 import 'package:petitparser/petitparser.dart';
-import 'package:taqo_client/util/conditional_survey_parser.dart';
+import 'package:taqo_common/util/conditional_survey_parser.dart';
 import 'package:test/test.dart';
 
 class SuccessMatcher extends TypeMatcher<Success> {

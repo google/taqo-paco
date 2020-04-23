@@ -2,17 +2,18 @@ import 'dart:async';
 
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
-import '../model/action_specification.dart';
-import '../model/event.dart';
-import '../model/notification_holder.dart';
-import '../scheduling/action_schedule_generator.dart';
-import '../storage/dart_file_storage.dart';
-import '../storage/esm_signal_storage.dart';
-import '../util/date_time_util.dart';
-import 'database/linux_database.dart';
+import 'package:taqo_common/model/action_specification.dart';
+import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/notification_holder.dart';
+import 'package:taqo_common/rpc/rpc_constants.dart';
+import 'package:taqo_common/scheduling/action_schedule_generator.dart';
+import 'package:taqo_common/storage/dart_file_storage.dart';
+import 'package:taqo_common/storage/esm_signal_storage.dart';
+import 'package:taqo_common/util/date_time_util.dart';
+
+import '../sqlite_database/sqlite_database.dart';
+import '../utils.dart';
 import 'linux_notification_manager.dart' as linux_notification_manager;
-import 'rpc_constants.dart';
-import 'util.dart';
 
 const _sharedPrefsLastAlarmKey = 'lastScheduledAlarm';
 
@@ -22,7 +23,7 @@ void _notify(int alarmId) async {
   print('notify: alarmId: $alarmId');
   DateTime start;
   Duration duration;
-  final database = await LinuxDatabase.get();
+  final database = await SqliteDatabase.get();
   final actionSpec = await database.getAlarm(alarmId);
   if (actionSpec != null) {
     // To handle simultaneous alarms as well as possible delay in alarm callbacks,
@@ -58,7 +59,7 @@ void _notify(int alarmId) async {
 void _expire(int alarmId) async {
   print('expire: alarmId: $alarmId');
   // Cancel notification
-  final database = await LinuxDatabase.get();
+  final database = await SqliteDatabase.get();
   final toCancel = await database.getAlarm(alarmId);
   // TODO Move the matches() logic to SQL
   final notifications = await database.getAllNotifications();
@@ -79,7 +80,7 @@ Future<int> _schedule(ActionSpecification actionSpec, DateTime when, String what
   final duration = when.difference(DateTime.now());
   if (duration.inMilliseconds < 0) return -1;
 
-  final database = await LinuxDatabase.get();
+  final database = await SqliteDatabase.get();
   final alarmId = await database.insertAlarm(actionSpec);
 
   final alarm = Future.delayed(when.difference(DateTime.now()));
@@ -152,7 +153,7 @@ void _scheduleNextNotification({DateTime from}) async {
 
 void scheduleNextNotification() async {
   // Cancel all alarms, except for timeouts for past notifications
-  final database = await LinuxDatabase.get();
+  final database = await SqliteDatabase.get();
   final allAlarms = await database.getAllAlarms();
   for (var alarm in allAlarms.entries) {
     // TODO Handle timezone change on Linux
@@ -165,18 +166,18 @@ void scheduleNextNotification() async {
 }
 
 Future<void> cancel(int alarmId) async {
-  final database = await LinuxDatabase.get();
+  final database = await SqliteDatabase.get();
   database.removeAlarm(alarmId);
   _alarms.remove(alarmId);
 }
 
 Future<void> cancelAll() async {
-  final database = await LinuxDatabase.get();
+  final database = await SqliteDatabase.get();
   (await database.getAllAlarms()).keys.forEach((alarmId) async => await cancel(alarmId));
 }
 
 void timeout(int id) async {
-  final storage = await LinuxDatabase.get();
+  final storage = await SqliteDatabase.get();
   _createMissedEvent(await storage.getNotification(id));
   linux_notification_manager.cancelNotification(id);
 }
@@ -197,6 +198,6 @@ void _createMissedEvent(NotificationHolder notification) async {
   event.actionTriggerSpecId = notification.actionTriggerSpecId;
   event.experimentVersion = experiment.version;
   event.scheduleTime = getZonedDateTime(DateTime.fromMillisecondsSinceEpoch(notification.alarmTime));
-  final storage = await LinuxDatabase.get();
+  final storage = await SqliteDatabase.get();
   storage.insertEvent(event);
 }

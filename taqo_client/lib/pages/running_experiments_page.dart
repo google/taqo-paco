@@ -3,9 +3,8 @@ import 'package:provider/provider.dart';
 
 import 'package:taqo_email_plugin/taqo_email_plugin.dart' as taqo_email_plugin;
 
-import '../model/experiment.dart';
-import '../model/experiment_provider.dart';
-import '../net/google_auth.dart';
+import 'package:taqo_common/model/experiment.dart';
+import '../providers/experiment_provider.dart';
 import '../service/experiment_service.dart';
 import '../storage/flutter_file_storage.dart';
 import '../storage/local_database.dart';

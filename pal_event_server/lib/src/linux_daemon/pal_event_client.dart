@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import '../model/experiment.dart';
+import 'package:taqo_common/model/experiment.dart';
 import 'loggers/app_logger.dart' show appNameField, windowNameField;
 
 const _experimentId = 'experimentId';
