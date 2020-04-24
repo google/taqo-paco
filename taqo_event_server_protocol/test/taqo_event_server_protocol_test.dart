@@ -461,63 +461,6 @@ void main() {
               [emitsDone]));
     });
   });
-
-  group('TespClient', () {
-    int port;
-    TestingEventServer server;
-    TespClient client;
-
-    setUp(() async {
-      server = TestingEventServer();
-      await server.serve();
-      port = server.port;
-      client = TespClient('127.0.0.1', port,
-          timeoutMillis: Duration(milliseconds: 500));
-      await client.connect();
-    });
-
-    tearDown(() async {
-      await client.close();
-      await server.close();
-      port = null;
-      client = null;
-      server = null;
-    });
-
-    test('send()', () async {
-      var requests = [
-        TespRequestAddEvent.withPayload('1'),
-        TespRequestAddEvent.withPayload('2'),
-        TespRequestWhiteListDataOnly(),
-        TespRequestAddEvent.withPayload('3'),
-        TespRequestPause(),
-        TespRequestAddEvent.withPayload('4'),
-        TespRequestAddEvent.withPayload('5'),
-        TespRequestResume(),
-        TespRequestAddEvent.withPayload('6'),
-        TespRequestAllData(),
-        TespRequestAddEvent.withPayload('7')
-      ];
-      var responses = [
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 1'),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 2'),
-        TespResponseAnswer.withPayload(_stringWhiteListDataOnly),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 3'),
-        TespResponseAnswer.withPayload(_stringPause),
-        TespResponsePaused(),
-        TespResponsePaused(),
-        TespResponseAnswer.withPayload(_stringResume),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 6'),
-        TespResponseAnswer.withPayload(_stringAllData),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 7'),
-      ];
-      for (var i = 0; i < requests.length; i++) {
-        expect(client.send(requests[i]),
-            completion(equalsTespMessage(responses[i])));
-      }
-      await client.close();
-    });
-  });
 }
 
 class TestingEventServer with TespRequestHandlerMixin {
