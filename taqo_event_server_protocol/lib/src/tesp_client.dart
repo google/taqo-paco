@@ -11,8 +11,14 @@ import 'tesp_message_socket.dart';
 class TespClient {
   final serverAddress;
   final int port;
+  /// Maximum allowed time between two consecutive chunks belonging to the same response
   final Duration chunkTimeoutMillis;
+  /// Maximum allowed time between
+  /// (1) sending of one request is finished or previous request get responded, whichever happens later,
+  /// and
+  /// (2) a response is received
   final Duration responseTimeoutMillis;
+  /// Timeout for connection to the server
   final Duration connectionTimeoutMillis;
 
   Socket _socket;
@@ -40,10 +46,18 @@ class TespClient {
     _sendingBuffer = StreamController();
     _tespResponseCompleterQueue = Queue();
     var stopwatch = Stopwatch();
-    StreamSubscription subscription;
+    StreamSubscription sendingSubscription;
+    StreamSubscription receivingSubscription;
 
-    subscription = _sendingBuffer.stream.listen((tespRequestWrapper) {
-      subscription.pause();
+    void closeWithError(TespResponseError error) {
+      _tespResponseCompleterQueue.forEach((e) => e.completer.complete(error));
+      sendingSubscription?.cancel();
+      receivingSubscription?.cancel();
+      close(force: true);
+    }
+
+    sendingSubscription = _sendingBuffer.stream.listen((tespRequestWrapper) {
+      sendingSubscription.pause();
       stopwatch.start();
       _tespSocket.add(tespRequestWrapper.tespRequest);
       _socket.flush().then((_) {
@@ -61,7 +75,7 @@ class TespClient {
               () => closeWithError(TespResponseError(
                   TespResponseError.tespClientErrorResponseTimeout)));
         }
-        subscription.resume();
+        sendingSubscription.resume();
       });
     });
 
@@ -89,7 +103,7 @@ class TespClient {
       }
     }
 
-    _tespSocket.listen(onResponse, onError: (e) {
+    receivingSubscription = _tespSocket.listen(onResponse, onError: (e) {
       if (e is TimeoutException) {
         closeWithError(TespResponseError(
             TespResponseError.tespClientErrorChunkTimeout, '$e'));
@@ -129,11 +143,6 @@ class TespClient {
     _tespResponseCompleterQueue.addLast(timeoutCompleter);
     _sendingBuffer.add(TespRequestWrapper(tespRequest, timeoutCompleter));
     return completer.future;
-  }
-
-  void closeWithError(TespResponseError error) {
-    _tespResponseCompleterQueue.forEach((e) => e.completer.complete(error));
-    close(force: true);
   }
 
   Future<void> close({bool force = false}) async {
