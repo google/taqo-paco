@@ -472,7 +472,7 @@ void main() {
       await server.serve();
       port = server.port;
       client = TespClient('127.0.0.1', port,
-          timeoutMillis: Duration(milliseconds: 500));
+          chunkTimeoutMillis: Duration(milliseconds: 500));
       await client.connect();
     });
 

@@ -3,44 +3,119 @@ import 'dart:collection';
 import 'dart:io';
 
 import 'package:pedantic/pedantic.dart';
+import 'package:taqo_event_server_protocol/src/tesp_codec.dart';
 
 import 'tesp_message.dart';
 import 'tesp_message_socket.dart';
 
 class TespClient {
-  final Duration timeoutMillis;
   final serverAddress;
   final int port;
+  final Duration chunkTimeoutMillis;
+  final Duration responseTimeoutMillis;
+  final Duration connectionTimeoutMillis;
 
   Socket _socket;
   TespMessageSocket<TespResponse, TespRequest> _tespSocket;
-  Queue<Completer<TespResponse>> _tespResponseCompleterQueue;
+  // The response timeout is set based on the time needed for sending the request.
+  // To measure the sending time, one need to buffer the requests so that the second request
+  // is not added to the socket until sending the first request is finished.
+  StreamController<TespRequestWrapper> _sendingBuffer;
+  // The client can send the next request before the previous request get responded.
+  // The following queue is to store the completers for un-responed requests.
+  Queue<TimeoutCompleter<TespResponse>> _tespResponseCompleterQueue;
   final Completer _responseAllCompleter = Completer();
+  // Timer for response timeout
+  Timer _timer;
 
   TespClient(this.serverAddress, this.port,
-      {this.timeoutMillis = const Duration(milliseconds: 500)});
+      {this.chunkTimeoutMillis = const Duration(milliseconds: 500),
+      this.responseTimeoutMillis = const Duration(milliseconds: 500),
+      this.connectionTimeoutMillis = const Duration(milliseconds: 5000)});
 
   Future<void> connect() async {
-    _socket = await Socket.connect(serverAddress, port);
-    _tespSocket = TespMessageSocket(_socket, timeoutMillis: timeoutMillis);
+    _socket = await Socket.connect(serverAddress, port,
+        timeout: connectionTimeoutMillis);
+    _tespSocket = TespMessageSocket(_socket, timeoutMillis: chunkTimeoutMillis);
+    _sendingBuffer = StreamController();
     _tespResponseCompleterQueue = Queue();
-    _tespSocket.listen((tespResponse) {
+    var stopwatch = Stopwatch();
+    StreamSubscription subscription;
+
+    subscription = _sendingBuffer.stream.listen((tespRequestWrapper) {
+      subscription.pause();
+      stopwatch.start();
+      _tespSocket.add(tespRequestWrapper.tespRequest);
+      _socket.flush().then((_) {
+        stopwatch.stop();
+        tespRequestWrapper.timeoutCompleter.timeout =
+            stopwatch.elapsed + responseTimeoutMillis;
+        // The timer is started when current sending is finished or previous
+        // request get responded (including the case of being the first request),
+        // whichever happens later.
+        // Below is the case when finishing sending happens later.
+        if (_tespResponseCompleterQueue.first ==
+            tespRequestWrapper.timeoutCompleter) {
+          _timer = Timer(
+              tespRequestWrapper.timeoutCompleter.timeout,
+              () => closeWithError(TespResponseError(
+                  TespResponseError.tespClientErrorResponseTimeout)));
+        }
+        subscription.resume();
+      });
+    });
+
+    void onResponse(TespResponse tespResponse) {
+      // Unexpected response, i.e. a response without request.
       if (_tespResponseCompleterQueue.isEmpty) {
-        throw TespExceptionUnexpectedResponse();
+        // TODO: log the event
+        return;
       }
-      var completer = _tespResponseCompleterQueue.removeFirst();
-      completer.complete(tespResponse);
-    }, onError: (e) {
-      throw TespExceptionResponseError(e);
+      _timer?.cancel();
+
+      var timeoutCompleter = _tespResponseCompleterQueue.removeFirst();
+      timeoutCompleter.completer.complete(tespResponse);
+
+      // The timer is started when current sending is finished or previous
+      // request get responded (including the case of being the first request),
+      // whichever happens later.
+      // Below is the case when previous request getting responded happens later.
+      if (_tespResponseCompleterQueue.isNotEmpty &&
+          _tespResponseCompleterQueue.first.timeout != null) {
+        _timer = Timer(
+            _tespResponseCompleterQueue.first.timeout,
+            () => closeWithError(TespResponseError(
+                TespResponseError.tespClientErrorResponseTimeout)));
+      }
+    }
+
+    _tespSocket.listen(onResponse, onError: (e) {
+      if (e is TimeoutException) {
+        closeWithError(TespResponseError(
+            TespResponseError.tespClientErrorChunkTimeout, '$e'));
+      } else if (e is TespPayloadDecodingException) {
+        onResponse(TespResponseError(
+            TespResponseError.tespClientErrorPayloadDecoding, '$e'));
+      } else if (e is TespDecodingException || e is CastError) {
+        closeWithError(
+            TespResponseError(TespResponseError.tespClientErrorDecoding, '$e'));
+      } else {
+        closeWithError(
+            TespResponseError(TespResponseError.tespClientErrorUnknown, '$e'));
+      }
     }, onDone: () {
+      // The server closes early before sending out all the responses
       if (_tespResponseCompleterQueue.isNotEmpty) {
-        throw TespExceptionServerClosedEarly();
+        closeWithError(TespResponseError(
+            TespResponseError.tespClientErrorServerCloseEarly));
       }
       _responseAllCompleter.complete();
     });
+
+    // Handle errors during sending
     unawaited(_tespSocket.done.catchError((e) {
-      close(force: true);
-      throw TespExceptionConnectionLost();
+      closeWithError(
+          TespResponseError(TespResponseError.tespClientErrorLostConnection));
     }, test: (e) => e is SocketException));
   }
 
@@ -48,51 +123,49 @@ class TespClient {
     if (_tespSocket == null) {
       await connect();
     }
-    _tespSocket.add(tespRequest);
+
     var completer = Completer<TespResponse>();
-    _tespResponseCompleterQueue.addLast(completer);
+    var timeoutCompleter = TimeoutCompleter(completer);
+    _tespResponseCompleterQueue.addLast(timeoutCompleter);
+    _sendingBuffer.add(TespRequestWrapper(tespRequest, timeoutCompleter));
     return completer.future;
   }
 
+  void closeWithError(TespResponseError error) {
+    _tespResponseCompleterQueue.forEach((e) => e.completer.complete(error));
+    close(force: true);
+  }
+
   Future<void> close({bool force = false}) async {
-    if (!force) {
-      await _tespSocket?.close();
-      await _responseAllCompleter?.future;
+    try {
+      if (!force) {
+        await _sendingBuffer?.close();
+        await _tespSocket?.close();
+        await _responseAllCompleter?.future;
+      }
+    } catch (e) {
+      rethrow;
+    } finally {
+      _socket?.destroy();
+      _tespResponseCompleterQueue?.clear();
+      _socket = null;
+      _tespSocket = null;
+      _tespResponseCompleterQueue = null;
+      _sendingBuffer = null;
     }
-    _socket?.destroy();
-    _tespResponseCompleterQueue?.clear();
-    _socket = null;
-    _tespSocket = null;
-    _tespResponseCompleterQueue = null;
   }
 }
 
-class TespException implements IOException {
-  final String message;
+class TimeoutCompleter<T> {
+  final Completer<T> completer;
+  Duration timeout;
 
-  const TespException(this.message);
-
-  @override
-  String toString() => '$runtimeType: $message';
+  TimeoutCompleter(this.completer);
 }
 
-class TespExceptionUnexpectedResponse extends TespException {
-  TespExceptionUnexpectedResponse()
-      : super('Unexpected response (unsolicited response without request).');
-}
+class TespRequestWrapper {
+  final TespRequest tespRequest;
+  final TimeoutCompleter<TespResponse> timeoutCompleter;
 
-class TespExceptionResponseError extends TespException {
-  TespExceptionResponseError(e)
-      : super('Error while processing the response: $e');
-}
-
-class TespExceptionServerClosedEarly extends TespException {
-  TespExceptionServerClosedEarly()
-      : super('Server closed before sending all the responses.');
-}
-
-class TespExceptionConnectionLost extends TespException {
-  TespExceptionConnectionLost()
-      : super(
-            'Connection to server is lost before finishing sending a message.');
+  TespRequestWrapper(this.tespRequest, this.timeoutCompleter);
 }

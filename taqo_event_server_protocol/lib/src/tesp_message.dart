@@ -151,7 +151,14 @@ class TespResponseError extends TespResponse with StringPayload {
   @override
   final code = TespMessage.tespCodeResponseError;
 
-  static const tespErrorUnknown = 'unknown';
+  static const tespServerErrorUnknown = 'server-unknown';
+  static const tespClientErrorResponseTimeout = 'client-response-timeout';
+  static const tespClientErrorServerCloseEarly = 'client-server-close-early';
+  static const tespClientErrorLostConnection = 'client-lost-connection';
+  static const tespClientErrorChunkTimeout = 'client-chunk-timeout';
+  static const tespClientErrorDecoding = 'client-decoding-error';
+  static const tespClientErrorPayloadDecoding = 'client-payload-decoding-error';
+  static const tespClientErrorUnknown = 'client-unknown';
 
   static const _jsonKeyCode = 'code';
   static const _jsonKeyMessage = 'message';

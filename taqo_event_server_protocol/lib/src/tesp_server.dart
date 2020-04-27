@@ -69,7 +69,7 @@ class TespServer {
           tespResponse = _tespRequestHandler.handle(tespRequest);
         } catch (e) {
           tespSocket?.add(TespResponseError(
-              TespResponseError.tespErrorUnknown, e.toString()));
+              TespResponseError.tespServerErrorUnknown, e.toString()));
           return;
         }
 
@@ -79,7 +79,7 @@ class TespServer {
           tespResponse
               .then((value) => tespSocket?.add(value),
                   onError: (e) => tespSocket?.add(TespResponseError(
-                      TespResponseError.tespErrorUnknown, e.toString())))
+                      TespResponseError.tespServerErrorUnknown, e.toString())))
               .whenComplete(subscription.resume);
         } else {
           tespSocket?.add(tespResponse);
