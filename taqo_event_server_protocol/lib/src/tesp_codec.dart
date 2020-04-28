@@ -35,6 +35,9 @@ class TespCodec extends Codec<TespMessage, List<int>> {
   @override
   Converter<List<int>, TespMessage> get decoder => const TespDecoder();
 
+  Converter<List<int>, TespMessage> get decoderAddingEvent =>
+      const TespDecoder(addingEvent: true);
+
   @override
   Converter<TespMessage, List<int>> get encoder => const TespEncoder();
 }
@@ -48,7 +51,7 @@ class TespEncoder extends Converter<TespMessage, List<int>> {
   @override
   Uint8List convert(TespMessage message) {
     var header = Uint8List.fromList([TespCodec.protocolVersion, message.code]);
-    if (message is TespMessageWithPayload) {
+    if (message is StringPayload) {
       if (message.encodedPayload.length > UINT32_MAX) {
         throw TespLengthException(
             'TESP cannot encode messages with payload larger than UINT32_MAX bytes.',
@@ -80,7 +83,8 @@ class TespEncoder extends Converter<TespMessage, List<int>> {
 /// This class converts UTF-8 code units (lists of unsigned 8-bit integers)
 /// to a TESP message.
 class TespDecoder extends Converter<List<int>, TespMessage> {
-  const TespDecoder();
+  final bool addingEvent;
+  const TespDecoder({this.addingEvent = false});
 
   static bool isCodeForTespMessageWithPayload(int code) {
     return (code & 0x01 == 0x01);
@@ -182,7 +186,7 @@ class TespDecoder extends Converter<List<int>, TespMessage> {
 
   @override
   ByteConversionSink startChunkedConversion(Sink<TespMessage> sink) {
-    return _TespDecoderSink(sink);
+    return _TespDecoderSink(sink, addingEvent: addingEvent);
   }
 
   // Override the base-classes bind, to provide a better type.
@@ -191,10 +195,11 @@ class TespDecoder extends Converter<List<int>, TespMessage> {
 }
 
 class _TespDecoderSink extends ByteConversionSinkBase {
-  Sink<TespMessage> _outputSink;
-  _TespDecoderSink(this._outputSink);
+  final Sink<TespMessage> _outputSink;
+  final bool addingEvent;
+  _TespDecoderSink(this._outputSink, {this.addingEvent = false});
 
-  Uint8List _headerWithPayloadSize = Uint8List(TespCodec.payloadOffset);
+  final Uint8List _headerWithPayloadSize = Uint8List(TespCodec.payloadOffset);
   int _headerIndex = 0;
   int _code;
   bool _hasPayload;
@@ -250,13 +255,16 @@ class _TespDecoderSink extends ByteConversionSinkBase {
     if (isLast) close();
   }
 
-  @override
-  void close() {
+  void flush() {
     if (_headerIndex > 0) {
       _reset();
-      _outputSink.close();
       throw TespIncompleteMessageException();
     }
+  }
+
+  @override
+  void close() {
+    flush();
     _outputSink.close();
   }
 
@@ -267,24 +275,21 @@ class _TespDecoderSink extends ByteConversionSinkBase {
 
   void _foundTespMessage() {
     var tespMessage;
-    if (!_hasPayload) {
-      try {
-        tespMessage = TespMessage.fromCode(_code);
-      } on ArgumentError {
-        throw TespUndefinedCodeException(_code);
-      } finally {
-        _reset();
-      }
-    } else {
-      try {
-        tespMessage = TespMessage.fromCode(_code, _encodedPayload);
-      } on ArgumentError {
-        throw TespUndefinedCodeException(_code);
-      } on FormatException catch (e) {
-        throw TespPayloadDecodingException(e);
-      } finally {
-        _reset();
-      }
+
+    // sending out an event before the payload get decoded, so that the stream
+    // consumer can know that a message is received as soon as possible
+    if (addingEvent && _hasPayload) {
+      _outputSink.add(TespEventMessageFound());
+    }
+    try {
+      tespMessage =
+          TespMessage.fromCode(_code, _hasPayload ? _encodedPayload : null);
+    } on ArgumentError {
+      throw TespUndefinedCodeException(_code);
+    } on FormatException catch (e) {
+      throw TespPayloadDecodingException(e);
+    } finally {
+      _reset();
     }
     _outputSink.add(tespMessage);
   }
@@ -293,32 +298,32 @@ class _TespDecoderSink extends ByteConversionSinkBase {
 // Exceptions
 const _errorHeader = 'TESP v${TespCodec.protocolVersion}: ';
 
-class TespUndefinedCodeException extends FormatException {
+class TespDecodingException extends FormatException {
+  TespDecodingException(String message, [source, int offset])
+      : super(_errorHeader + message, source, offset);
+}
+
+class TespUndefinedCodeException extends TespDecodingException {
   TespUndefinedCodeException(int code, [source, int offset])
-      : super(_errorHeader + 'undefined message code: $code.}', source, offset);
+      : super('undefined message code: $code.}', source, offset);
 }
 
-class TespPayloadDecodingException extends FormatException {
+class TespPayloadDecodingException extends TespDecodingException {
   TespPayloadDecodingException(FormatException e, [source, int offset])
-      : super(_errorHeader + 'unable to decode the payload: ${e.message}',
-            source, offset);
+      : super('unable to decode the payload: ${e.message}', source, offset);
 }
 
-class TespLengthException extends FormatException {
-  TespLengthException(String message, [source])
-      : super(_errorHeader + message, source);
+class TespLengthException extends TespDecodingException {
+  TespLengthException(String message, [source]) : super(message, source);
 }
 
-class TespVersionException extends FormatException {
+class TespVersionException extends TespDecodingException {
   TespVersionException(int unsupportedVersion, [source, int offset])
-      : super(
-            _errorHeader +
-                'unsupported protocol version: ${unsupportedVersion}.',
-            source,
+      : super('unsupported protocol version: ${unsupportedVersion}.', source,
             offset);
 }
 
-class TespIncompleteMessageException extends FormatException {
+class TespIncompleteMessageException extends TespDecodingException {
   TespIncompleteMessageException()
-      : super(_errorHeader + 'stream is closed before a message is finished.');
+      : super('stream is closed before a message is finished.');
 }

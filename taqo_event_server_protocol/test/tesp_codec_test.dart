@@ -5,6 +5,8 @@ import 'package:taqo_event_server_protocol/src/tesp_codec.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 import 'package:test/test.dart';
 
+import 'tesp_matchers.dart';
+
 void main() {
   group('ChunkedTransformer', () {
     final chunks = [
@@ -45,7 +47,7 @@ void main() {
     final payload =
         '{"a": "b", "c": 1, "d": [1, 2, 3, "e"], "f": "Îñţérñåţîöñåļîžåţîờñ" }';
     final msgRequestAddEvent = TespRequestAddEvent.withPayload(payload);
-    final msgResponseError = TespResponseError.withPayload(payload);
+    final msgResponseError = TespResponseError('error', 'message', 'details');
     final msgResponseInvalidRequest =
         TespResponseInvalidRequest.withPayload(''); // Empty payload on purpose
     final msgResponseAnswer = TespResponseAnswer.withPayload(payload);
@@ -54,6 +56,7 @@ void main() {
     final msgRequestResume = TespRequestResume();
     final msgRequestWhiteListDataOnly = TespRequestWhiteListDataOnly();
     final msgRequestAllData = TespRequestAllData();
+    final msgRequestPing = TespRequestPing();
     final msgResponseSuccess = TespResponseSuccess();
     final msgResponsePaused = TespResponsePaused();
 
@@ -82,6 +85,8 @@ void main() {
           equalsTespMessage(msgRequestWhiteListDataOnly));
       expect(tesp.decode(tesp.encode(msgRequestAllData)),
           equalsTespMessage(msgRequestAllData));
+      expect(tesp.decode(tesp.encode(msgRequestPing)),
+          equalsTespMessage(msgRequestPing));
       expect(tesp.decode(tesp.encode(msgResponseSuccess)),
           equalsTespMessage(msgResponseSuccess));
       expect(tesp.decode(tesp.encode(msgResponsePaused)),
@@ -94,7 +99,8 @@ void main() {
         msgRequestWhiteListDataOnly, msgRequestAllData, msgResponseSuccess, //
         msgResponseSuccess, msgResponseSuccess, msgResponsePaused, //
         msgResponseSuccess, msgResponseSuccess, msgResponseSuccess, //
-        msgResponseInvalidRequest, msgResponseError, msgResponseAnswer
+        msgResponseInvalidRequest, msgResponseError, msgResponseAnswer, //
+        msgRequestPing, msgResponseSuccess
       ];
       final matcher = emitsInOrder(
           messages.map((e) => equalsTespMessage(e)).toList() + [emitsDone]);
@@ -112,7 +118,8 @@ void main() {
       expect(
           Stream.fromIterable(messages)
               .transform(tesp.encoder)
-              .transform(ChunkedTransformer([3,1,4,1,5,9,2,6,5,3,5,8,9,7,9]))
+              .transform(ChunkedTransformer(
+                  [3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7, 9]))
               .transform(tesp.decoder),
           matcher);
       expect(
@@ -194,28 +201,5 @@ class ChunkedTransformSink implements EventSink<List<int>> {
       }
     }
     _outputSink.close();
-  }
-}
-
-class HasRuntimeType extends CustomMatcher {
-  HasRuntimeType(matcher)
-      : super('TespMessage with runtimeType that is', 'runtimeType', matcher);
-  @override
-  Object featureValueOf(actual) => (actual as TespMessage).runtimeType;
-}
-
-class HasPayload extends CustomMatcher {
-  HasPayload(matcher)
-      : super('TespMessage with payload that is', 'payload', matcher);
-  @override
-  Object featureValueOf(actual) => (actual as TespMessageWithPayload).payload;
-}
-
-Matcher equalsTespMessage(TespMessage message) {
-  if (message is TespMessageWithPayload) {
-    return allOf(HasRuntimeType(equals(message.runtimeType)),
-        HasPayload(equals(message.payload)));
-  } else {
-    return HasRuntimeType(equals(message.runtimeType));
   }
 }
