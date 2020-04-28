@@ -10,3 +10,5 @@ dependencies:
     path: ../taqo_common
   taqo_shared_prefs:
     path: ../taqo_shared_prefs
+  taqo_event_server_protocol:
+    path: ../taqo_event_server_protocol

@@ -5,7 +5,6 @@ const localServerPort = 31415;
 
 const scheduleAlarmMethod = 'schedule';
 const cancelAlarmMethod = 'cancel';
-const postNotificationMethod = 'notify';
 const cancelNotificationMethod = 'cancelNotify';
 const cancelExperimentNotificationMethod = 'cancelExperimentNotify';
 const checkActiveNotificationMethod = 'checkActiveNotification';
