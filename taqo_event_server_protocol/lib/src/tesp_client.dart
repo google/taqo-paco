@@ -19,6 +19,7 @@ class TespClient {
   /// (1) sending of one request is finished or previous request get responded, whichever happens later,
   /// and
   /// (2) a response is received
+  /// is [responseTimeoutMillis] + time used for sending the message
   final Duration responseTimeoutMillis;
 
   /// Timeout for connection to the server
