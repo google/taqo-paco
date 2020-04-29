@@ -1,0 +1,14 @@
+name: pal_event_server
+dependencies:
+  http: ^0.12.0+4
+  json_rpc_2: ^2.1.0
+  sembast: ^2.3.0
+  sqlite3:
+    path: ../sqlite_ffi
+
+  taqo_common:
+    path: ../taqo_common
+  taqo_shared_prefs:
+    path: ../taqo_shared_prefs
+  taqo_event_server_protocol:
+    path: ../taqo_event_server_protocol

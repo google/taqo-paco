@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:taqo_common/storage/esm_signal_storage.dart';
 import 'package:taqo_time_plugin/taqo_time_plugin.dart' as taqo_time_plugin;
 
 import 'net/google_auth.dart';
@@ -21,9 +22,7 @@ import 'platform/platform_logging.dart';
 import 'platform/platform_sync_service.dart';
 import 'service/alarm/taqo_alarm.dart' as taqo_alarm;
 import 'service/logging_service.dart';
-import 'storage/esm_signal_storage.dart';
 import 'storage/flutter_file_storage.dart';
-import 'storage/local_database.dart';
 
 void _onTimeChange() async {
   /// TODO Currently provides no info on how the time was changed
@@ -31,17 +30,6 @@ void _onTimeChange() async {
   final storage = await ESMSignalStorage.get(FlutterFileStorage(ESMSignalStorage.filename));
   storage.deleteAllSignals();
   taqo_alarm.schedule();
-}
-
-// If there is an active notification when the app is open,
-// direct the user to the RunningExperimentsPage.
-// This also solves the issue with not having Pending (launch) Intents on Linux
-Future<bool> _checkActiveNotification() async {
-  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-  final activeNotifications = (await storage.getAllNotifications())
-      .where((n) => n.isActive);
-
-  return activeNotifications.isNotEmpty;
 }
 
 void main() async {
@@ -61,7 +49,10 @@ void main() async {
   await LoggingService.init();
   await taqo_alarm.init();
 
-  final activeNotification = await _checkActiveNotification();
+  // If there is an active notification when the app is open,
+  // direct the user to the RunningExperimentsPage.
+  // This also solves the issue with not having Pending (launch) Intents on Linux
+  final activeNotification = await taqo_alarm.checkActiveNotification();
   final authState = await GoogleAuth().isAuthenticated;
   runApp(MyApp(activeNotification: activeNotification, authState: authState));
 }

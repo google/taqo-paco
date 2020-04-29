@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../model/experiment.dart';
-import '../model/schedule.dart';
-import '../model/signal_time.dart';
-import '../util/date_time_util.dart';
+import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/model/schedule.dart';
+import 'package:taqo_common/model/signal_time.dart';
+import 'package:taqo_common/util/date_time_util.dart';
 
 import '../widgets/taqo_widgets.dart';
 

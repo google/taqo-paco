@@ -1,29 +1,28 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/storage/joined_experiments_storage.dart';
+import 'package:taqo_common/util/schedule_printer.dart' as schedule_printer;
+import 'package:taqo_common/util/zoned_date_time.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
-import '../model/event.dart';
-import '../model/experiment.dart';
-import '../model/experiment_provider.dart' show sharedPrefsExperimentPauseKey;
-import '../net/google_auth.dart';
+import '../providers/experiment_provider.dart' show sharedPrefsExperimentPauseKey;
+import '../net/paco_api.dart';
 import '../net/invitation_response.dart';
 import '../storage/flutter_file_storage.dart';
-import '../storage/joined_experiments_storage.dart';
 import '../storage/local_database.dart';
-import '../util/schedule_printer.dart' as schedule_printer;
-import '../util/zoned_date_time.dart';
-import 'alarm/flutter_local_notifications.dart' as flutter_local_notifications;
 import 'alarm/taqo_alarm.dart' as taqo_alarm;
 
 class ExperimentService {
-  final GoogleAuth _gAuth;
+  final PacoApi _pacoApi;
 
   var _joined = Map<int, Experiment>();
 
   static ExperimentService _instance;
 
-  ExperimentService._() : _gAuth = GoogleAuth();
+  ExperimentService._() : _pacoApi = PacoApi();
 
   static Future<ExperimentService> getInstance() {
     if (_instance == null) {
@@ -47,7 +46,7 @@ class ExperimentService {
   }
 
   Future<List<Experiment>> getExperimentsFromServer() {
-    return _gAuth.getExperimentsWithSavedCredentials()
+    return _pacoApi.getExperimentsWithSavedCredentials()
         .then((response) {
           if (!response.isSuccess) {
             return <Experiment>[];
@@ -80,7 +79,7 @@ class ExperimentService {
   }
 
   Future<Experiment> getExperimentFromServerById(experimentId) {
-    return _gAuth.getExperimentByIdWithSavedCredentials(experimentId)
+    return _pacoApi.getExperimentByIdWithSavedCredentials(experimentId)
         .then((response) {
           if (!response.isSuccess) {
             return null;
@@ -98,7 +97,7 @@ class ExperimentService {
   }
 
   Future<Experiment> getPubExperimentFromServerById(experimentId) {
-    return _gAuth.getPubExperimentById(experimentId)
+    return _pacoApi.getPubExperimentById(experimentId)
         .then((response) {
           if (!response.isSuccess) {
             return null;
@@ -116,7 +115,7 @@ class ExperimentService {
   }
 
   Future<List<Experiment>> updateJoinedExperiments() {
-    return _gAuth.getExperimentsByIdWithSavedCredentials(_joined.keys.toList())
+    return _pacoApi.getExperimentsByIdWithSavedCredentials(_joined.keys.toList())
         .then((response) {
           if (!response.isSuccess) {
             final experiments = <Experiment>[];
@@ -198,7 +197,7 @@ class ExperimentService {
   }
 
   Future<InvitationResponse> checkCode(String code) async {
-    return _gAuth.checkInvitationWithSavedCredentials(code)
+    return _pacoApi.checkInvitationWithSavedCredentials(code)
         .then((response) {
           if (!response.isSuccess) {
             return null;

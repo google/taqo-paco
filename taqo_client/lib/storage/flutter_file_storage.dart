@@ -2,8 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
-
-import 'local_file_storage.dart';
+import 'package:taqo_common/storage/local_file_storage.dart';
 
 class FlutterFileStorage implements ILocalFileStorage {
   final _localFileName;

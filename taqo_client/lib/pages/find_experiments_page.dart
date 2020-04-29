@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../model/experiment.dart';
+import 'package:taqo_common/model/experiment.dart';
 import '../net/google_auth.dart';
 import '../service/experiment_service.dart';
 import '../widgets/taqo_page.dart';
@@ -18,8 +18,6 @@ class FindExperimentsPage extends StatefulWidget {
 }
 
 class _FindExperimentsPageState extends State<FindExperimentsPage> {
-  var gAuth = GoogleAuth();
-
   @override
   Widget build(BuildContext context) {
     return TaqoScaffold(

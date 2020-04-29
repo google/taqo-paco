@@ -403,7 +403,7 @@ void doExecute(std::string method_name, std::string sql, EncodableList &sql_args
   sqlite3 *pDb;
   int ret = sqlite3_open(database->path.c_str(), &pDb);
   //std::cout << "mike0: " << ret << std::endl;
-  //sqlite3_busy_timeout(pDb, 5000);
+  sqlite3_busy_timeout(pDb, 5000);
 
   sqlite3_stmt *pStmt;
   ret = sqlite3_prepare_v2(pDb, sql.c_str(), -1, &pStmt, nullptr);

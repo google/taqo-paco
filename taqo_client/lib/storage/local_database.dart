@@ -3,12 +3,12 @@ import 'dart:convert';
 
 import 'package:sqflite/sqflite.dart';
 
-import '../model/action_specification.dart';
-import '../model/event.dart';
-import '../model/experiment.dart';
-import '../model/notification_holder.dart';
-import '../util/zoned_date_time.dart';
-import 'local_file_storage.dart';
+import 'package:taqo_common/model/action_specification.dart';
+import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/model/notification_holder.dart';
+import 'package:taqo_common/storage/local_file_storage.dart';
+import 'package:taqo_common/util/zoned_date_time.dart';
 
 part 'local_database.inc.dart';
 part 'local_database.workaround.dart';

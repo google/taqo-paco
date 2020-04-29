@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:taqo_common/model/action_specification.dart';
+import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/model/notification_holder.dart';
 
-import '../../model/action_specification.dart';
-import '../../model/experiment.dart';
-import '../../model/notification_holder.dart';
 import '../../storage/flutter_file_storage.dart';
 import '../../storage/local_database.dart';
 import 'taqo_alarm.dart' as taqo_alarm;
