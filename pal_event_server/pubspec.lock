@@ -148,6 +148,13 @@ packages:
       relative: true
     source: path
     version: "0.0.0"
+  taqo_event_server_protocol:
+    dependency: "direct main"
+    description:
+      path: "../taqo_event_server_protocol"
+      relative: true
+    source: path
+    version: "0.0.0"
   taqo_shared_prefs:
     dependency: "direct main"
     description:

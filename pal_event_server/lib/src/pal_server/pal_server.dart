@@ -1,82 +1,63 @@
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:taqo_common/rpc/rpc_constants.dart';
+import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 
-import '../linux_daemon/linux_daemon.dart' as linux_daemon;
 import '../sqlite_database/sqlite_database.dart';
-import '../sqlite_database/sqlite_server.dart';
 import '../whitelist.dart';
 import 'pal_command.dart';
 
-class PALLocalServer {
+class PALTespServer with TespRequestHandlerMixin {
+  TespServer _tespServer;
   final _whitelist = Whitelist();
 
-  ServerSocket _serverSocket;
-  final _connectedSockets = <Socket>[];
-  bool continueRunning = true;
-
-  void run() {
-    ServerSocket.bind(InternetAddress.loopbackIPv4, localServerPort)
-        .then((ServerSocket serverSocket) {
-          print('Server: listening...');
-      _serverSocket = serverSocket;
-      serverSocket.listen((Socket socket) {
-        linux_daemon.start(socket);
-        _addNewConnection(socket);
-      }, onError: (e) {
-        print('Error is serverSocket.listen(): $e');
-      });
-    }).catchError((e) {
-      print('Error in ServerSocket.bind(): $e');
-    });
+  ExampleEventServer() {
+    _tespServer = TespServer(this);
   }
 
-  void shutdownServer() {
-    for (var socket in _connectedSockets) {
-      socket.close();
+  int get port => _tespServer.port;
+
+  Future<void> serve({dynamic address = '127.0.0.1', int port = 0}) async {
+    await _tespServer.serve(address: address, port: port);
+  }
+
+  @override
+  Future<TespResponse> addEvent(String eventPayload) async {
+    print('addEvent: $eventPayload');
+    final List eventJson = jsonDecode(eventPayload);
+    if (await isWhitelistedDataOnly()) {
+      await _storeEvent(_whitelist.blackOutData(eventJson));
+    } else {
+      await _storeEvent(eventJson);
     }
-    _serverSocket.close();
+    TespResponseSuccess();
   }
 
-  void _addNewConnection(Socket socket) {
-    print('Server: client connected');
-    _connectedSockets.add(socket);
-
-    print('Starting sqlite server...');
-    final _ = SqliteServer.get(socket);
-    print('done');
-
-    socket.listen((bytes) => _listen(socket, bytes),
-        onError: (err) => _onError(socket, err), onDone: () => _onDone(socket));
+  @override
+  Future<TespResponse> allData() async {
+    print('allData');
+    await setAllDataOnly();
+    return TespResponseSuccess();
   }
 
-  void _listen(Socket socket, dynamic bytes) async {
-    final data = String.fromCharCodes(bytes);
-    print('Server received: \n$data\n');
-    var eventJson = jsonDecode(data);
+  @override
+  Future<TespResponse> pause() async {
+    print('pause');
+    await pauseDataUpload();
+    return TespResponseSuccess();
+  }
 
-    if (!(await isRunning())) {
-      print('Experiment not running');
-    } else if (isPauseMessage(eventJson)) {
-      await pauseDataUpload();
-    } else if (isResumeMessage(eventJson)) {
-      await resumeDataUpload();
-    } else if (isWhitelistedDataOnlyMessage(eventJson)) {
-      await setWhitelistedDataOnly();
-    } else if (isAllDataMessage(eventJson)) {
-      await setAllDataOnly();
-    } else if (!(await isPaused())) {
-      if (await isWhitelistedDataOnly()) {
-        var whiteListJson = _whitelist.blackOutData(eventJson);
-        await _storeEvent(whiteListJson);
-      } else {
-        await _storeEvent(eventJson);
-      }
-    }
+  @override
+  Future<TespResponse> resume() async {
+    print('resume');
+    await resumeDataUpload();
+    return TespResponseSuccess();
+  }
 
-    socket.write('OK\n');
-    socket.flush();
+  @override
+  Future<TespResponse> whiteListDataOnly() async {
+    print('whiteListDataOnly');
+    setWhitelistedDataOnly();
+    return TespResponseSuccess();
   }
 
   Future _storeEvent(List events) async {
@@ -85,16 +66,5 @@ class PALLocalServer {
       print('storeEvent: $e');
       await database.insertEvent(e);
     }
-  }
-
-  void _onError(Socket socket, dynamic error) {
-    print('Server: error listening to socket $socket: $error');
-  }
-
-  void _onDone(Socket socket) {
-    print('Server: client disconnected');
-    linux_daemon.stop();
-    socket.close();
-    _connectedSockets.remove(socket);
   }
 }
