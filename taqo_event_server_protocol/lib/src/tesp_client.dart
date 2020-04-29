@@ -11,13 +11,16 @@ import 'tesp_message_socket.dart';
 class TespClient {
   final serverAddress;
   final int port;
+
   /// Maximum allowed time between two consecutive chunks belonging to the same response
   final Duration chunkTimeoutMillis;
+
   /// Maximum allowed time between
   /// (1) sending of one request is finished or previous request get responded, whichever happens later,
   /// and
   /// (2) a response is received
   final Duration responseTimeoutMillis;
+
   /// Timeout for connection to the server
   final Duration connectionTimeoutMillis;
 
@@ -31,8 +34,7 @@ class TespClient {
   // The following queue is to store the completers for un-responed requests.
   Queue<TimeoutCompleter<TespResponse>> _tespResponseCompleterQueue;
   final Completer _responseAllCompleter = Completer();
-  // Timer for response timeout
-  Timer _timer;
+  Timer _responseTimeoutTimer;
 
   TespClient(this.serverAddress, this.port,
       {this.chunkTimeoutMillis = const Duration(milliseconds: 500),
@@ -42,7 +44,8 @@ class TespClient {
   Future<void> connect() async {
     _socket = await Socket.connect(serverAddress, port,
         timeout: connectionTimeoutMillis);
-    _tespSocket = TespMessageSocket(_socket, timeoutMillis: chunkTimeoutMillis);
+    _tespSocket = TespMessageSocket(_socket,
+        timeoutMillis: chunkTimeoutMillis, isAsync: true);
     _sendingBuffer = StreamController();
     _tespResponseCompleterQueue = Queue();
     var stopwatch = Stopwatch();
@@ -53,6 +56,7 @@ class TespClient {
       _tespResponseCompleterQueue.forEach((e) => e.completer.complete(error));
       sendingSubscription?.cancel();
       receivingSubscription?.cancel();
+      _responseAllCompleter.complete();
       close(force: true);
     }
 
@@ -70,7 +74,7 @@ class TespClient {
         // Below is the case when finishing sending happens later.
         if (_tespResponseCompleterQueue.first ==
             tespRequestWrapper.timeoutCompleter) {
-          _timer = Timer(
+          _responseTimeoutTimer = Timer(
               tespRequestWrapper.timeoutCompleter.timeout,
               () => closeWithError(TespResponseError(
                   TespResponseError.tespClientErrorResponseTimeout)));
@@ -79,13 +83,12 @@ class TespClient {
       });
     });
 
-    void onResponse(TespResponse tespResponse) {
+    void handleResponse(TespResponse tespResponse) {
       // Unexpected response, i.e. a response without request.
       if (_tespResponseCompleterQueue.isEmpty) {
         // TODO: log the event
         return;
       }
-      _timer?.cancel();
 
       var timeoutCompleter = _tespResponseCompleterQueue.removeFirst();
       timeoutCompleter.completer.complete(tespResponse);
@@ -96,19 +99,20 @@ class TespClient {
       // Below is the case when previous request getting responded happens later.
       if (_tespResponseCompleterQueue.isNotEmpty &&
           _tespResponseCompleterQueue.first.timeout != null) {
-        _timer = Timer(
+        _responseTimeoutTimer = Timer(
             _tespResponseCompleterQueue.first.timeout,
             () => closeWithError(TespResponseError(
                 TespResponseError.tespClientErrorResponseTimeout)));
       }
     }
 
-    receivingSubscription = _tespSocket.listen(onResponse, onError: (e) {
+    void handleError(e) {
       if (e is TimeoutException) {
         closeWithError(TespResponseError(
             TespResponseError.tespClientErrorChunkTimeout, '$e'));
       } else if (e is TespPayloadDecodingException) {
-        onResponse(TespResponseError(
+        _responseTimeoutTimer?.cancel();
+        handleResponse(TespResponseError(
             TespResponseError.tespClientErrorPayloadDecoding, '$e'));
       } else if (e is TespDecodingException || e is CastError) {
         closeWithError(
@@ -117,14 +121,30 @@ class TespClient {
         closeWithError(
             TespResponseError(TespResponseError.tespClientErrorUnknown, '$e'));
       }
-    }, onDone: () {
-      // The server closes early before sending out all the responses
-      if (_tespResponseCompleterQueue.isNotEmpty) {
-        closeWithError(TespResponseError(
-            TespResponseError.tespClientErrorServerCloseEarly));
-      }
-      _responseAllCompleter.complete();
-    });
+    }
+
+    receivingSubscription = _tespSocket.stream.listen(
+        (FutureOr<TespResponse> event) {
+          _responseTimeoutTimer?.cancel();
+          if (event is Future<TespResponse>) {
+            receivingSubscription.pause();
+            event.then((tespResponse) {
+              handleResponse(tespResponse);
+              receivingSubscription.resume();
+            }, onError: handleError);
+          } else {
+            handleResponse(event);
+          }
+        },
+        onError: handleError,
+        onDone: () {
+          // The server closes early before sending out all the responses
+          if (_tespResponseCompleterQueue.isNotEmpty) {
+            closeWithError(TespResponseError(
+                TespResponseError.tespClientErrorServerCloseEarly));
+          }
+          _responseAllCompleter.complete();
+        });
 
     // Handle errors during sending
     unawaited(_tespSocket.done.catchError((e) {
@@ -155,6 +175,7 @@ class TespClient {
     } catch (e) {
       rethrow;
     } finally {
+      _tespSocket?.cleanUp();
       _socket?.destroy();
       _tespResponseCompleterQueue?.clear();
       _socket = null;

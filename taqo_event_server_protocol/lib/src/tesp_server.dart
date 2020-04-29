@@ -61,9 +61,10 @@ class TespServer {
 
     _serverSocket.listen((socket) {
       var tespSocket = TespMessageSocket<TespRequest, TespResponse>(socket,
-          timeoutMillis: timeoutMillis);
-      StreamSubscription<TespMessage> subscription;
-      subscription = tespSocket.listen((tespRequest) {
+          timeoutMillis: timeoutMillis, isAsync: false);
+      StreamSubscription<TespRequest> subscription;
+      subscription = tespSocket.stream.listen((event) {
+        var tespRequest = event as TespRequest;
         FutureOr<TespResponse> tespResponse;
         try {
           tespResponse = _tespRequestHandler.handle(tespRequest);
@@ -84,7 +85,7 @@ class TespServer {
         } else {
           tespSocket?.add(tespResponse);
         }
-      }, onError: (e, st) {
+      }, onError: (e) {
         tespSocket?.add(TespResponseInvalidRequest.withPayload(e.toString()));
         if (!(e is CastError)) {
           subscription.cancel();
@@ -94,7 +95,7 @@ class TespServer {
 
       tespSocket.done.catchError((e) {
         subscription.cancel();
-        socket.close();
+        socket.destroy();
         tespSocket = null;
       }, test: (e) => e is SocketException);
     });
