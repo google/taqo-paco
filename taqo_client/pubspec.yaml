@@ -46,8 +46,6 @@ dependencies:
     path: plugins/time
 
   # Linux desktop
-  shared_preferences_linux:
-    path: plugins/flutter/shared_preferences_linux
   path_provider_linux:
     path: plugins/flutter/path_provider_linux
 

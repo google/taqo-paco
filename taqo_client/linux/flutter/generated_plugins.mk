@@ -1,7 +1,6 @@
 # Plugins to include in the build.
 GENERATED_PLUGINS=\
 	path_provider_linux \
-	shared_preferences_linux \
 	sqflite \
 	taqo_time_plugin \
 	url_launcher_fde \
@@ -23,7 +22,6 @@ PLUGIN_CPPFLAGS=$(foreach plugin,$(GENERATED_PLUGINS),\
 
 # Implicit rules don't match phony targets, so list plugin builds explicitly.
 $(OUT_DIR)/libpath_provider_linux_plugin.so: | path_provider_linux
-$(OUT_DIR)/libshared_preferences_linux_plugin.so: | shared_preferences_linux
 $(OUT_DIR)/libsqflite_plugin.so: | sqflite
 $(OUT_DIR)/libtaqo_time_plugin_plugin.so: | taqo_time_plugin
 $(OUT_DIR)/liburl_launcher_fde_plugin.so: | url_launcher_fde
