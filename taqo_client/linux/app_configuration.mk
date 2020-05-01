@@ -4,7 +4,7 @@
 # changes.
 
 # Executable name.
-BINARY_NAME=taqo_client
+BINARY_NAME=taqo
 # Any extra source files to build.
 EXTRA_SOURCES=
 # Paths of any additional libraries to be bundled in the output directory.
