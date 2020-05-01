@@ -96,8 +96,13 @@ class TespMessageSocket<R extends TespMessage, S extends TespMessage>
             }
         if (isAsync) {
           if (event is TespEventMessageExpected || event is TespEventMessageArrived) {
-            _messageCompleter = Completer();
-            tespMessageStreamController.add(_messageCompleter.future);
+            if (_messageCompleter == null) {
+              _messageCompleter = Completer();
+              tespMessageStreamController.add(_messageCompleter.future);
+            } else {
+              assert (event is TespEventMessageArrived);
+              // The completer is already assigned in a previous TespEventMessageExpected event
+            }
           } else if (_messageCompleter != null) {
             _messageCompleter.complete(event);
             _messageCompleter = null;
