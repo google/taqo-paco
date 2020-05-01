@@ -238,12 +238,6 @@ class _TespDecoderSink extends ByteConversionSinkBase {
           var bdata = ByteData.view(_headerWithPayloadSize.buffer,
               TespCodec.payloadSizeOffset, TespCodec.payloadSizeLength);
           _payloadSize = bdata.getUint32(0, Endian.big);
-          _encodedPayload = Uint8List(_payloadSize);
-          _payloadIndex = 0;
-          if (_payloadSize == 0) {
-            _foundTespMessage();
-            continue;
-          }
 
           // even when not all the data of a message has arrived, we can fire
           // an event signaling that we start to receive chunks for a new message
@@ -253,6 +247,13 @@ class _TespDecoderSink extends ByteConversionSinkBase {
             } else {
               _outputSink.add(TespEventMessageExpected());
             }
+          }
+
+          _encodedPayload = Uint8List(_payloadSize);
+          _payloadIndex = 0;
+          if (_payloadSize == 0) {
+            _foundTespMessage();
+            continue;
           }
         }
         _headerIndex++;
