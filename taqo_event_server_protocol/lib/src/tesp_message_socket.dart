@@ -53,6 +53,7 @@ class TespMessageSocket<R extends TespMessage, S extends TespMessage>
     StreamSubscription timeoutSubscription;
     StreamSubscription socketSubscription;
     StreamSubscription outputSubscription;
+    var isSocketDone = false;
 
     timeoutController =
         StreamController(onCancel: () => socketSubscription.cancel());
@@ -60,17 +61,21 @@ class TespMessageSocket<R extends TespMessage, S extends TespMessage>
         StreamController(onCancel: () => timeoutSubscription.cancel());
 
     void pauseTimer() {
-      if (!timeoutSubscription.isPaused) {
+      if ((!timeoutSubscription.isPaused) && (!isSocketDone)) {
         timeoutSubscription.pause();
       }
     }
 
     void onListen() {
-      timeoutSubscription = timeoutController.stream
-          .timeout(timeoutMillis)
-          .listen((event) => outputController.add(event),
-              onError: (e, st) => outputController.addError(e, st),
-              onDone: outputController.close);
+      timeoutSubscription = timeoutController.stream.timeout(timeoutMillis,
+          onTimeout: (eventSink) {
+        if (!isSocketDone) {
+          eventSink
+              .addError(TimeoutException("No stream event", timeoutMillis));
+        }
+      }).listen((event) => outputController.add(event),
+          onError: (e, st) => outputController.addError(e, st),
+          onDone: outputController.close);
 
       // There should be no timeout until data comes in
       timeoutSubscription.pause();
@@ -82,6 +87,7 @@ class TespMessageSocket<R extends TespMessage, S extends TespMessage>
         timeoutSubscription.resume();
         timeoutController.addError(e, st);
       }, onDone: () {
+        isSocketDone = true;
         timeoutSubscription.resume();
         timeoutController.close();
       });
@@ -91,16 +97,17 @@ class TespMessageSocket<R extends TespMessage, S extends TespMessage>
           .transform(tesp.decoderAddingEvent)
           .cast<R>()
           .listen((R event) {
-            if (!(event is TespEventMessageExpected)) {
-              pauseTimer();
-            }
+        if (!(event is TespEventMessageExpected)) {
+          pauseTimer();
+        }
         if (isAsync) {
-          if (event is TespEventMessageExpected || event is TespEventMessageArrived) {
+          if (event is TespEventMessageExpected ||
+              event is TespEventMessageArrived) {
             if (_messageCompleter == null) {
               _messageCompleter = Completer();
               tespMessageStreamController.add(_messageCompleter.future);
             } else {
-              assert (event is TespEventMessageArrived);
+              assert(event is TespEventMessageArrived);
               // The completer is already assigned in a previous TespEventMessageExpected event
             }
           } else if (_messageCompleter != null) {
