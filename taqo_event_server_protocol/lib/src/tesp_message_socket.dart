@@ -91,9 +91,11 @@ class TespMessageSocket<R extends TespMessage, S extends TespMessage>
           .transform(tesp.decoderAddingEvent)
           .cast<R>()
           .listen((R event) {
-        pauseTimer();
+            if (!(event is TespEventMessageExpected)) {
+              pauseTimer();
+            }
         if (isAsync) {
-          if (event is TespEventMessageFound) {
+          if (event is TespEventMessageExpected || event is TespEventMessageArrived) {
             _messageCompleter = Completer();
             tespMessageStreamController.add(_messageCompleter.future);
           } else if (_messageCompleter != null) {
@@ -103,7 +105,7 @@ class TespMessageSocket<R extends TespMessage, S extends TespMessage>
             tespMessageStreamController.add(event);
           }
         } else {
-          if (!(event is TespEventMessageFound)) {
+          if (!(event is TespEvent)) {
             tespMessageStreamController.add(event);
           }
         }
