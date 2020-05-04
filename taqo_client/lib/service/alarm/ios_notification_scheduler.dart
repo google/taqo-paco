@@ -4,8 +4,8 @@ import 'package:taqo_common/model/notification_holder.dart';
 import 'package:taqo_common/scheduling/action_schedule_generator.dart';
 import 'package:taqo_common/storage/esm_signal_storage.dart';
 
+import '../../service/platform_service.dart' as platform_service;
 import '../../storage/flutter_file_storage.dart';
-import '../../storage/local_database.dart';
 import '../experiment_service.dart';
 import 'flutter_local_notifications.dart' as flutter_local_notifications;
 import 'taqo_alarm.dart' as taqo_alarm;
@@ -13,8 +13,8 @@ import 'taqo_alarm.dart' as taqo_alarm;
 const _maxNotifications = 64;
 
 Future<int> _clearExpiredNotifications() async {
-  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-  final pendingNotifications = await storage.getAllNotifications();
+  final db = await platform_service.databaseImpl;
+  final pendingNotifications = await db.getAllNotifications();
   var count = pendingNotifications.length;
 
   await Future.forEach(pendingNotifications, (NotificationHolder pn) async {
@@ -32,8 +32,8 @@ Future schedule() async {
   print('Scheduling $count notification(s)');
 
   // Find last already scheduled and start scheduling from there
-  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-  final pendingNotifications = await storage.getAllNotifications();
+  final db = await platform_service.databaseImpl;
+  final pendingNotifications = await db.getAllNotifications();
   var max = DateTime.now().millisecondsSinceEpoch;
   pendingNotifications.forEach((element) {
     if (element.alarmTime > max) {

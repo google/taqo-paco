@@ -11,8 +11,8 @@ import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 import '../providers/experiment_provider.dart' show sharedPrefsExperimentPauseKey;
 import '../net/paco_api.dart';
 import '../net/invitation_response.dart';
+import '../service/platform_service.dart' as platform_service;
 import '../storage/flutter_file_storage.dart';
-import '../storage/local_database.dart';
 import 'alarm/taqo_alarm.dart' as taqo_alarm;
 
 class ExperimentService {
@@ -167,8 +167,8 @@ class ExperimentService {
   void joinExperiment(Experiment experiment) async {
     _joined[experiment.id] = experiment;
     saveJoinedExperiments();
-    final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-    storage.insertEvent(_createJoinEvent(experiment, joining: true));
+    final db = await platform_service.databaseImpl;
+    db.insertEvent(_createJoinEvent(experiment, joining: true));
   }
 
   bool isJoined(Experiment experiment) => _joined.containsKey(experiment.id);
@@ -180,8 +180,8 @@ class ExperimentService {
 
     _joined.remove(experiment.id);
     saveJoinedExperiments();
-    final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-    storage.insertEvent(_createJoinEvent(experiment, joining: false));
+    final db = await platform_service.databaseImpl;
+    db.insertEvent(_createJoinEvent(experiment, joining: false));
 
     taqo_alarm.cancelForExperiment(experiment);
   }

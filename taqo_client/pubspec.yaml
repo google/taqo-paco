@@ -31,7 +31,6 @@ dependencies:
   flutter_html: ^0.11.0
   numberpicker: ^1.0.0
   cached_network_image: ^2.0.0
-  json_rpc_2: '^2.1.0'
   provider: ^3.2.0
   path_provider: ^1.5.1
   path_provider_macos: ^0.0.1
@@ -44,6 +43,9 @@ dependencies:
     path: ../taqo_shared_prefs
   taqo_time_plugin:
     path: plugins/time
+
+  taqo_event_server_protocol:
+    path: ../taqo_event_server_protocol
 
   # Linux desktop
   shared_preferences_linux:

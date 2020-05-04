@@ -256,13 +256,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.0.1"
-  json_rpc_2:
-    dependency: "direct main"
-    description:
-      name: json_rpc_2
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.1.0"
   kernel:
     dependency: transitive
     description:
@@ -541,6 +534,13 @@ packages:
       relative: true
     source: path
     version: "0.0.1"
+  taqo_event_server_protocol:
+    dependency: "direct main"
+    description:
+      path: "../taqo_event_server_protocol"
+      relative: true
+    source: path
+    version: "0.0.0"
   taqo_shared_prefs:
     dependency: "direct main"
     description:

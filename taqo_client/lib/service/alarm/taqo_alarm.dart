@@ -1,77 +1,35 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:json_rpc_2/json_rpc_2.dart' as json_rpc;
-
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
-import 'package:taqo_common/rpc/socket_channel.dart';
 import 'package:taqo_common/rpc/rpc_constants.dart';
 import 'package:taqo_common/util/date_time_util.dart';
 
 import '../../main.dart';
 import '../../pages/running_experiments_page.dart';
 import '../../pages/survey/survey_page.dart';
-import '../../storage/flutter_file_storage.dart';
-import '../../storage/local_database.dart';
 import '../experiment_service.dart';
+import '../platform_service.dart' as platform_service;
 import 'android_alarm_manager.dart' as android_alarm_manager;
 import 'flutter_local_notifications.dart' as flutter_local_notifications;
 import 'ios_notification_scheduler.dart' as ios_notification_scheduler;
 
-// For Linux
-json_rpc.Peer _peer;
-json_rpc.Peer get linuxDaemonPeer => _peer;
-
-Future _linuxInit() async {
-  final completer = Completer();
-  Socket.connect(localServerHost, localServerPort).then((socket) {
-    _peer = json_rpc.Peer(SocketChannel(socket), onUnhandledError: (e, st) {
-      print('linux_alarm_manager socket error: $e');
-    });
-
-    _peer.registerMethod(openSurveyMethod, _handleOpenSurvey);
-    _peer.listen();
-
-    completer.complete();
-
-    _peer.done.then((_) {
-      print('linux_alarm_manager socket closed');
-      _peer = null;
-    });
-  }).catchError((e) {
-    print('Failed to connect to the Linux daemon. Is it running?');
-    _peer = null;
-  });
-  return completer.future;
-}
-
 Future init() {
-  // Init the actual notification plugins
   if (Platform.isLinux) {
-    return _linuxInit().then((_) => schedule(cancelAndReschedule: false));
+    return schedule(cancelAndReschedule: false);
   } else {
-    return flutter_local_notifications.init().then((_) => schedule(cancelAndReschedule: false));
+    return flutter_local_notifications.init().then((_) =>
+        schedule(cancelAndReschedule: false));
   }
 }
 
 Future<bool> checkActiveNotification() async {
-  if (Platform.isLinux) {
-    try {
-      final active = await _peer.sendRequest(checkActiveNotificationMethod);
-      return active is bool ? active : false;
-    } catch (e) {
-      print('Error checking for active notifications: $e');
-      return false;
-    }
-  } else {
-    final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-    final activeNotifications = (await storage.getAllNotifications())
-      .where((n) => n.isActive);
-
-    return activeNotifications.isNotEmpty;
-  }
+  final db = await platform_service.databaseImpl;
+  final activeNotifications = (await db.getAllNotifications()).where(
+          (n) => n.isActive);
+  return activeNotifications.isNotEmpty;
 }
 
 Future schedule({bool cancelAndReschedule=true}) async {
@@ -124,21 +82,16 @@ Future cancelForExperiment(Experiment experiment) async {
 }
 
 Future timeout(int id) async {
-  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-  _createMissedEvent(await storage.getNotification(id));
   cancel(id);
-}
-
-void _handleOpenSurvey(json_rpc.Parameters args)  {
-  final id = (args.asMap)['id'];
-  openSurvey('$id');
+  _createMissedEvent(id);
 }
 
 /// Open the survey that triggered the notification
 Future<void> openSurvey(String payload) async {
   final id = int.tryParse(payload);
-  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-  final notificationHolder = await storage.getNotification(id);
+
+  final db = await platform_service.databaseImpl;
+  final notificationHolder = await db.getNotification(id);
 
   if (notificationHolder == null) {
     print('No holder for payload: $payload');
@@ -167,14 +120,17 @@ Future<void> openSurvey(String payload) async {
   }
 }
 
-void _createMissedEvent(NotificationHolder notification) async {
+void _createMissedEvent(int notificationId) async {
+  final db = await platform_service.databaseImpl;
+  final NotificationHolder notification = await db.getNotification(notificationId);
   if (notification == null) return;
-  print('_createMissedEvent: ${notification.id}');
+
   final service = await ExperimentService.getInstance();
   final experiment = await service.getExperimentFromServerById(notification.experimentId);
   if (experiment == null) {
     return;
   }
+
   final event = Event();
   event.experimentId = experiment.id;
   event.experimentServerId = experiment.id;
@@ -186,10 +142,5 @@ void _createMissedEvent(NotificationHolder notification) async {
   event.experimentVersion = experiment.version;
   event.scheduleTime = getZonedDateTime(DateTime.fromMillisecondsSinceEpoch(notification.alarmTime));
 
-  if (Platform.isLinux) {
-    _peer.sendNotification(createMissedEventMethod, {'event': event.toJson(), });
-  } else {
-    final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-    storage.insertEvent(event);
-  }
+  db.insertEvent(event);
 }

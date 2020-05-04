@@ -12,8 +12,7 @@ import 'package:taqo_common/util/zoned_date_time.dart';
 import '../../pages/survey/feedback_page.dart';
 import '../../platform/platform_sync_service.dart';
 import '../../service/alarm/taqo_alarm.dart' as taqo_alarm;
-import '../../storage/flutter_file_storage.dart';
-import '../../storage/local_database.dart';
+import '../../service/platform_service.dart' as platform_service;
 import '../../widgets/taqo_widgets.dart';
 import '../running_experiments_page.dart';
 import 'multi_list_output.dart';
@@ -377,8 +376,8 @@ class _SurveyPageState extends State<SurveyPage> {
   }
 
   Future<void> submitSurvey() async {
-    final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-    final pendingAlarms = await storage.getAllAlarms();
+    final db = await platform_service.databaseImpl;
+    final pendingAlarms = await db.getAllAlarms();
 
     for (var entry in pendingAlarms.entries) {
       final id = entry.key;
@@ -397,7 +396,7 @@ class _SurveyPageState extends State<SurveyPage> {
         // We cancel here both for self-report as well as coming from a notification
         taqo_alarm.cancel(id);
         final activeNotifications =
-            await storage.getAllNotificationsForExperiment(_experiment);
+            await db.getAllNotificationsForExperiment(_experiment);
         // Clear any pending notification
         for (var notification in activeNotifications) {
           if (notification.matchesAction(alarm)) {
@@ -413,7 +412,7 @@ class _SurveyPageState extends State<SurveyPage> {
     // The implication here is that the actual timeout/expiration time is
     // the min of the explicit timeout and the time until the next notification
     // for the same survey fires
-    final pendingNotifications = (await storage
+    final pendingNotifications = (await db
         .getAllNotificationsForExperiment(_experiment))
         .where((e) => e.experimentGroupName == _experimentGroup.name);
 
@@ -446,7 +445,7 @@ class _SurveyPageState extends State<SurveyPage> {
     _event.responseTime.dateTime.difference(_startTime).inSeconds;
     var savedOK = validateResponses();
     // TODO Validate answers and store locally.
-    await storage.insertEvent(_event);
+    await db.insertEvent(_event);
     notifySyncService();
     // If should be uploaded alert sync service
     if (savedOK) {
