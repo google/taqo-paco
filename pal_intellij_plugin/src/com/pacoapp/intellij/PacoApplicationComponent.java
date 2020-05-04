@@ -30,7 +30,8 @@ import com.pacoapp.intellij.launch.PacoBeforeRunTaskProvider;
 import com.pacoapp.intellij.launch.PacoRunManagerListener;
 import com.pacoapp.paco.UserPreferences;
 import com.pacoapp.paco.net.EventUploader;
-import com.pacoapp.paco.net.TcpSocketClient;
+import com.pacoapp.paco.net.tesp.TespClient;
+import com.pacoapp.paco.net.tesp.message.request.TespRequestAddEvent;
 import com.pacoapp.paco.shared.model2.*;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
@@ -65,7 +66,7 @@ public class PacoApplicationComponent implements ApplicationComponent {
   public static final BigDecimal FREQUENCY = new BigDecimal(2 * 60); // max secs between events for continuous coding
   private MyFileEditorManagerListener fileEditorListener;
   private ExternalSystemTaskNotificationListener palTaskListener;
-  private TcpSocketClient tcpClient;
+  private TespClient tespClient;
   private Map<Project, LabelImpl> projectLabel = Maps.newHashMap();
 
   public static synchronized PacoApplicationComponent instance() {
@@ -97,11 +98,9 @@ public class PacoApplicationComponent implements ApplicationComponent {
   private void initTcpClient() {
     log.info("Initializing PacoApplicationComponent");
     try {
-      tcpClient = new TcpSocketClient();
+      tespClient = new TespClient("127.0.0.1", 31415);
     } catch (IOException e) {
       log.warning("Could not connect to PalEventServer: " + e.getMessage());
-    } catch (InterruptedException e) {
-      log.warning("InterruptedException connecting to PalEventServer: " + e.getMessage());
     }
   }
 
@@ -109,8 +108,8 @@ public class PacoApplicationComponent implements ApplicationComponent {
     log.info("Disposing PacoApplicationComponent");
     try {
       connection.disconnect();
-      if (tcpClient != null) {
-        tcpClient.close();
+      if (tespClient != null) {
+        tespClient.close();
       }
     } catch (Exception e) {
     }
@@ -270,10 +269,10 @@ public class PacoApplicationComponent implements ApplicationComponent {
   }
 
   private void processPacoEventQueue() {
-    if (tcpClient == null) {
+    if (tespClient == null) {
       initTcpClient();
     }
-    if (tcpClient == null) {
+    if (tespClient == null) {
       log.severe("cannot connect to PAL Event Server");
       return;
     }
@@ -295,8 +294,11 @@ public class PacoApplicationComponent implements ApplicationComponent {
   private void sendPacoEvent(ArrayList<PacoEvent> pacoEvents) {
     String jsonEvents = PacoEventUtil.jsonify(pacoEvents);
     log.info("Paco Event to be sent:\n" + jsonEvents);
+
+    final TespRequestAddEvent event = TespRequestAddEvent.withPayload(jsonEvents);
+
     try {
-      tcpClient.send(jsonEvents);
+      tespClient.send(event);
     } catch (IOException e) {
       log.warning("Got exception sending pacoEvents to tcpClient: " + e.getMessage());
     }
