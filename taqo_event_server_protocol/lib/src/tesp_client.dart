@@ -15,13 +15,6 @@ class TespClient {
   /// Maximum allowed time between two consecutive chunks belonging to the same response
   final Duration chunkTimeoutMillis;
 
-  /// Maximum allowed time between
-  /// (1) sending of one request is finished or previous request get responded, whichever happens later,
-  /// and
-  /// (2) a response is received
-  /// is [responseTimeoutMillis] + time used for sending the message
-  final Duration responseTimeoutMillis;
-
   /// Timeout for connection to the server
   final Duration connectionTimeoutMillis;
 
@@ -39,7 +32,6 @@ class TespClient {
 
   TespClient(this.serverAddress, this.port,
       {this.chunkTimeoutMillis = const Duration(milliseconds: 500),
-      this.responseTimeoutMillis = const Duration(milliseconds: 500),
       this.connectionTimeoutMillis = const Duration(milliseconds: 5000)});
 
   Future<void> connect() async {
@@ -67,8 +59,10 @@ class TespClient {
       _tespSocket.add(tespRequestWrapper.tespRequest);
       _socket.flush().then((_) {
         stopwatch.stop();
+        // The following formula for response timeout is estimated from some
+        // experiments. The coefficients are enlarged to make it more permissive.
         tespRequestWrapper.timeoutCompleter.timeout =
-            stopwatch.elapsed + responseTimeoutMillis;
+            stopwatch.elapsed * 20 + Duration(seconds: 2);
         // The timer is started when current sending is finished or previous
         // request get responded (including the case of being the first request),
         // whichever happens later.
