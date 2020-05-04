@@ -18,6 +18,18 @@ class TespClient {
   /// Timeout for connection to the server
   final Duration connectionTimeoutMillis;
 
+  // Maximum allowed time between
+  // (1) sending of one request is finished or previous request get responded, whichever happens later,
+  // and
+  // (2) a response is being received
+  // is (time used for sending the message) * [_responseTimeoutFactor] + [_responseTimeoutLatency]
+  // where the coefficients are estimated from some experiments and are enlarged
+  // to make the timeout more permissive.
+  // The reason for this linear relation is that we expect the time needed by the
+  // server to process a request grows linearly with the size of the request.
+  static const _responseTimeoutFactor = 20;
+  static const _responseTimeoutLatency = Duration(seconds: 2);
+
   Socket _socket;
   TespMessageSocket<TespResponse, TespRequest> _tespSocket;
   // The response timeout is set based on the time needed for sending the request.
@@ -59,10 +71,9 @@ class TespClient {
       _tespSocket.add(tespRequestWrapper.tespRequest);
       _socket.flush().then((_) {
         stopwatch.stop();
-        // The following formula for response timeout is estimated from some
-        // experiments. The coefficients are enlarged to make it more permissive.
         tespRequestWrapper.timeoutCompleter.timeout =
-            stopwatch.elapsed * 20 + Duration(seconds: 2);
+            stopwatch.elapsed * _responseTimeoutFactor + _responseTimeoutLatency;
+
         // The timer is started when current sending is finished or previous
         // request get responded (including the case of being the first request),
         // whichever happens later.
