@@ -1,0 +1,53 @@
+<idea-plugin>
+  <id>com.pacoapp.pal.id</id>
+  <name>PAL Dev Logger</name>
+  <version>1.1</version>
+  <vendor email="bobevans@google.com" url="http://github.com/google/paco">Paco Developers</vendor>
+
+  <description><![CDATA[
+      This is the PAL activity logger.<br>
+    ]]></description>
+
+  <change-notes><![CDATA[
+      Add change notes here.<br>
+      <em>most HTML tags may be used</em>
+    ]]>
+  </change-notes>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+  <idea-version since-build="173.0"/>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+       on how to target different products -->
+  <!-- uncomment to enable plugin in all products
+  <depends>com.intellij.modules.lang</depends>
+  -->
+  <depends>io.flutter</depends>
+  <depends>Dart</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <stepsBeforeRunProvider implementation="com.pacoapp.intellij.launch.PacoBeforeRunTaskProvider"></stepsBeforeRunProvider>
+  </extensions>
+
+    <application-components>
+        <!-- Add your application components here -->
+        <component>
+            <implementation-class>com.pacoapp.intellij.PacoApplicationComponent</implementation-class>
+        </component>
+    </application-components>
+
+  <project-components>
+    <component>
+      <implementation-class>com.pacoapp.intellij.PacoProjectComponent</implementation-class>
+    </component>
+  </project-components>
+
+  <actions>
+    <group id="MyPlugin.SampleMenu" text="_Sample Menu" description="Sample menu">
+      <add-to-group group-id="MainMenu" anchor="last"  />
+      <action id="com.pacoapp.intellij.TestAction" class="com.pacoapp.intellij.TestAction" text="Text _Boxes" description="A test menu item" />
+
+
+    </group>
+  </actions>
+</idea-plugin>
