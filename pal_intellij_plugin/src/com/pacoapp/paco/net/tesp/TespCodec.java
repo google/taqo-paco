@@ -6,8 +6,7 @@ import com.pacoapp.paco.net.tesp.message.TespPayload;
 import java.nio.ByteBuffer;
 
 public class TespCodec {
-    // The TESP protocol version. It needs to fit in an 8-bit unsigned integer
-    // (0-255).
+    // The TESP protocol version. It needs to fit in an 8-bit unsigned integer (0-255).
     public static final int protocolVersion = 1;
 
     // Constants associated with the protocol specification
@@ -24,8 +23,7 @@ public class TespCodec {
     private final Encoder encoder = new Encoder();
     private final Decoder decoder = new Decoder();
 
-    private TespCodec() {
-    }
+    private TespCodec() {}
 
     public static TespCodec getInstance() {
         return instance;
@@ -49,7 +47,6 @@ public class TespCodec {
             final byte messageCodeByte = ByteBuffer.allocate(4).putInt(message.getCode()).array()[3];
 
             if (message.hasPayload()) {
-                // TODO Check payload length < 2**31
                 final ByteBuffer buffer = ByteBuffer.allocate(payloadOffset + message.payloadSize());
                 buffer.put(protocolVersionByte);
                 buffer.put(messageCodeByte);

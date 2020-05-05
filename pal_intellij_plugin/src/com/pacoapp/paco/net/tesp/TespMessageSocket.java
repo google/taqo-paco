@@ -4,9 +4,12 @@ import com.pacoapp.paco.net.tesp.message.TespMessage;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.logging.Logger;
 
 public class TespMessageSocket<R extends TespMessage, S extends TespMessage> {
-    private static final long defaultConnectionTimeoutMs = 5000;
+    private static final int defaultTimeoutMs = 5000;
+
+    public static final Logger log = Logger.getLogger(TespMessageSocket.class.getName());
 
     private final TespCodec tespCodec = TespCodec.getInstance();
 
@@ -14,14 +17,14 @@ public class TespMessageSocket<R extends TespMessage, S extends TespMessage> {
     private final InputStream socketInputStream;
     private final OutputStream socketOutputStream;
 
-    private final long timeoutMs;
+    private final int timeoutMs;
     private final boolean isAsync = false;
 
     public TespMessageSocket(Socket socket) throws IOException {
-        this(socket, defaultConnectionTimeoutMs);
+        this(socket, defaultTimeoutMs);
     }
 
-    public TespMessageSocket(Socket socket, long timeout) throws IOException {
+    public TespMessageSocket(Socket socket, int timeout) throws IOException {
         this.socket = socket;
         socketOutputStream = socket.getOutputStream();
         socketInputStream = socket.getInputStream();
@@ -39,6 +42,7 @@ public class TespMessageSocket<R extends TespMessage, S extends TespMessage> {
             socketOutputStream.flush();
             socket.close();
         } catch (IOException e) {
+            log.warning("Exception closing TespMessageSocket socket: " + e.getMessage());
         }
     }
 }

@@ -4,17 +4,21 @@ import com.pacoapp.paco.net.tesp.message.request.TespRequest;
 import com.pacoapp.paco.net.tesp.message.response.TespResponse;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.logging.Logger;
 
 public class TespClient {
-    private static final long defaultConnectionTimeoutMs = 5000;
-    private static final long defaultChunkTimeoutMs = 5000;
+    private static final int defaultConnectionTimeoutMs = 5000;
+    private static final int defaultChunkTimeoutMs = 5000;
+
+    public static final Logger log = Logger.getLogger(TespClient.class.getName());
 
     private final String serverAddress;
     private final int port;
 
-    private final long connectionTimeoutMs;
-    private final long chunkTimeoutMs;
+    private final int connectionTimeoutMs;
+    private final int chunkTimeoutMs;
 
     private Socket socket;
     private TespMessageSocket<TespResponse, TespRequest> tespSocket;
@@ -23,7 +27,7 @@ public class TespClient {
         this(serverAddress, port, defaultConnectionTimeoutMs, defaultChunkTimeoutMs);
     }
 
-    public TespClient(String serverAddress, int port, long connectionTimeout, long chunkTimeout) throws IOException {
+    public TespClient(String serverAddress, int port, int connectionTimeout, int chunkTimeout) throws IOException {
         this.serverAddress = serverAddress;
         this.port = port;
         this.connectionTimeoutMs = connectionTimeout;
@@ -33,15 +37,18 @@ public class TespClient {
     }
 
     public void connect() throws IOException {
-        socket = new Socket(serverAddress, port);
+        socket = new Socket();
+        socket.connect(new InetSocketAddress(serverAddress, port), connectionTimeoutMs);
         tespSocket = new TespMessageSocket<>(socket);
     }
 
     // TODO Handle a response
     public /*TespResponse*/ void send(TespRequest request) throws IOException {
-        if (tespSocket != null) {
-            tespSocket.add(request);
+        if (tespSocket == null) {
+            connect();
         }
+
+        tespSocket.add(request);
     }
 
     public void close() {
@@ -49,6 +56,7 @@ public class TespClient {
         try {
             socket.close();
         } catch (IOException e) {
+            log.warning("Exception closing TespClient socket: " + e.getMessage());
         } finally {
             tespSocket = null;
             socket = null;
