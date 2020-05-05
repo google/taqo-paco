@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:taqo_common/model/event.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 
 class ExampleEventServer with TespRequestHandlerMixin {
@@ -16,8 +17,8 @@ class ExampleEventServer with TespRequestHandlerMixin {
   }
 
   @override
-  Future<TespResponse> addEvent(String eventPayload) {
-    print('addEvent: $eventPayload');
+  Future<TespResponse> addEvent(Event event) {
+    print('addEvent: $event');
     return Future.value(TespResponseSuccess());
   }
 

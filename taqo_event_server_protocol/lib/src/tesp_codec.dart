@@ -51,7 +51,7 @@ class TespEncoder extends Converter<TespMessage, List<int>> {
   @override
   Uint8List convert(TespMessage message) {
     var header = Uint8List.fromList([TespCodec.protocolVersion, message.code]);
-    if (message is StringPayload) {
+    if (message is Payload) {
       if (message.encodedPayload.length > UINT32_MAX) {
         throw TespLengthException(
             'TESP cannot encode messages with payload larger than UINT32_MAX bytes.',

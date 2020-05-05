@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:taqo_common/model/event.dart';
+
 abstract class TespMessage {
   /// The response/request code for the message, which must fit in an 8-bit
   /// unsigned integer (0x00-0xFF).
@@ -56,35 +58,25 @@ abstract class TespRequest extends TespMessage {}
 
 abstract class TespResponse extends TespMessage {}
 
-// The following class is used as a base class for a mixin class.
-// It implements TespMessage, so that the mixin can only be mixed into
-// a TespMessage class/subclass.
-abstract class Payload<T> implements TespMessage {
-  T get payload;
-  Uint8List get encodedPayload;
+mixin Payload<T> on TespMessage {
+  static S identity<S>(S x) => x;
+  static final jsonFactories = <Type, Function>{
+    String: identity,
+    Event: (json) => Event.fromJson(json)
+  };
+  final _codec = (T == String ? utf8 : json.fuse(utf8));
 
-  // Reason for non-standard setters:
-  // (1) the two fields are not supposed to be used as l-value
-  // (2) setPayloadWithEncoded may set payload and encodedPayload at the same time.
-  void setPayload(T payload);
-  void setPayloadWithEncoded(Uint8List encodedPayload);
-}
-
-mixin StringPayload implements Payload<String> {
   Uint8List _encodedPayload;
-  String _payload;
+  T _payload;
 
-  @override
-  String get payload => _payload;
+  T get payload => _payload;
 
-  @override
   Uint8List get encodedPayload {
-    _encodedPayload ??= utf8.encode(_payload);
+    _encodedPayload ??= _codec.encode(_payload);
     return _encodedPayload;
   }
 
-  @override
-  void setPayload(String payload) {
+  void setPayload(T payload) {
     if (payload == null) {
       throw ArgumentError('payload must not be null for $runtimeType');
     }
@@ -95,22 +87,24 @@ mixin StringPayload implements Payload<String> {
     }
   }
 
-  @override
   void setPayloadWithEncoded(Uint8List encodedPayload) {
     if (encodedPayload == null) {
       throw ArgumentError('encodedPayload must not be null for $runtimeType');
     }
-    setPayload(utf8.decode(encodedPayload));
+    setPayload(jsonFactories[T](_codec.decode(encodedPayload)));
     _encodedPayload = encodedPayload;
   }
 }
 
-class TespRequestAddEvent extends TespRequest with StringPayload {
+class TespRequestAddEvent extends TespRequest with Payload<Event> {
   @override
   final code = TespMessage.tespCodeRequestAddEvent;
 
-  TespRequestAddEvent.withPayload(String payload) {
-    setPayload(payload);
+  TespRequestAddEvent(Event event) {
+    setPayload(event);
+  }
+  TespRequestAddEvent.withEventJson(json) {
+    setPayload(Event.fromJson(json));
   }
   TespRequestAddEvent.withEncodedPayload(Uint8List encodedPayload) {
     setPayloadWithEncoded(encodedPayload);
@@ -147,7 +141,7 @@ class TespResponseSuccess extends TespResponse {
   final code = TespMessage.tespCodeResponseSuccess;
 }
 
-class TespResponseError extends TespResponse with StringPayload {
+class TespResponseError extends TespResponse with Payload<String> {
   @override
   final code = TespMessage.tespCodeResponseError;
 
@@ -195,7 +189,7 @@ class TespResponsePaused extends TespResponse {
   final code = TespMessage.tespCodeResponsePaused;
 }
 
-class TespResponseInvalidRequest extends TespResponse with StringPayload {
+class TespResponseInvalidRequest extends TespResponse with Payload<String> {
   @override
   final code = TespMessage.tespCodeResponseInvalidRequest;
 
@@ -207,7 +201,7 @@ class TespResponseInvalidRequest extends TespResponse with StringPayload {
   }
 }
 
-class TespResponseAnswer extends TespResponse with StringPayload {
+class TespResponseAnswer extends TespResponse with Payload<String> {
   @override
   final code = TespMessage.tespCodeResponseAnswer;
 
@@ -228,8 +222,8 @@ abstract class TespEvent implements TespResponse, TespRequest {
 
 /// [TespEventMessageArrived] can be fired when the TESP decoder receives the last
 /// byte of the encoded message, but may not have processed it.
-class TespEventMessageArrived  extends TespEvent {}
+class TespEventMessageArrived extends TespEvent {}
 
 /// [TespEventMessageExpected] can be fired when the TESP decoder receives the
 /// header of a message, but the rest of the message may be yet to arrive.
-class TespEventMessageExpected  extends TespEvent {}
+class TespEventMessageExpected extends TespEvent {}

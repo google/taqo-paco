@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:taqo_common/model/event.dart';
+
 import 'tesp_message_socket.dart';
 import 'tesp_message.dart';
 
@@ -8,7 +10,7 @@ abstract class TespRequestHandler {
 }
 
 mixin TespRequestHandlerMixin implements TespRequestHandler {
-  FutureOr<TespResponse> addEvent(String eventPayload);
+  FutureOr<TespResponse> addEvent(Event event);
   FutureOr<TespResponse> pause();
   FutureOr<TespResponse> resume();
   FutureOr<TespResponse> whiteListDataOnly();

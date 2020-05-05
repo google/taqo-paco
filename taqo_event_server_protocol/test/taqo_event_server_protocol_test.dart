@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:taqo_common/model/event.dart';
 import 'package:taqo_event_server_protocol/src/tesp_codec.dart';
 import 'package:taqo_event_server_protocol/src/tesp_message_socket.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
@@ -74,17 +75,17 @@ void main() {
 
     test('stream of requests', () async {
       var requests = [
-        TespRequestAddEvent.withPayload('1'),
-        TespRequestAddEvent.withPayload('2'),
+        createDummyTespRequestAddEvent('1'),
+        createDummyTespRequestAddEvent('2'),
         TespRequestWhiteListDataOnly(),
-        TespRequestAddEvent.withPayload('3'),
+        createDummyTespRequestAddEvent('3'),
         TespRequestPause(),
-        TespRequestAddEvent.withPayload('4'),
-        TespRequestAddEvent.withPayload('5'),
+        createDummyTespRequestAddEvent('4'),
+        createDummyTespRequestAddEvent('5'),
         TespRequestResume(),
-        TespRequestAddEvent.withPayload('6'),
+        createDummyTespRequestAddEvent('6'),
         TespRequestAllData(),
-        TespRequestAddEvent.withPayload('7')
+        createDummyTespRequestAddEvent('7')
       ];
       var responses = [
         TespResponseAnswer.withPayload('${_stringAddEvent}: 1'),
@@ -120,17 +121,8 @@ void main() {
       final realPayloadEncodedSize =
           largePayloadEncoded.length * repeatingTimes;
       final realPayload = utf8.decode(largePayloadEncoded) * repeatingTimes;
-      final encodedMessageHeader = Uint8List(TespCodec.payloadOffset);
-      encodedMessageHeader[TespCodec.versionOffset] = TespCodec.protocolVersion;
-      encodedMessageHeader[TespCodec.codeOffset] =
-          TespMessage.tespCodeRequestAddEvent;
-      var bdata = ByteData.view(encodedMessageHeader.buffer,
-          TespCodec.payloadSizeOffset, TespCodec.payloadSizeLength);
-      bdata.setUint32(0, realPayloadEncodedSize, Endian.big);
-      socket.add(encodedMessageHeader);
-      for (var i = 0; i < repeatingTimes; i++) {
-        socket.add(largePayloadEncoded);
-      }
+      final largeRequest = createDummyTespRequestAddEvent(realPayload);
+      tespSocket.add(largeRequest);
       await tespSocket.close();
       await expectLater(
           tespStream,
@@ -140,9 +132,9 @@ void main() {
     }, timeout: Timeout(Duration(seconds: 120)));
 
     test('error handling - wrong version', () async {
-      tespSocket.add(TespRequestAddEvent.withPayload('test'));
+      tespSocket.add(createDummyTespRequestAddEvent('test'));
       socket.add([0xFF, 0x01, 0x02, 0x03, 0x04]);
-      tespSocket.add(TespRequestAddEvent.withPayload('will not be responded'));
+      tespSocket.add(createDummyTespRequestAddEvent('will not be responded'));
       await tespSocket.close();
       await expectLater(
           tespSocket.stream,
@@ -155,9 +147,9 @@ void main() {
     });
 
     test('error handling - wrong code', () async {
-      tespSocket.add(TespRequestAddEvent.withPayload('test'));
+      tespSocket.add(createDummyTespRequestAddEvent('test'));
       socket.add([0x01, 0xFF, 0x01, 0x02, 0x03]);
-      tespSocket.add(TespRequestAddEvent.withPayload('will not be responded'));
+      tespSocket.add(createDummyTespRequestAddEvent('will not be responded'));
       await tespSocket.close();
       await expectLater(
           tespSocket.stream,
@@ -170,9 +162,9 @@ void main() {
     });
 
     test('error handling - bad payload', () async {
-      tespSocket.add(TespRequestAddEvent.withPayload('test'));
+      tespSocket.add(createDummyTespRequestAddEvent('test'));
       socket.add([0x01, 0x01, 0x00, 0x00, 0x00, 0x03, 0xE1, 0xA0, 0xC0]);
-      tespSocket.add(TespRequestAddEvent.withPayload('will not be responded'));
+      tespSocket.add(createDummyTespRequestAddEvent('will not be responded'));
       await tespSocket.close();
       await expectLater(
           tespSocket.stream,
@@ -185,10 +177,10 @@ void main() {
     });
 
     test('error handling - sending response to server', () async {
-      tespSocket.add(TespRequestAddEvent.withPayload('1'));
+      tespSocket.add(createDummyTespRequestAddEvent('1'));
       tespSocket.add(TespResponseAnswer.withPayload(
           'will cause an exception and be ignored'));
-      tespSocket.add(TespRequestAddEvent.withPayload('2'));
+      tespSocket.add(createDummyTespRequestAddEvent('2'));
       await tespSocket.close();
       await expectLater(
           tespSocket.stream,
@@ -216,9 +208,9 @@ void main() {
       socket.destroy();
       socket = await Socket.connect('127.0.0.1', port);
       tespSocket = TespMessageSocket(socket);
-      tespSocket.add(TespRequestAddEvent.withPayload('will be ignored'));
+      tespSocket.add(createDummyTespRequestAddEvent('will be ignored'));
       tespSocket.add(TespRequestResume());
-      tespSocket.add(TespRequestAddEvent.withPayload('OK'));
+      tespSocket.add(createDummyTespRequestAddEvent('OK'));
       await tespSocket.close();
       await expectLater(
           tespSocket.stream,
@@ -231,14 +223,14 @@ void main() {
     });
 
     test('client closing early do not break the server', () async {
-      tespSocket.add(TespRequestAddEvent.withPayload('test1'));
-      tespSocket.add(TespRequestAddEvent.withPayload('test2'));
-      tespSocket.add(TespRequestAddEvent.withPayload('test3'));
+      tespSocket.add(createDummyTespRequestAddEvent('test1'));
+      tespSocket.add(createDummyTespRequestAddEvent('test2'));
+      tespSocket.add(createDummyTespRequestAddEvent('test3'));
       await socket.flush();
       socket.destroy();
       socket = await Socket.connect('127.0.0.1', port);
       tespSocket = TespMessageSocket(socket);
-      tespSocket.add(TespRequestAddEvent.withPayload('OK'));
+      tespSocket.add(createDummyTespRequestAddEvent('OK'));
       await tespSocket.close();
       await expectLater(
           tespSocket.stream,
@@ -281,11 +273,11 @@ void main() {
 
     test('clients receives responses to their own requests', () async {
       var requests1 = [
-        TespRequestAddEvent.withPayload('1'),
-        TespRequestAddEvent.withPayload('3'),
-        TespRequestAddEvent.withPayload('5'),
-        TespRequestAddEvent.withPayload('7'),
-        TespRequestAddEvent.withPayload('9'),
+        createDummyTespRequestAddEvent('1'),
+        createDummyTespRequestAddEvent('3'),
+        createDummyTespRequestAddEvent('5'),
+        createDummyTespRequestAddEvent('7'),
+        createDummyTespRequestAddEvent('9'),
       ];
       var responses1 = [
         TespResponseAnswer.withPayload('${_stringAddEvent}: 1'),
@@ -295,11 +287,11 @@ void main() {
         TespResponseAnswer.withPayload('${_stringAddEvent}: 9'),
       ];
       var requests2 = [
-        TespRequestAddEvent.withPayload('2'),
-        TespRequestAddEvent.withPayload('4'),
-        TespRequestAddEvent.withPayload('6'),
-        TespRequestAddEvent.withPayload('8'),
-        TespRequestAddEvent.withPayload('10'),
+        createDummyTespRequestAddEvent('2'),
+        createDummyTespRequestAddEvent('4'),
+        createDummyTespRequestAddEvent('6'),
+        createDummyTespRequestAddEvent('8'),
+        createDummyTespRequestAddEvent('10'),
       ];
       var responses2 = [
         TespResponseAnswer.withPayload('${_stringAddEvent}: 2'),
@@ -348,7 +340,7 @@ void main() {
 
       var client1 = Future(() async {
         await Future(
-            () => tespSocket1.add(TespRequestAddEvent.withPayload('1')));
+            () => tespSocket1.add(createDummyTespRequestAddEvent('1')));
         await beforePauseCompleter.future;
         await Future(() => tespSocket1.add(TespRequestPause()));
         await expectLater(
@@ -360,19 +352,19 @@ void main() {
             ]));
         pauseCompleter.complete();
         await Future(
-            () => tespSocket1.add(TespRequestAddEvent.withPayload('3')));
+            () => tespSocket1.add(createDummyTespRequestAddEvent('3')));
         beforeResumeCompleter.complete();
         await resumeCompleter.future;
         await Future(
-            () => tespSocket1.add(TespRequestAddEvent.withPayload('5')));
+            () => tespSocket1.add(createDummyTespRequestAddEvent('5')));
       });
       var client2 = Future(() async {
         await Future(
-            () => tespSocket2.add(TespRequestAddEvent.withPayload('2')));
+            () => tespSocket2.add(createDummyTespRequestAddEvent('2')));
         beforePauseCompleter.complete();
         await pauseCompleter.future;
         await Future(
-            () => tespSocket2.add(TespRequestAddEvent.withPayload('4')));
+            () => tespSocket2.add(createDummyTespRequestAddEvent('4')));
         await beforeResumeCompleter.future;
         await Future(() => tespSocket2.add(TespRequestResume()));
         await expectLater(
@@ -386,7 +378,7 @@ void main() {
             ]));
         resumeCompleter.complete();
         await Future(
-            () => tespSocket2.add(TespRequestAddEvent.withPayload('6')));
+            () => tespSocket2.add(createDummyTespRequestAddEvent('6')));
       });
       await Future.wait([client1, client2]);
       await tespSocket1.close();
@@ -410,11 +402,11 @@ void main() {
 
     test('one client error does not affect the other', () async {
       var requests2 = [
-        TespRequestAddEvent.withPayload('2'),
-        TespRequestAddEvent.withPayload('4'),
-        TespRequestAddEvent.withPayload('6'),
-        TespRequestAddEvent.withPayload('8'),
-        TespRequestAddEvent.withPayload('10'),
+        createDummyTespRequestAddEvent('2'),
+        createDummyTespRequestAddEvent('4'),
+        createDummyTespRequestAddEvent('6'),
+        createDummyTespRequestAddEvent('8'),
+        createDummyTespRequestAddEvent('10'),
       ];
       var responses2 = [
         TespResponseAnswer.withPayload('${_stringAddEvent}: 2'),
@@ -426,14 +418,14 @@ void main() {
 
       var client1 = Future(() async {
         await Future(
-            () => tespSocket1.add(TespRequestAddEvent.withPayload('1')));
+            () => tespSocket1.add(createDummyTespRequestAddEvent('1')));
         await Future(
-            () => tespSocket1.add(TespRequestAddEvent.withPayload('3')));
+            () => tespSocket1.add(createDummyTespRequestAddEvent('3')));
         await Future(() => socket1.add([0xFF]));
         await Future(
-            () => tespSocket1.add(TespRequestAddEvent.withPayload('7')));
+            () => tespSocket1.add(createDummyTespRequestAddEvent('7')));
         await Future(
-            () => tespSocket1.add(TespRequestAddEvent.withPayload('9')));
+            () => tespSocket1.add(createDummyTespRequestAddEvent('9')));
       });
       var client2 = Future(() async {
         for (var request in requests2) {
@@ -486,17 +478,17 @@ void main() {
 
     test('send()', () async {
       var requests = [
-        TespRequestAddEvent.withPayload('1'),
-        TespRequestAddEvent.withPayload('2'),
+        createDummyTespRequestAddEvent('1'),
+        createDummyTespRequestAddEvent('2'),
         TespRequestWhiteListDataOnly(),
-        TespRequestAddEvent.withPayload('3'),
+        createDummyTespRequestAddEvent('3'),
         TespRequestPause(),
-        TespRequestAddEvent.withPayload('4'),
-        TespRequestAddEvent.withPayload('5'),
+        createDummyTespRequestAddEvent('4'),
+        createDummyTespRequestAddEvent('5'),
         TespRequestResume(),
-        TespRequestAddEvent.withPayload('6'),
+        createDummyTespRequestAddEvent('6'),
         TespRequestAllData(),
-        TespRequestAddEvent.withPayload('7')
+        createDummyTespRequestAddEvent('7')
       ];
       var responses = [
         TespResponseAnswer.withPayload('${_stringAddEvent}: 1'),
@@ -527,7 +519,7 @@ void main() {
       final realPayloadEncodedSize =
           largePayloadEncoded.length * repeatingTimes;
       final realPayload = utf8.decode(largePayloadEncoded) * repeatingTimes;
-      final largeRequest = TespRequestAddEvent.withPayload(realPayload);
+      final largeRequest = createDummyTespRequestAddEvent(realPayload);
       expect(
           client.send(largeRequest),
           completion(equalsTespMessage(TespResponseAnswer.withPayload(
@@ -535,6 +527,10 @@ void main() {
       await client.close();
     }, timeout: Timeout(Duration(seconds: 120)));
   });
+}
+
+TespRequestAddEvent createDummyTespRequestAddEvent(String string) {
+  return TespRequestAddEvent(Event()..experimentName = string);
 }
 
 class TestingEventServer with TespRequestHandlerMixin {
@@ -558,12 +554,13 @@ class TestingEventServer with TespRequestHandlerMixin {
   bool isPaused = false;
 
   @override
-  Future<TespResponse> addEvent(String eventPayload) async {
+  Future<TespResponse> addEvent(Event event) async {
     if (isPaused) {
       return TespResponsePaused();
     }
     await Future.delayed(Duration(milliseconds: 200));
-    return TespResponseAnswer.withPayload('${_stringAddEvent}: $eventPayload');
+    return TespResponseAnswer.withPayload(
+        '${_stringAddEvent}: ${event.experimentName}');
   }
 
   @override

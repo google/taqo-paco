@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/util/zoned_date_time.dart';
 import 'package:taqo_event_server_protocol/src/tesp_codec.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 import 'package:test/test.dart';
@@ -46,7 +49,14 @@ void main() {
   group('TespCodec', () {
     final payload =
         '{"a": "b", "c": 1, "d": [1, 2, 3, "e"], "f": "Îñţérñåţîöñåļîžåţîờñ" }';
-    final msgRequestAddEvent = TespRequestAddEvent.withPayload(payload);
+    final event = Event()
+      ..responses = json.decode(payload)
+      ..experimentName = 'TestExperiment'
+      ..experimentServerId = 12345
+      ..responseTime =
+          ZonedDateTime.fromIso8601String('2020-05-04T16:21:31.415926-0700')
+      ..experimentVersion = 1;
+    final msgRequestAddEvent = TespRequestAddEvent(event);
     final msgResponseError = TespResponseError('error', 'message', 'details');
     final msgResponseInvalidRequest =
         TespResponseInvalidRequest.withPayload(''); // Empty payload on purpose
@@ -61,7 +71,7 @@ void main() {
     final msgResponsePaused = TespResponsePaused();
 
     test('object creation', () {
-      expect(msgRequestAddEvent.payload, equals(payload));
+      expect(msgResponseAnswer.payload, equals(payload));
     });
     test('encode/decode (non-chunked)', () {
       // Briefly verify that the codec actually converts between [TespMessage] and List<int>.
