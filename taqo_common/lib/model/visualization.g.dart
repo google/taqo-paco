@@ -11,9 +11,8 @@ Visualization _$VisualizationFromJson(Map<String, dynamic> json) {
     ..id = json['id'] as int
     ..experimentId = json['experimentId'] as int
     ..title = json['title'] as String
-    ..modifyDate = json['modifyDate'] == null
-        ? null
-        : Visualization._zonedDateTimeFromMillis(json['modifyDate'] as int)
+    ..modifyDate =
+        Visualization._zonedDateTimeFromMillis(json['modifyDate'] as int)
     ..question = json['question'] as String
     ..xAxisVariable = json['xAxisVariable'] == null
         ? null
@@ -26,12 +25,10 @@ Visualization _$VisualizationFromJson(Map<String, dynamic> json) {
         (json['participants'] as List)?.map((e) => e as String)?.toList()
     ..type = json['type'] as String
     ..description = json['description'] as String
-    ..startDatetime = json['startDatetime'] == null
-        ? null
-        : Visualization._zonedDateTimeFromMillis(json['startDatetime'] as int)
-    ..endDatetime = json['endDatetime'] == null
-        ? null
-        : Visualization._zonedDateTimeFromMillis(json['endDatetime'] as int);
+    ..startDatetime =
+        Visualization._zonedDateTimeFromMillis(json['startDatetime'] as int)
+    ..endDatetime =
+        Visualization._zonedDateTimeFromMillis(json['endDatetime'] as int);
 }
 
 Map<String, dynamic> _$VisualizationToJson(Visualization instance) =>
@@ -39,19 +36,14 @@ Map<String, dynamic> _$VisualizationToJson(Visualization instance) =>
       'id': instance.id,
       'experimentId': instance.experimentId,
       'title': instance.title,
-      'modifyDate': instance.modifyDate == null
-          ? null
-          : Visualization._zonedDateTimeToMillis(instance.modifyDate),
+      'modifyDate': Visualization._zonedDateTimeToMillis(instance.modifyDate),
       'question': instance.question,
       'xAxisVariable': instance.xAxisVariable,
       'yAxisVariables': instance.yAxisVariables,
       'participants': instance.participants,
       'type': instance.type,
       'description': instance.description,
-      'startDatetime': instance.startDatetime == null
-          ? null
-          : Visualization._zonedDateTimeToMillis(instance.startDatetime),
-      'endDatetime': instance.endDatetime == null
-          ? null
-          : Visualization._zonedDateTimeToMillis(instance.endDatetime)
+      'startDatetime':
+          Visualization._zonedDateTimeToMillis(instance.startDatetime),
+      'endDatetime': Visualization._zonedDateTimeToMillis(instance.endDatetime),
     };

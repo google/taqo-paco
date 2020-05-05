@@ -17,5 +17,5 @@ Map<String, dynamic> _$PacoActionToJson(PacoAction instance) =>
     <String, dynamic>{
       'id': instance.id,
       'type': instance.type,
-      'actionCode': instance.actionCode
+      'actionCode': instance.actionCode,
     };

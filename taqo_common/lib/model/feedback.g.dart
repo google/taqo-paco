@@ -7,8 +7,12 @@ part of 'feedback.dart';
 // **************************************************************************
 
 Feedback _$FeedbackFromJson(Map<String, dynamic> json) {
-  return Feedback(text: json['text'] as String)..type = json['type'] as int;
+  return Feedback(
+    text: json['text'] as String,
+  )..type = json['type'] as int;
 }
 
-Map<String, dynamic> _$FeedbackToJson(Feedback instance) =>
-    <String, dynamic>{'text': instance.text, 'type': instance.type};
+Map<String, dynamic> _$FeedbackToJson(Feedback instance) => <String, dynamic>{
+      'text': instance.text,
+      'type': instance.type,
+    };

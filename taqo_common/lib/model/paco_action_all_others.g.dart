@@ -20,5 +20,5 @@ Map<String, dynamic> _$PacoActionAllOthersToJson(
       'id': instance.id,
       'type': instance.type,
       'actionCode': instance.actionCode,
-      'customScript': instance.customScript
+      'customScript': instance.customScript,
     };

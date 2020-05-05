@@ -7,8 +7,14 @@ part of 'validation_message.dart';
 // **************************************************************************
 
 ValidationMessage _$ValidationMessageFromJson(Map<String, dynamic> json) {
-  return ValidationMessage(json['msg'] as String, json['importance'] as int);
+  return ValidationMessage(
+    json['msg'] as String,
+    json['importance'] as int,
+  );
 }
 
 Map<String, dynamic> _$ValidationMessageToJson(ValidationMessage instance) =>
-    <String, dynamic>{'importance': instance.importance, 'msg': instance.msg};
+    <String, dynamic>{
+      'importance': instance.importance,
+      'msg': instance.msg,
+    };

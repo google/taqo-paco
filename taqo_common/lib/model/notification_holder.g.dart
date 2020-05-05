@@ -8,17 +8,18 @@ part of 'notification_holder.dart';
 
 NotificationHolder _$NotificationHolderFromJson(Map<String, dynamic> json) {
   return NotificationHolder(
-      json['id'] as int,
-      json['alarmTime'] as int,
-      json['experimentId'] as int,
-      json['noticeCount'] as int,
-      json['timeoutMillis'] as int,
-      json['experimentGroupName'] as String,
-      json['actionTriggerId'] as int,
-      json['actionId'] as int,
-      json['notificationSource'] as String,
-      json['message'] as String,
-      json['actionTriggerSpecId'] as int)
+    json['id'] as int,
+    json['alarmTime'] as int,
+    json['experimentId'] as int,
+    json['noticeCount'] as int,
+    json['timeoutMillis'] as int,
+    json['experimentGroupName'] as String,
+    json['actionTriggerId'] as int,
+    json['actionId'] as int,
+    json['notificationSource'] as String,
+    json['message'] as String,
+    json['actionTriggerSpecId'] as int,
+  )
     ..snoozeTime = json['snoozeTime'] as int
     ..snoozeCount = json['snoozeCount'] as int;
 }
@@ -37,5 +38,5 @@ Map<String, dynamic> _$NotificationHolderToJson(NotificationHolder instance) =>
       'actionId': instance.actionId,
       'actionTriggerSpecId': instance.actionTriggerSpecId,
       'snoozeTime': instance.snoozeTime,
-      'snoozeCount': instance.snoozeCount
+      'snoozeCount': instance.snoozeCount,
     };
