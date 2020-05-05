@@ -25,5 +25,5 @@ Map<String, dynamic> _$ScheduleTriggerToJson(ScheduleTrigger instance) =>
       'type': instance.type,
       'actions': instance.actions,
       'id': instance.id,
-      'schedules': instance.schedules
+      'schedules': instance.schedules,
     };

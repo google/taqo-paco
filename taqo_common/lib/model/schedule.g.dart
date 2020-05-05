@@ -8,22 +8,23 @@ part of 'schedule.dart';
 
 Schedule _$ScheduleFromJson(Map<String, dynamic> json) {
   return Schedule(
-      json['scheduleType'] as int,
-      json['byDayOfMonth'] as bool,
-      json['dayOfMonth'] as int,
-      json['esmEndHour'] as int,
-      json['esmFrequency'] as int,
-      json['esmPeriodInDays'] as int,
-      json['esmStartHour'] as int,
-      json['nthOfMonth'] as int,
-      json['repeatRate'] as int,
-      (json['signalTimes'] as List)
-          ?.map((e) =>
-              e == null ? null : SignalTime.fromJson(e as Map<String, dynamic>))
-          ?.toList(),
-      json['weekDaysScheduled'] as int,
-      json['esmWeekends'] as bool,
-      json['minimumBuffer'] as int)
+    json['scheduleType'] as int,
+    json['byDayOfMonth'] as bool,
+    json['dayOfMonth'] as int,
+    json['esmEndHour'] as int,
+    json['esmFrequency'] as int,
+    json['esmPeriodInDays'] as int,
+    json['esmStartHour'] as int,
+    json['nthOfMonth'] as int,
+    json['repeatRate'] as int,
+    (json['signalTimes'] as List)
+        ?.map((e) =>
+            e == null ? null : SignalTime.fromJson(e as Map<String, dynamic>))
+        ?.toList(),
+    json['weekDaysScheduled'] as int,
+    json['esmWeekends'] as bool,
+    json['minimumBuffer'] as int,
+  )
     ..joinDateMillis = json['joinDateMillis'] as int
     ..beginDate = json['beginDate'] as int
     ..id = json['id'] as int
@@ -49,5 +50,5 @@ Map<String, dynamic> _$ScheduleToJson(Schedule instance) => <String, dynamic>{
       'beginDate': instance.beginDate,
       'id': instance.id,
       'onlyEditableOnJoin': instance.onlyEditableOnJoin,
-      'userEditable': instance.userEditable
+      'userEditable': instance.userEditable,
     };

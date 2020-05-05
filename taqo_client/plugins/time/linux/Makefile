@@ -75,7 +75,7 @@ CXXFLAGS.release=-DNDEBUG
 CXXFLAGS=-std=c++14 -Wall -Werror -fPIC -fvisibility=hidden \
 	-DFLUTTER_PLUGIN_IMPL $(CXXFLAGS.$(BUILD)) $(EXTRA_CXXFLAGS)
 CPPFLAGS=$(patsubst %,-I%,$(INCLUDE_DIRS)) $(EXTRA_CPPFLAGS)
-LDFLAGS=-shared -L$(FLUTTER_EPHEMERAL_DIR) -l$(FLUTTER_LIB_NAME) $(EXTRA_LDFLAGS)
+LDFLAGS=-shared -Wl,-soname,libtaqo_time_plugin_plugin.so -L$(FLUTTER_EPHEMERAL_DIR) -l$(FLUTTER_LIB_NAME) $(EXTRA_LDFLAGS)
 
 # Final output files that will be used by applications.
 LIBRARY_OUT=$(OUT_DIR)/lib$(PLUGIN_NAME)_plugin.so
