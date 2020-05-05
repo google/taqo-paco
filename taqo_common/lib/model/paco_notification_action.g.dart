@@ -31,5 +31,5 @@ Map<String, dynamic> _$PacoNotificationActionToJson(
       'delay': instance.delay,
       'color': instance.color,
       'dismissible': instance.dismissible,
-      'msgText': instance.msgText
+      'msgText': instance.msgText,
     };

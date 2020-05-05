@@ -35,5 +35,5 @@ Map<String, dynamic> _$InterruptTriggerToJson(InterruptTrigger instance) =>
       'timeWindow': instance.timeWindow,
       'startTimeMillis': instance.startTimeMillis,
       'endTimeMillis': instance.endTimeMillis,
-      'weekends': instance.weekends
+      'weekends': instance.weekends,
     };

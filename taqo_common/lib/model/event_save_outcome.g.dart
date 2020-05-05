@@ -17,5 +17,5 @@ Map<String, dynamic> _$EventSaveOutcomeToJson(EventSaveOutcome instance) =>
     <String, dynamic>{
       'eventId': instance.eventId,
       'status': instance.status,
-      'errorMessage': instance.errorMessage
+      'errorMessage': instance.errorMessage,
     };

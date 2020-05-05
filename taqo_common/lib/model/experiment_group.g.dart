@@ -63,34 +63,46 @@ Map<String, dynamic> _$ExperimentGroupToJson(ExperimentGroup instance) =>
       'feedback': instance.feedback,
       'feedbackType': instance.feedbackType,
       'rawDataAccess': instance.rawDataAccess,
-      'logNotificationEvents': instance.logNotificationEvents
+      'logNotificationEvents': instance.logNotificationEvents,
     };
 
-T _$enumDecode<T>(Map<T, dynamic> enumValues, dynamic source) {
+T _$enumDecode<T>(
+  Map<T, dynamic> enumValues,
+  dynamic source, {
+  T unknownValue,
+}) {
   if (source == null) {
     throw ArgumentError('A value must be provided. Supported values: '
         '${enumValues.values.join(', ')}');
   }
-  return enumValues.entries
-      .singleWhere((e) => e.value == source,
-          orElse: () => throw ArgumentError(
-              '`$source` is not one of the supported values: '
-              '${enumValues.values.join(', ')}'))
-      .key;
+
+  final value = enumValues.entries
+      .singleWhere((e) => e.value == source, orElse: () => null)
+      ?.key;
+
+  if (value == null && unknownValue == null) {
+    throw ArgumentError('`$source` is not one of the supported values: '
+        '${enumValues.values.join(', ')}');
+  }
+  return value ?? unknownValue;
 }
 
-T _$enumDecodeNullable<T>(Map<T, dynamic> enumValues, dynamic source) {
+T _$enumDecodeNullable<T>(
+  Map<T, dynamic> enumValues,
+  dynamic source, {
+  T unknownValue,
+}) {
   if (source == null) {
     return null;
   }
-  return _$enumDecode<T>(enumValues, source);
+  return _$enumDecode<T>(enumValues, source, unknownValue: unknownValue);
 }
 
-const _$GroupTypeEnumEnumMap = <GroupTypeEnum, dynamic>{
+const _$GroupTypeEnumEnumMap = {
   GroupTypeEnum.SYSTEM: 'SYSTEM',
   GroupTypeEnum.SURVEY: 'SURVEY',
   GroupTypeEnum.APPUSAGE_ANDROID: 'APPUSAGE_ANDROID',
   GroupTypeEnum.NOTIFICATION: 'NOTIFICATION',
   GroupTypeEnum.ACCESSIBILITY: 'ACCESSIBILITY',
-  GroupTypeEnum.PHONESTATUS: 'PHONESTATUS'
+  GroupTypeEnum.PHONESTATUS: 'PHONESTATUS',
 };

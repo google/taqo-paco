@@ -70,5 +70,5 @@ Map<String, dynamic> _$ExperimentToJson(Experiment instance) =>
       'ringtoneUri': instance.ringtoneUri,
       'postInstallInstructions': instance.postInstallInstructions,
       'anonymousPublic': instance.anonymousPublic,
-      'visualizations': instance.visualizations
+      'visualizations': instance.visualizations,
     };
