@@ -151,7 +151,14 @@ class TespResponseError extends TespResponse with StringPayload {
   @override
   final code = TespMessage.tespCodeResponseError;
 
-  static const tespErrorUnknown = 'unknown';
+  static const tespServerErrorUnknown = 'server-unknown';
+  static const tespClientErrorResponseTimeout = 'client-response-timeout';
+  static const tespClientErrorServerCloseEarly = 'client-server-close-early';
+  static const tespClientErrorLostConnection = 'client-lost-connection';
+  static const tespClientErrorChunkTimeout = 'client-chunk-timeout';
+  static const tespClientErrorDecoding = 'client-decoding-error';
+  static const tespClientErrorPayloadDecoding = 'client-payload-decoding-error';
+  static const tespClientErrorUnknown = 'client-unknown';
 
   static const _jsonKeyCode = 'code';
   static const _jsonKeyMessage = 'message';
@@ -214,7 +221,15 @@ class TespResponseAnswer extends TespResponse with StringPayload {
 
 /// This type of message should never be encoded or transported. It can be added
 /// to a stream of TespMessage as an event to be processed.
-class TespEventMessageFound implements TespResponse, TespRequest {
+abstract class TespEvent implements TespResponse, TespRequest {
   @override
   final code = null;
 }
+
+/// [TespEventMessageArrived] can be fired when the TESP decoder receives the last
+/// byte of the encoded message, but may not have processed it.
+class TespEventMessageArrived  extends TespEvent {}
+
+/// [TespEventMessageExpected] can be fired when the TESP decoder receives the
+/// header of a message, but the rest of the message may be yet to arrive.
+class TespEventMessageExpected  extends TespEvent {}

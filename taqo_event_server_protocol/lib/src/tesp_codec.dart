@@ -214,6 +214,11 @@ class _TespDecoderSink extends ByteConversionSinkBase {
 
   @override
   void addSlice(List<int> chunk, int start, int end, bool isLast) {
+    // firing an event before the payload get decoded, so that the stream
+    // consumer can know that a message is received as soon as possible
+    if (addingEvent && _headerIndex >= TespCodec.payloadOffset && end - start >= _payloadSize - _payloadIndex) {
+      _outputSink.add(TespEventMessageArrived());
+    }
     for (var i = start; i < end; i++) {
       if (_headerIndex < TespCodec.payloadOffset) {
         // still reading the header (possibly with payload size)
@@ -233,6 +238,17 @@ class _TespDecoderSink extends ByteConversionSinkBase {
           var bdata = ByteData.view(_headerWithPayloadSize.buffer,
               TespCodec.payloadSizeOffset, TespCodec.payloadSizeLength);
           _payloadSize = bdata.getUint32(0, Endian.big);
+
+          // even when not all the data of a message has arrived, we can fire
+          // an event signaling that we start to receive chunks for a new message
+          if (addingEvent) {
+            if (end - i - 1 >= _payloadSize) {
+              _outputSink.add(TespEventMessageArrived());
+            } else {
+              _outputSink.add(TespEventMessageExpected());
+            }
+          }
+
           _encodedPayload = Uint8List(_payloadSize);
           _payloadIndex = 0;
           if (_payloadSize == 0) {
@@ -275,12 +291,6 @@ class _TespDecoderSink extends ByteConversionSinkBase {
 
   void _foundTespMessage() {
     var tespMessage;
-
-    // sending out an event before the payload get decoded, so that the stream
-    // consumer can know that a message is received as soon as possible
-    if (addingEvent && _hasPayload) {
-      _outputSink.add(TespEventMessageFound());
-    }
     try {
       tespMessage =
           TespMessage.fromCode(_code, _hasPayload ? _encodedPayload : null);

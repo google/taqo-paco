@@ -28,8 +28,8 @@ void main() {
       await server.serve();
       port = server.port;
       socket = await Socket.connect('127.0.0.1', port);
-      tespSocket = TespMessageSocket(socket,
-          timeoutMillis: Duration(milliseconds: 500));
+      tespSocket =
+          TespMessageSocket(socket, timeoutMillis: Duration(milliseconds: 500));
     });
 
     tearDown(() async {
@@ -45,12 +45,12 @@ void main() {
     test('ping request', () async {
       tespSocket.add(TespRequestPing());
       await tespSocket.close();
-      await expectLater(tespSocket,
+      await expectLater(tespSocket.stream,
           emitsInOrder([equalsTespMessage(TespResponseSuccess()), emitsDone]));
     });
 
     test('status change', () async {
-      var tespStream = tespSocket.asBroadcastStream(
+      var tespStream = tespSocket.stream.asBroadcastStream(
           onCancel: (subscription) => subscription.pause(),
           onListen: (subscription) => subscription.resume());
 
@@ -104,13 +104,13 @@ void main() {
       });
       await tespSocket.close();
       await expectLater(
-          tespSocket,
+          tespSocket.stream,
           emitsInOrder(responses.map((e) => equalsTespMessage(e)).toList() +
               [emitsDone]));
     });
 
     test('handle large payload', () async {
-      var tespStream = tespSocket.asBroadcastStream(
+      var tespStream = tespSocket.stream.asBroadcastStream(
           onCancel: (subscription) => subscription.pause(),
           onListen: (subscription) => subscription.resume());
       // Constructing large encoded message
@@ -145,7 +145,7 @@ void main() {
       tespSocket.add(TespRequestAddEvent.withPayload('will not be responded'));
       await tespSocket.close();
       await expectLater(
-          tespSocket,
+          tespSocket.stream,
           emitsInOrder([
             equalsTespMessage(
                 TespResponseAnswer.withPayload('${_stringAddEvent}: test')),
@@ -160,7 +160,7 @@ void main() {
       tespSocket.add(TespRequestAddEvent.withPayload('will not be responded'));
       await tespSocket.close();
       await expectLater(
-          tespSocket,
+          tespSocket.stream,
           emitsInOrder([
             equalsTespMessage(
                 TespResponseAnswer.withPayload('${_stringAddEvent}: test')),
@@ -175,7 +175,7 @@ void main() {
       tespSocket.add(TespRequestAddEvent.withPayload('will not be responded'));
       await tespSocket.close();
       await expectLater(
-          tespSocket,
+          tespSocket.stream,
           emitsInOrder([
             equalsTespMessage(
                 TespResponseAnswer.withPayload('${_stringAddEvent}: test')),
@@ -191,7 +191,7 @@ void main() {
       tespSocket.add(TespRequestAddEvent.withPayload('2'));
       await tespSocket.close();
       await expectLater(
-          tespSocket,
+          tespSocket.stream,
           emitsInOrder([
             equalsTespMessage(
                 TespResponseAnswer.withPayload('${_stringAddEvent}: 1')),
@@ -206,7 +206,7 @@ void main() {
       tespSocket.add(TespRequestPause());
       socket.add([0xFF]);
       await expectLater(
-          tespSocket,
+          tespSocket.stream,
           emitsInOrder([
             equalsTespMessage(
                 TespResponseAnswer.withPayload('${_stringPause}')),
@@ -221,7 +221,7 @@ void main() {
       tespSocket.add(TespRequestAddEvent.withPayload('OK'));
       await tespSocket.close();
       await expectLater(
-          tespSocket,
+          tespSocket.stream,
           emitsInOrder([
                 TespResponsePaused(),
                 TespResponseAnswer.withPayload('$_stringResume'),
@@ -241,7 +241,7 @@ void main() {
       tespSocket.add(TespRequestAddEvent.withPayload('OK'));
       await tespSocket.close();
       await expectLater(
-          tespSocket,
+          tespSocket.stream,
           emitsInOrder([
                 TespResponseAnswer.withPayload('${_stringAddEvent}: OK')
               ].map((e) => equalsTespMessage(e)).toList() +
@@ -325,11 +325,11 @@ void main() {
       await tespSocket2.close();
 
       await expectLater(
-          tespSocket1,
+          tespSocket1.stream,
           emitsInOrder(responses1.map((e) => equalsTespMessage(e)).toList() +
               [emitsDone]));
       await expectLater(
-          tespSocket2,
+          tespSocket2.stream,
           emitsInOrder(responses2.map((e) => equalsTespMessage(e)).toList() +
               [emitsDone]));
     });
@@ -339,10 +339,10 @@ void main() {
       var pauseCompleter = Completer();
       var beforeResumeCompleter = Completer();
       var resumeCompleter = Completer();
-      var tespStream1 = tespSocket1.asBroadcastStream(
+      var tespStream1 = tespSocket1.stream.asBroadcastStream(
           onCancel: (subscription) => subscription.pause(),
           onListen: (subscription) => subscription.resume());
-      var tespStream2 = tespSocket2.asBroadcastStream(
+      var tespStream2 = tespSocket2.stream.asBroadcastStream(
           onCancel: (subscription) => subscription.pause(),
           onListen: (subscription) => subscription.resume());
 
@@ -446,7 +446,7 @@ void main() {
       await tespSocket2.close();
 
       await expectLater(
-          tespSocket1,
+          tespSocket1.stream,
           emitsInOrder([
             equalsTespMessage(
                 TespResponseAnswer.withPayload('${_stringAddEvent}: 1')),
@@ -456,10 +456,84 @@ void main() {
             emitsDone
           ]));
       await expectLater(
-          tespSocket2,
+          tespSocket2.stream,
           emitsInOrder(responses2.map((e) => equalsTespMessage(e)).toList() +
               [emitsDone]));
     });
+  });
+
+  group('TespClient', () {
+    int port;
+    TestingEventServer server;
+    TespClient client;
+
+    setUp(() async {
+      server = TestingEventServer();
+      await server.serve();
+      port = server.port;
+      client = TespClient('127.0.0.1', port,
+          chunkTimeoutMillis: Duration(milliseconds: 500));
+      await client.connect();
+    });
+
+    tearDown(() async {
+      await client.close();
+      await server.close();
+      port = null;
+      client = null;
+      server = null;
+    });
+
+    test('send()', () async {
+      var requests = [
+        TespRequestAddEvent.withPayload('1'),
+        TespRequestAddEvent.withPayload('2'),
+        TespRequestWhiteListDataOnly(),
+        TespRequestAddEvent.withPayload('3'),
+        TespRequestPause(),
+        TespRequestAddEvent.withPayload('4'),
+        TespRequestAddEvent.withPayload('5'),
+        TespRequestResume(),
+        TespRequestAddEvent.withPayload('6'),
+        TespRequestAllData(),
+        TespRequestAddEvent.withPayload('7')
+      ];
+      var responses = [
+        TespResponseAnswer.withPayload('${_stringAddEvent}: 1'),
+        TespResponseAnswer.withPayload('${_stringAddEvent}: 2'),
+        TespResponseAnswer.withPayload(_stringWhiteListDataOnly),
+        TespResponseAnswer.withPayload('${_stringAddEvent}: 3'),
+        TespResponseAnswer.withPayload(_stringPause),
+        TespResponsePaused(),
+        TespResponsePaused(),
+        TespResponseAnswer.withPayload(_stringResume),
+        TespResponseAnswer.withPayload('${_stringAddEvent}: 6'),
+        TespResponseAnswer.withPayload(_stringAllData),
+        TespResponseAnswer.withPayload('${_stringAddEvent}: 7'),
+      ];
+      for (var i = 0; i < requests.length; i++) {
+        expect(client.send(requests[i]),
+            completion(equalsTespMessage(responses[i])));
+      }
+      await client.close();
+    });
+
+    //  NOTE: The following test is still failing
+    test('send large payload', () async {
+      // Constructing large encoded message
+      // Target payload size in bytes
+      final targetSize = 256 * 1024 * 1024;
+      final repeatingTimes = targetSize ~/ largePayloadEncoded.length;
+      final realPayloadEncodedSize =
+          largePayloadEncoded.length * repeatingTimes;
+      final realPayload = utf8.decode(largePayloadEncoded) * repeatingTimes;
+      final largeRequest = TespRequestAddEvent.withPayload(realPayload);
+      expect(
+          client.send(largeRequest),
+          completion(equalsTespMessage(TespResponseAnswer.withPayload(
+              '${_stringAddEvent}: $realPayload'))));
+      await client.close();
+    }, timeout: Timeout(Duration(seconds: 120)));
   });
 }
 
@@ -467,8 +541,7 @@ class TestingEventServer with TespRequestHandlerMixin {
   TespServer _tespServer;
 
   TestingEventServer() {
-    _tespServer =
-        TespServer(this, timeoutMillis: Duration(milliseconds: 500));
+    _tespServer = TespServer(this, timeoutMillis: Duration(milliseconds: 500));
   }
 
   int get port => _tespServer.port;
