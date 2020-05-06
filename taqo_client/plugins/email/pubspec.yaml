@@ -11,6 +11,13 @@ dependencies:
   flutter:
     sdk: flutter
 
+  url_launcher: ^5.0.2
+  url_launcher_fde:
+    git:
+      url: git://github.com/google/flutter-desktop-embedding.git
+      ref: master
+      path: plugins/flutter_plugins/url_launcher_fde
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
