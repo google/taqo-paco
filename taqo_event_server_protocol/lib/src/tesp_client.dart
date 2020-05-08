@@ -219,6 +219,12 @@ class TespEventClient extends TespClient {
   Future<TespResponse> palAddEvents(List<Event> events) =>
       send(TespRequestPalAddEvents(events));
 
+  Future<TespResponse> palAddEventsJson(List eventsJson) =>
+      send(TespRequestPalAddEvents.withEventsJson(eventsJson));
+
+  Future<TespResponse> palAddEventJson(eventJson) =>
+      palAddEventsJson([eventJson]);
+
   Future<TespResponse> ping() => send(TespRequestPing());
 }
 
