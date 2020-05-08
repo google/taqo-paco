@@ -69,15 +69,13 @@ class Event {
 
   static List<Map<String, dynamic>> _responsesToListOfMap(
           Map<String, dynamic> responses) =>
-      responses == null
-          ? null
-          : responses.entries
+       responses.entries
               .map((entry) => {'name': entry.key, 'answer': entry.value})
               .toList();
 
   static Map<String, dynamic> _responsesFromListOfMap(List listOfMap) =>
       listOfMap == null
-          ? null
+          ? {}
           : Map.fromIterable(listOfMap,
               key: (item) => item['name'], value: (item) => item['answer']);
 
