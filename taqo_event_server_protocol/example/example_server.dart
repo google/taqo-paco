@@ -21,8 +21,8 @@ class ExampleEventServer with TespRequestHandlerMixin {
   }
 
   @override
-  Future<TespResponse> palAddEvent(Event event) {
-    print('addEvent: $event');
+  Future<TespResponse> palAddEvents(List<Event> events) {
+    print('addEvents: $events');
     return Future.value(TespResponseSuccess());
   }
 

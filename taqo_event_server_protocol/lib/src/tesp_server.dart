@@ -10,7 +10,7 @@ abstract class TespRequestHandler {
 }
 
 mixin TespRequestHandlerMixin implements TespRequestHandler {
-  FutureOr<TespResponse> palAddEvent(Event event);
+  FutureOr<TespResponse> palAddEvents(List<Event> events);
   FutureOr<TespResponse> palPause();
   FutureOr<TespResponse> palResume();
   FutureOr<TespResponse> palWhiteListDataOnly();
@@ -37,8 +37,8 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
   @override
   FutureOr<TespResponse> handle(TespRequest tespRequest) {
     switch (tespRequest.runtimeType) {
-      case TespRequestPalAddEvent:
-        return palAddEvent((tespRequest as TespRequestPalAddEvent).event);
+      case TespRequestPalAddEvents:
+        return palAddEvents((tespRequest as TespRequestPalAddEvents).events);
       case TespRequestPalPause:
         return palPause();
       case TespRequestPalResume:
@@ -56,21 +56,29 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
       case TespRequestAlarmSelectAll:
         return alarmSelectAll();
       case TespRequestAlarmSelectById:
-        return alarmSelectById((tespRequest as TespRequestAlarmSelectById).alarmId);
+        return alarmSelectById(
+            (tespRequest as TespRequestAlarmSelectById).alarmId);
       case TespRequestNotificationCheckActive:
         return notificationCheckActive();
       case TespRequestNotificationCancel:
-        return notificationCancel((tespRequest as TespRequestNotificationCancel).notificationId);
+        return notificationCancel(
+            (tespRequest as TespRequestNotificationCancel).notificationId);
       case TespRequestNotificationCancelByExperiment:
-        return notificationCancelByExperiment((tespRequest as TespRequestNotificationCancelByExperiment).experimentId);
+        return notificationCancelByExperiment(
+            (tespRequest as TespRequestNotificationCancelByExperiment)
+                .experimentId);
       case TespRequestNotificationSelectAll:
         return notificationSelectAll();
       case TespRequestNotificationSelectById:
-        return notificationSelectById((tespRequest as TespRequestNotificationSelectById).notificationId);
+        return notificationSelectById(
+            (tespRequest as TespRequestNotificationSelectById).notificationId);
       case TespRequestNotificationSelectByExperiment:
-        return notificationSelectByExperiment((tespRequest as TespRequestNotificationSelectByExperiment).experimentId);
+        return notificationSelectByExperiment(
+            (tespRequest as TespRequestNotificationSelectByExperiment)
+                .experimentId);
       case TespRequestCreateMissedEvent:
-        return createMissedEvent((tespRequest as TespRequestCreateMissedEvent).event);
+        return createMissedEvent(
+            (tespRequest as TespRequestCreateMissedEvent).event);
       default:
         return TespResponseInvalidRequest.withPayload(
             'Unsupported TespRequest type');

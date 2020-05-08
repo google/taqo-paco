@@ -9,7 +9,7 @@ abstract class TespMessage {
   /// unsigned integer (0x00-0xFF).
   int get code;
 
-  static const tespCodeRequestPalAddEvent = 0x01;
+  static const tespCodeRequestPalAddEvents = 0x01;
   static const tespCodeRequestPalPause = 0x02;
   static const tespCodeRequestPalResume = 0x04;
   static const tespCodeRequestPalWhiteListDataOnly = 0x06;
@@ -42,8 +42,8 @@ abstract class TespMessage {
   /// message [code].
   factory TespMessage.fromCode(int code, [Uint8List encodedPayload]) {
     switch (code) {
-      case tespCodeRequestPalAddEvent:
-        return TespRequestPalAddEvent.withEncodedPayload(encodedPayload);
+      case tespCodeRequestPalAddEvents:
+        return TespRequestPalAddEvents.withEncodedPayload(encodedPayload);
       case tespCodeRequestPalPause:
         return TespRequestPalPause();
       case tespCodeRequestPalResume:
@@ -100,14 +100,9 @@ abstract class TespRequest extends TespMessage {}
 abstract class TespResponse extends TespMessage {}
 
 mixin Payload<T> on TespMessage {
-  static S identity<S>(S x) => x;
-  static final jsonFactories = <Type, Function>{
-    Object: identity,
-    String: identity,
-    int: identity,
-    Event: (json) => Event.fromJson(json),
-  };
   final _codec = (T == String ? utf8 : json.fuse(utf8));
+
+  T createObjectFromJson(jsonObject) => jsonObject;
 
   Uint8List _encodedPayload;
   T _payload;
@@ -134,24 +129,39 @@ mixin Payload<T> on TespMessage {
     if (encodedPayload == null) {
       throw ArgumentError('encodedPayload must not be null for $runtimeType');
     }
-    setPayload(jsonFactories[T](_codec.decode(encodedPayload)));
+    setPayload(createObjectFromJson(_codec.decode(encodedPayload)));
     _encodedPayload = encodedPayload;
   }
 }
 
-class TespRequestPalAddEvent extends TespRequest with Payload<Event> {
+mixin EventsDeserializer on Payload<List<Event>> {
   @override
-  final code = TespMessage.tespCodeRequestPalAddEvent;
-
-  Event get event => payload;
-
-  TespRequestPalAddEvent(Event event) {
-    setPayload(event);
+  List<Event> createObjectFromJson(jsonObject) {
+    return (jsonObject as List).map((e) => Event.fromJson(e)).toList();
   }
-  TespRequestPalAddEvent.withEventJson(json) {
-    setPayload(Event.fromJson(json));
+}
+
+mixin EventDeserializer on Payload<Event> {
+  @override
+  Event createObjectFromJson(jsonObject) {
+    return Event.fromJson(jsonObject);
   }
-  TespRequestPalAddEvent.withEncodedPayload(Uint8List encodedPayload) {
+}
+
+class TespRequestPalAddEvents extends TespRequest
+    with Payload<List<Event>>, EventsDeserializer {
+  @override
+  final code = TespMessage.tespCodeRequestPalAddEvents;
+
+  List<Event> get events => payload;
+
+  TespRequestPalAddEvents(List<Event> events) {
+    setPayload(events);
+  }
+  TespRequestPalAddEvents.withEventJson(json) {
+    setPayload(createObjectFromJson(json));
+  }
+  TespRequestPalAddEvents.withEncodedPayload(Uint8List encodedPayload) {
     setPayloadWithEncoded(encodedPayload);
   }
 }
@@ -296,7 +306,8 @@ class TespRequestNotificationSelectByExperiment extends TespRequest
   }
 }
 
-class TespRequestCreateMissedEvent extends TespRequest with Payload<Event> {
+class TespRequestCreateMissedEvent extends TespRequest
+    with Payload<Event>, EventDeserializer {
   @override
   final code = TespMessage.tespCodeRequestCreateMissedEvent;
 

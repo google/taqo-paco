@@ -49,18 +49,25 @@ void main() {
   group('TespCodec', () {
     final payload =
         '{"a": "b", "c": 1, "d": [1, 2, 3, "e"], "f": "Îñţérñåţîöñåļîžåţîờñ" }';
-    final event = Event()
+    final event1 = Event()
       ..responses = json.decode(payload)
       ..experimentName = 'TestExperiment'
       ..experimentServerId = 12345
       ..responseTime =
           ZonedDateTime.fromIso8601String('2020-05-04T16:21:31.415926-0700')
       ..experimentVersion = 1;
-    final msgRequestAddEvent = TespRequestPalAddEvent(event);
+    final event2 = Event()
+      ..responses = json.decode(payload)
+      ..experimentName = 'TestExperiment'
+      ..experimentServerId = 67890
+      ..responseTime =
+          ZonedDateTime.fromIso8601String('2020-05-05T16:21:31.415926-0700')
+      ..experimentVersion = 2;
+    final msgRequestAddEvent = TespRequestPalAddEvents([event1, event2]);
     final msgResponseError = TespResponseError('error', 'message', 'details');
     final msgResponseInvalidRequest =
         TespResponseInvalidRequest.withPayload(''); // Empty payload on purpose
-    final msgResponseAnswer = TespResponseAnswer(event);
+    final msgResponseAnswer = TespResponseAnswer(event1);
 
     final msgRequestPause = TespRequestPalPause();
     final msgRequestResume = TespRequestPalResume();
@@ -84,7 +91,7 @@ void main() {
         TespRequestNotificationSelectById(5);
     final msgRequestNotificationSelectByExperiment =
         TespRequestNotificationSelectByExperiment(6);
-    final msgRequestCreateMissedEvent = TespRequestCreateMissedEvent(event);
+    final msgRequestCreateMissedEvent = TespRequestCreateMissedEvent(event1);
 
     test('encode/decode (non-chunked)', () {
       // Briefly verify that the codec actually converts between [TespMessage] and List<int>.
