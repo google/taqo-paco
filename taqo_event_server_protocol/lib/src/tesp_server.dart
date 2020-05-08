@@ -10,11 +10,25 @@ abstract class TespRequestHandler {
 }
 
 mixin TespRequestHandlerMixin implements TespRequestHandler {
-  FutureOr<TespResponse> addEvent(Event event);
-  FutureOr<TespResponse> pause();
-  FutureOr<TespResponse> resume();
-  FutureOr<TespResponse> whiteListDataOnly();
-  FutureOr<TespResponse> allData();
+  FutureOr<TespResponse> palAddEvent(Event event);
+  FutureOr<TespResponse> palPause();
+  FutureOr<TespResponse> palResume();
+  FutureOr<TespResponse> palWhiteListDataOnly();
+  FutureOr<TespResponse> palAllData();
+
+  FutureOr<TespResponse> alarmSchedule();
+  FutureOr<TespResponse> alarmCancel(int alarmId);
+  FutureOr<TespResponse> alarmSelectAll();
+  FutureOr<TespResponse> alarmSelectById(int alarmId);
+
+  FutureOr<TespResponse> notificationCheckActive();
+  FutureOr<TespResponse> notificationCancel(int notificationId);
+  FutureOr<TespResponse> notificationCancelByExperiment(int experimentId);
+  FutureOr<TespResponse> notificationSelectAll();
+  FutureOr<TespResponse> notificationSelectById(int notificationId);
+  FutureOr<TespResponse> notificationSelectByExperiment(int experimentId);
+
+  FutureOr<TespResponse> createMissedEvent(Event event);
 
   TespResponse ping() {
     return TespResponseSuccess();
@@ -23,18 +37,40 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
   @override
   FutureOr<TespResponse> handle(TespRequest tespRequest) {
     switch (tespRequest.runtimeType) {
-      case TespRequestAddEvent:
-        return addEvent((tespRequest as TespRequestAddEvent).payload);
-      case TespRequestPause:
-        return pause();
-      case TespRequestResume:
-        return resume();
-      case TespRequestWhiteListDataOnly:
-        return whiteListDataOnly();
-      case TespRequestAllData:
-        return allData();
+      case TespRequestPalAddEvent:
+        return palAddEvent((tespRequest as TespRequestPalAddEvent).event);
+      case TespRequestPalPause:
+        return palPause();
+      case TespRequestPalResume:
+        return palResume();
+      case TespRequestPalWhiteListDataOnly:
+        return palWhiteListDataOnly();
+      case TespRequestPalAllData:
+        return palAllData();
       case TespRequestPing:
         return ping();
+      case TespRequestAlarmSchedule:
+        return alarmSchedule();
+      case TespRequestAlarmCancel:
+        return alarmCancel((tespRequest as TespRequestAlarmCancel).alarmId);
+      case TespRequestAlarmSelectAll:
+        return alarmSelectAll();
+      case TespRequestAlarmSelectById:
+        return alarmSelectById((tespRequest as TespRequestAlarmSelectById).alarmId);
+      case TespRequestNotificationCheckActive:
+        return notificationCheckActive();
+      case TespRequestNotificationCancel:
+        return notificationCancel((tespRequest as TespRequestNotificationCancel).notificationId);
+      case TespRequestNotificationCancelByExperiment:
+        return notificationCancelByExperiment((tespRequest as TespRequestNotificationCancelByExperiment).experimentId);
+      case TespRequestNotificationSelectAll:
+        return notificationSelectAll();
+      case TespRequestNotificationSelectById:
+        return notificationSelectById((tespRequest as TespRequestNotificationSelectById).notificationId);
+      case TespRequestNotificationSelectByExperiment:
+        return notificationSelectByExperiment((tespRequest as TespRequestNotificationSelectByExperiment).experimentId);
+      case TespRequestCreateMissedEvent:
+        return createMissedEvent((tespRequest as TespRequestCreateMissedEvent).event);
       default:
         return TespResponseInvalidRequest.withPayload(
             'Unsupported TespRequest type');

@@ -2,18 +2,34 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_event_server_protocol/src/json_utils.dart';
 
 abstract class TespMessage {
   /// The response/request code for the message, which must fit in an 8-bit
   /// unsigned integer (0x00-0xFF).
   int get code;
 
-  static const tespCodeRequestAddEvent = 0x01;
-  static const tespCodeRequestPause = 0x02;
-  static const tespCodeRequestResume = 0x04;
-  static const tespCodeRequestWhiteListDataOnly = 0x06;
-  static const tespCodeRequestAllData = 0x08;
+  static const tespCodeRequestPalAddEvent = 0x01;
+  static const tespCodeRequestPalPause = 0x02;
+  static const tespCodeRequestPalResume = 0x04;
+  static const tespCodeRequestPalWhiteListDataOnly = 0x06;
+  static const tespCodeRequestPalAllData = 0x08;
   static const tespCodeRequestPing = 0x0A;
+
+  static const tespCodeRequestAlarmSchedule = 0x10;
+  static const tespCodeRequestAlarmCancel = 0x11;
+  static const tespCodeRequestAlarmSelectAll = 0x12;
+  static const tespCodeRequestAlarmSelectById = 0x13;
+
+  static const tespCodeRequestNotificationCheckActive = 0x20;
+  static const tespCodeRequestNotificationCancel = 0x21;
+  static const tespCodeRequestNotificationCancelByExperiment = 0x23;
+  static const tespCodeRequestNotificationSelectAll = 0x24;
+  static const tespCodeRequestNotificationSelectById = 0x25;
+  static const tespCodeRequestNotificationSelectByExperiment = 0x27;
+
+  static const tespCodeRequestCreateMissedEvent = 0x31;
+
   static const tespCodeResponseSuccess = 0x80;
   static const tespCodeResponseError = 0x81;
   static const tespCodeResponsePaused = 0x82;
@@ -26,18 +42,43 @@ abstract class TespMessage {
   /// message [code].
   factory TespMessage.fromCode(int code, [Uint8List encodedPayload]) {
     switch (code) {
-      case tespCodeRequestAddEvent:
-        return TespRequestAddEvent.withEncodedPayload(encodedPayload);
-      case tespCodeRequestPause:
-        return TespRequestPause();
-      case tespCodeRequestResume:
-        return TespRequestResume();
-      case tespCodeRequestWhiteListDataOnly:
-        return TespRequestWhiteListDataOnly();
-      case tespCodeRequestAllData:
-        return TespRequestAllData();
+      case tespCodeRequestPalAddEvent:
+        return TespRequestPalAddEvent.withEncodedPayload(encodedPayload);
+      case tespCodeRequestPalPause:
+        return TespRequestPalPause();
+      case tespCodeRequestPalResume:
+        return TespRequestPalResume();
+      case tespCodeRequestPalWhiteListDataOnly:
+        return TespRequestPalWhiteListDataOnly();
+      case tespCodeRequestPalAllData:
+        return TespRequestPalAllData();
       case tespCodeRequestPing:
         return TespRequestPing();
+      case tespCodeRequestAlarmSchedule:
+        return TespRequestAlarmSchedule();
+      case tespCodeRequestAlarmCancel:
+        return TespRequestAlarmCancel.withEncodedPayload(encodedPayload);
+      case tespCodeRequestAlarmSelectAll:
+        return TespRequestAlarmSelectAll();
+      case tespCodeRequestAlarmSelectById:
+        return TespRequestAlarmSelectById.withEncodedPayload(encodedPayload);
+      case tespCodeRequestNotificationCheckActive:
+        return TespRequestNotificationCheckActive();
+      case tespCodeRequestNotificationCancel:
+        return TespRequestNotificationCancel.withEncodedPayload(encodedPayload);
+      case tespCodeRequestNotificationCancelByExperiment:
+        return TespRequestNotificationCancelByExperiment.withEncodedPayload(
+            encodedPayload);
+      case tespCodeRequestNotificationSelectAll:
+        return TespRequestNotificationSelectAll();
+      case tespCodeRequestNotificationSelectById:
+        return TespRequestNotificationSelectById.withEncodedPayload(
+            encodedPayload);
+      case tespCodeRequestNotificationSelectByExperiment:
+        return TespRequestNotificationSelectByExperiment.withEncodedPayload(
+            encodedPayload);
+      case tespCodeRequestCreateMissedEvent:
+        return TespRequestCreateMissedEvent.withEncodedPayload(encodedPayload);
       case tespCodeResponseSuccess:
         return TespResponseSuccess();
       case tespCodeResponseError:
@@ -61,8 +102,10 @@ abstract class TespResponse extends TespMessage {}
 mixin Payload<T> on TespMessage {
   static S identity<S>(S x) => x;
   static final jsonFactories = <Type, Function>{
+    Object: identity,
     String: identity,
-    Event: (json) => Event.fromJson(json)
+    int: identity,
+    Event: (json) => Event.fromJson(json),
   };
   final _codec = (T == String ? utf8 : json.fuse(utf8));
 
@@ -96,44 +139,178 @@ mixin Payload<T> on TespMessage {
   }
 }
 
-class TespRequestAddEvent extends TespRequest with Payload<Event> {
+class TespRequestPalAddEvent extends TespRequest with Payload<Event> {
   @override
-  final code = TespMessage.tespCodeRequestAddEvent;
+  final code = TespMessage.tespCodeRequestPalAddEvent;
 
-  TespRequestAddEvent(Event event) {
+  Event get event => payload;
+
+  TespRequestPalAddEvent(Event event) {
     setPayload(event);
   }
-  TespRequestAddEvent.withEventJson(json) {
+  TespRequestPalAddEvent.withEventJson(json) {
     setPayload(Event.fromJson(json));
   }
-  TespRequestAddEvent.withEncodedPayload(Uint8List encodedPayload) {
+  TespRequestPalAddEvent.withEncodedPayload(Uint8List encodedPayload) {
     setPayloadWithEncoded(encodedPayload);
   }
 }
 
-class TespRequestPause extends TespRequest {
+class TespRequestPalPause extends TespRequest {
   @override
-  final code = TespMessage.tespCodeRequestPause;
+  final code = TespMessage.tespCodeRequestPalPause;
 }
 
-class TespRequestResume extends TespRequest {
+class TespRequestPalResume extends TespRequest {
   @override
-  final code = TespMessage.tespCodeRequestResume;
+  final code = TespMessage.tespCodeRequestPalResume;
 }
 
-class TespRequestWhiteListDataOnly extends TespRequest {
+class TespRequestPalWhiteListDataOnly extends TespRequest {
   @override
-  final code = TespMessage.tespCodeRequestWhiteListDataOnly;
+  final code = TespMessage.tespCodeRequestPalWhiteListDataOnly;
 }
 
-class TespRequestAllData extends TespRequest {
+class TespRequestPalAllData extends TespRequest {
   @override
-  final code = TespMessage.tespCodeRequestAllData;
+  final code = TespMessage.tespCodeRequestPalAllData;
 }
 
 class TespRequestPing extends TespRequest {
   @override
   final code = TespMessage.tespCodeRequestPing;
+}
+
+class TespRequestAlarmSchedule extends TespRequest {
+  @override
+  final code = TespMessage.tespCodeRequestAlarmSchedule;
+}
+
+class TespRequestAlarmCancel extends TespRequest with Payload<int> {
+  @override
+  final code = TespMessage.tespCodeRequestAlarmCancel;
+
+  int get alarmId => payload;
+
+  TespRequestAlarmCancel(int alarmId) {
+    setPayload(alarmId);
+  }
+
+  TespRequestAlarmCancel.withEncodedPayload(Uint8List encodedPayload) {
+    setPayloadWithEncoded(encodedPayload);
+  }
+}
+
+class TespRequestAlarmSelectAll extends TespRequest {
+  @override
+  final code = TespMessage.tespCodeRequestAlarmSelectAll;
+}
+
+class TespRequestAlarmSelectById extends TespRequest with Payload<int> {
+  @override
+  final code = TespMessage.tespCodeRequestAlarmSelectById;
+
+  int get alarmId => payload;
+
+  TespRequestAlarmSelectById(int alarmId) {
+    setPayload(alarmId);
+  }
+
+  TespRequestAlarmSelectById.withEncodedPayload(Uint8List encodedPayload) {
+    setPayloadWithEncoded(encodedPayload);
+  }
+}
+
+class TespRequestNotificationCheckActive extends TespRequest {
+  @override
+  final code = TespMessage.tespCodeRequestNotificationCheckActive;
+}
+
+class TespRequestNotificationCancel extends TespRequest with Payload<int> {
+  @override
+  final code = TespMessage.tespCodeRequestNotificationCancel;
+
+  int get notificationId => payload;
+
+  TespRequestNotificationCancel(int notificationId) {
+    setPayload(notificationId);
+  }
+
+  TespRequestNotificationCancel.withEncodedPayload(Uint8List encodedPayload) {
+    setPayloadWithEncoded(encodedPayload);
+  }
+}
+
+class TespRequestNotificationCancelByExperiment extends TespRequest
+    with Payload<int> {
+  @override
+  final code = TespMessage.tespCodeRequestNotificationCancelByExperiment;
+
+  int get experimentId => payload;
+
+  TespRequestNotificationCancelByExperiment(int experimentId) {
+    setPayload(experimentId);
+  }
+
+  TespRequestNotificationCancelByExperiment.withEncodedPayload(
+      Uint8List encodedPayload) {
+    setPayloadWithEncoded(encodedPayload);
+  }
+}
+
+class TespRequestNotificationSelectAll extends TespRequest {
+  @override
+  final code = TespMessage.tespCodeRequestNotificationSelectAll;
+}
+
+class TespRequestNotificationSelectById extends TespRequest with Payload<int> {
+  @override
+  final code = TespMessage.tespCodeRequestNotificationSelectById;
+
+  int get notificationId => payload;
+
+  TespRequestNotificationSelectById(int notificationId) {
+    setPayload(notificationId);
+  }
+
+  TespRequestNotificationSelectById.withEncodedPayload(
+      Uint8List encodedPayload) {
+    setPayloadWithEncoded(encodedPayload);
+  }
+}
+
+class TespRequestNotificationSelectByExperiment extends TespRequest
+    with Payload<int> {
+  @override
+  final code = TespMessage.tespCodeRequestNotificationSelectByExperiment;
+
+  int get experimentId => payload;
+
+  TespRequestNotificationSelectByExperiment(int experimentId) {
+    setPayload(experimentId);
+  }
+
+  TespRequestNotificationSelectByExperiment.withEncodedPayload(
+      Uint8List encodedPayload) {
+    setPayloadWithEncoded(encodedPayload);
+  }
+}
+
+class TespRequestCreateMissedEvent extends TespRequest with Payload<Event> {
+  @override
+  final code = TespMessage.tespCodeRequestCreateMissedEvent;
+
+  Event get event => payload;
+
+  TespRequestCreateMissedEvent(Event event) {
+    setPayload(event);
+  }
+  TespRequestCreateMissedEvent.withEventJson(json) {
+    setPayload(Event.fromJson(json));
+  }
+  TespRequestCreateMissedEvent.withEncodedPayload(Uint8List encodedPayload) {
+    setPayloadWithEncoded(encodedPayload);
+  }
 }
 
 class TespResponseSuccess extends TespResponse {
@@ -201,13 +378,16 @@ class TespResponseInvalidRequest extends TespResponse with Payload<String> {
   }
 }
 
-class TespResponseAnswer extends TespResponse with Payload<String> {
+class TespResponseAnswer extends TespResponse with Payload<Object> {
   @override
   final code = TespMessage.tespCodeResponseAnswer;
 
-  TespResponseAnswer.withPayload(String payload) {
-    setPayload(payload);
+  TespResponseAnswer(dynamic object) : this.withJson(toJsonObject(object));
+
+  TespResponseAnswer.withJson(Object json) {
+    setPayload(json);
   }
+
   TespResponseAnswer.withEncodedPayload(Uint8List encodedPayload) {
     setPayloadWithEncoded(encodedPayload);
   }
