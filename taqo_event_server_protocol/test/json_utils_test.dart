@@ -60,7 +60,7 @@ void main() {
           }));
     });
 
-    test('unsupportted objects', () {
+    test('unsupported objects', () {
       expect(() => toJsonObject({1: 1}),
           throwsA(isA<JsonUnsupportedObjectError>()));
       expect(() => toJsonObject(String),
