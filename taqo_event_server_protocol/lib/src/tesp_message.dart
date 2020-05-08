@@ -158,7 +158,7 @@ class TespRequestPalAddEvents extends TespRequest
   TespRequestPalAddEvents(List<Event> events) {
     setPayload(events);
   }
-  TespRequestPalAddEvents.withEventJson(json) {
+  TespRequestPalAddEvents.withEventsJson(json) {
     setPayload(createObjectFromJson(json));
   }
   TespRequestPalAddEvents.withEncodedPayload(Uint8List encodedPayload) {
