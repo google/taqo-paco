@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:taqo_client/storage/base_database.dart';
 import 'package:taqo_common/model/action_specification.dart';
@@ -35,55 +36,85 @@ class RemoteDatabase extends BaseDatabase {
   Future _initialize() async {}
 
   @override
-  Future<void> insertEvent(Event event) async {
+  Future<void> insertEvent(Event event) {
   }
 
   @override
-  Future<int> insertNotification(NotificationHolder notificationHolder) async {
+  Future<int> insertNotification(NotificationHolder notificationHolder) {
   }
 
   @override
-  Future<NotificationHolder> getNotification(int id) async {
+  Future<NotificationHolder> getNotification(int id) {
+    return global.tespClient.then((tespClient) async {
+      final TespResponseAnswer response =
+          await tespClient.notificationSelectById(id);
+      return NotificationHolder.fromJson(response.payload);
+    });
   }
 
   @override
-  Future<List<NotificationHolder>> getAllNotifications() async {
+  Future<List<NotificationHolder>> getAllNotifications() {
+    return global.tespClient.then((tespClient) async {
+      final TespResponseAnswer response =
+          await tespClient.notificationSelectAll();
+      final List list = jsonDecode(response.payload);
+      return list.map((n) => NotificationHolder.fromJson(n)).toList();
+    });
   }
 
   @override
   Future<List<NotificationHolder>> getAllNotificationsForExperiment(
-      Experiment experiment) async {
+      Experiment experiment) {
+    return global.tespClient.then((tespClient) async {
+      final TespResponseAnswer response =
+          await tespClient.notificationSelectByExperiment(experiment.id);
+      final List list = jsonDecode(response.payload);
+      return list.map((n) => NotificationHolder.fromJson(n)).toList();
+    });
   }
 
   @override
-  Future<void> removeNotification(int id) async {
+  Future<void> removeNotification(int id) {
   }
 
   @override
-  Future<void> removeAllNotifications() async {
+  Future<void> removeAllNotifications() {
   }
 
   @override
-  Future<int> insertAlarm(ActionSpecification actionSpecification) async {
+  Future<int> insertAlarm(ActionSpecification actionSpecification) {
   }
 
   @override
-  Future<ActionSpecification> getAlarm(int id) async {
+  Future<ActionSpecification> getAlarm(int id) {
+    return global.tespClient.then((tespClient) async {
+      final TespResponseAnswer response =
+          await tespClient.alarmSelectById(id);
+      return ActionSpecification.fromJson(response.payload);
+    });
   }
 
   @override
-  Future<Map<int, ActionSpecification>> getAllAlarms() async {
+  Future<Map<int, ActionSpecification>> getAllAlarms() {
+    return global.tespClient.then((tespClient) async {
+      final TespResponseAnswer response =
+          await tespClient.alarmSelectAll();
+      final Map map = jsonDecode(response.payload);
+      return Map.fromIterable(map.entries,
+          key: (entry) => entry.key,
+          value: (entry) => ActionSpecification.fromJson(entry.value));
+    });
   }
 
   @override
-  Future<void> removeAlarm(int id) async {
+  Future<void> removeAlarm(int id) {
   }
 
   @override
-  Future<Iterable<Event>> getUnuploadedEvents() async {
+  Future<Iterable<Event>> getUnuploadedEvents() {
   }
 
   @override
-  Future<void> markEventsAsUploaded(Iterable<Event> events) async {
+  Future<void> markEventsAsUploaded(Iterable<Event> events) {
   }
 }

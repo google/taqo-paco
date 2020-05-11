@@ -9,11 +9,11 @@ import '../storage/base_database.dart';
 import '../storage/local_database.dart';
 import '../storage/remote_database.dart';
 
-TespClient _tespClient;
-Completer<TespClient> _completer;
+TespFullClient _tespClient;
+Completer<TespFullClient> _completer;
 
-/// Returns a global [TespClient] to use for RPC
-Future<TespClient> get tespClient async {
+/// Returns a global [TespFullClient] to use for RPC
+Future<TespFullClient> get tespClient async {
   if (_completer != null && !_completer.isCompleted) {
     return _completer.future;
   }
@@ -29,7 +29,7 @@ Future<TespClient> get tespClient async {
 
 Future _tespInit() async {
   final completer = Completer();
-  _tespClient = TespClient(localServerHost, localServerPort);
+  _tespClient = TespFullClient(localServerHost, localServerPort);
   _tespClient.connect().then((_) {
     completer.complete();
   }).catchError((e) {

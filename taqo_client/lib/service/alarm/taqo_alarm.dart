@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
-import 'package:taqo_common/rpc/rpc_constants.dart';
 import 'package:taqo_common/util/date_time_util.dart';
 
 import '../../main.dart';
@@ -44,7 +43,9 @@ Future schedule({bool cancelAndReschedule=true}) async {
     ios_notification_scheduler.schedule();
   } else if (Platform.isLinux) {
     try {
-      _peer.sendNotification(scheduleAlarmMethod);
+      platform_service.tespClient.then((tespClient) {
+        tespClient.alarmSchedule();
+      });
     } catch (e) {
       print(e);
     }
@@ -59,7 +60,9 @@ Future cancel(int id) async {
     await schedule(cancelAndReschedule: false);
   } else if (Platform.isLinux) {
     try {
-      _peer.sendNotification(cancelNotificationMethod, {'id': id,});
+      platform_service.tespClient.then((tespClient) {
+        tespClient.alarmCancel(id);
+      });
     } catch (e) {
       print(e);
     }
@@ -74,7 +77,9 @@ Future cancelForExperiment(Experiment experiment) async {
     await schedule(cancelAndReschedule: false);
   } else if (Platform.isLinux) {
     try {
-      _peer.sendNotification(cancelExperimentNotificationMethod, {'id': experiment.id,});
+      platform_service.tespClient.then((tespClient) {
+        tespClient.notificationCancelByExperiment(experiment.id);
+      });
     } catch (e) {
       print(e);
     }
