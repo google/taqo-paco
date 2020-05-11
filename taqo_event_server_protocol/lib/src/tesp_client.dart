@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'dart:io';
 
 import 'package:pedantic/pedantic.dart';
+import 'package:taqo_common/model/event.dart';
 import 'package:taqo_event_server_protocol/src/tesp_codec.dart';
 
 import 'tesp_message.dart';
@@ -17,6 +18,18 @@ class TespClient {
 
   /// Timeout for connection to the server
   final Duration connectionTimeoutMillis;
+
+  // Maximum allowed time between
+  // (1) sending of one request is finished or previous request get responded, whichever happens later,
+  // and
+  // (2) a response is being received
+  // is (time used for sending the message) * [_responseTimeoutFactor] + [_responseTimeoutLatency]
+  // where the coefficients are estimated from some experiments and are enlarged
+  // to make the timeout more permissive.
+  // The reason for this linear relation is that we expect the time needed by the
+  // server to process a request grows linearly with the size of the request.
+  static const _responseTimeoutFactor = 20;
+  static const _responseTimeoutLatency = Duration(seconds: 2);
 
   Socket _socket;
   TespMessageSocket<TespResponse, TespRequest> _tespSocket;
@@ -59,10 +72,10 @@ class TespClient {
       _tespSocket.add(tespRequestWrapper.tespRequest);
       _socket.flush().then((_) {
         stopwatch.stop();
-        // The following formula for response timeout is estimated from some
-        // experiments. The coefficients are enlarged to make it more permissive.
         tespRequestWrapper.timeoutCompleter.timeout =
-            stopwatch.elapsed * 20 + Duration(seconds: 2);
+            stopwatch.elapsed * _responseTimeoutFactor +
+                _responseTimeoutLatency;
+
         // The timer is started when current sending is finished or previous
         // request get responded (including the case of being the first request),
         // whichever happens later.
@@ -193,4 +206,73 @@ class TespRequestWrapper {
   final TimeoutCompleter<TespResponse> timeoutCompleter;
 
   TespRequestWrapper(this.tespRequest, this.timeoutCompleter);
+}
+
+class TespEventClient extends TespClient {
+  TespEventClient(serverAddress, int port,
+      {chunkTimeoutMillis = const Duration(milliseconds: 500),
+      connectionTimeoutMillis = const Duration(milliseconds: 5000)})
+      : super(serverAddress, port,
+            chunkTimeoutMillis: chunkTimeoutMillis,
+            connectionTimeoutMillis: connectionTimeoutMillis);
+
+  Future<TespResponse> palAddEvents(List<Event> events) =>
+      send(TespRequestPalAddEvents(events));
+
+  Future<TespResponse> palAddEventsJson(List eventsJson) =>
+      send(TespRequestPalAddEvents.withEventsJson(eventsJson));
+
+  Future<TespResponse> palAddEventJson(eventJson) =>
+      palAddEventsJson([eventJson]);
+
+  Future<TespResponse> ping() => send(TespRequestPing());
+}
+
+class TespFullClient extends TespEventClient {
+  TespFullClient(serverAddress, int port,
+      {chunkTimeoutMillis = const Duration(milliseconds: 500),
+      connectionTimeoutMillis = const Duration(milliseconds: 5000)})
+      : super(serverAddress, port,
+            chunkTimeoutMillis: chunkTimeoutMillis,
+            connectionTimeoutMillis: connectionTimeoutMillis);
+
+  Future<TespResponse> palPause() => send(TespRequestPalPause());
+
+  Future<TespResponse> palResume() => send(TespRequestPalResume());
+
+  Future<TespResponse> palWhiteListDataOnly() =>
+      send(TespRequestPalWhiteListDataOnly());
+
+  Future<TespResponse> palAllData() => send(TespRequestPalAllData());
+
+  Future<TespResponse> alarmSchedule() => send(TespRequestAlarmSchedule());
+
+  Future<TespResponse> alarmCancel(int alarmId) =>
+      send(TespRequestAlarmCancel(alarmId));
+
+  Future<TespResponse> alarmSelectAll() => send(TespRequestAlarmSelectAll());
+
+  Future<TespResponse> alarmSelectById(int alarmId) =>
+      send(TespRequestAlarmSelectById(alarmId));
+
+  Future<TespResponse> notificationCheckActive() =>
+      send(TespRequestNotificationCheckActive());
+
+  Future<TespResponse> notificationCancel(int notificationId) =>
+      send(TespRequestNotificationCancel(notificationId));
+
+  Future<TespResponse> notificationCancelByExperiment(int experimentId) =>
+      send(TespRequestNotificationCancelByExperiment(experimentId));
+
+  Future<TespResponse> notificationSelectAll() =>
+      send(TespRequestNotificationSelectAll());
+
+  Future<TespResponse> notificationSelectById(int notificationId) =>
+      send(TespRequestNotificationSelectById(notificationId));
+
+  Future<TespResponse> notificationSelectByExperiment(int experimentId) =>
+      send(TespRequestNotificationSelectByExperiment(experimentId));
+
+  Future<TespResponse> createMissedEvent(Event event) =>
+      send(TespRequestCreateMissedEvent(event));
 }

@@ -8,17 +8,18 @@ part of 'input2.dart';
 
 Input2 _$Input2FromJson(Map<String, dynamic> json) {
   return Input2(
-      json['name'] as String,
-      json['responseType'] as String,
-      json['text'] as String,
-      json['required'] as bool,
-      json['likertSteps'] as int,
-      json['conditional'] as bool,
-      json['conditionExpression'] as String,
-      json['leftSideLabel'] as String,
-      json['rightSideLabel'] as String,
-      (json['listChoices'] as List)?.map((e) => e as String)?.toList(),
-      json['multiselect'] as bool);
+    json['name'] as String,
+    json['responseType'] as String,
+    json['text'] as String,
+    json['required'] as bool,
+    json['likertSteps'] as int,
+    json['conditional'] as bool,
+    json['conditionExpression'] as String,
+    json['leftSideLabel'] as String,
+    json['rightSideLabel'] as String,
+    (json['listChoices'] as List)?.map((e) => e as String)?.toList(),
+    json['multiselect'] as bool,
+  );
 }
 
 Map<String, dynamic> _$Input2ToJson(Input2 instance) => <String, dynamic>{
@@ -32,5 +33,5 @@ Map<String, dynamic> _$Input2ToJson(Input2 instance) => <String, dynamic>{
       'leftSideLabel': instance.leftSideLabel,
       'rightSideLabel': instance.rightSideLabel,
       'listChoices': instance.listChoices,
-      'multiselect': instance.multiselect
+      'multiselect': instance.multiselect,
     };

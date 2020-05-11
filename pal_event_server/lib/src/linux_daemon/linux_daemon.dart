@@ -24,8 +24,8 @@ void openSurvey(int id) {
     // Else launch the app and it will automatically open the survey
     // Note: this will only work if Taqo is in the user's PATH
     // For debugging/testing, maybe create a symlink in /usr/local/bin pointing to
-    // build/linux/debug/taqo_survey
-    Process.run('taqo_survey', []);
+    // build/linux/debug/taqo_client
+    Process.run('taqo_client', []);
   }
 }
 

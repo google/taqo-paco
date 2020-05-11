@@ -41,5 +41,5 @@ Map<String, dynamic> _$ExperimentCoreToJson(ExperimentCore instance) =>
       'recordPhoneDetails': instance.recordPhoneDetails,
       'extraDataCollectionDeclarations':
           instance.extraDataCollectionDeclarations,
-      'deleted': instance.deleted
+      'deleted': instance.deleted,
     };

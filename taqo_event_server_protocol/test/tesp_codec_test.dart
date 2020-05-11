@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/util/zoned_date_time.dart';
 import 'package:taqo_event_server_protocol/src/tesp_codec.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 import 'package:test/test.dart';
@@ -46,23 +49,50 @@ void main() {
   group('TespCodec', () {
     final payload =
         '{"a": "b", "c": 1, "d": [1, 2, 3, "e"], "f": "Îñţérñåţîöñåļîžåţîờñ" }';
-    final msgRequestAddEvent = TespRequestAddEvent.withPayload(payload);
+    final event1 = Event()
+      ..responses = json.decode(payload)
+      ..experimentName = 'TestExperiment'
+      ..experimentServerId = 12345
+      ..responseTime =
+          ZonedDateTime.fromIso8601String('2020-05-04T16:21:31.415926-0700')
+      ..experimentVersion = 1;
+    final event2 = Event()
+      ..responses = json.decode(payload)
+      ..experimentName = 'TestExperiment'
+      ..experimentServerId = 67890
+      ..responseTime =
+          ZonedDateTime.fromIso8601String('2020-05-05T16:21:31.415926-0700')
+      ..experimentVersion = 2;
+    final msgRequestAddEvent = TespRequestPalAddEvents([event1, event2]);
     final msgResponseError = TespResponseError('error', 'message', 'details');
     final msgResponseInvalidRequest =
         TespResponseInvalidRequest.withPayload(''); // Empty payload on purpose
-    final msgResponseAnswer = TespResponseAnswer.withPayload(payload);
+    final msgResponseAnswer = TespResponseAnswer(event1);
 
-    final msgRequestPause = TespRequestPause();
-    final msgRequestResume = TespRequestResume();
-    final msgRequestWhiteListDataOnly = TespRequestWhiteListDataOnly();
-    final msgRequestAllData = TespRequestAllData();
+    final msgRequestPause = TespRequestPalPause();
+    final msgRequestResume = TespRequestPalResume();
+    final msgRequestWhiteListDataOnly = TespRequestPalWhiteListDataOnly();
+    final msgRequestAllData = TespRequestPalAllData();
     final msgRequestPing = TespRequestPing();
     final msgResponseSuccess = TespResponseSuccess();
     final msgResponsePaused = TespResponsePaused();
 
-    test('object creation', () {
-      expect(msgRequestAddEvent.payload, equals(payload));
-    });
+    final msgRequestAlarmSchedule = TespRequestAlarmSchedule();
+    final msgRequestAlarmCancel = TespRequestAlarmCancel(1);
+    final msgRequestAlarmSelectAll = TespRequestAlarmSelectAll();
+    final msgRequestAlarmSelectById = TespRequestAlarmSelectById(2);
+    final msgRequestNotificationCheckActive =
+        TespRequestNotificationCheckActive();
+    final msgRequestNotificationCancel = TespRequestNotificationCancel(3);
+    final msgRequestNotificationCancelByExperiment =
+        TespRequestNotificationCancelByExperiment(4);
+    final msgRequestNotificationSelectAll = TespRequestNotificationSelectAll();
+    final msgRequestNotificationSelectById =
+        TespRequestNotificationSelectById(5);
+    final msgRequestNotificationSelectByExperiment =
+        TespRequestNotificationSelectByExperiment(6);
+    final msgRequestCreateMissedEvent = TespRequestCreateMissedEvent(event1);
+
     test('encode/decode (non-chunked)', () {
       // Briefly verify that the codec actually converts between [TespMessage] and List<int>.
       expect(tesp.encode((msgRequestPause)), equals([0x01, 0x02]));
@@ -91,7 +121,31 @@ void main() {
           equalsTespMessage(msgResponseSuccess));
       expect(tesp.decode(tesp.encode(msgResponsePaused)),
           equalsTespMessage(msgResponsePaused));
+
+      expect(tesp.decode(tesp.encode(msgRequestAlarmSchedule)),
+          equalsTespMessage(msgRequestAlarmSchedule));
+      expect(tesp.decode(tesp.encode(msgRequestAlarmCancel)),
+          equalsTespMessage(msgRequestAlarmCancel));
+      expect(tesp.decode(tesp.encode(msgRequestAlarmSelectAll)),
+          equalsTespMessage(msgRequestAlarmSelectAll));
+      expect(tesp.decode(tesp.encode(msgRequestAlarmSelectById)),
+          equalsTespMessage(msgRequestAlarmSelectById));
+      expect(tesp.decode(tesp.encode(msgRequestNotificationCheckActive)),
+          equalsTespMessage(msgRequestNotificationCheckActive));
+      expect(tesp.decode(tesp.encode(msgRequestNotificationCancel)),
+          equalsTespMessage(msgRequestNotificationCancel));
+      expect(tesp.decode(tesp.encode(msgRequestNotificationCancelByExperiment)),
+          equalsTespMessage(msgRequestNotificationCancelByExperiment));
+      expect(tesp.decode(tesp.encode(msgRequestNotificationSelectAll)),
+          equalsTespMessage(msgRequestNotificationSelectAll));
+      expect(tesp.decode(tesp.encode(msgRequestNotificationSelectById)),
+          equalsTespMessage(msgRequestNotificationSelectById));
+      expect(tesp.decode(tesp.encode(msgRequestNotificationSelectByExperiment)),
+          equalsTespMessage(msgRequestNotificationSelectByExperiment));
+      expect(tesp.decode(tesp.encode(msgRequestCreateMissedEvent)),
+          equalsTespMessage(msgRequestCreateMissedEvent));
     });
+
     test('encode/decode (chunked)', () {
       final messages = <TespMessage>[
         msgRequestAddEvent, msgRequestAddEvent, msgRequestPause, //
@@ -100,6 +154,14 @@ void main() {
         msgResponseSuccess, msgResponseSuccess, msgResponsePaused, //
         msgResponseSuccess, msgResponseSuccess, msgResponseSuccess, //
         msgResponseInvalidRequest, msgResponseError, msgResponseAnswer, //
+        msgRequestPing, msgResponseSuccess, msgRequestAlarmSchedule, //
+        msgRequestAlarmCancel, msgRequestAlarmSelectAll, //
+        msgRequestAlarmSelectById, msgRequestNotificationCheckActive, //
+        msgRequestNotificationCancel,
+        msgRequestNotificationCancelByExperiment, //
+        msgRequestNotificationSelectAll, msgRequestNotificationSelectById, //
+        msgRequestNotificationSelectByExperiment,
+        msgRequestCreateMissedEvent, //
         msgRequestPing, msgResponseSuccess
       ];
       final matcher = emitsInOrder(

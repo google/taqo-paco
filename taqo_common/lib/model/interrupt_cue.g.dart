@@ -23,5 +23,5 @@ Map<String, dynamic> _$InterruptCueToJson(InterruptCue instance) =>
       'cueAEClassName': instance.cueAEClassName,
       'cueAEEventType': instance.cueAEEventType,
       'cueAEContentDescription': instance.cueAEContentDescription,
-      'id': instance.id
+      'id': instance.id,
     };

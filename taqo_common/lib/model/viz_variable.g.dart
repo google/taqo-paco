@@ -19,5 +19,5 @@ Map<String, dynamic> _$VizVariableToJson(VizVariable instance) =>
       'id': instance.id,
       'group': instance.group,
       'name': instance.name,
-      'responseType': instance.responseType
+      'responseType': instance.responseType,
     };

@@ -20,5 +20,5 @@ Map<String, dynamic> _$ActionTriggerToJson(ActionTrigger instance) =>
     <String, dynamic>{
       'type': instance.type,
       'actions': instance.actions,
-      'id': instance.id
+      'id': instance.id,
     };

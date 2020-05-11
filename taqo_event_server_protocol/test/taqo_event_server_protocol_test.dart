@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:taqo_common/model/event.dart';
 import 'package:taqo_event_server_protocol/src/tesp_codec.dart';
 import 'package:taqo_event_server_protocol/src/tesp_message_socket.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
@@ -10,11 +11,23 @@ import 'package:test/test.dart';
 
 import 'tesp_matchers.dart';
 
-const _stringAddEvent = 'addEvent';
+const _stringAddEvents = 'addEvents';
 const _stringPause = 'pause';
 const _stringResume = 'resume';
 const _stringAllData = 'allData';
 const _stringWhiteListDataOnly = 'whiteListDataOnly';
+const _stringAlarmSchedule = 'alarmSchedule';
+const _stringAlarmCancel = 'alarmCancel';
+const _stringAlarmSelectAll = 'alarmSelectAll';
+const _stringAlarmSelectById = 'alarmSelectById';
+const _stringNotificationCheckActive = 'notificationCheckActive';
+const _stringNotificationCancel = 'notificationCancel';
+const _stringNotificationCancelByExperiment = 'notificationCancelByExperiment';
+const _stringNotificationSelectAll = 'notificationSelectAll';
+const _stringNotificationSelectById = 'notificationSelectById';
+const _stringNotificationSelectByExperiment = 'notificationSelectByExperiment';
+const _stringCreateMissedEvent = 'createMissedEvent';
+const _stringDummy = 'dummy';
 
 void main() {
   group('TespServer - single client', () {
@@ -56,17 +69,15 @@ void main() {
 
       expect(server.isPaused, isFalse);
       expect(server.isAllData, isTrue);
-      tespSocket.add(TespRequestPause());
+      tespSocket.add(TespRequestPalPause());
+      await expectLater(tespStream,
+          emits(equalsTespMessage(TespResponseAnswer(_stringPause))));
+      expect(server.isPaused, isTrue);
+      tespSocket.add(TespRequestPalWhiteListDataOnly());
       await expectLater(
           tespStream,
           emits(
-              equalsTespMessage(TespResponseAnswer.withPayload(_stringPause))));
-      expect(server.isPaused, isTrue);
-      tespSocket.add(TespRequestWhiteListDataOnly());
-      await expectLater(
-          tespStream,
-          emits(equalsTespMessage(
-              TespResponseAnswer.withPayload(_stringWhiteListDataOnly))));
+              equalsTespMessage(TespResponseAnswer(_stringWhiteListDataOnly))));
       expect(server.isAllData, isFalse);
       await tespSocket.close();
       await expectLater(tespStream, emitsDone);
@@ -74,30 +85,52 @@ void main() {
 
     test('stream of requests', () async {
       var requests = [
-        TespRequestAddEvent.withPayload('1'),
-        TespRequestAddEvent.withPayload('2'),
-        TespRequestWhiteListDataOnly(),
-        TespRequestAddEvent.withPayload('3'),
-        TespRequestPause(),
-        TespRequestAddEvent.withPayload('4'),
-        TespRequestAddEvent.withPayload('5'),
-        TespRequestResume(),
-        TespRequestAddEvent.withPayload('6'),
-        TespRequestAllData(),
-        TespRequestAddEvent.withPayload('7')
+        createDummyTespRequestAddEvent('1'),
+        createDummyTespRequestAddEvent('2'),
+        TespRequestPalWhiteListDataOnly(),
+        createDummyTespRequestAddEvent('3'),
+        TespRequestPalPause(),
+        createDummyTespRequestAddEvent('4'),
+        createDummyTespRequestAddEvent('5'),
+        TespRequestPalResume(),
+        createDummyTespRequestAddEvent('6'),
+        TespRequestPalAllData(),
+        createDummyTespRequestAddEvent('7'),
+        TespRequestAlarmSchedule(),
+        TespRequestAlarmCancel(8),
+        TespRequestAlarmSelectAll(),
+        TespRequestAlarmSelectById(9),
+        TespRequestNotificationCheckActive(),
+        TespRequestNotificationCancel(10),
+        TespRequestNotificationCancelByExperiment(11),
+        TespRequestNotificationSelectAll(),
+        TespRequestNotificationSelectById(12),
+        TespRequestNotificationSelectByExperiment(13),
+        TespRequestCreateMissedEvent(Event()..experimentName = '14'),
       ];
       var responses = [
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 1'),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 2'),
-        TespResponseAnswer.withPayload(_stringWhiteListDataOnly),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 3'),
-        TespResponseAnswer.withPayload(_stringPause),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|1'),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|2'),
+        TespResponseAnswer(_stringWhiteListDataOnly),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|3'),
+        TespResponseAnswer(_stringPause),
         TespResponsePaused(),
         TespResponsePaused(),
-        TespResponseAnswer.withPayload(_stringResume),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 6'),
-        TespResponseAnswer.withPayload(_stringAllData),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 7'),
+        TespResponseAnswer(_stringResume),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|6'),
+        TespResponseAnswer(_stringAllData),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|7'),
+        TespResponseAnswer('${_stringAlarmSchedule}'),
+        TespResponseAnswer('${_stringAlarmCancel}: 8'),
+        TespResponseAnswer('${_stringAlarmSelectAll}'),
+        TespResponseAnswer('${_stringAlarmSelectById}: 9'),
+        TespResponseAnswer('${_stringNotificationCheckActive}'),
+        TespResponseAnswer('${_stringNotificationCancel}: 10'),
+        TespResponseAnswer('${_stringNotificationCancelByExperiment}: 11'),
+        TespResponseAnswer('${_stringNotificationSelectAll}'),
+        TespResponseAnswer('${_stringNotificationSelectById}: 12'),
+        TespResponseAnswer('${_stringNotificationSelectByExperiment}: 13'),
+        TespResponseAnswer('${_stringCreateMissedEvent}: 14'),
       ];
       requests.forEach((element) {
         tespSocket.add(element);
@@ -120,130 +153,121 @@ void main() {
       final realPayloadEncodedSize =
           largePayloadEncoded.length * repeatingTimes;
       final realPayload = utf8.decode(largePayloadEncoded) * repeatingTimes;
-      final encodedMessageHeader = Uint8List(TespCodec.payloadOffset);
-      encodedMessageHeader[TespCodec.versionOffset] = TespCodec.protocolVersion;
-      encodedMessageHeader[TespCodec.codeOffset] =
-          TespMessage.tespCodeRequestAddEvent;
-      var bdata = ByteData.view(encodedMessageHeader.buffer,
-          TespCodec.payloadSizeOffset, TespCodec.payloadSizeLength);
-      bdata.setUint32(0, realPayloadEncodedSize, Endian.big);
-      socket.add(encodedMessageHeader);
-      for (var i = 0; i < repeatingTimes; i++) {
-        socket.add(largePayloadEncoded);
-      }
+      final largeRequest = createDummyTespRequestAddEvent(realPayload);
+      tespSocket.add(largeRequest);
       await tespSocket.close();
       await expectLater(
           tespStream,
-          emits(equalsTespMessage(TespResponseAnswer.withPayload(
-              '${_stringAddEvent}: $realPayload'))));
-      await expectLater(tespStream, emitsDone);
+          //emits(isA<TespResponseAnswer>()));
+          emits(equalsTespMessage(TespResponseAnswer(
+              '${_stringAddEvents}: $_stringDummy|$realPayload'))));
+      //await expectLater(tespStream, emitsDone);
     }, timeout: Timeout(Duration(seconds: 120)));
 
     test('error handling - wrong version', () async {
-      tespSocket.add(TespRequestAddEvent.withPayload('test'));
+      tespSocket.add(createDummyTespRequestAddEvent('test'));
       socket.add([0xFF, 0x01, 0x02, 0x03, 0x04]);
-      tespSocket.add(TespRequestAddEvent.withPayload('will not be responded'));
+      tespSocket.add(createDummyTespRequestAddEvent('will not be responded'));
       await tespSocket.close();
       await expectLater(
           tespSocket.stream,
           emitsInOrder([
             equalsTespMessage(
-                TespResponseAnswer.withPayload('${_stringAddEvent}: test')),
+                TespResponseAnswer('${_stringAddEvents}: $_stringDummy|test')),
             isA<TespResponseInvalidRequest>(),
             emitsDone
           ]));
     });
 
     test('error handling - wrong code', () async {
-      tespSocket.add(TespRequestAddEvent.withPayload('test'));
+      tespSocket.add(createDummyTespRequestAddEvent('test'));
       socket.add([0x01, 0xFF, 0x01, 0x02, 0x03]);
-      tespSocket.add(TespRequestAddEvent.withPayload('will not be responded'));
+      tespSocket.add(createDummyTespRequestAddEvent('will not be responded'));
       await tespSocket.close();
       await expectLater(
           tespSocket.stream,
           emitsInOrder([
             equalsTespMessage(
-                TespResponseAnswer.withPayload('${_stringAddEvent}: test')),
+                TespResponseAnswer('${_stringAddEvents}: $_stringDummy|test')),
             isA<TespResponseInvalidRequest>(),
             emitsDone
           ]));
     });
 
     test('error handling - bad payload', () async {
-      tespSocket.add(TespRequestAddEvent.withPayload('test'));
+      tespSocket.add(createDummyTespRequestAddEvent('test'));
       socket.add([0x01, 0x01, 0x00, 0x00, 0x00, 0x03, 0xE1, 0xA0, 0xC0]);
-      tespSocket.add(TespRequestAddEvent.withPayload('will not be responded'));
+      tespSocket.add(createDummyTespRequestAddEvent('will not be responded'));
       await tespSocket.close();
       await expectLater(
           tespSocket.stream,
           emitsInOrder([
             equalsTespMessage(
-                TespResponseAnswer.withPayload('${_stringAddEvent}: test')),
+                TespResponseAnswer('${_stringAddEvents}: $_stringDummy|test')),
             isA<TespResponseInvalidRequest>(),
             emitsDone
           ]));
     });
 
     test('error handling - sending response to server', () async {
-      tespSocket.add(TespRequestAddEvent.withPayload('1'));
-      tespSocket.add(TespResponseAnswer.withPayload(
-          'will cause an exception and be ignored'));
-      tespSocket.add(TespRequestAddEvent.withPayload('2'));
+      tespSocket.add(createDummyTespRequestAddEvent('1'));
+      tespSocket
+          .add(TespResponseAnswer('will cause an exception and be ignored'));
+      tespSocket.add(createDummyTespRequestAddEvent('2'));
       await tespSocket.close();
       await expectLater(
           tespSocket.stream,
           emitsInOrder([
             equalsTespMessage(
-                TespResponseAnswer.withPayload('${_stringAddEvent}: 1')),
+                TespResponseAnswer('${_stringAddEvents}: $_stringDummy|1')),
             isA<TespResponseInvalidRequest>(),
             equalsTespMessage(
-                TespResponseAnswer.withPayload('${_stringAddEvent}: 2')),
+                TespResponseAnswer('${_stringAddEvents}: $_stringDummy|2')),
             emitsDone
           ]));
     });
 
     test('errors do not break the server', () async {
-      tespSocket.add(TespRequestPause());
+      tespSocket.add(TespRequestPalPause());
       socket.add([0xFF]);
       await expectLater(
           tespSocket.stream,
           emitsInOrder([
-            equalsTespMessage(
-                TespResponseAnswer.withPayload('${_stringPause}')),
+            equalsTespMessage(TespResponseAnswer('${_stringPause}')),
             isA<TespResponseInvalidRequest>(),
             emitsDone
           ]));
       socket.destroy();
       socket = await Socket.connect('127.0.0.1', port);
       tespSocket = TespMessageSocket(socket);
-      tespSocket.add(TespRequestAddEvent.withPayload('will be ignored'));
-      tespSocket.add(TespRequestResume());
-      tespSocket.add(TespRequestAddEvent.withPayload('OK'));
+      tespSocket.add(createDummyTespRequestAddEvent('will be ignored'));
+      tespSocket.add(TespRequestPalResume());
+      tespSocket.add(createDummyTespRequestAddEvent('OK'));
       await tespSocket.close();
       await expectLater(
           tespSocket.stream,
           emitsInOrder([
                 TespResponsePaused(),
-                TespResponseAnswer.withPayload('$_stringResume'),
-                TespResponseAnswer.withPayload('${_stringAddEvent}: OK')
+                TespResponseAnswer('$_stringResume'),
+                TespResponseAnswer('${_stringAddEvents}: $_stringDummy|OK')
               ].map((e) => equalsTespMessage(e)).toList() +
               [emitsDone]));
     });
 
     test('client closing early do not break the server', () async {
-      tespSocket.add(TespRequestAddEvent.withPayload('test1'));
-      tespSocket.add(TespRequestAddEvent.withPayload('test2'));
-      tespSocket.add(TespRequestAddEvent.withPayload('test3'));
+      tespSocket.add(createDummyTespRequestAddEvent('test1'));
+      tespSocket.add(createDummyTespRequestAddEvent('test2'));
+      tespSocket.add(createDummyTespRequestAddEvent('test3'));
       await socket.flush();
       socket.destroy();
       socket = await Socket.connect('127.0.0.1', port);
       tespSocket = TespMessageSocket(socket);
-      tespSocket.add(TespRequestAddEvent.withPayload('OK'));
+      tespSocket.add(createDummyTespRequestAddEvent('OK'));
       await tespSocket.close();
       await expectLater(
           tespSocket.stream,
           emitsInOrder([
-                TespResponseAnswer.withPayload('${_stringAddEvent}: OK')
+                TespResponseAnswer('${_stringAddEvents}: $_stringDummy|OK')
               ].map((e) => equalsTespMessage(e)).toList() +
               [emitsDone]));
     });
@@ -281,32 +305,32 @@ void main() {
 
     test('clients receives responses to their own requests', () async {
       var requests1 = [
-        TespRequestAddEvent.withPayload('1'),
-        TespRequestAddEvent.withPayload('3'),
-        TespRequestAddEvent.withPayload('5'),
-        TespRequestAddEvent.withPayload('7'),
-        TespRequestAddEvent.withPayload('9'),
+        createDummyTespRequestAddEvent('1'),
+        createDummyTespRequestAddEvent('3'),
+        createDummyTespRequestAddEvent('5'),
+        createDummyTespRequestAddEvent('7'),
+        createDummyTespRequestAddEvent('9'),
       ];
       var responses1 = [
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 1'),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 3'),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 5'),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 7'),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 9'),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|1'),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|3'),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|5'),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|7'),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|9'),
       ];
       var requests2 = [
-        TespRequestAddEvent.withPayload('2'),
-        TespRequestAddEvent.withPayload('4'),
-        TespRequestAddEvent.withPayload('6'),
-        TespRequestAddEvent.withPayload('8'),
-        TespRequestAddEvent.withPayload('10'),
+        createDummyTespRequestAddEvent('2'),
+        createDummyTespRequestAddEvent('4'),
+        createDummyTespRequestAddEvent('6'),
+        createDummyTespRequestAddEvent('8'),
+        createDummyTespRequestAddEvent('10'),
       ];
       var responses2 = [
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 2'),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 4'),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 6'),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 8'),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 10'),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|2'),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|4'),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|6'),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|8'),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|10'),
       ];
 
       var client1 = Future(() async {
@@ -348,45 +372,44 @@ void main() {
 
       var client1 = Future(() async {
         await Future(
-            () => tespSocket1.add(TespRequestAddEvent.withPayload('1')));
+            () => tespSocket1.add(createDummyTespRequestAddEvent('1')));
         await beforePauseCompleter.future;
-        await Future(() => tespSocket1.add(TespRequestPause()));
+        await Future(() => tespSocket1.add(TespRequestPalPause()));
         await expectLater(
             tespStream1,
             emitsInOrder([
               equalsTespMessage(
-                  TespResponseAnswer.withPayload('${_stringAddEvent}: 1')),
-              equalsTespMessage(TespResponseAnswer.withPayload('$_stringPause'))
+                  TespResponseAnswer('${_stringAddEvents}: $_stringDummy|1')),
+              equalsTespMessage(TespResponseAnswer('$_stringPause'))
             ]));
         pauseCompleter.complete();
         await Future(
-            () => tespSocket1.add(TespRequestAddEvent.withPayload('3')));
+            () => tespSocket1.add(createDummyTespRequestAddEvent('3')));
         beforeResumeCompleter.complete();
         await resumeCompleter.future;
         await Future(
-            () => tespSocket1.add(TespRequestAddEvent.withPayload('5')));
+            () => tespSocket1.add(createDummyTespRequestAddEvent('5')));
       });
       var client2 = Future(() async {
         await Future(
-            () => tespSocket2.add(TespRequestAddEvent.withPayload('2')));
+            () => tespSocket2.add(createDummyTespRequestAddEvent('2')));
         beforePauseCompleter.complete();
         await pauseCompleter.future;
         await Future(
-            () => tespSocket2.add(TespRequestAddEvent.withPayload('4')));
+            () => tespSocket2.add(createDummyTespRequestAddEvent('4')));
         await beforeResumeCompleter.future;
-        await Future(() => tespSocket2.add(TespRequestResume()));
+        await Future(() => tespSocket2.add(TespRequestPalResume()));
         await expectLater(
             tespStream2,
             emitsInOrder([
               equalsTespMessage(
-                  TespResponseAnswer.withPayload('${_stringAddEvent}: 2')),
+                  TespResponseAnswer('${_stringAddEvents}: $_stringDummy|2')),
               equalsTespMessage(TespResponsePaused()),
-              equalsTespMessage(
-                  TespResponseAnswer.withPayload('$_stringResume'))
+              equalsTespMessage(TespResponseAnswer('$_stringResume'))
             ]));
         resumeCompleter.complete();
         await Future(
-            () => tespSocket2.add(TespRequestAddEvent.withPayload('6')));
+            () => tespSocket2.add(createDummyTespRequestAddEvent('6')));
       });
       await Future.wait([client1, client2]);
       await tespSocket1.close();
@@ -396,44 +419,44 @@ void main() {
           emitsInOrder([
             equalsTespMessage(TespResponsePaused()),
             equalsTespMessage(
-                TespResponseAnswer.withPayload('${_stringAddEvent}: 5')),
+                TespResponseAnswer('${_stringAddEvents}: $_stringDummy|5')),
             emitsDone
           ]));
       await expectLater(
           tespStream2,
           emitsInOrder([
             equalsTespMessage(
-                TespResponseAnswer.withPayload('${_stringAddEvent}: 6')),
+                TespResponseAnswer('${_stringAddEvents}: $_stringDummy|6')),
             emitsDone
           ]));
     });
 
     test('one client error does not affect the other', () async {
       var requests2 = [
-        TespRequestAddEvent.withPayload('2'),
-        TespRequestAddEvent.withPayload('4'),
-        TespRequestAddEvent.withPayload('6'),
-        TespRequestAddEvent.withPayload('8'),
-        TespRequestAddEvent.withPayload('10'),
+        createDummyTespRequestAddEvent('2'),
+        createDummyTespRequestAddEvent('4'),
+        createDummyTespRequestAddEvent('6'),
+        createDummyTespRequestAddEvent('8'),
+        createDummyTespRequestAddEvent('10'),
       ];
       var responses2 = [
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 2'),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 4'),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 6'),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 8'),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 10'),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|2'),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|4'),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|6'),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|8'),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|10'),
       ];
 
       var client1 = Future(() async {
         await Future(
-            () => tespSocket1.add(TespRequestAddEvent.withPayload('1')));
+            () => tespSocket1.add(createDummyTespRequestAddEvent('1')));
         await Future(
-            () => tespSocket1.add(TespRequestAddEvent.withPayload('3')));
+            () => tespSocket1.add(createDummyTespRequestAddEvent('3')));
         await Future(() => socket1.add([0xFF]));
         await Future(
-            () => tespSocket1.add(TespRequestAddEvent.withPayload('7')));
+            () => tespSocket1.add(createDummyTespRequestAddEvent('7')));
         await Future(
-            () => tespSocket1.add(TespRequestAddEvent.withPayload('9')));
+            () => tespSocket1.add(createDummyTespRequestAddEvent('9')));
       });
       var client2 = Future(() async {
         for (var request in requests2) {
@@ -449,9 +472,9 @@ void main() {
           tespSocket1.stream,
           emitsInOrder([
             equalsTespMessage(
-                TespResponseAnswer.withPayload('${_stringAddEvent}: 1')),
+                TespResponseAnswer('${_stringAddEvents}: $_stringDummy|1')),
             equalsTespMessage(
-                TespResponseAnswer.withPayload('${_stringAddEvent}: 3')),
+                TespResponseAnswer('${_stringAddEvents}: $_stringDummy|3')),
             isA<TespResponseInvalidRequest>(),
             emitsDone
           ]));
@@ -486,30 +509,52 @@ void main() {
 
     test('send()', () async {
       var requests = [
-        TespRequestAddEvent.withPayload('1'),
-        TespRequestAddEvent.withPayload('2'),
-        TespRequestWhiteListDataOnly(),
-        TespRequestAddEvent.withPayload('3'),
-        TespRequestPause(),
-        TespRequestAddEvent.withPayload('4'),
-        TespRequestAddEvent.withPayload('5'),
-        TespRequestResume(),
-        TespRequestAddEvent.withPayload('6'),
-        TespRequestAllData(),
-        TespRequestAddEvent.withPayload('7')
+        createDummyTespRequestAddEvent('1'),
+        createDummyTespRequestAddEvent('2'),
+        TespRequestPalWhiteListDataOnly(),
+        createDummyTespRequestAddEvent('3'),
+        TespRequestPalPause(),
+        createDummyTespRequestAddEvent('4'),
+        createDummyTespRequestAddEvent('5'),
+        TespRequestPalResume(),
+        createDummyTespRequestAddEvent('6'),
+        TespRequestPalAllData(),
+        createDummyTespRequestAddEvent('7'),
+        TespRequestAlarmSchedule(),
+        TespRequestAlarmCancel(8),
+        TespRequestAlarmSelectAll(),
+        TespRequestAlarmSelectById(9),
+        TespRequestNotificationCheckActive(),
+        TespRequestNotificationCancel(10),
+        TespRequestNotificationCancelByExperiment(11),
+        TespRequestNotificationSelectAll(),
+        TespRequestNotificationSelectById(12),
+        TespRequestNotificationSelectByExperiment(13),
+        TespRequestCreateMissedEvent(Event()..experimentName = '14'),
       ];
       var responses = [
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 1'),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 2'),
-        TespResponseAnswer.withPayload(_stringWhiteListDataOnly),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 3'),
-        TespResponseAnswer.withPayload(_stringPause),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|1'),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|2'),
+        TespResponseAnswer(_stringWhiteListDataOnly),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|3'),
+        TespResponseAnswer(_stringPause),
         TespResponsePaused(),
         TespResponsePaused(),
-        TespResponseAnswer.withPayload(_stringResume),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 6'),
-        TespResponseAnswer.withPayload(_stringAllData),
-        TespResponseAnswer.withPayload('${_stringAddEvent}: 7'),
+        TespResponseAnswer(_stringResume),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|6'),
+        TespResponseAnswer(_stringAllData),
+        TespResponseAnswer('${_stringAddEvents}: $_stringDummy|7'),
+        TespResponseAnswer('${_stringAlarmSchedule}'),
+        TespResponseAnswer('${_stringAlarmCancel}: 8'),
+        TespResponseAnswer('${_stringAlarmSelectAll}'),
+        TespResponseAnswer('${_stringAlarmSelectById}: 9'),
+        TespResponseAnswer('${_stringNotificationCheckActive}'),
+        TespResponseAnswer('${_stringNotificationCancel}: 10'),
+        TespResponseAnswer('${_stringNotificationCancelByExperiment}: 11'),
+        TespResponseAnswer('${_stringNotificationSelectAll}'),
+        TespResponseAnswer('${_stringNotificationSelectById}: 12'),
+        TespResponseAnswer('${_stringNotificationSelectByExperiment}: 13'),
+        TespResponseAnswer('${_stringCreateMissedEvent}: 14'),
       ];
       for (var i = 0; i < requests.length; i++) {
         expect(client.send(requests[i]),
@@ -518,7 +563,6 @@ void main() {
       await client.close();
     });
 
-    //  NOTE: The following test is still failing
     test('send large payload', () async {
       // Constructing large encoded message
       // Target payload size in bytes
@@ -527,14 +571,21 @@ void main() {
       final realPayloadEncodedSize =
           largePayloadEncoded.length * repeatingTimes;
       final realPayload = utf8.decode(largePayloadEncoded) * repeatingTimes;
-      final largeRequest = TespRequestAddEvent.withPayload(realPayload);
+      final largeRequest = createDummyTespRequestAddEvent(realPayload);
       expect(
           client.send(largeRequest),
-          completion(equalsTespMessage(TespResponseAnswer.withPayload(
-              '${_stringAddEvent}: $realPayload'))));
+          completion(equalsTespMessage(TespResponseAnswer(
+              '${_stringAddEvents}: $_stringDummy|$realPayload'))));
       await client.close();
     }, timeout: Timeout(Duration(seconds: 120)));
   });
+}
+
+TespRequestPalAddEvents createDummyTespRequestAddEvent(String string) {
+  return TespRequestPalAddEvents([
+    Event()..experimentName = _stringDummy,
+    Event()..experimentName = string
+  ]);
 }
 
 class TestingEventServer with TespRequestHandlerMixin {
@@ -558,36 +609,98 @@ class TestingEventServer with TespRequestHandlerMixin {
   bool isPaused = false;
 
   @override
-  Future<TespResponse> addEvent(String eventPayload) async {
+  Future<TespResponse> palAddEvents(List<Event> events) async {
     if (isPaused) {
       return TespResponsePaused();
     }
     await Future.delayed(Duration(milliseconds: 200));
-    return TespResponseAnswer.withPayload('${_stringAddEvent}: $eventPayload');
+    return TespResponseAnswer(
+        '${_stringAddEvents}: ${events.map((e) => e.experimentName).join('|')}');
   }
 
   @override
-  TespResponse allData() {
+  TespResponse palAllData() {
     isAllData = true;
-    return TespResponseAnswer.withPayload(_stringAllData);
+    return TespResponseAnswer(_stringAllData);
   }
 
   @override
-  TespResponse pause() {
+  TespResponse palPause() {
     isPaused = true;
-    return TespResponseAnswer.withPayload(_stringPause);
+    return TespResponseAnswer(_stringPause);
   }
 
   @override
-  TespResponse resume() {
+  TespResponse palResume() {
     isPaused = false;
-    return TespResponseAnswer.withPayload(_stringResume);
+    return TespResponseAnswer(_stringResume);
   }
 
   @override
-  TespResponse whiteListDataOnly() {
+  TespResponse palWhiteListDataOnly() {
     isAllData = false;
-    return TespResponseAnswer.withPayload(_stringWhiteListDataOnly);
+    return TespResponseAnswer(_stringWhiteListDataOnly);
+  }
+
+  @override
+  Future<TespResponse> alarmCancel(int alarmId) {
+    return Future.value(TespResponseAnswer('$_stringAlarmCancel: $alarmId'));
+  }
+
+  @override
+  Future<TespResponse> alarmSchedule() {
+    return Future.value(TespResponseAnswer('$_stringAlarmSchedule'));
+  }
+
+  @override
+  Future<TespResponse> alarmSelectAll() {
+    return Future.value(TespResponseAnswer('$_stringAlarmSelectAll'));
+  }
+
+  @override
+  Future<TespResponse> alarmSelectById(int alarmId) {
+    return Future.value(
+        TespResponseAnswer('$_stringAlarmSelectById: $alarmId'));
+  }
+
+  @override
+  Future<TespResponse> createMissedEvent(Event event) {
+    return Future.value(TespResponseAnswer(
+        '$_stringCreateMissedEvent: ${event.experimentName}'));
+  }
+
+  @override
+  Future<TespResponse> notificationCancel(int notificationId) {
+    return Future.value(
+        TespResponseAnswer('$_stringNotificationCancel: $notificationId'));
+  }
+
+  @override
+  Future<TespResponse> notificationCancelByExperiment(int experimentId) {
+    return Future.value(TespResponseAnswer(
+        '$_stringNotificationCancelByExperiment: $experimentId'));
+  }
+
+  @override
+  Future<TespResponse> notificationCheckActive() {
+    return Future.value(TespResponseAnswer('$_stringNotificationCheckActive'));
+  }
+
+  @override
+  Future<TespResponse> notificationSelectAll() {
+    return Future.value(TespResponseAnswer('$_stringNotificationSelectAll'));
+  }
+
+  @override
+  Future<TespResponse> notificationSelectByExperiment(int experimentId) {
+    return Future.value(TespResponseAnswer(
+        '$_stringNotificationSelectByExperiment: $experimentId'));
+  }
+
+  @override
+  Future<TespResponse> notificationSelectById(int notificationId) {
+    return Future.value(
+        TespResponseAnswer('$_stringNotificationSelectById: $notificationId'));
   }
 }
 

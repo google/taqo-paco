@@ -17,4 +17,6 @@ ExperimentValidator _$ExperimentValidatorFromJson(Map<String, dynamic> json) {
 
 Map<String, dynamic> _$ExperimentValidatorToJson(
         ExperimentValidator instance) =>
-    <String, dynamic>{'results': instance.results};
+    <String, dynamic>{
+      'results': instance.results,
+    };

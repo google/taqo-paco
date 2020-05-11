@@ -218,7 +218,7 @@ class ExperimentListItem extends StatelessWidget {
                 ),
                 IconButton(
                     icon: Icon(Icons.email),
-                    onPressed: () => emailExperiment(experiment)
+                    onPressed: () => emailExperiment(context, experiment)
                 ),
                 IconButton(
                     icon: Icon(Icons.close),
@@ -261,16 +261,44 @@ class ExperimentListItem extends StatelessWidget {
     );
   }
 
-  void emailExperiment(Experiment experiment) {
+  Future<ConfirmAction> _confirmEmailDialog(BuildContext context, String to, String subject) async {
+    return showDialog<ConfirmAction>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Email the Experiment researcher?'),
+          content: Text('If you have a question regarding this experiment, please contact $to with the subject "$subject"'),
+          actions: <Widget>[
+            FlatButton(
+                child: const Text('Open my email'),
+                onPressed: () => Navigator.of(context).pop(ConfirmAction.ACCEPT)
+            ),
+            FlatButton(
+                child: const Text("I'll do it myself"),
+                onPressed: () => Navigator.of(context).pop(ConfirmAction.CANCEL)
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void emailExperiment(BuildContext context, Experiment experiment) async {
     bool validateEmail(String email) {
       return RegExp(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$').hasMatch(email);
     }
+
     var to = experiment.creator;
     final contactEmail = experiment.contactEmail;
     if (contactEmail != null && contactEmail.isNotEmpty && validateEmail(contactEmail)) {
       to = contactEmail;
     }
-    taqo_email_plugin.sendEmail(to, experiment.title);
+
+    final val = await _confirmEmailDialog(context, to, experiment.title);
+    if (val == ConfirmAction.ACCEPT) {
+      taqo_email_plugin.sendEmail(to, experiment.title);
+    }
   }
 }
 

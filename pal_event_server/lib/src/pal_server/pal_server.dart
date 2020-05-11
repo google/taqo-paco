@@ -10,7 +10,7 @@ class PALTespServer with TespRequestHandlerMixin {
   TespServer _tespServer;
   final _whitelist = Whitelist();
 
-  ExampleEventServer() {
+  PALTespServer() {
     _tespServer = TespServer(this);
   }
 

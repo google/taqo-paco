@@ -8,12 +8,13 @@ part of 'signal_time.dart';
 
 SignalTime _$SignalTimeFromJson(Map<String, dynamic> json) {
   return SignalTime(
-      json['type'] as int,
-      json['basis'] as int,
-      json['fixedTimeMillisFromMidnight'] as int,
-      json['missedBasisBehavior'] as int,
-      json['offsetTimeMillis'] as int,
-      json['label'] as String);
+    json['type'] as int,
+    json['basis'] as int,
+    json['fixedTimeMillisFromMidnight'] as int,
+    json['missedBasisBehavior'] as int,
+    json['offsetTimeMillis'] as int,
+    json['label'] as String,
+  );
 }
 
 Map<String, dynamic> _$SignalTimeToJson(SignalTime instance) =>
@@ -23,5 +24,5 @@ Map<String, dynamic> _$SignalTimeToJson(SignalTime instance) =>
       'basis': instance.basis,
       'offsetTimeMillis': instance.offsetTimeMillis,
       'missedBasisBehavior': instance.missedBasisBehavior,
-      'label': instance.label
+      'label': instance.label,
     };
