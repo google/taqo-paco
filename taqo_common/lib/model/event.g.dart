@@ -8,8 +8,7 @@ part of 'event.dart';
 
 Event _$EventFromJson(Map<String, dynamic> json) {
   return Event()
-    ..responses = Event._responsesFromListOfMap(
-        json['responses'] as List<Map<String, dynamic>>)
+    ..responses = Event._responsesFromListOfMap(json['responses'] as List)
     ..experimentServerId = json['experimentId'] as int
     ..experimentName = json['experimentName'] as String
     ..scheduleTime =
