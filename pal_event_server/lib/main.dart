@@ -1,6 +1,6 @@
 import 'package:taqo_common/rpc/rpc_constants.dart';
 
-import 'src/pal_server/pal_server.dart';
+import 'src/tesp_server.dart';
 
 void main() async {
   print('Server PAL starting');
