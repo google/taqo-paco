@@ -37,10 +37,40 @@ class RemoteDatabase extends BaseDatabase {
 
   @override
   Future<void> insertEvent(Event event) {
+    global.tespClient.then((tespClient) async {
+      tespClient.palAddEventJson(event.toJson());
+    });
+  }
+
+  @override
+  Future<int> insertAlarm(ActionSpecification actionSpecification) {
+    // no-op on desktop
   }
 
   @override
   Future<int> insertNotification(NotificationHolder notificationHolder) {
+    // no-op on desktop
+  }
+
+  @override
+  Future<ActionSpecification> getAlarm(int id) {
+    return global.tespClient.then((tespClient) async {
+      final TespResponseAnswer response =
+      await tespClient.alarmSelectById(id);
+      return ActionSpecification.fromJson(jsonDecode(response.payload));
+    });
+  }
+
+  @override
+  Future<Map<int, ActionSpecification>> getAllAlarms() {
+    return global.tespClient.then((tespClient) async {
+      final TespResponseAnswer response =
+      await tespClient.alarmSelectAll();
+      final Map map = jsonDecode(response.payload);
+      return Map.fromIterable(map.entries,
+          key: (entry) => int.parse(entry.key),
+          value: (entry) => ActionSpecification.fromJson(entry.value));
+    });
   }
 
   @override
@@ -74,47 +104,27 @@ class RemoteDatabase extends BaseDatabase {
   }
 
   @override
+  Future<void> removeAlarm(int id) {
+    // no-op on desktop
+  }
+
+  @override
   Future<void> removeNotification(int id) {
+    // no-op on desktop
   }
 
   @override
   Future<void> removeAllNotifications() {
-  }
-
-  @override
-  Future<int> insertAlarm(ActionSpecification actionSpecification) {
-  }
-
-  @override
-  Future<ActionSpecification> getAlarm(int id) {
-    return global.tespClient.then((tespClient) async {
-      final TespResponseAnswer response =
-          await tespClient.alarmSelectById(id);
-      return ActionSpecification.fromJson(jsonDecode(response.payload));
-    });
-  }
-
-  @override
-  Future<Map<int, ActionSpecification>> getAllAlarms() {
-    return global.tespClient.then((tespClient) async {
-      final TespResponseAnswer response =
-          await tespClient.alarmSelectAll();
-      final Map map = jsonDecode(response.payload);
-      return Map.fromIterable(map.entries,
-          key: (entry) => int.parse(entry.key),
-          value: (entry) => ActionSpecification.fromJson(entry.value));
-    });
-  }
-
-  @override
-  Future<void> removeAlarm(int id) {
+    // no-op on desktop
   }
 
   @override
   Future<Iterable<Event>> getUnuploadedEvents() {
+    // no-op on desktop
   }
 
   @override
   Future<void> markEventsAsUploaded(Iterable<Event> events) {
+    // no-op on desktop
   }
 }

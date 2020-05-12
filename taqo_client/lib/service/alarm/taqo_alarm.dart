@@ -61,7 +61,7 @@ Future cancel(int id) async {
   } else if (Platform.isLinux) {
     try {
       platform_service.tespClient.then((tespClient) {
-        tespClient.alarmCancel(id);
+        tespClient.notificationCancel(id);
       });
     } catch (e) {
       print(e);
