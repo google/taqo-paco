@@ -120,7 +120,7 @@ class PALTespServer with TespRequestHandlerMixin {
     final json = Map<String, dynamic>.fromIterable(alarms.entries,
         key: (entry) => '${entry.key}',
         value: (entry) => entry.value);
-    return TespResponseAnswer(jsonEncode(alarms));
+    return TespResponseAnswer(jsonEncode(json));
   }
 
   @override
