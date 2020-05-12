@@ -48,7 +48,7 @@ class RemoteDatabase extends BaseDatabase {
     return global.tespClient.then((tespClient) async {
       final TespResponseAnswer response =
           await tespClient.notificationSelectById(id);
-      return NotificationHolder.fromJson(response.payload);
+      return NotificationHolder.fromJson(jsonDecode(response.payload));
     });
   }
 
@@ -90,7 +90,7 @@ class RemoteDatabase extends BaseDatabase {
     return global.tespClient.then((tespClient) async {
       final TespResponseAnswer response =
           await tespClient.alarmSelectById(id);
-      return ActionSpecification.fromJson(response.payload);
+      return ActionSpecification.fromJson(jsonDecode(response.payload));
     });
   }
 
@@ -101,7 +101,7 @@ class RemoteDatabase extends BaseDatabase {
           await tespClient.alarmSelectAll();
       final Map map = jsonDecode(response.payload);
       return Map.fromIterable(map.entries,
-          key: (entry) => entry.key,
+          key: (entry) => int.parse(entry.key),
           value: (entry) => ActionSpecification.fromJson(entry.value));
     });
   }
