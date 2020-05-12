@@ -94,8 +94,8 @@ class PALTespServer with TespRequestHandlerMixin {
 
   @override
   FutureOr<TespResponse> notificationCancel(int notificationId) async {
-    final active = await linux_daemon.handleCheckActiveNotification();
-    return TespResponseAnswer(active);
+    await linux_daemon.handleCancelNotification(notificationId);
+    return TespResponseSuccess();
   }
 
   @override
