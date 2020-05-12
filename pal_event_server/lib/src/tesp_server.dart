@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
@@ -115,34 +116,38 @@ class PALTespServer with TespRequestHandlerMixin {
   FutureOr<TespResponse> alarmSelectAll() async {
     final database = await SqliteDatabase.get();
     final alarms = await database.getAllAlarms();
-    return TespResponseAnswer(alarms);
+    // JSON keys must be String
+    final json = Map<String, dynamic>.fromIterable(alarms.entries,
+        key: (entry) => '${entry.key}',
+        value: (entry) => entry.value);
+    return TespResponseAnswer(jsonEncode(alarms));
   }
 
   @override
   FutureOr<TespResponse> alarmSelectById(int alarmId) async {
     final database = await SqliteDatabase.get();
     final alarm = await database.getAlarm(alarmId);
-    return TespResponseAnswer(alarm);
+    return TespResponseAnswer(jsonEncode(alarm));
   }
 
   @override
   FutureOr<TespResponse> notificationSelectAll() async {
     final database = await SqliteDatabase.get();
     final notifications = await database.getAllNotifications();
-    return TespResponseAnswer(notifications);
+    return TespResponseAnswer(jsonEncode(notifications));
   }
 
   @override
   FutureOr<TespResponse> notificationSelectById(int notificationId) async {
     final database = await SqliteDatabase.get();
     final notification = await database.getNotification(notificationId);
-    return TespResponseAnswer(notification);
+    return TespResponseAnswer(jsonEncode(notification));
   }
 
   @override
   FutureOr<TespResponse> notificationSelectByExperiment(int experimentId) async {
     final database = await SqliteDatabase.get();
     final notifications = await database.getAllNotificationsForExperiment(experimentId);
-    return TespResponseAnswer(notifications);
+    return TespResponseAnswer(jsonEncode(notifications));
   }
 }
