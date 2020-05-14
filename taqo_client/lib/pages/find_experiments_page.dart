@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:taqo_common/model/experiment.dart';
-import '../net/google_auth.dart';
 import '../service/experiment_service.dart';
 import '../widgets/taqo_page.dart';
 import '../widgets/taqo_widgets.dart';
@@ -18,8 +17,17 @@ class FindExperimentsPage extends StatefulWidget {
 }
 
 class _FindExperimentsPageState extends State<FindExperimentsPage> {
+  bool _isLoading = true;
+
   @override
   Widget build(BuildContext context) {
+    Widget _loadingWidget = Center(
+      child: Padding(
+        padding: EdgeInsets.only(top: 16.0),
+        child: CircularProgressIndicator(),
+      ),
+    );
+
     return TaqoScaffold(
       title: 'Find Experiments to Join',
       body: Container(
@@ -34,8 +42,13 @@ class _FindExperimentsPageState extends State<FindExperimentsPage> {
             Expanded(
               child: FutureProvider<List<Experiment>>(
                 create: (_) => ExperimentService.getInstance().then(
-                        (service) => service.getExperimentsFromServer()),
-                child: ExperimentList(),
+                  (service) => service.getExperimentsFromServer().then((v) {
+                    setState(() {
+                      _isLoading = false;
+                    });
+                    return v;
+                  })),
+                child: _isLoading ? _loadingWidget : ExperimentList(),
               ),
             ),
           ],
