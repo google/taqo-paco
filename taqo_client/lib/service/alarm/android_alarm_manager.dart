@@ -7,8 +7,8 @@ import 'package:taqo_common/storage/esm_signal_storage.dart';
 import 'package:taqo_common/util/date_time_util.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
+import '../../service/platform_service.dart' as platform_service;
 import '../../storage/flutter_file_storage.dart';
-import '../../storage/local_database.dart';
 import '../experiment_service.dart';
 import 'flutter_local_notifications.dart' as flutter_local_notifications;
 import 'taqo_alarm.dart' as taqo_alarm;
@@ -19,8 +19,8 @@ const SHARED_PREFS_LAST_ALARM_TIME = 'lastScheduledAlarm';
 Future<int> _schedule(ActionSpecification actionSpec, DateTime when, Function(int) callback) {
   return AndroidAlarmManager.initialize().then((success) async {
     if (success) {
-      final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-      final alarmId = await storage.insertAlarm(actionSpec);
+      final db = await platform_service.databaseImpl;
+      final alarmId = await db.insertAlarm(actionSpec);
       AndroidAlarmManager.oneShotAt(when, alarmId, callback,
           allowWhileIdle: true, exact: true, rescheduleOnReboot: true, wakeup: true);
       return alarmId;
@@ -31,8 +31,8 @@ Future<int> _schedule(ActionSpecification actionSpec, DateTime when, Function(in
 
 Future<bool> _scheduleNotification(ActionSpecification actionSpec) async {
   // Don't show a notification that's already pending
-  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-  final alarms = await storage.getAllAlarms();
+  final db = await platform_service.databaseImpl;
+  final alarms = await db.getAllAlarms();
   for (var as in alarms.values) {
     if (as == actionSpec) {
       print('Notification for $actionSpec already scheduled');
@@ -59,8 +59,8 @@ void _notifyCallback(int alarmId) async {
   print('notify: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
   DateTime start;
   Duration duration;
-  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-  final actionSpec = await storage.getAlarm(alarmId);
+  final db = await platform_service.databaseImpl;
+  final actionSpec = await db.getAlarm(alarmId);
   if (actionSpec != null) {
     // To handle simultaneous alarms as well as possible delay in alarm callbacks,
     // show all notifications from the originally schedule alarm time until
@@ -97,10 +97,10 @@ void _expireCallback(int alarmId) async {
   // This is running in a different (background) Isolate
   print('expire: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
   // Cancel notification
-  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-  final toCancel = await storage.getAlarm(alarmId);
+  final db = await platform_service.databaseImpl;
+  final toCancel = await db.getAlarm(alarmId);
   // TODO Move the matches() logic to SQL
-  final notifications = await storage.getAllNotifications();
+  final notifications = await db.getAllNotifications();
   if (notifications != null) {
     final match = notifications.firstWhere((notificationHolder) =>
         notificationHolder.matchesAction(toCancel), orElse: () => null);
@@ -146,8 +146,8 @@ void _scheduleNextNotification({DateTime from}) async {
 
 void scheduleNextNotification() async {
   // Cancel all alarms, except for timeouts for past notifications
-  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-  final allAlarms = await storage.getAllAlarms();
+  final db = await platform_service.databaseImpl;
+  final allAlarms = await db.getAllAlarms();
   for (var alarm in allAlarms.entries) {
     // On Android, AlarmManager adjusts alarms relative to time changes
     // Since timeouts reflect elapsed time since the notification, this is fine for already set
@@ -168,11 +168,11 @@ Future<void> cancel(int alarmId) async {
       AndroidAlarmManager.cancel(alarmId);
     }
   });
-  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-  storage.removeAlarm(alarmId);
+  final db = await platform_service.databaseImpl;
+  db.removeAlarm(alarmId);
 }
 
 Future<void> cancelAll() async {
-  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-  (await storage.getAllAlarms()).keys.forEach((alarmId) async => await cancel(alarmId));
+  final db = await platform_service.databaseImpl;
+  (await db.getAllAlarms()).keys.forEach((alarmId) async => await cancel(alarmId));
 }

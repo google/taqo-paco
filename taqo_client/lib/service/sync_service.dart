@@ -5,8 +5,7 @@ import 'package:logging/logging.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/event_save_outcome.dart';
 import '../net/paco_api.dart';
-import '../storage/flutter_file_storage.dart';
-import '../storage/local_database.dart';
+import '../service/platform_service.dart' as platform_service;
 
 final logger = Logger('SyncService');
 
@@ -43,8 +42,8 @@ List<Event> _getUploadedEvents(List<Event> allEvents,
 
 Future<bool> syncData() async {
   logger.info("Start syncing data...");
-  final storage = await LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename));
-  final events = await storage.getUnuploadedEvents();
+  final db = await platform_service.databaseImpl;
+  final events = await db.getUnuploadedEvents();
   final pacoApi = PacoApi();
 
   // TODO: handle upload limit size
@@ -54,7 +53,7 @@ Future<bool> syncData() async {
       final outcomes = _parseSyncResponse(response);
       if (outcomes.length == events.length) {
         final eventList = events.toList();
-        await storage.markEventsAsUploaded(_getUploadedEvents(
+        await db.markEventsAsUploaded(_getUploadedEvents(
             eventList, outcomes));
       } else {
         logger.warning(

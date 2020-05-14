@@ -10,11 +10,13 @@ import 'package:taqo_common/model/notification_holder.dart';
 import 'package:taqo_common/storage/local_file_storage.dart';
 import 'package:taqo_common/util/zoned_date_time.dart';
 
+import 'base_database.dart';
+
 part 'local_database.inc.dart';
 part 'local_database.workaround.dart';
 
 /// Global reference of the database connection, using singleton pattern
-class LocalDatabase {
+class LocalDatabase extends BaseDatabase {
   static const dbFilename = 'experiments.db';
 
   static Completer<LocalDatabase> _completer;
@@ -52,57 +54,70 @@ class LocalDatabase {
         version: _dbVersion, onCreate: _onCreate);
   }
 
+  @override
   Future<void> insertEvent(Event event) async {
     await _insertEvent(_db, event);
   }
 
+  @override
   Future<int> insertNotification(NotificationHolder notificationHolder) async {
     return _insertNotification(_db, notificationHolder);
   }
 
+  @override
   Future<NotificationHolder> getNotification(int id) async {
     return _getNotification(_db, id);
   }
 
+  @override
   Future<List<NotificationHolder>> getAllNotifications() async {
     return _getAllNotifications(_db);
   }
 
+  @override
   Future<List<NotificationHolder>> getAllNotificationsForExperiment(
       Experiment experiment) async {
     return _getAllNotificationsForExperiment(_db, experiment.id);
   }
 
+  @override
   Future<void> removeNotification(int id) async {
     return _removeNotification(_db, id);
   }
 
+  @override
   Future<void> removeAllNotifications() async {
     return _removeAllNotifications(_db);
   }
 
+  @override
   Future<int> insertAlarm(ActionSpecification actionSpecification) async {
     return _insertAlarm(_db, actionSpecification);
   }
 
+  @override
   Future<ActionSpecification> getAlarm(int id) async {
     return _getAlarm(_db, id);
   }
 
+  @override
   Future<Map<int, ActionSpecification>> getAllAlarms() async {
     return _getAllAlarms(_db);
   }
 
+  @override
   Future<void> removeAlarm(int id) async {
     return _removeAlarm(_db, id);
   }
 
+  @override
   Future<Iterable<Event>> getUnuploadedEvents() async {
     final eventFieldsMaps = await _db.query('events', where: 'uploaded=0');
     return Future.wait(eventFieldsMaps
         .map((e) async => await _createEventFromColumnValueMap(_db, e)));
   }
 
+  @override
   Future<void> markEventsAsUploaded(Iterable<Event> events) async {
     _db.transaction((txn) async {
       var batch = txn.batch();

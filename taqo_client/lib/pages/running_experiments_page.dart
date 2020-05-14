@@ -6,8 +6,7 @@ import 'package:taqo_email_plugin/taqo_email_plugin.dart' as taqo_email_plugin;
 import 'package:taqo_common/model/experiment.dart';
 import '../providers/experiment_provider.dart';
 import '../service/experiment_service.dart';
-import '../storage/flutter_file_storage.dart';
-import '../storage/local_database.dart';
+import '../service/platform_service.dart' as platform_service;
 import '../widgets/taqo_page.dart';
 import '../widgets/taqo_widgets.dart';
 import 'schedule_overview_page.dart';
@@ -41,8 +40,8 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
       setState(() {
         _experiments = service.getJoinedExperiments().map((e) => ExperimentProvider(e)).toList();
       });
-      LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename)).then((storage) {
-        storage.getAllNotifications().then((all) {
+      platform_service.databaseImpl.then((db) {
+        db.getAllNotifications().then((all) {
           final active = all.where((n) => n.isActive);
           setState(() {
             _active.clear();

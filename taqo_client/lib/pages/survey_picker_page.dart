@@ -2,8 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:taqo_common/model/experiment.dart';
 
-import '../storage/flutter_file_storage.dart';
-import '../storage/local_database.dart';
+import '../service/platform_service.dart' as platform_service;
 import '../widgets/taqo_widgets.dart';
 import 'survey/survey_page.dart';
 
@@ -28,8 +27,8 @@ class _SurveyPickerPageState extends State<SurveyPickerPage> {
   void initState() {
     super.initState();
 
-    LocalDatabase.get(FlutterFileStorage(LocalDatabase.dbFilename)).then((storage) {
-      storage.getAllNotificationsForExperiment(widget.experiment).then((all) {
+    platform_service.databaseImpl.then((db) {
+      db.getAllNotificationsForExperiment(widget.experiment).then((all) {
         final active = all.where((n) => n.isActive);
         setState(() {
           _active.clear();
