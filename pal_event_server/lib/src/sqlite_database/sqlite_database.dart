@@ -8,7 +8,7 @@ import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/notification_holder.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
 
-import 'sql_commands.dart';
+import 'raw_sql.dart';
 
 class SqliteDatabase {
   static const _dbFile = 'experiments.db';

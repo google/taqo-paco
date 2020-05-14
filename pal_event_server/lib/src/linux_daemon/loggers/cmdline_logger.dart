@@ -3,9 +3,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart';
+import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
 
-import '../pal_event_client.dart';
+import 'pal_event_helper.dart';
 import 'loggers.dart';
 
 const _beginTaqo = '# Begin Taqo\n';
@@ -109,8 +110,8 @@ class CmdLineLogger {
     _active = false;
   }
 
-  Future<List<Map<String, dynamic>>> _readLoggedCommands() async {
-    final events = <Map<String, dynamic>>[];
+  Future<List<Event>> _readLoggedCommands() async {
+    final events = <Event>[];
     try {
       final file = await File('${DartFileStorage.getLocalStorageDir().path}/command.log');
       if (await file.exists()) {
@@ -133,7 +134,7 @@ class CmdLineLogger {
   void _sendToPal(Timer timer) {
     _readLoggedCommands().then((events) {
       if (events != null && events.isNotEmpty) {
-        sendPacoEvent(events);
+        storePacoEvent(events);
       }
       if (!_active) {
         timer.cancel();

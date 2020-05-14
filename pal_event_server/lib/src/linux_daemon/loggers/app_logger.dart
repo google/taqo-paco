@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
-import '../pal_event_client.dart';
+import 'package:taqo_common/model/event.dart';
+
+import 'pal_event_helper.dart';
 import 'loggers.dart';
 
 const _queryInterval = const Duration(seconds: 1);
@@ -36,9 +38,9 @@ void _appLoggerIsolate(SendPort sendPort) {
     return _invalidWindowId;
   }
 
-  Map<String, String> buildResultMap(dynamic result) {
+  Map<String, dynamic> buildResultMap(dynamic result) {
     if (result is! String) return null;
-    final resultMap = <String, String>{};
+    final resultMap = <String, dynamic>{};
     final fields = result.split(fieldSplitRegExp);
     int i = 1;
     for (var name in _xpropNameFields) {
@@ -87,7 +89,7 @@ class AppLogger {
   ReceivePort _receivePort;
   Isolate _isolate;
 
-  final _eventsToSend = <Map<String, dynamic>>[];
+  final _eventsToSend = <Event>[];
   bool _active = false;
 
   AppLogger._();
@@ -136,10 +138,10 @@ class AppLogger {
   }
 
   void _sendToPal(Timer timer) {
-    List<Map<String, dynamic>> events = List.of(_eventsToSend);
+    List<Event> events = List.of(_eventsToSend);
     _eventsToSend.clear();
     if (events.isNotEmpty) {
-      sendPacoEvent(events);
+      storePacoEvent(events);
     }
     if (!_active) {
       timer.cancel();
