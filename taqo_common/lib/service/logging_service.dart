@@ -5,7 +5,7 @@ import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
-import 'package:taqo_common/storage/local_file_storage.dart';
+import '../storage/local_file_storage.dart';
 
 class LoggingService {
   static const _MAX_LOG_FILES_COUNT = 7;
