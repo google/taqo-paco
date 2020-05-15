@@ -38,6 +38,9 @@ class Experiment extends ExperimentCore {
   Map<String, dynamic> toJson() => _$ExperimentToJson(this);
 
   @JsonKey(ignore: true)
+  bool active = false;
+
+  @JsonKey(ignore: true)
   bool paused = false;
 
   List<ExperimentGroup> getSurveys() {

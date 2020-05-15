@@ -5,8 +5,6 @@ import 'package:taqo_email_plugin/taqo_email_plugin.dart' as taqo_email_plugin;
 
 import 'package:taqo_common/model/experiment.dart';
 import '../providers/experiment_provider.dart';
-import '../service/experiment_service.dart';
-import '../service/platform_service.dart' as platform_service;
 import '../widgets/taqo_page.dart';
 import '../widgets/taqo_widgets.dart';
 import 'schedule_overview_page.dart';
@@ -24,32 +22,17 @@ class RunningExperimentsPage extends StatefulWidget {
 }
 
 class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
-  var _scaffoldKey = GlobalKey<ScaffoldState>();
   static const _timeoutMsg =
       "The survey for the notification selected has expired. "
       "Please respond sooner next time.";
 
-  var _experiments = <ExperimentProvider>[];
+  var _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final _active = <int>{};
 
   @override
   void initState() {
     super.initState();
-    ExperimentService.getInstance().then((service) {
-      setState(() {
-        _experiments = service.getJoinedExperiments().map((e) => ExperimentProvider(e)).toList();
-      });
-      platform_service.databaseImpl.then((db) {
-        db.getAllNotifications().then((all) {
-          final active = all.where((n) => n.isActive);
-          setState(() {
-            _active.clear();
-            _active.addAll(active.map((e) => e.experimentId));
-          });
-        });
-      });
-    });
 
     // TODO Is there a better way?
     Future.delayed(Duration(milliseconds: 500), () {
@@ -74,91 +57,54 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // TODO Add refresh?
     return TaqoScaffold(
         title: 'Running Experiments',
         body: Container(
           padding: EdgeInsets.all(8.0),
           child: Column(
             children: <Widget>[
-              _buildExperimentList(),
+              ChangeNotifierProvider<ExperimentProvider>(
+                create: (_) => ExperimentProvider(),
+                child: ExperimentList(),
+              ),
             ],
           ),
         ),
     );
   }
 
-  Widget _buildExperimentList() {
-    if (_experiments.isEmpty) {
+  // TODO Add to UI
+  // Show progress indicator of some sort and remove once done
+  void updateExperiments() async {
+  }
+}
+
+class ExperimentList extends StatelessWidget {
+  static const _joinMsg = "Join some Experiments to get started.";
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = Provider.of<ExperimentProvider>(context);
+
+    if (provider.experiments == null || provider.experiments.isEmpty) {
       return Center(
-          child: const Text("""
-Join some Experiments to get started."""),
+        child: const Text(_joinMsg),
       );
     }
 
-    final children = <Widget>[];
-    for (var experiment in _experiments) {
-      children.add(ChangeNotifierProvider<ExperimentProvider>.value(
-        value: experiment,
-        child: ExperimentListItem(_active.contains(experiment.experiment.id), stopExperiment),
-      ));
+    final listItems = <Widget>[];
+    for (var e in provider.experiments) {
+      listItems.add(ExperimentListItem(provider, e));
     }
-    return ListView(
-      children: children,
-      shrinkWrap: true,
-    );
-  }
-
-  void updateExperiments() async {
-    // TODO show progress indicator of some sort and remove once done
-    final service = await ExperimentService.getInstance();
-    service.updateJoinedExperiments().then((List<Experiment> experiments) {
-      setState(() {
-        _experiments = experiments.map((e) => ExperimentProvider(e)).toList();
-      });
-    });
-  }
-
-  void stopExperiment(Experiment experiment) {
-    _confirmStopDialog(context).then((result) async {
-      if (result == ConfirmAction.ACCEPT) {
-        final service = await ExperimentService.getInstance();
-        service.stopExperiment(experiment);
-        setState(() {
-          _experiments = service.getJoinedExperiments().map((e) => ExperimentProvider(e)).toList();
-        });
-      }
-    });
-  }
-
-  Future<ConfirmAction> _confirmStopDialog(BuildContext context) async {
-    return showDialog<ConfirmAction>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Stop Experiment'),
-          content: const Text('Do you want to stop participating in this experiment?'),
-          actions: <Widget>[
-            FlatButton(
-              child: const Text('No'),
-              onPressed: () => Navigator.of(context).pop(ConfirmAction.CANCEL)
-            ),
-            FlatButton(
-              child: const Text('Yes'),
-              onPressed: () => Navigator.of(context).pop(ConfirmAction.ACCEPT)
-            )
-          ],
-        );
-      },
-    );
+    return ListView(children: listItems, shrinkWrap: true,);
   }
 }
 
 class ExperimentListItem extends StatelessWidget {
-  final bool _active;
-  final stop;
-  ExperimentListItem(this._active, this.stop);
+  final ExperimentProvider provider;
+  final Experiment experiment;
+
+  ExperimentListItem(this.provider, this.experiment);
 
   void _onTapExperiment(BuildContext context, Experiment experiment) {
     if (experiment.getActiveSurveys().length == 1) {
@@ -178,56 +124,51 @@ class ExperimentListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ExperimentProvider>(
-        builder: (BuildContext context, ExperimentProvider provider, _) {
-          final experiment = provider.experiment;
-          return TaqoCard(
-            child: Row(
-              children: <Widget>[
-                if (_active) Padding(
-                  padding: EdgeInsets.only(right: 8),
-                  child: Icon(
-                    Icons.notifications_active, color: Colors.redAccent),
-                ),
+    return TaqoCard(
+      child: Row(
+        children: <Widget>[
+          if (experiment.active) Padding(
+            padding: EdgeInsets.only(right: 8),
+            child: Icon(
+              Icons.notifications_active, color: Colors.redAccent),
+          ),
 
-                Expanded(
-                    child: InkWell(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(experiment.title, textScaleFactor: 1.5),
-                          if (experiment.organization != null &&
-                              experiment.organization.isNotEmpty)
-                            Text(experiment.organization),
-                          Text(experiment.contactEmail != null
-                              ? experiment.contactEmail
-                              : experiment.creator),
-                        ],
-                      ),
-                      onTap: () => _onTapExperiment(context, experiment),
-                    )
+          Expanded(
+              child: InkWell(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(experiment.title, textScaleFactor: 1.5),
+                    if (experiment.organization != null &&
+                        experiment.organization.isNotEmpty)
+                      Text(experiment.organization),
+                    Text(experiment.contactEmail != null
+                        ? experiment.contactEmail
+                        : experiment.creator),
+                  ],
                 ),
+                onTap: () => _onTapExperiment(context, experiment),
+              )
+          ),
 
-                IconButton(
-                    icon: Icon(provider.paused ? Icons.play_arrow : Icons.pause),
-                    onPressed: () => provider.paused = !provider.paused
-                ),
-                IconButton(
-                    icon: Icon(Icons.edit),
-                    onPressed: () => editExperiment(context, experiment)
-                ),
-                IconButton(
-                    icon: Icon(Icons.email),
-                    onPressed: () => emailExperiment(context, experiment)
-                ),
-                IconButton(
-                    icon: Icon(Icons.close),
-                    onPressed: () => stop(experiment)
-                ),
-              ],
-            ),
-          );
-        }
+          IconButton(
+              icon: Icon(experiment.paused ? Icons.play_arrow : Icons.pause),
+              onPressed: () => provider.setPaused(experiment, !experiment.paused)
+          ),
+          IconButton(
+              icon: Icon(Icons.edit),
+              onPressed: () => editExperiment(context, experiment)
+          ),
+          IconButton(
+              icon: Icon(Icons.email),
+              onPressed: () => emailExperiment(context, experiment)
+          ),
+          IconButton(
+              icon: Icon(Icons.close),
+              onPressed: () => stopExperiment(context),
+          ),
+        ],
+      ),
     );
   }
 
@@ -299,6 +240,37 @@ class ExperimentListItem extends StatelessWidget {
     if (val == ConfirmAction.ACCEPT) {
       taqo_email_plugin.sendEmail(to, experiment.title);
     }
+  }
+
+  void stopExperiment(BuildContext context) {
+    _confirmStopDialog(context).then((result) async {
+      if (result == ConfirmAction.ACCEPT) {
+        provider.stopExperiment(experiment);
+      }
+    });
+  }
+
+  Future<ConfirmAction> _confirmStopDialog(BuildContext context) async {
+    return showDialog<ConfirmAction>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Stop Experiment'),
+          content: const Text('Do you want to stop participating in this experiment?'),
+          actions: <Widget>[
+            FlatButton(
+              child: const Text('No'),
+              onPressed: () => Navigator.of(context).pop(ConfirmAction.CANCEL)
+            ),
+            FlatButton(
+              child: const Text('Yes'),
+              onPressed: () => Navigator.of(context).pop(ConfirmAction.ACCEPT)
+            )
+          ],
+        );
+      },
+    );
   }
 }
 
