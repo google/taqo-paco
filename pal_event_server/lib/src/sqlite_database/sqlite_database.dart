@@ -185,25 +185,26 @@ class SqliteDatabase implements BaseDatabase {
   }
 
   Future<int> insertEvent(Event event) async {
+    // Event.uploaded is not serialized into json so any Event received by the
+    // server has this field as null. We set it to false here because an event
+    // can only be uploaded after it is inserted.
+    event.uploaded = false;
     event.id = await _db.execute(insertEventCommand, params: [
-      '${event.experimentId}',
-      '${event.experimentServerId}',
+      event.experimentId,
+      event.experimentServerId,
       event.experimentName,
-      '${event.experimentVersion}',
+      event.experimentVersion,
       event.scheduleTime?.toIso8601String(withColon: true),
       event.responseTime?.toIso8601String(withColon: true),
-      '${event.uploaded}',
+      event.uploaded ? 1 : 0,
       event.groupName,
-      '${event.actionTriggerId}',
-      '${event.actionTriggerSpecId}',
-      '${event.actionId}'
+      event.actionTriggerId,
+      event.actionTriggerSpecId,
+      event.actionId
     ]);
     for (var responseEntry in event.responses.entries) {
-      await _db.execute(insertOutputCommand, params: [
-        '${event.id}',
-        '${responseEntry.key}',
-        '${responseEntry.value}'
-      ]);
+      await _db.execute(insertOutputCommand,
+          params: [event.id, '${responseEntry.key}', '${responseEntry.value}']);
     }
     return event.id;
   }
