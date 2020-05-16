@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:taqo_client/storage/base_database.dart';
+import 'package:taqo_common/storage/base_database.dart';
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
-import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 
@@ -94,10 +93,10 @@ class RemoteDatabase extends BaseDatabase {
 
   @override
   Future<List<NotificationHolder>> getAllNotificationsForExperiment(
-      Experiment experiment) {
+      int experimentId) {
     return global.tespClient.then((tespClient) async {
       final TespResponseAnswer response =
-          await tespClient.notificationSelectByExperiment(experiment.id);
+          await tespClient.notificationSelectByExperiment(experimentId);
       final List list = jsonDecode(response.payload);
       return list.map((n) => NotificationHolder.fromJson(n)).toList();
     });

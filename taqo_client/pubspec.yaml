@@ -20,8 +20,6 @@ dependencies:
   cupertino_icons: ^0.1.2
 
   android_alarm_manager: ^0.4.5+3
-  googleapis: ^0.54.0
-  googleapis_auth: ^0.2.11+1
   url_launcher: ^5.0.2
   url_launcher_fde:
     git:

@@ -18,12 +18,12 @@ class LocalFileStorageFactory {
 
   static Directory get localStorageDirectory => _localStorageDirectory;
 
-  static initialize(LocalFileStorageFactoryFunction factory, Directory localStorageDirectory) {
+  static void initialize(LocalFileStorageFactoryFunction factory, Directory localStorageDirectory) {
     _factory = factory;
     _localStorageDirectory = localStorageDirectory;
   }
 
-  static makeLocalFileStorage(String filename) {
+  static ILocalFileStorage makeLocalFileStorage(String filename) {
     return _factory(filename);
   }
 }

@@ -2,8 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
-
-import '../service/sync_service.dart';
+import 'package:taqo_common/service/sync_service.dart';
 
 final logger = Logger('SyncService');
 

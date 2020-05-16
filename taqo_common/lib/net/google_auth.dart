@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import "package:googleapis/oauth2/v2.dart";
-import "package:googleapis_auth/auth_io.dart";
+import 'package:googleapis/oauth2/v2.dart';
+import 'package:googleapis_auth/auth_io.dart';
 import 'package:googleapis_auth/src/auth_http_utils.dart';
-import "package:http/http.dart" as http;
-import 'package:taqo_common/storage/unsecure_token_storage.dart';
+import 'package:http/http.dart' as http;
 
-import '../storage/flutter_file_storage.dart';
+import '../storage/local_file_storage.dart';
+import '../storage/unsecure_token_storage.dart';
 
 enum AuthState {
   authenticated,
@@ -35,13 +35,13 @@ class GoogleAuth {
   }
 
   void _saveCredentials(credentials) async {
-    final tokenStore = await UnsecureTokenStorage.get(FlutterFileStorage(UnsecureTokenStorage.filename));
+    final tokenStore = await UnsecureTokenStorage.get(LocalFileStorageFactory.makeLocalFileStorage(UnsecureTokenStorage.filename));
     tokenStore.saveTokens(credentials.refreshToken,
         credentials.accessToken.data, credentials.accessToken.expiry);
   }
 
   Future<List<String>> _readTokens() async {
-    final tokenStore = await UnsecureTokenStorage.get(FlutterFileStorage(UnsecureTokenStorage.filename));
+    final tokenStore = await UnsecureTokenStorage.get(LocalFileStorageFactory.makeLocalFileStorage(UnsecureTokenStorage.filename));
     return tokenStore.readTokens();
   }
 
@@ -69,7 +69,7 @@ class GoogleAuth {
 
   /// Logout
   Future<void> clearCredentials() async {
-    final tokenStore = await UnsecureTokenStorage.get(FlutterFileStorage(UnsecureTokenStorage.filename));
+    final tokenStore = await UnsecureTokenStorage.get(LocalFileStorageFactory.makeLocalFileStorage(UnsecureTokenStorage.filename));
     tokenStore.clear();
     _authenticationStreamController.add(AuthState.notAuthenticated);
   }

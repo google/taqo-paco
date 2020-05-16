@@ -6,11 +6,12 @@ import 'package:sqlite3/sqlite.dart';
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/notification_holder.dart';
+import 'package:taqo_common/storage/base_database.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
 
 import 'raw_sql.dart';
 
-class SqliteDatabase {
+class SqliteDatabase implements BaseDatabase {
   static const _dbFile = 'experiments.db';
 
   static Completer<SqliteDatabase> _completer;
@@ -202,5 +203,17 @@ class SqliteDatabase {
             '${responseEntry.value}']);
     }
     return event.id;
+  }
+
+  @override
+  Future<Iterable<Event>> getUnuploadedEvents() {
+    // TODO: implement getUnuploadedEvents
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> markEventsAsUploaded(Iterable<Event> events) {
+    // TODO: implement markEventsAsUploaded
+    throw UnimplementedError();
   }
 }

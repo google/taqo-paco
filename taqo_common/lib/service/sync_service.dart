@@ -4,8 +4,8 @@ import 'package:logging/logging.dart';
 
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/event_save_outcome.dart';
-import '../net/paco_api.dart';
-import '../service/platform_service.dart' as platform_service;
+import 'package:taqo_common/net/paco_api.dart';
+import 'package:taqo_common/storage/base_database.dart';
 
 final logger = Logger('SyncService');
 
@@ -42,7 +42,7 @@ List<Event> _getUploadedEvents(List<Event> allEvents,
 
 Future<bool> syncData() async {
   logger.info("Start syncing data...");
-  final db = await platform_service.databaseImpl;
+  final db = await DatabaseFactory.makeDatabaseOrFuture();
   final events = await db.getUnuploadedEvents();
   final pacoApi = PacoApi();
 
