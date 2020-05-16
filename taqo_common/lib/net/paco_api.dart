@@ -32,6 +32,7 @@ class PacoApi {
   static Uri _pubExperimentByIdUrl(id) => Uri.https(_server, "/pubexperiments", {"id": "$id"});
   static Uri _inviteUrl(code) => Uri.https(_server, "/invite", {"code": "$code"});
   static final _eventsUri = Uri.https(_server, '/events');
+  static final _pubExperimentUri = Uri.https(_server, '/pubexperiments');
 
   static final _instance = PacoApi._();
 
@@ -69,6 +70,7 @@ class PacoApi {
     final client = http.Client();
     try {
       final headers = await _gAuth.getAuthHeaders(client);
+      headers['Content-Type'] = 'application/json';
       final response = await _post(client, url, headers, body);
       return response;
     } catch (_) {
@@ -82,6 +84,17 @@ class PacoApi {
 
   Future<PacoResponse> postEvents(String body) async {
     return _refreshAndPost(_eventsUri, body).then((response) {
+      if (response.statusCode == 200) {
+        return PacoResponse(PacoResponse.success, 'Success', body: response.body);
+      }
+      return PacoResponse(PacoResponse.failure, response.reasonPhrase);
+    }).catchError((e) {
+      return PacoResponse(PacoResponse.exception, e.toString());
+    });
+  }
+
+  Future<PacoResponse> postEventsPublic(String body) async {
+    return _refreshAndPost(_pubExperimentUri, body).then((response) {
       if (response.statusCode == 200) {
         return PacoResponse(PacoResponse.success, 'Success', body: response.body);
       }
