@@ -152,9 +152,11 @@ class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
       var scheduleClone = Schedule.fromJson(jsonDecode(jsonEncode(schedule.toJson())));
       final wasChanged = await Navigator.pushNamed(context, ScheduleDetailPage.routeName,
           arguments: ScheduleDetailArguments(experiment, scheduleClone));
-      if (wasChanged != null && wasChanged) {
+      if (wasChanged ?? false) {
         // Tentatively updates the schedule
-        experiment.updateSchedule(schedule.id, scheduleClone);
+        setState(() {
+          experiment.updateSchedule(schedule.id, scheduleClone);
+        });
         // Cache changes for revert
         _scheduleChangesToRevert.add(ScheduleRevision(experiment, schedule.id, schedule));
       }
