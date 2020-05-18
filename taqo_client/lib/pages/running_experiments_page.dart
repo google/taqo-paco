@@ -28,8 +28,6 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
 
   var _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final _active = <int>{};
-
   @override
   void initState() {
     super.initState();
@@ -64,7 +62,7 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
           child: Column(
             children: <Widget>[
               ChangeNotifierProvider<ExperimentProvider>(
-                create: (_) => ExperimentProvider(),
+                create: (_) => ExperimentProvider.withRunningExperiments(),
                 child: ExperimentList(),
               ),
             ],

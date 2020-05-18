@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import 'package:taqo_common/model/experiment.dart';
-import '../service/experiment_service.dart';
+
+import '../providers/experiment_provider.dart';
 import '../widgets/taqo_page.dart';
 import '../widgets/taqo_widgets.dart';
 import 'experiment_detail_page.dart';
@@ -17,17 +17,8 @@ class FindExperimentsPage extends StatefulWidget {
 }
 
 class _FindExperimentsPageState extends State<FindExperimentsPage> {
-  bool _isLoading = true;
-
   @override
   Widget build(BuildContext context) {
-    Widget _loadingWidget = Center(
-      child: Padding(
-        padding: EdgeInsets.only(top: 16.0),
-        child: CircularProgressIndicator(),
-      ),
-    );
-
     return TaqoScaffold(
       title: 'Find Experiments to Join',
       body: Container(
@@ -40,15 +31,9 @@ class _FindExperimentsPageState extends State<FindExperimentsPage> {
               color: Colors.black,
             ),
             Expanded(
-              child: FutureProvider<List<Experiment>>(
-                create: (_) => ExperimentService.getInstance().then(
-                  (service) => service.getExperimentsFromServer().then((v) {
-                    setState(() {
-                      _isLoading = false;
-                    });
-                    return v;
-                  })),
-                child: _isLoading ? _loadingWidget : ExperimentList(),
+              child: ChangeNotifierProvider<ExperimentProvider>(
+                create: (_) => ExperimentProvider.withAvailableExperiments(),
+                child: ExperimentList(),
               ),
             ),
           ],
@@ -65,37 +50,64 @@ class _FindExperimentsPageState extends State<FindExperimentsPage> {
 }
 
 class ExperimentList extends StatelessWidget {
+  static const _noExperimentsMsg = "No Experiments available to join.";
+
+  final Widget _loadingWidget = Center(
+    child: Padding(
+      padding: EdgeInsets.only(top: 16.0),
+      child: CircularProgressIndicator(),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
-    final experiments = Provider.of<List<Experiment>>(context);
-    final listItems = <Widget>[];
+    final provider = Provider.of<ExperimentProvider>(context);
 
-    if (experiments != null) {
-      for (var experiment in experiments) {
-        var experimentRow = TaqoCard(
-            child: InkWell(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(experiment.title, textScaleFactor: 1.5),
-                  if (experiment.organization != null &&
-                      experiment.organization.isNotEmpty)
-                    Text(experiment.organization),
-                  Text(experiment.contactEmail != null
-                      ? experiment.contactEmail
-                      : experiment.creator),
-                ],
-              ),
-              onTap: () {
-                Navigator.pushNamed(context, ExperimentDetailPage.routeName, arguments: experiment);
-              },
-            )
-        );
-
-        listItems.add(experimentRow);
-      }
+    if (provider.experiments == null) {
+      return Center(
+        child: _loadingWidget,
+      );
+    } else if (provider.experiments.isEmpty) {
+      return Center(
+        child: const Text(_noExperimentsMsg),
+      );
     }
 
+    final listItems = <Widget>[];
+    for (var experiment in provider.experiments) {
+      listItems.add(ExperimentListItem(experiment));
+    }
     return ListView(children: listItems, shrinkWrap: true,);
+  }
+}
+
+class ExperimentListItem extends StatelessWidget {
+  final Experiment experiment;
+
+  ExperimentListItem(this.experiment);
+
+  void _onTapExperiment(BuildContext context, Experiment experiment) {
+    Navigator.pushNamed(context, ExperimentDetailPage.routeName, arguments: experiment);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TaqoCard(
+      child: InkWell(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(experiment.title, textScaleFactor: 1.5),
+            if (experiment.organization != null &&
+                experiment.organization.isNotEmpty)
+              Text(experiment.organization),
+            Text(experiment.contactEmail != null
+                ? experiment.contactEmail
+                : experiment.creator),
+          ],
+        ),
+        onTap: () => _onTapExperiment(context, experiment),
+      )
+    );
   }
 }
