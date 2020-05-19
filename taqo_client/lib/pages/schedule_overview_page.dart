@@ -38,6 +38,9 @@ class ScheduleOverviewPage extends StatefulWidget {
 class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
   final _scheduleChangesToRevert = List<ScheduleRevision>();
 
+  ScheduleOverviewArguments args;
+  Experiment experiment;
+
   @override
   initState() {
     super.initState();
@@ -71,8 +74,8 @@ class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
   }
 
   Widget build(BuildContext context) {
-    final ScheduleOverviewArguments args = ModalRoute.of(context).settings.arguments;
-    final experiment = args.experiment;
+    args = ModalRoute.of(context).settings.arguments;
+    experiment = args.experiment;
 
     return WillPopScope(onWillPop: _onWillPop,
         child: Scaffold(
@@ -177,7 +180,7 @@ class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
     // Persist changes
     if (_scheduleChangesToRevert.isNotEmpty) {
       final service = await ExperimentService.getInstance();
-      service.saveJoinedExperiments();
+      service.updateExperimentSchedule(experiment);
     }
     Navigator.pop(context, true);
   }
