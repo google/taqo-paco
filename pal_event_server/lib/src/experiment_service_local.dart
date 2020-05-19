@@ -1,9 +1,13 @@
 import 'dart:async';
 
+import 'package:logging/logging.dart';
+
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/service/experiment_cache.dart';
 import 'package:taqo_common/storage/joined_experiments_storage.dart';
 import 'package:taqo_common/storage/local_file_storage.dart';
+
+final logger = Logger('ExperimentServiceLocal');
 
 class ExperimentServiceLocal implements ExperimentCache {
   var _experimentCahce = Map<int, Experiment>();
@@ -41,8 +45,14 @@ class ExperimentServiceLocal implements ExperimentCache {
 
   @override
   Experiment getExperimentById(int experimentId) {
-    return _experimentCahce[experimentId] ?? Experiment()
-      ..id = experimentId
-      ..anonymousPublic = true;
+    var experiment = _experimentCahce[experimentId];
+    if (experiment == null) {
+      logger.info(
+          'Cannot find experiment $experimentId in the cache. Using fallback value...');
+      experiment = Experiment()
+        ..id = experimentId
+        ..anonymousPublic = true;
+    }
+    return experiment;
   }
 }

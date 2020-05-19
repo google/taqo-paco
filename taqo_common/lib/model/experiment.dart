@@ -28,6 +28,8 @@ class Experiment extends ExperimentCore {
   List<ExperimentGroup> groups;
   String ringtoneUri;
   String postInstallInstructions;
+
+  @JsonKey(defaultValue: false)
   bool anonymousPublic;
   List<Visualization> visualizations;
 
