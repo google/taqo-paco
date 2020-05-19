@@ -43,7 +43,7 @@ class PALTespServer with TespRequestHandlerMixin {
     } else {
       await _storeEvent(events);
     }
-    unawaited(syncData());
+    unawaited(SyncService.syncData());
     return TespResponseSuccess();
   }
 

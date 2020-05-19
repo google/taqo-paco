@@ -15,7 +15,7 @@ void setupSyncServiceMethodChannel() {
   _platform.setMethodCallHandler((MethodCall call) async {
     switch (call.method) {
       case _runSyncServiceMethod:
-        var success = await syncData();
+        var success = await SyncService.syncData();
         if (!success) {
           throw PlatformException(code: 'SyncDataFailed');
         }
