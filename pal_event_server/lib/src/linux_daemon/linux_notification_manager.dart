@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/notification_holder.dart';
+import 'package:taqo_common/service/experiment_cache.dart';
 
 import '../sqlite_database/sqlite_database.dart';
 import 'dbus_notifications.dart';
@@ -34,7 +35,7 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
   if (cancelPending) {
     final database = await SqliteDatabase.get();
     final pendingNotifications = await database
-        .getAllNotificationsForExperiment(actionSpec.experiment.id);
+        .getAllNotificationsForExperiment(actionSpec.experiment);
     await Future.forEach(pendingNotifications, (pn) async {
       if (notificationHolder.sameGroupAs(pn)) {
         timeout(pn.id);
@@ -65,7 +66,8 @@ Future cancelNotification(int id) async {
 /// Cancel all notifications for [experiment]
 Future cancelForExperiment(int experimentId) async {
   final database = await SqliteDatabase.get();
-  return database.getAllNotificationsForExperiment(experimentId)
+  final experimentCache = await ExperimentCacheFactory.makeExperimentCacheOrFuture();
+  return database.getAllNotificationsForExperiment(experimentCache.getExperimentById(experimentId))
       .then((List<NotificationHolder> notifications) =>
       notifications.forEach((n) => cancelNotification(n.id)))
       .catchError((e, st) => "Error canceling notifications: $e");

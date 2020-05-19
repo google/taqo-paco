@@ -28,7 +28,7 @@ class _SurveyPickerPageState extends State<SurveyPickerPage> {
     super.initState();
 
     platform_service.databaseImpl.then((db) {
-      db.getAllNotificationsForExperiment(widget.experiment.id).then((all) {
+      db.getAllNotificationsForExperiment(widget.experiment).then((all) {
         final active = all.where((n) => n.isActive);
         setState(() {
           _active.clear();

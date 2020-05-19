@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:sqlite3/sqlite.dart';
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
 import 'package:taqo_common/storage/base_database.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
@@ -166,9 +167,9 @@ class SqliteDatabase implements BaseDatabase {
   }
 
   Future<List<NotificationHolder>> getAllNotificationsForExperiment(
-      int experimentId) async {
+      Experiment experiment) async {
     final result = _db
-        .query(selectNotificationByExperimentCommand, params: [experimentId]);
+        .query(selectNotificationByExperimentCommand, params: [experiment.id]);
     final notifications = <NotificationHolder>[];
     for (var row in result) {
       notifications.add(_buildNotificationHolder(row));

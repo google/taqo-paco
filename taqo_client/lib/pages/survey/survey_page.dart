@@ -396,7 +396,7 @@ class _SurveyPageState extends State<SurveyPage> {
         // We cancel here both for self-report as well as coming from a notification
         taqo_alarm.cancel(id);
         final activeNotifications =
-            await db.getAllNotificationsForExperiment(_experiment.id);
+            await db.getAllNotificationsForExperiment(_experiment);
         // Clear any pending notification
         for (var notification in activeNotifications) {
           if (notification.matchesAction(alarm)) {
@@ -413,7 +413,7 @@ class _SurveyPageState extends State<SurveyPage> {
     // the min of the explicit timeout and the time until the next notification
     // for the same survey fires
     final pendingNotifications = (await db
-        .getAllNotificationsForExperiment(_experiment.id))
+        .getAllNotificationsForExperiment(_experiment))
         .where((e) => e.experimentGroupName == _experimentGroup.name);
 
     final expired = pendingNotifications

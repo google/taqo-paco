@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:taqo_common/net/google_auth.dart';
 import 'package:taqo_common/service/logging_service.dart';
+import 'package:taqo_common/service/experiment_cache.dart';
 import 'package:taqo_common/storage/base_database.dart';
 import 'package:taqo_common/storage/esm_signal_storage.dart';
 import 'package:taqo_common/storage/local_file_storage.dart';
@@ -24,6 +25,7 @@ import 'pages/survey_picker_page.dart';
 import 'platform/platform_logging.dart';
 import 'platform/platform_sync_service.dart';
 import 'service/alarm/taqo_alarm.dart' as taqo_alarm;
+import 'service/experiment_service.dart';
 import 'service/platform_service.dart';
 import 'storage/flutter_file_storage.dart';
 
@@ -46,6 +48,7 @@ void main() async {
   LocalFileStorageFactory.initialize((fileName) => FlutterFileStorage(fileName),
       await FlutterFileStorage.getLocalStorageDir());
   DatabaseFactory.initialize(() => databaseImpl);
+  ExperimentCacheFactory.initialize(ExperimentService.getInstance);
   setupLoggingMethodChannel();
   setupSyncServiceMethodChannel();
   notifySyncService();

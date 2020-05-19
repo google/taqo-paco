@@ -5,6 +5,7 @@ import 'package:sqflite/sqflite.dart';
 
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
 import 'package:taqo_common/storage/base_database.dart';
 import 'package:taqo_common/storage/local_file_storage.dart';
@@ -74,8 +75,8 @@ class LocalDatabase extends BaseDatabase {
 
   @override
   Future<List<NotificationHolder>> getAllNotificationsForExperiment(
-      int experimentId) async {
-    return _getAllNotificationsForExperiment(_db, experimentId);
+      Experiment experiment) async {
+    return _getAllNotificationsForExperiment(_db, experiment.id);
   }
 
   @override

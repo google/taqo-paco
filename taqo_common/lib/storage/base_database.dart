@@ -14,7 +14,7 @@ abstract class BaseDatabase {
 
   Future<List<NotificationHolder>> getAllNotifications();
 
-  Future<List<NotificationHolder>> getAllNotificationsForExperiment(int experimentId);
+  Future<List<NotificationHolder>> getAllNotificationsForExperiment(Experiment experiment);
 
   Future<void> removeNotification(int id);
 

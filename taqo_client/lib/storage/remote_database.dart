@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/storage/base_database.dart';
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
@@ -93,10 +94,10 @@ class RemoteDatabase extends BaseDatabase {
 
   @override
   Future<List<NotificationHolder>> getAllNotificationsForExperiment(
-      int experimentId) {
+      Experiment experiment) {
     return global.tespClient.then((tespClient) async {
       final TespResponseAnswer response =
-          await tespClient.notificationSelectByExperiment(experimentId);
+          await tespClient.notificationSelectByExperiment(experiment.id);
       final List list = jsonDecode(response.payload);
       return list.map((n) => NotificationHolder.fromJson(n)).toList();
     });
