@@ -38,6 +38,7 @@ Experiment _$ExperimentFromJson(Map<String, dynamic> json) {
     ..ringtoneUri = json['ringtoneUri'] as String
     ..postInstallInstructions = json['postInstallInstructions'] as String
     ..anonymousPublic = json['anonymousPublic'] as bool
+    ..participantId = json['participantId'] as int
     ..visualizations = (json['visualizations'] as List)
         ?.map((e) => e == null
             ? null
@@ -70,5 +71,6 @@ Map<String, dynamic> _$ExperimentToJson(Experiment instance) =>
       'ringtoneUri': instance.ringtoneUri,
       'postInstallInstructions': instance.postInstallInstructions,
       'anonymousPublic': instance.anonymousPublic,
+      'participantId': instance.participantId,
       'visualizations': instance.visualizations,
     };

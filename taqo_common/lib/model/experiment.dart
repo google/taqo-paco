@@ -29,6 +29,7 @@ class Experiment extends ExperimentCore {
   String ringtoneUri;
   String postInstallInstructions;
   bool anonymousPublic;
+  int participantId;
   List<Visualization> visualizations;
 
   Experiment();

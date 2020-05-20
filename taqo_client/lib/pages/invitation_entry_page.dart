@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../net/invitation_response.dart';
 import '../service/experiment_service.dart';
 import 'experiment_detail_page.dart';
 
@@ -15,17 +14,23 @@ class InvitationEntryPage extends StatefulWidget {
 
 
 class _InvitationEntryPageState extends State<InvitationEntryPage> {
-  var textEditController = TextEditingController();
+  static const _titleText = 'Invitation Code Entry';
+  static const _preambleText =
+      'If you were given an Invitation Code for an experiment, enter it below.';
+  static const _promptText = 'Invitation Code';
+  static const _submitText = 'Submit';
 
-  var _participantId;
+  String _invitationCodeInput;
 
-  var _experimentId;
+  void _onTextInputChanged(String value) {
+    _invitationCodeInput = value;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Invitation Code Entry'),
+        title: const Text(_titleText),
         backgroundColor: Colors.indigo,
       ),
       body: Container(
@@ -34,111 +39,87 @@ class _InvitationEntryPageState extends State<InvitationEntryPage> {
         child: ListView(
           padding: EdgeInsets.all(4.0),
           children: <Widget>[
+            const Text(_preambleText),
             buildPreambleTextWidget(),
             Divider(
               height: 16.0,
               color: Colors.black,
             ),
-            buildOpenTextQuestionWidget(),
+            buildInvitationCodeInputWidget(),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-          icon: Icon(Icons.send), label: Text('Submit'), onPressed: () {
-            validateCode();
-      }),
+        icon: Icon(Icons.send),
+        label: const Text(_submitText),
+        onPressed: () {
+          _validateInvitationCode();
+        },
+      ),
     );
   }
 
-  @override
-  void dispose() {
-    // Clean up the controller when the Widget is disposed
-    textEditController.dispose();
-    super.dispose();
-  }
+  Widget buildPreambleTextWidget() => const Text(_preambleText);
 
-  Text buildPreambleTextWidget() {
-    return Text(
-      'If you were given an Invitation Code for an experiment, enter it below.',
-    );
-  }
-
-  Widget buildOpenTextQuestionWidget() {
-    var inputWidget = buildOpenTextField();
-
-    final promptText = "Invitation Code";
-    return buildQuestionWidget(promptText, inputWidget);
-  }
-
-  Widget buildQuestionWidget(String promptText, Widget inputWidget) {
+  Widget buildInvitationCodeInputWidget() {
     return Padding(
-        padding: EdgeInsets.fromLTRB(0.0, 8.0, 0.0, 8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[buildTextPrompt(promptText), inputWidget],
-        ));
+      padding: EdgeInsets.fromLTRB(0.0, 8.0, 0.0, 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          buildInvitationCodePrompt(),
+          buildInvitationCodeInput(),
+        ],
+      ),
+    );
   }
 
-  Text buildTextPrompt(String promptMessage) => Text(
-    promptMessage,
-    softWrap: true,
-    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
-  );
+  Widget buildInvitationCodePrompt() {
+    return Text(
+      _promptText,
+      softWrap: true,
+      style: TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 16.0),
+    );
+  }
 
-  TextField buildOpenTextField() {
+  Widget buildInvitationCodeInput() {
     return TextField(
-        keyboardType: TextInputType.multiline, maxLength: 500, maxLines: null, controller: textEditController);
+      onChanged: _onTextInputChanged,
+      keyboardType: TextInputType.multiline,
+      maxLength: 500,
+      maxLines: null,
+    );
   }
 
-  void validateCodeX() async {
-    // send code to server
-    var response = await sendCodetoServer(textEditController.text);
-    // parse json result
-    // if error show error message
-    if (response == null || response.errorMessage != null) {
-      _alertLog(response.errorMessage);
+  void _validateInvitationCode() async {
+    // Send code to server
+    final service = await ExperimentService.getInstance();
+    final response = await service.checkCode(_invitationCodeInput);
+
+    if (!response.isSuccess) {
+      _alertLog(response.statusMsg);
     } else {
-      _alertLog(response.participantId.toString() + " " + response.experimentId.toString() + "\nNow fetching experiment.");
-      _participantId = response.participantId;
-      _experimentId = response.experimentId;
-      final service = await ExperimentService.getInstance();
-      var experiment = await service.getPubExperimentFromServerById(_experimentId);
+      var experiment = await service.getPubExperimentFromServerById(response.experimentId);
       if (experiment != null) {
+        experiment.participantId = response.participantId;
+        experiment.anonymousPublic = true;
         Navigator.pushReplacementNamed(
             context, ExperimentDetailPage.routeName, arguments: experiment);
       } else {
-        // TODO Show error?
+        _alertLog("Error fetching experiment with id: ${response.experimentId}, participant: ${response.participantId}");
       }
     }
-    // if success
-    // parse participant ID and experiment ID.
-    // store participant ID and experiment ID.
-    // request experiment from server
-    // if error show error message
-    // else show ExperimentDetailPage
   }
 
-  void validateCode() async {
-
-      _participantId = 88;
-      _experimentId = 5238446861320192;
-      final service = await ExperimentService.getInstance();
-      var experiment = await service.getPubExperimentFromServerById(_experimentId);
-      if (experiment == null || service.isJoined(experiment)) {
-        // TODO Show msg: "already joined" or disable button entirely
-        return;
-      }
-      Navigator.pushNamed(
-          context, ExperimentDetailPage.routeName, arguments: experiment);
-    }
-
-  Future<void> _alertLog(msg) async {
+  Future<void> _alertLog(String msg) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Log'),
+          title: const Text('Log'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
@@ -148,7 +129,7 @@ class _InvitationEntryPageState extends State<InvitationEntryPage> {
           ),
           actions: <Widget>[
             FlatButton(
-              child: Text('Dismiss'),
+              child: const Text('Dismiss'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -158,10 +139,4 @@ class _InvitationEntryPageState extends State<InvitationEntryPage> {
       },
     );
   }
-
-  Future<InvitationResponse> sendCodetoServer(String code) async {
-    final service = await ExperimentService.getInstance();
-    return service.checkCode(code);
-  }
-
 }

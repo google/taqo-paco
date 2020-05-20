@@ -10,7 +10,6 @@ import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
 import '../providers/experiment_provider.dart' show sharedPrefsExperimentPauseKey;
 import '../net/paco_api.dart';
-import '../net/invitation_response.dart';
 import '../service/platform_service.dart' as platform_service;
 import '../storage/flutter_file_storage.dart';
 import 'alarm/taqo_alarm.dart' as taqo_alarm;
@@ -218,26 +217,20 @@ class ExperimentService {
     return _pacoApi.checkInvitationWithSavedCredentials(code)
         .then((response) {
           if (!response.isSuccess) {
-            return null;
+            return InvitationResponse.fromPaco(response);
           }
+
           final jsonResponse = response.body;
           var decodedResponse = jsonDecode(jsonResponse);
-          var errorMessage;
-          var participantId;
-          var experimentId;
 
           if (jsonResponse.startsWith('[')) {
-            decodedResponse = decodedResponse.elementAt(0);
-            errorMessage = decodedResponse["errorMessage"];
+            return InvitationResponse.fromPaco(
+                PacoResponse(PacoResponse.failure, decodedResponse["errorMessage"]));
           } else {
-            participantId = decodedResponse["participantId"];
-            experimentId = decodedResponse["experimentId"];
+            return InvitationResponse.fromPaco(response,
+                participantId: decodedResponse["participantId"],
+                experimentId: decodedResponse["experimentId"]);
           }
-
-          return InvitationResponse(
-              errorMessage: errorMessage,
-              participantId: participantId,
-              experimentId: experimentId);
         });
   }
 
@@ -250,4 +243,12 @@ class ExperimentService {
 
 enum PacoEventType {
   EXPERIMENT_JOIN, SCHEDULE_EDIT, EXPERIMENT_STOP,
+}
+
+class InvitationResponse extends PacoResponse {
+  final participantId;
+  final experimentId;
+
+  InvitationResponse.fromPaco(PacoResponse pacoResponse, {this.participantId, this.experimentId}) :
+      super(pacoResponse.statusCode, pacoResponse.statusMsg);
 }
