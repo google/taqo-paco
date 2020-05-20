@@ -211,7 +211,7 @@ class ExperimentService {
     saveJoinedExperiments();
 
     final db = await platform_service.databaseImpl;
-    db.insertEvent(_createPacoEvent(experiment, PacoEventType.SCHEDULT_EDIT));
+    db.insertEvent(_createPacoEvent(experiment, PacoEventType.SCHEDULE_EDIT));
   }
 
   Future<InvitationResponse> checkCode(String code) async {
