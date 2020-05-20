@@ -163,7 +163,7 @@ class ExperimentService {
       case PacoEventType.EXPERIMENT_STOP:
         event.responses["joined"] = "false";
         break;
-      case PacoEventType.SCHEDULT_EDIT:
+      case PacoEventType.SCHEDULE_EDIT:
       default:
         // Nothing for now
     }
