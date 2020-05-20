@@ -152,7 +152,7 @@ class PALTespServer with TespRequestHandlerMixin {
   FutureOr<TespResponse> notificationSelectByExperiment(int experimentId) async {
     final database = await SqliteDatabase.get();
     final experimentCache = await ExperimentCacheFactory.makeExperimentCacheOrFuture();
-    final notifications = await database.getAllNotificationsForExperiment(experimentCache.getExperimentById(experimentId));
+    final notifications = await database.getAllNotificationsForExperiment(await experimentCache.getExperimentById(experimentId));
     return TespResponseAnswer(jsonEncode(notifications));
   }
 }

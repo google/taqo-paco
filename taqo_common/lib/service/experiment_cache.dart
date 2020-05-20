@@ -3,7 +3,7 @@ import 'dart:async';
 import '../model/experiment.dart';
 
 abstract class ExperimentCache {
-  Experiment getExperimentById(int experimentId);
+  FutureOr<Experiment> getExperimentById(int experimentId);
 }
 
 typedef ExperimentCacheFactoryFunction = FutureOr<ExperimentCache> Function();

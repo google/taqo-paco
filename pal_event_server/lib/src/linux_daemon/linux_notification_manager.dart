@@ -11,10 +11,10 @@ import 'linux_alarm_manager.dart' show timeout;
 const _appName = 'Taqo';
 
 /// Shows or schedules a notification with the plugin
-Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
-  bool cancelPending=true}) async {
+Future<int> _notify(ActionSpecification actionSpec,
+    {DateTime when, bool cancelPending = true}) async {
   final notificationHolder = NotificationHolder(
-    -1,   // placeholder, the real ID will be assigned by sqlite
+    -1, // placeholder, the real ID will be assigned by sqlite
     actionSpec.time.millisecondsSinceEpoch,
     actionSpec.experiment.id,
     0,
@@ -23,7 +23,9 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
     actionSpec.actionTrigger.id,
     actionSpec.action?.id,
     null,
-    actionSpec.action == null ? "Time to participate" : actionSpec.action.msgText,
+    actionSpec.action == null
+        ? "Time to participate"
+        : actionSpec.action.msgText,
     actionSpec.actionTriggerSpecId,
   );
 
@@ -34,8 +36,8 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
   // notifications
   if (cancelPending) {
     final database = await SqliteDatabase.get();
-    final pendingNotifications = await database
-        .getAllNotificationsForExperiment(actionSpec.experiment);
+    final pendingNotifications =
+        await database.getAllNotificationsForExperiment(actionSpec.experiment);
     await Future.forEach(pendingNotifications, (pn) async {
       if (notificationHolder.sameGroupAs(pn)) {
         timeout(pn.id);
@@ -45,7 +47,8 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
 
   final database = await SqliteDatabase.get();
   final id = await database.insertNotification(notificationHolder);
-  await notify(id, _appName, 0, actionSpec.experiment.title, notificationHolder.message);
+  await notify(
+      id, _appName, 0, actionSpec.experiment.title, notificationHolder.message);
   return id;
 }
 
@@ -66,17 +69,21 @@ Future cancelNotification(int id) async {
 /// Cancel all notifications for [experiment]
 Future cancelForExperiment(int experimentId) async {
   final database = await SqliteDatabase.get();
-  final experimentCache = await ExperimentCacheFactory.makeExperimentCacheOrFuture();
-  return database.getAllNotificationsForExperiment(experimentCache.getExperimentById(experimentId))
+  final experimentCache =
+      await ExperimentCacheFactory.makeExperimentCacheOrFuture();
+  return database
+      .getAllNotificationsForExperiment(
+          await experimentCache.getExperimentById(experimentId))
       .then((List<NotificationHolder> notifications) =>
-      notifications.forEach((n) => cancelNotification(n.id)))
+          notifications.forEach((n) => cancelNotification(n.id)))
       .catchError((e, st) => "Error canceling notifications: $e");
 }
 
 /// Cancel all notifications, except ones that fired and are still pending
 Future cancelAllNotifications() async {
   final database = await SqliteDatabase.get();
-  return database.getAllNotifications()
+  return database
+      .getAllNotifications()
       .then(((List<NotificationHolder> notifications) {
     for (var n in notifications) {
       final dt = DateTime.fromMillisecondsSinceEpoch(n.alarmTime);

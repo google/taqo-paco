@@ -124,7 +124,7 @@ class SyncService {
 
       for (var event in events) {
         final experiment =
-            experimentCache.getExperimentById(event.experimentServerId);
+            await experimentCache.getExperimentById(event.experimentServerId);
         if (experiment.anonymousPublic) {
           publicEvents.add(event);
         } else {
