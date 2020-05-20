@@ -146,7 +146,7 @@ class ExperimentService implements ExperimentCache{
 
   List<Experiment> getJoinedExperiments() => List<Experiment>.from(_joined.values);
 
-  Event _createJoinEvent(Experiment experiment, {bool joining}) {
+  Event _createPacoEvent(Experiment experiment, PacoEventType eventType) {
     final event = Event();
     event.experimentId = experiment.id;
     event.experimentServerId = experiment.id;
@@ -156,7 +156,18 @@ class ExperimentService implements ExperimentCache{
     event.responses = {
       "schedule": schedule_printer.createStringOfAllSchedules(experiment),
     };
-    event.responses["joined"] = joining.toString();
+
+    switch (eventType) {
+      case PacoEventType.EXPERIMENT_JOIN:
+        event.responses["joined"] = "true";
+        break;
+      case PacoEventType.EXPERIMENT_STOP:
+        event.responses["joined"] = "false";
+        break;
+      case PacoEventType.SCHEDULE_EDIT:
+      default:
+        // Nothing for now
+    }
 
     if (experiment.recordPhoneDetails) {
       // TODO Platform implementation
@@ -169,7 +180,7 @@ class ExperimentService implements ExperimentCache{
     _joined[experiment.id] = experiment;
     saveJoinedExperiments();
     final db = await platform_service.databaseImpl;
-    db.insertEvent(_createJoinEvent(experiment, joining: true));
+    db.insertEvent(_createPacoEvent(experiment, PacoEventType.EXPERIMENT_JOIN));
   }
 
   bool isJoined(Experiment experiment) => _joined.containsKey(experiment.id);
@@ -182,7 +193,7 @@ class ExperimentService implements ExperimentCache{
     _joined.remove(experiment.id);
     saveJoinedExperiments();
     final db = await platform_service.databaseImpl;
-    db.insertEvent(_createJoinEvent(experiment, joining: false));
+    db.insertEvent(_createPacoEvent(experiment, PacoEventType.EXPERIMENT_STOP));
 
     taqo_alarm.cancelForExperiment(experiment);
   }
@@ -195,6 +206,13 @@ class ExperimentService implements ExperimentCache{
     final storage = await JoinedExperimentsStorage.get(LocalFileStorageFactory.makeLocalFileStorage(JoinedExperimentsStorage.filename));
     await storage.saveJoinedExperiments(_joined.values.toList());
     taqo_alarm.schedule();
+  }
+
+  void updateExperimentSchedule(Experiment experiment) async {
+    saveJoinedExperiments();
+
+    final db = await platform_service.databaseImpl;
+    db.insertEvent(_createPacoEvent(experiment, PacoEventType.SCHEDULE_EDIT));
   }
 
   Future<InvitationResponse> checkCode(String code) async {
@@ -234,4 +252,8 @@ class ExperimentService implements ExperimentCache{
   Experiment getExperimentById(int experimentId) {
     return _joined[experimentId];
   }
+}
+
+enum PacoEventType {
+  EXPERIMENT_JOIN, SCHEDULE_EDIT, EXPERIMENT_STOP,
 }

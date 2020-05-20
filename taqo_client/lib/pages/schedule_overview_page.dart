@@ -38,6 +38,9 @@ class ScheduleOverviewPage extends StatefulWidget {
 class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
   final _scheduleChangesToRevert = List<ScheduleRevision>();
 
+  ScheduleOverviewArguments args;
+  Experiment experiment;
+
   @override
   initState() {
     super.initState();
@@ -71,8 +74,8 @@ class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
   }
 
   Widget build(BuildContext context) {
-    final ScheduleOverviewArguments args = ModalRoute.of(context).settings.arguments;
-    final experiment = args.experiment;
+    args = ModalRoute.of(context).settings.arguments;
+    experiment = args.experiment;
 
     return WillPopScope(onWillPop: _onWillPop,
         child: Scaffold(
@@ -152,9 +155,11 @@ class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
       var scheduleClone = Schedule.fromJson(jsonDecode(jsonEncode(schedule.toJson())));
       final wasChanged = await Navigator.pushNamed(context, ScheduleDetailPage.routeName,
           arguments: ScheduleDetailArguments(experiment, scheduleClone));
-      if (wasChanged != null && wasChanged) {
+      if (wasChanged ?? false) {
         // Tentatively updates the schedule
-        experiment.updateSchedule(schedule.id, scheduleClone);
+        setState(() {
+          experiment.updateSchedule(schedule.id, scheduleClone);
+        });
         // Cache changes for revert
         _scheduleChangesToRevert.add(ScheduleRevision(experiment, schedule.id, schedule));
       }
@@ -175,7 +180,7 @@ class _ScheduleOverviewPageState extends State<ScheduleOverviewPage> {
     // Persist changes
     if (_scheduleChangesToRevert.isNotEmpty) {
       final service = await ExperimentService.getInstance();
-      service.saveJoinedExperiments();
+      service.updateExperimentSchedule(experiment);
     }
     Navigator.pop(context, true);
   }

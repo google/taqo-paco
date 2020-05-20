@@ -91,8 +91,9 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
       SizedBox(width: labelWidth, child: Text("$label: ")),
       TaqoRoundButton(onPressed: () async {
         final newTime = await showTimePicker(context: context, initialTime: time);
+        final newMsFromMidnight = 3600000 * newTime.hour + 60000 * newTime.minute;
         if (newTime != null) {
-          _setStateAndMarkChanged(() => set(msFromMidnight));
+          _setStateAndMarkChanged(() => set(newMsFromMidnight));
         }
       },
         child: Text(getHourOffsetAsTimeString(msFromMidnight))),
