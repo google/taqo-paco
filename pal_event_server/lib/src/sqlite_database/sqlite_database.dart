@@ -192,7 +192,6 @@ class SqliteDatabase implements BaseDatabase {
     event.uploaded = false;
     event.id = await _db.execute(insertEventCommand, params: [
       event.experimentId,
-      event.experimentServerId,
       event.experimentName,
       event.experimentVersion,
       event.scheduleTime?.toIso8601String(withColon: true),
@@ -218,16 +217,15 @@ class SqliteDatabase implements BaseDatabase {
     var event = Event()
       ..id = row.readColumnByIndex(0)
       ..experimentId = row.readColumnByIndex(1)
-      ..experimentServerId = row.readColumnByIndex(2)
-      ..experimentName = row.readColumnByIndex(3)
-      ..experimentVersion = row.readColumnByIndex(4)
-      ..scheduleTime = _buildZonedDateTime(row.readColumnByIndex(5))
-      ..responseTime = _buildZonedDateTime(row.readColumnByIndex(6))
-      ..uploaded = (row.readColumnByIndex(7) == 1)
-      ..groupName = row.readColumnByIndex(8)
-      ..actionTriggerId = row.readColumnByIndex(9)
-      ..actionTriggerSpecId = row.readColumnByIndex(10)
-      ..actionId = row.readColumnByIndex(11);
+      ..experimentName = row.readColumnByIndex(2)
+      ..experimentVersion = row.readColumnByIndex(3)
+      ..scheduleTime = _buildZonedDateTime(row.readColumnByIndex(4))
+      ..responseTime = _buildZonedDateTime(row.readColumnByIndex(5))
+      ..uploaded = (row.readColumnByIndex(6) == 1)
+      ..groupName = row.readColumnByIndex(7)
+      ..actionTriggerId = row.readColumnByIndex(8)
+      ..actionTriggerSpecId = row.readColumnByIndex(9)
+      ..actionId = row.readColumnByIndex(10);
     final result = _db.query(selectOutputsCommand, params: [event.id]);
     event.responses = Map.fromIterable(result,
         key: (row) => row.readColumnByIndexAsText(0),

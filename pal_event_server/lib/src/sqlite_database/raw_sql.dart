@@ -27,7 +27,6 @@ const createEventsTable = '''
 create table events (
   _id integer primary key autoincrement,
   experiment_id integer, 
-  experiment_server_id integer, 
   experiment_name text, 
   experiment_version integer, 
   schedule_time text, 
@@ -75,7 +74,6 @@ insert into notifications (
 const insertEventCommand = '''
 insert into events (
   experiment_id,
-  experiment_server_id,
   experiment_name,
   experiment_version,
   schedule_time,

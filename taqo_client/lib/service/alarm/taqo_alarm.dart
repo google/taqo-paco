@@ -138,7 +138,6 @@ void _createMissedEvent(int notificationId) async {
 
   final event = Event();
   event.experimentId = experiment.id;
-  event.experimentServerId = experiment.id;
   event.experimentName = experiment.title;
   event.groupName = notification.experimentGroupName;
   event.actionId = notification.actionId;

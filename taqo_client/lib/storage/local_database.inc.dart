@@ -10,7 +10,6 @@ Future<void> _onCreate(Database db, int version) async {
   await db.execute('''CREATE TABLE events (
 _id INTEGER PRIMARY KEY AUTOINCREMENT,
 experiment_id INTEGER, 
-experiment_server_id INTEGER, 
 experiment_name TEXT, 
 experiment_version INTEGER, 
 schedule_time TEXT, 
@@ -59,7 +58,6 @@ Future<void> _insertEvent(Database db, Event event) async {
         'events',
         {
           'experiment_id': event.experimentId,
-          'experiment_server_id': event.experimentServerId,
           'experiment_name': event.experimentName,
           'experiment_version': event.experimentVersion,
           'schedule_time': event.scheduleTime?.toIso8601String(withColon: true),

@@ -190,7 +190,6 @@ void _createMissedEvent(NotificationHolder notification) async {
   final experiment = experiments.firstWhere((e) => e.id == notification.experimentId);
   final event = Event();
   event.experimentId = experiment.id;
-  event.experimentServerId = experiment.id;
   event.experimentName = experiment.title;
   event.groupName = notification.experimentGroupName;
   event.actionId = notification.actionId;
