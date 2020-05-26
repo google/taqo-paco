@@ -3,15 +3,15 @@ import 'dart:async';
 import 'package:logging/logging.dart';
 
 import 'package:taqo_common/model/experiment.dart';
-import 'package:taqo_common/service/experiment_cache.dart';
+import 'package:taqo_common/service/experiment_service_lite.dart';
 import 'package:taqo_common/storage/joined_experiments_storage.dart';
 import 'package:taqo_common/storage/local_file_storage.dart';
 
 final logger = Logger('ExperimentServiceLocal');
 
-class ExperimentServiceLocal implements ExperimentCache {
+class ExperimentServiceLocal implements ExperimentServiceLite {
   JoinedExperimentsStorage _storage;
-  var _experimentCahce = Map<int, Experiment>();
+  var _experimentCache = Map<int, Experiment>();
   DateTime _timestamp;
 
   static ExperimentServiceLocal _instance;
@@ -33,7 +33,7 @@ class ExperimentServiceLocal implements ExperimentCache {
   }
 
   void _mapifyExperimentsById(List<Experiment> experiments) {
-    _experimentCahce = Map.fromIterable(experiments, key: (e) => e.id);
+    _experimentCache = Map.fromIterable(experiments, key: (e) => e.id);
   }
 
   Future<void> _loadJoinedExperiments() async {
@@ -59,7 +59,7 @@ class ExperimentServiceLocal implements ExperimentCache {
   @override
   Future<Experiment> getExperimentById(int experimentId) async {
     await _refreshIfNeeded();
-    var experiment = _experimentCahce[experimentId];
+    var experiment = _experimentCache[experimentId];
     if (experiment == null) {
       logger.info(
           'Cannot find experiment $experimentId in the cache. Using fallback value...');

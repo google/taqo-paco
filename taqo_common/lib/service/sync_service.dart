@@ -6,7 +6,7 @@ import 'package:logging/logging.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/event_save_outcome.dart';
 import 'package:taqo_common/net/paco_api.dart';
-import 'package:taqo_common/service/experiment_cache.dart';
+import 'package:taqo_common/service/experiment_service_lite.dart';
 import 'package:taqo_common/storage/base_database.dart';
 
 final logger = Logger('SyncService');
@@ -119,12 +119,12 @@ class SyncService {
     if (events.length > 0) {
       final publicEvents = <Event>[];
       final privateEvents = <Event>[];
-      final experimentCache =
-          await ExperimentCacheFactory.makeExperimentCacheOrFuture();
+      final experimentServiceLite =
+          await ExperimentServiceLiteFactory.makeExperimentServiceLiteOrFuture();
 
       for (var event in events) {
         final experiment =
-            await experimentCache.getExperimentById(event.experimentId);
+            await experimentServiceLite.getExperimentById(event.experimentId);
         if (experiment.anonymousPublic) {
           publicEvents.add(event);
         } else {

@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/net/paco_api.dart';
-import 'package:taqo_common/service/experiment_cache.dart';
+import 'package:taqo_common/service/experiment_service_lite.dart';
 import 'package:taqo_common/storage/joined_experiments_storage.dart';
 import 'package:taqo_common/storage/local_file_storage.dart';
 import 'package:taqo_common/util/schedule_printer.dart' as schedule_printer;
@@ -16,7 +16,7 @@ import '../net/invitation_response.dart';
 import '../service/platform_service.dart' as platform_service;
 import 'alarm/taqo_alarm.dart' as taqo_alarm;
 
-class ExperimentService implements ExperimentCache{
+class ExperimentService implements ExperimentServiceLite{
   final PacoApi _pacoApi;
 
   var _joined = Map<int, Experiment>();

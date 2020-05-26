@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:pedantic/pedantic.dart';
 import 'package:taqo_common/model/event.dart';
-import 'package:taqo_common/service/experiment_cache.dart';
+import 'package:taqo_common/service/experiment_service_lite.dart';
 import 'package:taqo_common/service/sync_service.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 
@@ -151,8 +151,8 @@ class PALTespServer with TespRequestHandlerMixin {
   @override
   FutureOr<TespResponse> notificationSelectByExperiment(int experimentId) async {
     final database = await SqliteDatabase.get();
-    final experimentCache = await ExperimentCacheFactory.makeExperimentCacheOrFuture();
-    final notifications = await database.getAllNotificationsForExperiment(await experimentCache.getExperimentById(experimentId));
+    final experimentServiceLite = await ExperimentServiceLiteFactory.makeExperimentServiceLiteOrFuture();
+    final notifications = await database.getAllNotificationsForExperiment(await experimentServiceLite.getExperimentById(experimentId));
     return TespResponseAnswer(jsonEncode(notifications));
   }
 }
