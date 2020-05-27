@@ -49,6 +49,13 @@ _id INTEGER PRIMARY KEY AUTOINCREMENT,
 json TEXT
   );
   ''');
+  await db.execute('''CREATE TABLE experiments (
+id INTEGER PRIMARY KEY, 
+json TEXT, 
+joining INTEGER, 
+paused INTEGER
+  );
+  ''');
 }
 
 Future<void> _insertEvent(Database db, Event event) async {
@@ -112,6 +119,26 @@ Future<int> _insertNotification(
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
+    });
+  } catch (_) {
+    rethrow;
+  }
+}
+
+Future<void> _insertOrUpdateJoinedExperiments(
+    Database db, Iterable<Experiment> experiments) async {
+  try {
+    db.transaction((txn) async {
+      await txn.update('experiments', {'joining': 0},
+          where: 'joining=?', whereArgs: [1]);
+      var batch = txn.batch();
+      for (var experiment in experiments) {
+        batch.rawInsert(
+            'INSERT INTO experiments(id, json, joining, paused) VALUES (?, ?, ?, ?)'
+            ' ON CONFLICT(id) DO UPDATE SET json=excluded.json, joining=1',
+            [experiment.id, jsonEncode(experiment), 1, 0]);
+      }
+      await batch.commit(noResult: true);
     });
   } catch (_) {
     rethrow;
