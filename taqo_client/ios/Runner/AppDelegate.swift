@@ -50,19 +50,16 @@ import BackgroundTasks
     SwiftTaqoTimePlugin.setPluginRegistrantCallback({ (registry: FlutterPluginRegistry) in
         // Copy what we need from GeneratedPlugins.m
         if (!registry.hasPlugin("FLTPathProviderPlugin")) {
-          FLTPathProviderPlugin.register(with: registry.registrar(forPlugin: "FLTPathProviderPlugin"))
-        }
-        if (!registry.hasPlugin("FLTSharedPreferencesPlugin")) {
-          FLTSharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "FLTSharedPreferencesPlugin"))
+          FLTPathProviderPlugin.register(with: registry.registrar(forPlugin: "FLTPathProviderPlugin")!)
         }
         if (!registry.hasPlugin("FlutterLocalNotificationsPlugin")) {
-          FlutterLocalNotificationsPlugin.register(with: registry.registrar(forPlugin: "FlutterLocalNotificationsPlugin"))
+          FlutterLocalNotificationsPlugin.register(with: registry.registrar(forPlugin: "FlutterLocalNotificationsPlugin")!)
         }
         if (!registry.hasPlugin("SqflitePlugin")) {
-          SqflitePlugin.register(with: registry.registrar(forPlugin: "SqflitePlugin"))
+          SqflitePlugin.register(with: registry.registrar(forPlugin: "SqflitePlugin")!)
         }
         if (!registry.hasPlugin("TaqoTimePlugin")) {
-          TaqoTimePlugin.register(with: registry.registrar(forPlugin: "TaqoTimePlugin"))
+          TaqoTimePlugin.register(with: registry.registrar(forPlugin: "TaqoTimePlugin")!)
         }
       })
 
@@ -72,7 +69,7 @@ import BackgroundTasks
 
 func pluginRegistrantCallback(_ registry: FlutterPluginRegistry) {
   if (!registry.hasPlugin("TaqoTimePlugin")) {
-    TaqoTimePlugin.register(with: registry.registrar(forPlugin: "TaqoTimePlugin"))
+    TaqoTimePlugin.register(with: registry.registrar(forPlugin: "TaqoTimePlugin")!)
   }
   GeneratedPluginRegistrant.register(with: registry)
 }
