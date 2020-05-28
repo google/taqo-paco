@@ -5,6 +5,8 @@ import 'dart:io';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
 
+const sharedPrefsExperimentPauseKey = "paused";
+
 Future<List<Experiment>> readJoinedExperiments() async {
   try {
     final taqoDir = DartFileStorage.getLocalStorageDir().path;

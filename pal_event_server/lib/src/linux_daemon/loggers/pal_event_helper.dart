@@ -2,10 +2,40 @@ import 'dart:async';
 
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_common/util/zoned_date_time.dart';
+import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
 import '../../sqlite_database/sqlite_database.dart';
-import 'app_logger.dart' show appNameField, windowNameField;
+import '../../utils.dart';
+import 'xprop_util.dart' as xprop;
+
+typedef CreateEventFunc = Future<Event> Function(
+    Experiment experiment, String groupname, Map<String, dynamic> response);
+
+Future<List<Event>> createLoggerPacoEvents(Map<String, dynamic> response,
+    {CreateEventFunc pacoEventCreator}) async {
+  final events = <Event>[];
+
+  final storageDir = DartFileStorage.getLocalStorageDir().path;
+  final sharedPrefs = TaqoSharedPrefs(storageDir);
+  final experiments = await readJoinedExperiments();
+
+  for (var e in experiments) {
+    final paused = await sharedPrefs.getBool("${sharedPrefsExperimentPauseKey}_${e.id}");
+    if (e.isOver() || (paused ?? false)) {
+      continue;
+    }
+
+    for (var g in e.groups) {
+      if (g.isAppUsageLoggingGroup) {
+        events.add(await pacoEventCreator(e, g.name, response));
+      }
+    }
+  }
+
+  return events;
+}
 
 const _participantId = 'participantId';
 
@@ -39,9 +69,9 @@ Future<Event> createAppUsagePacoEvent(Experiment experiment, String groupName,
     Map<String, dynamic> response) async {
   final event = await _createPacoEvent(experiment, groupName);
   final responses = <String, dynamic>{
-      _appsUsedKey: response[appNameField],
-      _appContentKey: response[windowNameField],
-      _appsUsedRawKey: '${response[appNameField]}:${response[windowNameField]}',
+      _appsUsedKey: response[xprop.appNameField],
+      _appContentKey: response[xprop.windowNameField],
+      _appsUsedRawKey: '${response[xprop.appNameField]}:${response[xprop.windowNameField]}',
   };
   event.responses.addAll(responses);
   return event;

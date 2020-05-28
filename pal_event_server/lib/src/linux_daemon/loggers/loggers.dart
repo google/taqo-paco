@@ -1,39 +1,32 @@
 import 'dart:async';
 
 import 'package:taqo_common/model/event.dart';
-import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
 import '../../utils.dart';
+import 'pal_event_helper.dart';
 
-typedef CreateEventFunc = Future<Event> Function(
-    Experiment experiment, String groupname, Map<String, dynamic> response);
+abstract class PacoEventLogger {
+  final Duration sendInterval;
+  bool active;
 
-const sharedPrefsExperimentPauseKey = "paused";
+  PacoEventLogger({
+    sendIntervalMs = 10000,
+  }) : sendInterval = Duration(milliseconds: sendIntervalMs);
 
-Future<List<Event>> createLoggerPacoEvents(
-    Map<String, dynamic> response, CreateEventFunc func) async {
-  final events = <Event>[];
+  void start();
+  void stop();
 
-  final storageDir = DartFileStorage.getLocalStorageDir().path;
-  final sharedPrefs = TaqoSharedPrefs(storageDir);
-  final experiments = await readJoinedExperiments();
-
-  for (var e in experiments) {
-    final paused = await sharedPrefs.getBool("${sharedPrefsExperimentPauseKey}_${e.id}");
-    if (e.isOver() || (paused ?? false)) {
-      continue;
+  void sendToPal(List<Event> events, Timer timer) {
+    if (events.isNotEmpty) {
+      storePacoEvent(events);
     }
 
-    for (var g in e.groups) {
-      if (g.isAppUsageLoggingGroup) {
-        events.add(await func(e, g.name, response));
-      }
+    if (!active) {
+      timer.cancel();
     }
   }
-
-  return events;
 }
 
 Future<bool> shouldStartLoggers() async {
