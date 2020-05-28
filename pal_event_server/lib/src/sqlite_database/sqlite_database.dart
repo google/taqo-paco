@@ -245,4 +245,31 @@ class SqliteDatabase implements BaseDatabase {
       _db.execute(markEventAsUploadedCommand, params: [event.id]);
     }
   }
+
+  @override
+  Future<Experiment> getExperimentById(int experimentId) async {
+    final result = _db.query(selectExperimentByIdCommand,params: [experimentId]);
+    if (result.length > 0) {
+      assert(result.length == 1);
+      return Experiment.fromJson(jsonDecode(result.first.readColumnByIndexAsText(0)));
+    } else {
+      return null;
+    }
+  }
+
+  @override
+  Future<List<Experiment>> getJoinedExperiments() async {
+    final result = _db.query(selectJoindExperimentsCommand);
+    return [for (var row in result) Experiment.fromJson(jsonDecode(row.readColumnByIndexAsText(0)))];
+  }
+
+  @override
+  Future<void> saveJoinedExperiments(Iterable<Experiment> experiments) async {
+    _db.execute(beginTransactionCommand);
+    _db.execute(quitAllExperimentsCommand);
+    for (var experiment in experiments) {
+      _db.execute(insertOrUpdateJoinedExperimentsCommand, params: [experiment.id, jsonEncode(experiment)]);
+    }
+    _db.execute(commitCommand);
+  }
 }
