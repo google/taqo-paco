@@ -210,9 +210,10 @@ Future<void> _insertOrUpdateJoinedExperiments(Database db, Iterable<Experiment> 
       var batch = txn.batch();
       for (var ${experimentsTableInfo.objectName} in experiments) {
         batch.rawInsert(
-         'INSERT INTO experiments(id, json, joining, paused) VALUES (?, ?, ?, ?)' 
-         ' ON CONFLICT(id) DO UPDATE SET json=excluded.json, joining=1',
-         [${experimentsTableInfo.objectName}.id, jsonEncode(${experimentsTableInfo.objectName}), 1, 0]
+         'INSERT INTO experiments(id, json, joining, paused) VALUES (?, ?, 1, 0)' 
+         ' ON CONFLICT(id) DO UPDATE SET json=excluded.json, joining=1, '
+         ' paused=CASE joining WHEN 0 THEN 0 ELSE paused END',
+         [${experimentsTableInfo.objectName}.id, jsonEncode(${experimentsTableInfo.objectName})]
         );
       }
       await batch.commit(noResult: true);

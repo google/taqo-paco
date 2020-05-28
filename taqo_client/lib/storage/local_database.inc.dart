@@ -134,9 +134,10 @@ Future<void> _insertOrUpdateJoinedExperiments(
       var batch = txn.batch();
       for (var experiment in experiments) {
         batch.rawInsert(
-            'INSERT INTO experiments(id, json, joining, paused) VALUES (?, ?, ?, ?)'
-            ' ON CONFLICT(id) DO UPDATE SET json=excluded.json, joining=1',
-            [experiment.id, jsonEncode(experiment), 1, 0]);
+            'INSERT INTO experiments(id, json, joining, paused) VALUES (?, ?, 1, 0)'
+            ' ON CONFLICT(id) DO UPDATE SET json=excluded.json, joining=1, '
+            ' paused=CASE joining WHEN 0 THEN 0 ELSE paused END',
+            [experiment.id, jsonEncode(experiment)]);
       }
       await batch.commit(noResult: true);
     });
