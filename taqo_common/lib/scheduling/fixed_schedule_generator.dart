@@ -81,7 +81,7 @@ class FixedScheduleGenerator {
       final nowTimeOnDay = mixDateWithTime(day, fromNow);
       for (var time in schedule.signalTimes) {
         final dt = day.add(Duration(milliseconds: time.fixedTimeMillisFromMidnight));
-        if (dt.isAfter(nowTimeOnDay)) {
+        if (dt.isAtSameMomentAs(nowTimeOnDay) || dt.isAfter(nowTimeOnDay)) {
           return dt;
         }
       }
