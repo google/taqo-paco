@@ -3,7 +3,9 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/interrupt_cue.dart';
 
+import '../triggers/triggers.dart';
 import 'loggers.dart';
 import 'pal_event_helper.dart';
 import 'xprop_util.dart' as xprop;
@@ -25,8 +27,15 @@ void _appLoggerIsolate(SendPort sendPort) {
         Process.run(xprop.command, xprop.getAppArgs(windowId)).then((result) {
           final res = result.stdout;
           if (res != _lastResult) {
-            _lastResult = res;
+            // Send APP_CLOSED
+            if (_lastResult != null && _lastResult.isNotEmpty) {
+              sendPort.send(_lastResult);
+            }
+
             final resultMap = xprop.buildResultMap(res);
+            _lastResult = resultMap[xprop.appNameField];
+
+            // Send PacoEvent && APP_USAGE
             if (resultMap != null) {
               sendPort.send(resultMap);
             }
@@ -37,7 +46,7 @@ void _appLoggerIsolate(SendPort sendPort) {
   });
 }
 
-class AppLogger extends PacoEventLogger {
+class AppLogger extends PacoEventLogger with EventTriggerSource {
   static const Object _isolateDiedObj = Object();
   static AppLogger _instance;
 
@@ -88,7 +97,7 @@ class AppLogger extends PacoEventLogger {
 
   void _listen(dynamic data) async {
     if (data == _isolateDiedObj) {
-      // The Isolate died
+      // The background Isolate died
       _isolate?.kill();
       _receivePort?.close();
       if (active) {
@@ -98,8 +107,17 @@ class AppLogger extends PacoEventLogger {
     }
 
     if (data is Map && data.isNotEmpty) {
-      _eventsToSend.addAll(
-          await createLoggerPacoEvents(data, pacoEventCreator: createAppUsagePacoEvent));
+      final pacoEvents = await createLoggerPacoEvents(data, pacoEventCreator: createAppUsagePacoEvent);
+      _eventsToSend.addAll(pacoEvents);
+
+      final triggerEvents = <TriggerEvent>[];
+      for (final e in pacoEvents) {
+        triggerEvents.add(createEventTriggers(InterruptCue.APP_USAGE, e.responses[appsUsedKey]));
+      }
+      broadcastEventsForTriggers(triggerEvents);
+    } else if (data is String && data.isNotEmpty) {
+      final triggerEvent = createEventTriggers(InterruptCue.APP_CLOSED, data);
+      broadcastEventsForTriggers(<TriggerEvent>[triggerEvent]);
     }
   }
 }

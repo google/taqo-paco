@@ -61,7 +61,7 @@ Event _createPacoEvent(Experiment experiment, String groupName) {
   return event;
 }
 
-const _appsUsedKey = 'apps_used';
+const appsUsedKey = 'apps_used';
 const _appContentKey = 'app_content';
 const _appsUsedRawKey = 'apps_used_raw';
 
@@ -69,7 +69,7 @@ Future<Event> createAppUsagePacoEvent(Experiment experiment, String groupName,
     Map<String, dynamic> response) async {
   final event = await _createPacoEvent(experiment, groupName);
   final responses = <String, dynamic>{
-      _appsUsedKey: response[xprop.appNameField],
+      appsUsedKey: response[xprop.appNameField],
       _appContentKey: response[xprop.windowNameField],
       _appsUsedRawKey: '${response[xprop.appNameField]}:${response[xprop.windowNameField]}',
   };
