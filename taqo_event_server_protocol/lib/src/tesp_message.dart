@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_event_server_protocol/src/json_utils.dart';
 
 abstract class TespMessage {
@@ -29,6 +30,10 @@ abstract class TespMessage {
   static const tespCodeRequestNotificationSelectByExperiment = 0x27;
 
   static const tespCodeRequestCreateMissedEvent = 0x31;
+
+  static const tespCodeRequestExperimentSaveJoined = 0x41;
+  static const tespCodeRequestExperimentSelectJoined = 0x42;
+  static const tespCodeRequestExperimentSelectById = 0x43;
 
   static const tespCodeResponseSuccess = 0x80;
   static const tespCodeResponseError = 0x81;
@@ -79,6 +84,12 @@ abstract class TespMessage {
             encodedPayload);
       case tespCodeRequestCreateMissedEvent:
         return TespRequestCreateMissedEvent.withEncodedPayload(encodedPayload);
+      case tespCodeRequestExperimentSaveJoined:
+        return TespRequestExperimentSaveJoined.withEncodedPayload(encodedPayload);
+      case tespCodeRequestExperimentSelectJoined:
+        return TespRequestExperimentSelectJoined();
+      case tespCodeRequestExperimentSelectById:
+        return TespRequestExperimentSelectById.withEncodedPayload(encodedPayload);
       case tespCodeResponseSuccess:
         return TespResponseSuccess();
       case tespCodeResponseError:
@@ -145,6 +156,13 @@ mixin EventDeserializer on Payload<Event> {
   @override
   Event createObjectFromJson(jsonObject) {
     return Event.fromJson(jsonObject);
+  }
+}
+
+mixin ExperimentsDeserializer on Payload<List<Experiment>> {
+  @override
+  List<Experiment> createObjectFromJson(jsonObject) {
+    return (jsonObject as List).map((e) => Experiment.fromJson(e)).toList();
   }
 }
 
@@ -320,6 +338,44 @@ class TespRequestCreateMissedEvent extends TespRequest
     setPayload(Event.fromJson(json));
   }
   TespRequestCreateMissedEvent.withEncodedPayload(Uint8List encodedPayload) {
+    setPayloadWithEncoded(encodedPayload);
+  }
+}
+
+class TespRequestExperimentSaveJoined extends TespRequest
+    with Payload<List<Experiment>>, ExperimentsDeserializer {
+  @override
+  final code = TespMessage.tespCodeRequestExperimentSaveJoined;
+
+  List<Experiment> get experiments => payload;
+
+  TespRequestExperimentSaveJoined(List<Experiment> experiments) {
+    setPayload(experiments);
+  }
+  TespRequestExperimentSaveJoined.withExperimentsJson(json) {
+    setPayload(createObjectFromJson(json));
+  }
+  TespRequestExperimentSaveJoined.withEncodedPayload(Uint8List encodedPayload) {
+    setPayloadWithEncoded(encodedPayload);
+  }
+}
+
+class TespRequestExperimentSelectJoined extends TespRequest {
+  @override
+  final code = TespMessage.tespCodeRequestExperimentSelectJoined;
+}
+
+class TespRequestExperimentSelectById extends TespRequest with Payload<int> {
+  @override
+  final code = TespMessage.tespCodeRequestExperimentSelectById;
+
+  int get experimentId => payload;
+
+  TespRequestExperimentSelectById(int experimentId) {
+    setPayload(experimentId);
+  }
+
+  TespRequestExperimentSelectById.withEncodedPayload(Uint8List encodedPayload) {
     setPayloadWithEncoded(encodedPayload);
   }
 }
