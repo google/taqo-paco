@@ -1,3 +1,5 @@
+import 'package:taqo_common/model/event.dart';
+
 const createAlarmsTable = '''
 create table alarms (
   _id integer primary key autoincrement,
@@ -111,3 +113,9 @@ const selectAllNotificationsCommand = 'select * from notifications';
 const deleteNotificationByIdCommand = 'delete from notifications where _id = ?;';
 
 const deleteAllNotificationsCommand = 'delete from notifications;';
+
+const selectUnuploadedEventsCommand = 'select * from events where uploaded = 0;';
+
+const selectOutputsCommand = 'select text, answer from outputs where event_id=?;';
+
+const markEventAsUploadedCommand = 'update events set uploaded = 1 where _id = ?;';

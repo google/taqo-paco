@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:taqo_client/service/logging_service.dart';
+import 'package:taqo_common/service/logging_service.dart';
 
 void main() {
   group('Filtering old logs based on sorting filenames', () {

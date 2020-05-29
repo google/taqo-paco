@@ -5,12 +5,15 @@ import 'dart:io';
 import 'package:sqlite3/sqlite.dart';
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
+import 'package:taqo_common/storage/base_database.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
+import 'package:taqo_common/util/zoned_date_time.dart';
 
 import 'raw_sql.dart';
 
-class SqliteDatabase {
+class SqliteDatabase implements BaseDatabase {
   static const _dbFile = 'experiments.db';
 
   static Completer<SqliteDatabase> _completer;
@@ -83,8 +86,8 @@ class SqliteDatabase {
   }
 
   Future<int> insertAlarm(ActionSpecification actionSpecification) async {
-    return _db.execute(insertAlarmCommand,
-        params: [jsonEncode(actionSpecification)]);
+    return _db
+        .execute(insertAlarmCommand, params: [jsonEncode(actionSpecification)]);
   }
 
   Future<ActionSpecification> getAlarm(int id) async {
@@ -112,20 +115,20 @@ class SqliteDatabase {
   }
 
   Future<int> insertNotification(NotificationHolder notificationHolder) async {
-    return _db.execute(insertNotificationCommand,
-        params: [
-          '${notificationHolder.alarmTime}',
-          '${notificationHolder.experimentId}',
-          '${notificationHolder.noticeCount}',
-          '${notificationHolder.timeoutMillis}',
-          '${notificationHolder.notificationSource}',
-          notificationHolder.message,
-          notificationHolder.experimentGroupName,
-          '${notificationHolder.actionTriggerId}',
-          '${notificationHolder.actionId}',
-          '${notificationHolder.actionTriggerSpecId}',
-          '${notificationHolder.snoozeTime ?? 0}',
-          '${notificationHolder.snoozeCount ?? 0}']);
+    return _db.execute(insertNotificationCommand, params: [
+      '${notificationHolder.alarmTime}',
+      '${notificationHolder.experimentId}',
+      '${notificationHolder.noticeCount}',
+      '${notificationHolder.timeoutMillis}',
+      '${notificationHolder.notificationSource}',
+      notificationHolder.message,
+      notificationHolder.experimentGroupName,
+      '${notificationHolder.actionTriggerId}',
+      '${notificationHolder.actionId}',
+      '${notificationHolder.actionTriggerSpecId}',
+      '${notificationHolder.snoozeTime ?? 0}',
+      '${notificationHolder.snoozeCount ?? 0}'
+    ]);
   }
 
   NotificationHolder _buildNotificationHolder(Row row) =>
@@ -163,8 +166,10 @@ class SqliteDatabase {
     return notifications;
   }
 
-  Future<List<NotificationHolder>> getAllNotificationsForExperiment(int experimentId) async {
-    final result = _db.query(selectNotificationByExperimentCommand, params: [experimentId]);
+  Future<List<NotificationHolder>> getAllNotificationsForExperiment(
+      Experiment experiment) async {
+    final result = _db
+        .query(selectNotificationByExperimentCommand, params: [experiment.id]);
     final notifications = <NotificationHolder>[];
     for (var row in result) {
       notifications.add(_buildNotificationHolder(row));
@@ -181,26 +186,65 @@ class SqliteDatabase {
   }
 
   Future<int> insertEvent(Event event) async {
-    event.id = await _db.execute(insertEventCommand,
-        params: [
-          '${event.experimentId}',
-          '${event.experimentServerId}',
-          event.experimentName,
-          '${event.experimentVersion}',
-          event.scheduleTime?.toIso8601String(withColon: true),
-          event.responseTime?.toIso8601String(withColon: true),
-          '${event.uploaded}',
-          event.groupName,
-          '${event.actionTriggerId}',
-          '${event.actionTriggerSpecId}',
-          '${event.actionId}']);
+    // Event.uploaded is not serialized into json so any Event received by the
+    // server has this field as null. We set it to false here because an event
+    // can only be uploaded after it is inserted.
+    event.uploaded = false;
+    event.id = await _db.execute(insertEventCommand, params: [
+      event.experimentId,
+      event.experimentServerId,
+      event.experimentName,
+      event.experimentVersion,
+      event.scheduleTime?.toIso8601String(withColon: true),
+      event.responseTime?.toIso8601String(withColon: true),
+      event.uploaded ? 1 : 0,
+      event.groupName,
+      event.actionTriggerId,
+      event.actionTriggerSpecId,
+      event.actionId
+    ]);
     for (var responseEntry in event.responses.entries) {
       await _db.execute(insertOutputCommand,
-          params: [
-            '${event.id}',
-            '${responseEntry.key}',
-            '${responseEntry.value}']);
+          params: [event.id, '${responseEntry.key}', '${responseEntry.value}']);
     }
     return event.id;
+  }
+
+  ZonedDateTime _buildZonedDateTime(String string) {
+    return string == null ? null : ZonedDateTime.fromIso8601String(string);
+  }
+
+  Event _buildEvent(Row row) {
+    var event = Event()
+      ..id = row.readColumnByIndex(0)
+      ..experimentId = row.readColumnByIndex(1)
+      ..experimentServerId = row.readColumnByIndex(2)
+      ..experimentName = row.readColumnByIndex(3)
+      ..experimentVersion = row.readColumnByIndex(4)
+      ..scheduleTime = _buildZonedDateTime(row.readColumnByIndex(5))
+      ..responseTime = _buildZonedDateTime(row.readColumnByIndex(6))
+      ..uploaded = (row.readColumnByIndex(7) == 1)
+      ..groupName = row.readColumnByIndex(8)
+      ..actionTriggerId = row.readColumnByIndex(9)
+      ..actionTriggerSpecId = row.readColumnByIndex(10)
+      ..actionId = row.readColumnByIndex(11);
+    final result = _db.query(selectOutputsCommand, params: [event.id]);
+    event.responses = Map.fromIterable(result,
+        key: (row) => row.readColumnByIndexAsText(0),
+        value: (row) => row.readColumnByIndex(1));
+    return event;
+  }
+
+  @override
+  Future<List<Event>> getUnuploadedEvents() async {
+    final result = _db.query(selectUnuploadedEventsCommand);
+    return [for (var row in result) _buildEvent(row)];
+  }
+
+  @override
+  Future<void> markEventsAsUploaded(Iterable<Event> events) {
+    for (var event in events) {
+      _db.execute(markEventAsUploadedCommand, params: [event.id]);
+    }
   }
 }
