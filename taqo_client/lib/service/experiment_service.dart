@@ -242,8 +242,13 @@ class ExperimentService implements ExperimentServiceLite{
   }
 
   @override
-  Experiment getExperimentById(int experimentId) {
-    return _joined[experimentId];
+  Future<Experiment> getExperimentById(int experimentId) async {
+    var experiment = _joined[experimentId];
+    if (experiment == null) {
+      var storage = await JoinedExperimentsStorage.get();
+      experiment = await storage.getExperimentById(experimentId);
+    }
+    return experiment;
   }
 }
 

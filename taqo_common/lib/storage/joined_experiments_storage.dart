@@ -46,4 +46,8 @@ class JoinedExperimentsStorage {
     await _db.saveJoinedExperiments(experiments);
   }
 
+  Future<Experiment> getExperimentById(int experimentId) {
+    return _db.getExperimentById(experimentId);
+  }
+
 }
