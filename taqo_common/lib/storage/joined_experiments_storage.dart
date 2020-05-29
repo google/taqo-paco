@@ -63,5 +63,9 @@ class JoinedExperimentsStorage {
     return (await _storageImpl.localFile).writeAsString(experimentJsonString, flush: true);
   }
 
+  Future<DateTime> lastModified() async {
+    return (await _storageImpl.localFile).lastModified();
+  }
+
   Future clear() => _storageImpl.clear();
 }
