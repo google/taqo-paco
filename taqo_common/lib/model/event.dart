@@ -17,9 +17,6 @@ class Event {
   @JsonKey(fromJson: _responsesFromListOfMap, toJson: _responsesToListOfMap)
   Map<String, dynamic> responses = {};
 
-  @JsonKey(name: 'experimentId')
-  int experimentServerId;
-
   String experimentName;
 
   @JsonKey(
@@ -47,7 +44,6 @@ class Event {
   @JsonKey(ignore: true)
   int id;
 
-  @JsonKey(ignore: true)
   int experimentId;
 
   @JsonKey(ignore: true)
@@ -56,7 +52,7 @@ class Event {
   Event();
 
   Event.of(Experiment experiment, ExperimentGroup experimentGroup) {
-    experimentServerId = experiment.id;
+    experimentId = experiment.id;
     experimentName = experiment.title;
     experimentVersion = experiment.version;
     groupName = experimentGroup.name;

@@ -22,7 +22,6 @@ DatabaseDescription buildDatabaseDescription() {
       defaultFromObjectTranslator: _defaultFromObjectTranslator,
       specContent: [
         ['experiment_id', SqlLiteDatatype.INTEGER],
-        ['experiment_server_id', SqlLiteDatatype.INTEGER],
         ['experiment_name', SqlLiteDatatype.TEXT],
         ['experiment_version', SqlLiteDatatype.INTEGER],
         ['schedule_time', SqlLiteDatatype.TEXT, _zonedDateTimeTranslator],

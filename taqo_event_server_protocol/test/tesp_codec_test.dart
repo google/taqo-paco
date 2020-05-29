@@ -52,14 +52,14 @@ void main() {
     final event1 = Event()
       ..responses = json.decode(payload)
       ..experimentName = 'TestExperiment'
-      ..experimentServerId = 12345
+      ..experimentId = 12345
       ..responseTime =
           ZonedDateTime.fromIso8601String('2020-05-04T16:21:31.415926-0700')
       ..experimentVersion = 1;
     final event2 = Event()
       ..responses = json.decode(payload)
       ..experimentName = 'TestExperiment'
-      ..experimentServerId = 67890
+      ..experimentId = 67890
       ..responseTime =
           ZonedDateTime.fromIso8601String('2020-05-05T16:21:31.415926-0700')
       ..experimentVersion = 2;

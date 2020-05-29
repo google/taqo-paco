@@ -149,7 +149,6 @@ class ExperimentService implements ExperimentCache{
   Event _createPacoEvent(Experiment experiment, PacoEventType eventType) {
     final event = Event();
     event.experimentId = experiment.id;
-    event.experimentServerId = experiment.id;
     event.experimentName = experiment.title;
     event.experimentVersion = experiment.version;
     event.responseTime = ZonedDateTime.now();

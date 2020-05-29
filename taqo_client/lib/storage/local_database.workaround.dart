@@ -7,7 +7,6 @@ Future<Event> _createEventFromColumnValueMap(
   var event = Event()
     ..id = map['_id']
     ..experimentId = map['experiment_id']
-    ..experimentServerId = map['experiment_server_id']
     ..experimentName = map['experiment_name']
     ..experimentVersion = map['experiment_version']
     ..scheduleTime = (map['schedule_time'] == null
