@@ -127,4 +127,22 @@ class RemoteDatabase extends BaseDatabase {
   Future<void> markEventsAsUploaded(Iterable<Event> events) {
     // no-op on desktop
   }
+
+  @override
+  Future<void> saveJoinedExperiments(Iterable<Experiment> experiments) {
+    // TODO: implement saveJoinedExperiments
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Experiment> getExperimentById(int experimentId) {
+    // TODO: implement getExperimentById
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Experiment>> getJoinedExperiments() {
+    // TODO: implement getJoinedExperiments
+    throw UnimplementedError();
+  }
 }

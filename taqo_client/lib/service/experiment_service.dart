@@ -40,7 +40,7 @@ class ExperimentService implements ExperimentServiceLite{
   }
 
   Future<void> _loadJoinedExperiments() async {
-    final storage = await JoinedExperimentsStorage.get(LocalFileStorageFactory.makeLocalFileStorage(JoinedExperimentsStorage.filename));
+    final storage = await JoinedExperimentsStorage.get();
     return storage.readJoinedExperiments().then((List<Experiment> experiments) {
       _mapifyExperimentsById(experiments);
     });
@@ -202,7 +202,7 @@ class ExperimentService implements ExperimentServiceLite{
   }
 
   void saveJoinedExperiments() async {
-    final storage = await JoinedExperimentsStorage.get(LocalFileStorageFactory.makeLocalFileStorage(JoinedExperimentsStorage.filename));
+    final storage = await JoinedExperimentsStorage.get();
     await storage.saveJoinedExperiments(_joined.values.toList());
     taqo_alarm.schedule();
   }
@@ -241,15 +241,14 @@ class ExperimentService implements ExperimentServiceLite{
         });
   }
 
-  Future<void> clear() async {
-    _joined.clear();
-    final storage = await JoinedExperimentsStorage.get(LocalFileStorageFactory.makeLocalFileStorage(JoinedExperimentsStorage.filename));
-    await storage.clear();
-  }
-
   @override
-  Experiment getExperimentById(int experimentId) {
-    return _joined[experimentId];
+  Future<Experiment> getExperimentById(int experimentId) async {
+    var experiment = _joined[experimentId];
+    if (experiment == null) {
+      var storage = await JoinedExperimentsStorage.get();
+      experiment = await storage.getExperimentById(experimentId);
+    }
+    return experiment;
   }
 }
 

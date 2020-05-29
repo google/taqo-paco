@@ -31,6 +31,12 @@ abstract class BaseDatabase {
   Future<Iterable<Event>> getUnuploadedEvents();
 
   Future<void> markEventsAsUploaded(Iterable<Event> events);
+
+  Future<void> saveJoinedExperiments(Iterable<Experiment> experiments);
+
+  Future<List<Experiment>> getJoinedExperiments();
+
+  Future<Experiment> getExperimentById(int experimentId);
 }
 
 typedef DatabaseFactoryFunction = FutureOr<BaseDatabase> Function();
