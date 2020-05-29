@@ -14,8 +14,7 @@ abstract class BaseDatabase {
 
   Future<List<NotificationHolder>> getAllNotifications();
 
-  Future<List<NotificationHolder>> getAllNotificationsForExperiment(
-      Experiment experiment);
+  Future<List<NotificationHolder>> getAllNotificationsForExperiment(Experiment experiment);
 
   Future<void> removeNotification(int id);
 
@@ -32,4 +31,18 @@ abstract class BaseDatabase {
   Future<Iterable<Event>> getUnuploadedEvents();
 
   Future<void> markEventsAsUploaded(Iterable<Event> events);
+}
+
+typedef DatabaseFactoryFunction = FutureOr<BaseDatabase> Function();
+
+class DatabaseFactory {
+  static DatabaseFactoryFunction _factory;
+
+  static void initialize(DatabaseFactoryFunction factory) {
+    _factory = factory;
+  }
+
+  static FutureOr<BaseDatabase> makeDatabaseOrFuture() {
+    return _factory();
+  }
 }
