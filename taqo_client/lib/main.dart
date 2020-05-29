@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:taqo_common/net/google_auth.dart';
+import 'package:taqo_common/service/experiment_service_lite.dart';
 import 'package:taqo_common/service/logging_service.dart';
-import 'package:taqo_common/service/experiment_cache.dart';
 import 'package:taqo_common/storage/base_database.dart';
 import 'package:taqo_common/storage/esm_signal_storage.dart';
 import 'package:taqo_common/storage/local_file_storage.dart';
@@ -48,7 +48,7 @@ void main() async {
   LocalFileStorageFactory.initialize((fileName) => FlutterFileStorage(fileName),
       await FlutterFileStorage.getLocalStorageDir());
   DatabaseFactory.initialize(() => databaseImpl);
-  ExperimentCacheFactory.initialize(ExperimentService.getInstance);
+  ExperimentServiceLiteFactory.initialize(ExperimentService.getInstance);
   setupLoggingMethodChannel();
   setupSyncServiceMethodChannel();
   notifySyncService();

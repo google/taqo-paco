@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/notification_holder.dart';
-import 'package:taqo_common/service/experiment_cache.dart';
+import 'package:taqo_common/service/experiment_service_lite.dart';
 
 import '../sqlite_database/sqlite_database.dart';
 import 'dbus_notifications.dart';
@@ -69,11 +69,11 @@ Future cancelNotification(int id) async {
 /// Cancel all notifications for [experiment]
 Future cancelForExperiment(int experimentId) async {
   final database = await SqliteDatabase.get();
-  final experimentCache =
-      await ExperimentCacheFactory.makeExperimentCacheOrFuture();
+  final experimentServiceLite =
+      await ExperimentServiceLiteFactory.makeExperimentServiceLiteOrFuture();
   return database
       .getAllNotificationsForExperiment(
-          await experimentCache.getExperimentById(experimentId))
+          await experimentServiceLite.getExperimentById(experimentId))
       .then((List<NotificationHolder> notifications) =>
           notifications.forEach((n) => cancelNotification(n.id)))
       .catchError((e, st) => "Error canceling notifications: $e");
