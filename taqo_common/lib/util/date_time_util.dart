@@ -11,6 +11,10 @@ DateTime getLater(DateTime dt1, DateTime dt2) {
   return dt1.isAfter(dt2) ? dt1 : dt2;
 }
 
+int getMillisFromMidnight(DateTime dt) {
+  return 1000 * (60 * (60 * dt.hour + dt.minute) + dt.second) + dt.millisecond;
+}
+
 String getHourOffsetAsTimeString(int millisFromMidnight) {
   final hourFormatter = DateFormat('hh:mma');
   final endHour = getDateWithoutTime(DateTime.now()).add(Duration(milliseconds: millisFromMidnight));
