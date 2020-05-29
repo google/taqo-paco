@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:logging/logging.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_event_server_protocol/src/tesp_codec.dart';
 
 import 'tesp_message.dart';
@@ -294,4 +295,13 @@ class TespFullClient extends TespEventClient {
 
   Future<TespResponse> createMissedEvent(Event event) =>
       send(TespRequestCreateMissedEvent(event));
+
+  Future<TespResponse> experimentSaveJoined(List<Experiment> experiments) =>
+      send(TespRequestExperimentSaveJoined(experiments));
+
+  Future<TespResponse> experimentSelectJoined() =>
+      send(TespRequestExperimentSelectJoined());
+
+  Future<TespResponse> experimentSelectById(int experimentId) =>
+      send(TespRequestExperimentSelectById(experimentId));
 }

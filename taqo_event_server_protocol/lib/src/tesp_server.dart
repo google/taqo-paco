@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/experiment.dart';
 
 import 'tesp_message_socket.dart';
 import 'tesp_message.dart';
@@ -29,6 +30,10 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
   FutureOr<TespResponse> notificationSelectByExperiment(int experimentId);
 
   FutureOr<TespResponse> createMissedEvent(Event event);
+
+  FutureOr<TespResponse> experimentSaveJoined(List<Experiment> experiments);
+  FutureOr<TespResponse> experimentSelectJoined();
+  FutureOr<TespResponse> experimentSelectById(int experimentId);
 
   TespResponse ping() {
     return TespResponseSuccess();
@@ -79,6 +84,14 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
       case TespRequestCreateMissedEvent:
         return createMissedEvent(
             (tespRequest as TespRequestCreateMissedEvent).event);
+      case TespRequestExperimentSaveJoined:
+        return experimentSaveJoined(
+            (tespRequest as TespRequestExperimentSaveJoined).experiments);
+      case TespRequestExperimentSelectJoined:
+        return experimentSelectJoined();
+      case TespRequestExperimentSelectById:
+        return experimentSelectById(
+            (tespRequest as TespRequestExperimentSelectById).experimentId);
       default:
         return TespResponseInvalidRequest.withPayload(
             'Unsupported TespRequest type');
