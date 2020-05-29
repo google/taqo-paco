@@ -389,6 +389,7 @@ class TespResponseError extends TespResponse with Payload<String> {
   @override
   final code = TespMessage.tespCodeResponseError;
 
+  static const tespServerErrorDatabase = 'server-database';
   static const tespServerErrorUnknown = 'server-unknown';
   static const tespClientErrorResponseTimeout = 'client-response-timeout';
   static const tespClientErrorServerCloseEarly = 'client-server-close-early';
