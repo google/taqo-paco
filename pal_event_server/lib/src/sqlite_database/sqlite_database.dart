@@ -66,6 +66,7 @@ class SqliteDatabase implements BaseDatabase {
     'notifications': createNotificationsTable,
     'events': createEventsTable,
     'outputs': createOutputsTable,
+    'experiments': createExperimentsTable,
   };
 
   Future _maybeCreateTable(String tableName) async {
@@ -245,9 +246,10 @@ class SqliteDatabase implements BaseDatabase {
   @override
   Future<Experiment> getExperimentById(int experimentId) async {
     final result = _db.query(selectExperimentByIdCommand,params: [experimentId]);
-    if (result.length > 0) {
-      assert(result.length == 1);
-      return Experiment.fromJson(jsonDecode(result.first.readColumnByIndexAsText(0)));
+    var experiments = <Experiment>[for (var row in result) Experiment.fromJson(jsonDecode(row.readColumnByIndexAsText(0)))];
+    if (experiments.length > 0) {
+      assert(experiments.length == 1);
+      return experiments[0];
     } else {
       return null;
     }
