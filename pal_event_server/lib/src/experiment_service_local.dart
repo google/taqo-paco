@@ -33,6 +33,7 @@ class ExperimentServiceLocal implements ExperimentServiceLite {
 
   Future<void> _init() async {
     _storage = await JoinedExperimentsStorage.get();
+    ExperimentCache.setCacheWithJoinedExperiment(await _storage.readJoinedExperiments());
   }
 
   @override
@@ -60,4 +61,9 @@ class ExperimentServiceLocal implements ExperimentServiceLite {
     }
     return experiment;
   }
+
+  Future<List<Experiment>> getJoinedExperiments() async {
+    return ExperimentCache.getJoinedExperiments();
+  }
+
 }
