@@ -427,6 +427,11 @@ class TespResponseError extends TespResponse with Payload<String> {
     });
     setPayload(payload);
   }
+
+  @override
+  String toString() {
+    return 'TespResponseError-$errorCode: $errorMessage';
+  }
 }
 
 class TespResponsePaused extends TespResponse {
