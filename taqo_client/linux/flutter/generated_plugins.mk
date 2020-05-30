@@ -1,8 +1,8 @@
 # Plugins to include in the build.
 GENERATED_PLUGINS=\
+	url_launcher_fde \
 	path_provider_linux \
 	taqo_time_plugin \
-	url_launcher_fde \
 
 GENERATED_PLUGINS_DIR=flutter/ephemeral/.plugin_symlinks
 # A plugin library name plugin name with _plugin appended.
@@ -20,9 +20,9 @@ PLUGIN_CPPFLAGS=$(foreach plugin,$(GENERATED_PLUGINS),\
 # Targets
 
 # Implicit rules don't match phony targets, so list plugin builds explicitly.
+$(OUT_DIR)/liburl_launcher_fde_plugin.so: | url_launcher_fde
 $(OUT_DIR)/libpath_provider_linux_plugin.so: | path_provider_linux
 $(OUT_DIR)/libtaqo_time_plugin_plugin.so: | taqo_time_plugin
-$(OUT_DIR)/liburl_launcher_fde_plugin.so: | url_launcher_fde
 
 .PHONY: $(GENERATED_PLUGINS)
 $(GENERATED_PLUGINS):
