@@ -166,7 +166,8 @@ class PALTespServer with TespRequestHandlerMixin {
    } catch (e) {
      return TespResponseError(TespResponseError.tespServerErrorDatabase, '$e');
    }
-   ExperimentCache.setCacheWithJoinedExperiment(experiments);
+   var experimentCache = await ExperimentCache.getInstance();
+   experimentCache.updateCacheWithJoinedExperiment(experiments);
    return TespResponseSuccess();
   }
 

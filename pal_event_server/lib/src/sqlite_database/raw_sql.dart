@@ -1,5 +1,3 @@
-import 'package:taqo_common/model/event.dart';
-
 const beginTransactionCommand = 'begin transaction;';
 
 const commitCommand = 'commit;';

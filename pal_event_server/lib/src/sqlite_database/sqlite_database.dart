@@ -237,7 +237,7 @@ class SqliteDatabase implements BaseDatabase {
   }
 
   @override
-  Future<void> markEventsAsUploaded(Iterable<Event> events) {
+  Future<void> markEventsAsUploaded(Iterable<Event> events) async {
     for (var event in events) {
       _db.execute(markEventAsUploadedCommand, params: [event.id]);
     }
