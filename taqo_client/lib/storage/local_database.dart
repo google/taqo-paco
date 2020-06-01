@@ -151,7 +151,7 @@ class LocalDatabase extends BaseDatabase {
 
   @override
   Future<List<Experiment>> getJoinedExperiments() async {
-    final experimentFieldsMaps = await _db.query('experiments', where: 'joining=1');
+    final experimentFieldsMaps = await _db.query('experiments', where: 'joined=1');
     return experimentFieldsMaps.map((e) => Experiment.fromJson(jsonDecode(e['json']))).toList();
   }
 }

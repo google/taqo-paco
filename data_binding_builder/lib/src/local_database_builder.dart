@@ -86,7 +86,7 @@ DatabaseDescription buildDatabaseDescription() {
       specContent: [
         ['id', SqlLiteDatatype.INTEGER, null, 'PRIMARY KEY'],
         ['json', SqlLiteDatatype.TEXT, (dbColSpec) => 'jsonEncode(${dbColSpec.dbTableInfo.objectName})'],
-        ['joining', SqlLiteDatatype.INTEGER, (dbColSpec) => '1'],
+        ['joined', SqlLiteDatatype.INTEGER, (dbColSpec) => '1'],
         ['paused', SqlLiteDatatype.INTEGER, (dbColSpec) => '0'],
       ]);
   return dbDescription;
@@ -203,16 +203,16 @@ Future<void> _insertOrUpdateJoinedExperiments(Database db, Iterable<Experiment> 
     db.transaction((txn) async {
       await txn.update(
       'experiments',
-      {'joining': 0},
-      where: 'joining=?',
+      {'joined': 0},
+      where: 'joined=?',
       whereArgs: [1]
       ); 
       var batch = txn.batch();
       for (var ${experimentsTableInfo.objectName} in experiments) {
         batch.rawInsert(
-         'INSERT INTO experiments(id, json, joining, paused) VALUES (?, ?, 1, 0)' 
-         ' ON CONFLICT(id) DO UPDATE SET json=excluded.json, joining=1, '
-         ' paused=CASE joining WHEN 0 THEN 0 ELSE paused END',
+         'INSERT INTO experiments(id, json, joined, paused) VALUES (?, ?, 1, 0)' 
+         ' ON CONFLICT(id) DO UPDATE SET json=excluded.json, joined=1, '
+         ' paused=CASE joined WHEN 0 THEN 0 ELSE paused END',
          [${experimentsTableInfo.objectName}.id, jsonEncode(${experimentsTableInfo.objectName})]
         );
       }

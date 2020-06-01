@@ -54,7 +54,7 @@ const createExperimentsTable = '''
 create table experiments (
   id integer primary key, 
   json text, 
-  joining integer, 
+  joined integer, 
   paused integer
 );
 ''';
@@ -131,13 +131,13 @@ const selectOutputsCommand = 'select text, answer from outputs where event_id=?;
 
 const markEventAsUploadedCommand = 'update events set uploaded = 1 where _id = ?;';
 
-const quitAllExperimentsCommand = 'update experiments set joining = 0 where joining = 1;';
+const quitAllExperimentsCommand = 'update experiments set joined = 0 where joined = 1;';
 
 const insertOrUpdateJoinedExperimentsCommand = '''
-insert into experiments(id, json, joining, paused) values (?, ?, 1, 0)
-  on conflict(id) do update set json=excluded.json, joining=1,
-  paused=case joining when 0 then 0 else paused end;
+insert into experiments(id, json, joined, paused) values (?, ?, 1, 0)
+  on conflict(id) do update set json=excluded.json, joined=1,
+  paused=case joined when 0 then 0 else paused end;
 ''';
 
 const selectExperimentByIdCommand = 'select json from experiments where id = ?;';
-const selectJoindExperimentsCommand = 'select json from experiments where joining = 1;';
+const selectJoindExperimentsCommand = 'select json from experiments where joined = 1;';
