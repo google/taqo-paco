@@ -1,18 +1,15 @@
 import 'dart:async';
 
 import 'package:logging/logging.dart';
+import 'package:pal_event_server/src/experiment_cache.dart';
 
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/service/experiment_service_lite.dart';
-import 'package:taqo_common/storage/joined_experiments_storage.dart';
-import 'package:taqo_common/storage/local_file_storage.dart';
 
 final logger = Logger('ExperimentServiceLocal');
 
 class ExperimentServiceLocal implements ExperimentServiceLite {
-  JoinedExperimentsStorage _storage;
-  var _experimentCache = Map<int, Experiment>();
-  DateTime _timestamp;
+  ExperimentCache _cache;
 
   static ExperimentServiceLocal _instance;
 
@@ -32,41 +29,26 @@ class ExperimentServiceLocal implements ExperimentServiceLite {
     return Future.value(_instance);
   }
 
-  void _mapifyExperimentsById(List<Experiment> experiments) {
-    _experimentCache = Map.fromIterable(experiments, key: (e) => e.id);
-  }
-
-  Future<void> _loadJoinedExperiments() async {
-    _timestamp = await _storage.lastModified();
-    await _storage.readJoinedExperiments().then((List<Experiment> experiments) {
-      _mapifyExperimentsById(experiments);
-    });
-  }
-
   Future<void> _init() async {
-    _storage = await JoinedExperimentsStorage.get(
-        LocalFileStorageFactory.makeLocalFileStorage(
-            JoinedExperimentsStorage.filename));
-    await _loadJoinedExperiments();
-  }
-
-  Future<void> _refreshIfNeeded() async {
-    if (_timestamp.isBefore(await _storage.lastModified())) {
-      await _loadJoinedExperiments();
-    }
+    _cache = await ExperimentCache.getInstance();
   }
 
   @override
   Future<Experiment> getExperimentById(int experimentId) async {
-    await _refreshIfNeeded();
-    var experiment = _experimentCache[experimentId];
+    var experiment = await _cache.getExperimentById(experimentId);
+
     if (experiment == null) {
       logger.info(
-          'Cannot find experiment $experimentId in the cache. Using fallback value...');
+          'Cannot find experiment $experimentId in the cache or the database. Using the fallback value...');
       experiment = Experiment()
         ..id = experimentId
         ..anonymousPublic = true;
     }
     return experiment;
   }
+
+  Future<List<Experiment>> getJoinedExperiments() async {
+    return _cache.getJoinedExperiments();
+  }
+
 }
