@@ -9,6 +9,7 @@ import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_common/util/date_time_util.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
+import '../../experiment_service_local.dart';
 import '../../utils.dart';
 import '../linux_notification_manager.dart' as linux_notification_manager;
 
@@ -44,7 +45,8 @@ mixin EventTriggerSource {
   void broadcastEventsForTriggers(List<TriggerEvent> events) async {
     final storageDir = DartFileStorage.getLocalStorageDir().path;
     final sharedPrefs = TaqoSharedPrefs(storageDir);
-    final experiments = await readJoinedExperiments();
+    final experimentService = await ExperimentServiceLocal.getInstance();
+    final experiments = await experimentService.getJoinedExperiments();
 
     bool shouldSync = false;
 

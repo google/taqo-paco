@@ -6,6 +6,7 @@ import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_common/util/zoned_date_time.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
+import '../../experiment_service_local.dart';
 import '../../sqlite_database/sqlite_database.dart';
 import '../../utils.dart';
 import 'xprop_util.dart' as xprop;
@@ -19,7 +20,8 @@ Future<List<Event>> createLoggerPacoEvents(Map<String, dynamic> response,
 
   final storageDir = DartFileStorage.getLocalStorageDir().path;
   final sharedPrefs = TaqoSharedPrefs(storageDir);
-  final experiments = await readJoinedExperiments();
+  final experimentService = await ExperimentServiceLocal.getInstance();
+  final experiments = await experimentService.getJoinedExperiments();
 
   for (var e in experiments) {
     final paused = await sharedPrefs.getBool("${sharedPrefsExperimentPauseKey}_${e.id}");

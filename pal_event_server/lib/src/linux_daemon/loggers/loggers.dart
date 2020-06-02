@@ -10,7 +10,7 @@ import 'pal_event_helper.dart';
 
 abstract class PacoEventLogger {
   final Duration sendInterval;
-  bool active;
+  bool active = false;
 
   PacoEventLogger({
     sendIntervalMs = 10000,
