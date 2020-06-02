@@ -15,6 +15,9 @@ class ExperimentProvider with ChangeNotifier {
   ExperimentService _service;
   List<Experiment> _experiments;
 
+  Timer _activeUpdateTimer;
+  static const _pollRate = Duration(seconds: 5);
+
   /// A [Provider] with the user's joined Experiments
   ExperimentProvider.withRunningExperiments() {
     _initWithRunning();
@@ -25,7 +28,6 @@ class ExperimentProvider with ChangeNotifier {
     _experiments = _service.getJoinedExperiments();
     notifyListeners();
 
-    // TODO Not dynamically updated
     platform_service.databaseImpl.then((db) {
       db.getAllNotifications().then((all) {
         for (Experiment e in _experiments) {
@@ -38,6 +40,8 @@ class ExperimentProvider with ChangeNotifier {
         notifyListeners();
       });
     });
+
+    _activeUpdateTimer = Timer.periodic(_pollRate, _updateActive);
   }
 
   /// A [Provider] with the Experiments available to join
@@ -49,6 +53,30 @@ class ExperimentProvider with ChangeNotifier {
     _service = await ExperimentService.getInstance();
     _experiments = await _service.getExperimentsFromServer();
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    if (_activeUpdateTimer != null) {
+      _activeUpdateTimer.cancel();
+      _activeUpdateTimer = null;
+    }
+    super.dispose();
+  }
+
+  /// Periodically check if experiments are active
+  /// Is there a better way? Only runs while running experiments page
+  /// is open, so maybe not too bad for now
+  void _updateActive(Timer _) {
+    platform_service.databaseImpl.then((db) {
+      db.getAllNotifications().then((all) {
+        for (Experiment e in _experiments) {
+          final n = all.firstWhere((n) => n.experimentId == e.id, orElse: () => null);
+          e.active = n?.isActive ?? false;
+        }
+        notifyListeners();
+      });
+    });
   }
 
   List<Experiment> get experiments => _experiments;
