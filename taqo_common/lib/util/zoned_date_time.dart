@@ -29,7 +29,7 @@ class ZonedDateTime {
   factory ZonedDateTime.fromIso8601String(String iso8601String) {
     final dateTime = DateTime.parse(iso8601String);
     final timeZoneOffset = parseTimeZoneOffset(iso8601String.substring(
-        ISO8601_FORMAT_LOCAL.length, iso8601String.length));
+        dateTime.toIso8601String().length-1, iso8601String.length));
     final iso8601StringLocal =
         iso8601String.substring(0, ISO8601_FORMAT_LOCAL.length);
     return ZonedDateTime._(timeZoneOffset, dateTime, iso8601StringLocal);
