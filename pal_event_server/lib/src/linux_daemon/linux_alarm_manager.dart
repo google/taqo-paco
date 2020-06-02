@@ -11,8 +11,8 @@ import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_common/storage/esm_signal_storage.dart';
 import 'package:taqo_common/util/date_time_util.dart';
 
+import '../experiment_service_local.dart';
 import '../sqlite_database/sqlite_database.dart';
-import '../utils.dart';
 import 'linux_notification_manager.dart' as linux_notification_manager;
 
 const _sharedPrefsLastAlarmKey = 'lastScheduledAlarm';
@@ -31,7 +31,8 @@ void _notify(int alarmId) async {
     // 30 seconds after the current time
     start = actionSpec.time;
     duration = DateTime.now().add(Duration(seconds: 30)).difference(start);
-    final experiments = await readJoinedExperiments();
+    final experimentService = await ExperimentServiceLocal.getInstance();
+    final experiments = await experimentService.getJoinedExperiments();
     final allAlarms = await getAllAlarmsWithinRange(DartFileStorage(ESMSignalStorage.filename),
         experiments, start: start, duration: duration);
     print('Showing ${allAlarms.length} alarms from: $start to: ${start.add(duration)}');
@@ -136,7 +137,8 @@ void _scheduleNextNotification({DateTime from}) async {
   from = getLater(from, lastSchedule);
   print('_scheduleNextNotification from: $from');
 
-  final experiments = await readJoinedExperiments();
+  final experimentService = await ExperimentServiceLocal.getInstance();
+  final experiments = await experimentService.getJoinedExperiments();
   getNextAlarmTime(DartFileStorage(ESMSignalStorage.filename), experiments, now: from)
       .then((actionSpec) async {
     if (actionSpec != null) {
@@ -186,11 +188,11 @@ void _createMissedEvent(NotificationHolder notification) async {
   if (notification == null) return;
   print('_createMissedEvent: ${notification.id}');
   // TODO In Taqo, we query the server for the Experiments here... is that necessary?
-  final experiments = await readJoinedExperiments();
+  final experimentService = await ExperimentServiceLocal.getInstance();
+  final experiments = await experimentService.getJoinedExperiments();
   final experiment = experiments.firstWhere((e) => e.id == notification.experimentId);
   final event = Event();
   event.experimentId = experiment.id;
-  event.experimentServerId = experiment.id;
   event.experimentName = experiment.title;
   event.groupName = notification.experimentGroupName;
   event.actionId = notification.actionId;

@@ -1,19 +1,21 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:logging/logging.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
+import 'package:taqo_common/storage/base_database.dart';
 import 'package:taqo_common/storage/local_file_storage.dart';
 import 'package:taqo_common/util/zoned_date_time.dart';
 
-import 'base_database.dart';
-
 part 'local_database.inc.dart';
 part 'local_database.workaround.dart';
+
+final logger = Logger('LocalDatabase');
 
 /// Global reference of the database connection, using singleton pattern
 class LocalDatabase extends BaseDatabase {
@@ -127,5 +129,29 @@ class LocalDatabase extends BaseDatabase {
       }
       await batch.commit(noResult: true);
     });
+  }
+
+  @override
+  Future<void> saveJoinedExperiments(Iterable<Experiment> experiments) async {
+    await _insertOrUpdateJoinedExperiments(_db, experiments);
+  }
+
+  @override
+  Future<Experiment> getExperimentById(int experimentId) async {
+    final experimentFieldsMaps = await _db.query('experiments', where: 'id=?',
+        whereArgs: [experimentId]);
+    if (experimentFieldsMaps.length > 0) {
+      assert(experimentFieldsMaps.length == 1); // since id is a primary key
+      return Experiment.fromJson(jsonDecode(experimentFieldsMaps[0]['json']));
+    } else {
+      logger.warning('Cannot find experiment with id: ${experimentId}');
+      return null;
+    }
+  }
+
+  @override
+  Future<List<Experiment>> getJoinedExperiments() async {
+    final experimentFieldsMaps = await _db.query('experiments', where: 'joined=1');
+    return experimentFieldsMaps.map((e) => Experiment.fromJson(jsonDecode(e['json']))).toList();
   }
 }

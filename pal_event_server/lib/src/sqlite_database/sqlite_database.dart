@@ -5,12 +5,15 @@ import 'dart:io';
 import 'package:sqlite3/sqlite.dart';
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
+import 'package:taqo_common/storage/base_database.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
+import 'package:taqo_common/util/zoned_date_time.dart';
 
 import 'raw_sql.dart';
 
-class SqliteDatabase {
+class SqliteDatabase implements BaseDatabase {
   static const _dbFile = 'experiments.db';
 
   static Completer<SqliteDatabase> _completer;
@@ -63,6 +66,7 @@ class SqliteDatabase {
     'notifications': createNotificationsTable,
     'events': createEventsTable,
     'outputs': createOutputsTable,
+    'experiments': createExperimentsTable,
   };
 
   Future _maybeCreateTable(String tableName) async {
@@ -83,8 +87,8 @@ class SqliteDatabase {
   }
 
   Future<int> insertAlarm(ActionSpecification actionSpecification) async {
-    return _db.execute(insertAlarmCommand,
-        params: [jsonEncode(actionSpecification)]);
+    return _db
+        .execute(insertAlarmCommand, params: [jsonEncode(actionSpecification)]);
   }
 
   Future<ActionSpecification> getAlarm(int id) async {
@@ -112,20 +116,20 @@ class SqliteDatabase {
   }
 
   Future<int> insertNotification(NotificationHolder notificationHolder) async {
-    return _db.execute(insertNotificationCommand,
-        params: [
-          '${notificationHolder.alarmTime}',
-          '${notificationHolder.experimentId}',
-          '${notificationHolder.noticeCount}',
-          '${notificationHolder.timeoutMillis}',
-          '${notificationHolder.notificationSource}',
-          notificationHolder.message,
-          notificationHolder.experimentGroupName,
-          '${notificationHolder.actionTriggerId}',
-          '${notificationHolder.actionId}',
-          '${notificationHolder.actionTriggerSpecId}',
-          '${notificationHolder.snoozeTime ?? 0}',
-          '${notificationHolder.snoozeCount ?? 0}']);
+    return _db.execute(insertNotificationCommand, params: [
+      '${notificationHolder.alarmTime}',
+      '${notificationHolder.experimentId}',
+      '${notificationHolder.noticeCount}',
+      '${notificationHolder.timeoutMillis}',
+      '${notificationHolder.notificationSource}',
+      notificationHolder.message,
+      notificationHolder.experimentGroupName,
+      '${notificationHolder.actionTriggerId}',
+      '${notificationHolder.actionId}',
+      '${notificationHolder.actionTriggerSpecId}',
+      '${notificationHolder.snoozeTime ?? 0}',
+      '${notificationHolder.snoozeCount ?? 0}'
+    ]);
   }
 
   NotificationHolder _buildNotificationHolder(Row row) =>
@@ -163,8 +167,10 @@ class SqliteDatabase {
     return notifications;
   }
 
-  Future<List<NotificationHolder>> getAllNotificationsForExperiment(int experimentId) async {
-    final result = _db.query(selectNotificationByExperimentCommand, params: [experimentId]);
+  Future<List<NotificationHolder>> getAllNotificationsForExperiment(
+      Experiment experiment) async {
+    final result = _db
+        .query(selectNotificationByExperimentCommand, params: [experiment.id]);
     final notifications = <NotificationHolder>[];
     for (var row in result) {
       notifications.add(_buildNotificationHolder(row));
@@ -181,26 +187,87 @@ class SqliteDatabase {
   }
 
   Future<int> insertEvent(Event event) async {
-    event.id = await _db.execute(insertEventCommand,
-        params: [
-          '${event.experimentId}',
-          '${event.experimentServerId}',
-          event.experimentName,
-          '${event.experimentVersion}',
-          event.scheduleTime?.toIso8601String(withColon: true),
-          event.responseTime?.toIso8601String(withColon: true),
-          '${event.uploaded}',
-          event.groupName,
-          '${event.actionTriggerId}',
-          '${event.actionTriggerSpecId}',
-          '${event.actionId}']);
+    event.id = await _db.execute(insertEventCommand, params: [
+      event.experimentId,
+      event.experimentName,
+      event.experimentVersion,
+      event.scheduleTime?.toIso8601String(withColon: true),
+      event.responseTime?.toIso8601String(withColon: true),
+      event.uploaded ? 1 : 0,
+      event.groupName,
+      event.actionTriggerId,
+      event.actionTriggerSpecId,
+      event.actionId
+    ]);
     for (var responseEntry in event.responses.entries) {
       await _db.execute(insertOutputCommand,
-          params: [
-            '${event.id}',
-            '${responseEntry.key}',
-            '${responseEntry.value}']);
+          params: [event.id, '${responseEntry.key}', '${responseEntry.value}']);
     }
     return event.id;
+  }
+
+  ZonedDateTime _buildZonedDateTime(String string) {
+    return string == null ? null : ZonedDateTime.fromIso8601String(string);
+  }
+
+  Event _buildEvent(Row row) {
+    var event = Event()
+      ..id = row.readColumnByIndex(0)
+      ..experimentId = row.readColumnByIndex(1)
+      ..experimentName = row.readColumnByIndex(2)
+      ..experimentVersion = row.readColumnByIndex(3)
+      ..scheduleTime = _buildZonedDateTime(row.readColumnByIndex(4))
+      ..responseTime = _buildZonedDateTime(row.readColumnByIndex(5))
+      ..uploaded = (row.readColumnByIndex(6) == 1)
+      ..groupName = row.readColumnByIndex(7)
+      ..actionTriggerId = row.readColumnByIndex(8)
+      ..actionTriggerSpecId = row.readColumnByIndex(9)
+      ..actionId = row.readColumnByIndex(10);
+    final result = _db.query(selectOutputsCommand, params: [event.id]);
+    event.responses = Map.fromIterable(result,
+        key: (row) => row.readColumnByIndexAsText(0),
+        value: (row) => row.readColumnByIndex(1));
+    return event;
+  }
+
+  @override
+  Future<List<Event>> getUnuploadedEvents() async {
+    final result = _db.query(selectUnuploadedEventsCommand);
+    return [for (var row in result) _buildEvent(row)];
+  }
+
+  @override
+  Future<void> markEventsAsUploaded(Iterable<Event> events) async {
+    for (var event in events) {
+      _db.execute(markEventAsUploadedCommand, params: [event.id]);
+    }
+  }
+
+  @override
+  Future<Experiment> getExperimentById(int experimentId) async {
+    final result = _db.query(selectExperimentByIdCommand,params: [experimentId]);
+    var experiments = <Experiment>[for (var row in result) Experiment.fromJson(jsonDecode(row.readColumnByIndexAsText(0)))];
+    if (experiments.length > 0) {
+      assert(experiments.length == 1);
+      return experiments[0];
+    } else {
+      return null;
+    }
+  }
+
+  @override
+  Future<List<Experiment>> getJoinedExperiments() async {
+    final result = _db.query(selectJoindExperimentsCommand);
+    return [for (var row in result) Experiment.fromJson(jsonDecode(row.readColumnByIndexAsText(0)))];
+  }
+
+  @override
+  Future<void> saveJoinedExperiments(Iterable<Experiment> experiments) async {
+    _db.execute(beginTransactionCommand);
+    _db.execute(quitAllExperimentsCommand);
+    for (var experiment in experiments) {
+      _db.execute(insertOrUpdateJoinedExperimentsCommand, params: [experiment.id, jsonEncode(experiment)]);
+    }
+    _db.execute(commitCommand);
   }
 }

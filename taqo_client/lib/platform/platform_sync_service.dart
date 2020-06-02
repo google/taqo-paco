@@ -2,8 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
-
-import '../service/sync_service.dart';
+import 'package:taqo_common/service/sync_service.dart';
 
 final logger = Logger('SyncService');
 
@@ -16,7 +15,7 @@ void setupSyncServiceMethodChannel() {
   _platform.setMethodCallHandler((MethodCall call) async {
     switch (call.method) {
       case _runSyncServiceMethod:
-        var success = await syncData();
+        var success = await SyncService.syncData();
         if (!success) {
           throw PlatformException(code: 'SyncDataFailed');
         }

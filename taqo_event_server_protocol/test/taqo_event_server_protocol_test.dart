@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_event_server_protocol/src/tesp_codec.dart';
 import 'package:taqo_event_server_protocol/src/tesp_message_socket.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
@@ -27,6 +28,9 @@ const _stringNotificationSelectAll = 'notificationSelectAll';
 const _stringNotificationSelectById = 'notificationSelectById';
 const _stringNotificationSelectByExperiment = 'notificationSelectByExperiment';
 const _stringCreateMissedEvent = 'createMissedEvent';
+const _stringExperimentSaveJoined = 'experimentSaveJoined';
+const _stringExperimentSelectJoined = 'experimentSelectJoined';
+const _stringExperimentSelectById = 'experimentSelectById';
 const _stringDummy = 'dummy';
 
 void main() {
@@ -107,6 +111,9 @@ void main() {
         TespRequestNotificationSelectById(12),
         TespRequestNotificationSelectByExperiment(13),
         TespRequestCreateMissedEvent(Event()..experimentName = '14'),
+        TespRequestExperimentSaveJoined([Experiment()..title='15', Experiment()..title='16']),
+        TespRequestExperimentSelectJoined(),
+        TespRequestExperimentSelectById(17),
       ];
       var responses = [
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|1'),
@@ -131,6 +138,9 @@ void main() {
         TespResponseAnswer('${_stringNotificationSelectById}: 12'),
         TespResponseAnswer('${_stringNotificationSelectByExperiment}: 13'),
         TespResponseAnswer('${_stringCreateMissedEvent}: 14'),
+        TespResponseAnswer('${_stringExperimentSaveJoined}: 15|16'),
+        TespResponseAnswer(_stringExperimentSelectJoined),
+        TespResponseAnswer('${_stringExperimentSelectById}: 17'),
       ];
       requests.forEach((element) {
         tespSocket.add(element);
@@ -531,6 +541,9 @@ void main() {
         TespRequestNotificationSelectById(12),
         TespRequestNotificationSelectByExperiment(13),
         TespRequestCreateMissedEvent(Event()..experimentName = '14'),
+        TespRequestExperimentSaveJoined([Experiment()..title='15', Experiment()..title='16']),
+        TespRequestExperimentSelectJoined(),
+        TespRequestExperimentSelectById(17),
       ];
       var responses = [
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|1'),
@@ -555,6 +568,9 @@ void main() {
         TespResponseAnswer('${_stringNotificationSelectById}: 12'),
         TespResponseAnswer('${_stringNotificationSelectByExperiment}: 13'),
         TespResponseAnswer('${_stringCreateMissedEvent}: 14'),
+        TespResponseAnswer('${_stringExperimentSaveJoined}: 15|16'),
+        TespResponseAnswer(_stringExperimentSelectJoined),
+        TespResponseAnswer('${_stringExperimentSelectById}: 17'),
       ];
       for (var i = 0; i < requests.length; i++) {
         expect(client.send(requests[i]),
@@ -701,6 +717,25 @@ class TestingEventServer with TespRequestHandlerMixin {
   Future<TespResponse> notificationSelectById(int notificationId) {
     return Future.value(
         TespResponseAnswer('$_stringNotificationSelectById: $notificationId'));
+  }
+
+  @override
+  Future<TespResponse> experimentSaveJoined(List<Experiment> experiments) async {
+    await Future.delayed(Duration(milliseconds: 100));
+    return TespResponseAnswer(
+        '${_stringExperimentSaveJoined}: ${experiments.map((e) => e.title).join('|')}');
+  }
+
+  @override
+  FutureOr<TespResponse> experimentSelectById(int experimentId) {
+    return Future.value(
+      TespResponseAnswer('$_stringExperimentSelectById: $experimentId'));
+  }
+
+  @override
+  FutureOr<TespResponse> experimentSelectJoined() {
+    return Future.value(
+      TespResponseAnswer('$_stringExperimentSelectJoined'));
   }
 }
 

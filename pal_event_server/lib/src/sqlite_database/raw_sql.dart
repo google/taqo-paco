@@ -1,3 +1,7 @@
+const beginTransactionCommand = 'begin transaction;';
+
+const commitCommand = 'commit;';
+
 const createAlarmsTable = '''
 create table alarms (
   _id integer primary key autoincrement,
@@ -25,7 +29,6 @@ const createEventsTable = '''
 create table events (
   _id integer primary key autoincrement,
   experiment_id integer, 
-  experiment_server_id integer, 
   experiment_name text, 
   experiment_version integer, 
   schedule_time text, 
@@ -44,6 +47,15 @@ create table outputs (
   text text,
   answer text
 );''';
+
+const createExperimentsTable = '''
+create table experiments (
+  id integer primary key, 
+  json text, 
+  joined integer, 
+  paused integer
+);
+''';
 
 const insertAlarmCommand = '''
 insert into alarms (
@@ -73,7 +85,6 @@ insert into notifications (
 const insertEventCommand = '''
 insert into events (
   experiment_id,
-  experiment_server_id,
   experiment_name,
   experiment_version,
   schedule_time,
@@ -84,7 +95,7 @@ insert into events (
   action_trigger_spec_id,
   action_id
 ) values (
-  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 )''';
 
 const insertOutputCommand = '''
@@ -111,3 +122,20 @@ const selectAllNotificationsCommand = 'select * from notifications';
 const deleteNotificationByIdCommand = 'delete from notifications where _id = ?;';
 
 const deleteAllNotificationsCommand = 'delete from notifications;';
+
+const selectUnuploadedEventsCommand = 'select * from events where uploaded = 0;';
+
+const selectOutputsCommand = 'select text, answer from outputs where event_id=?;';
+
+const markEventAsUploadedCommand = 'update events set uploaded = 1 where _id = ?;';
+
+const quitAllExperimentsCommand = 'update experiments set joined = 0 where joined = 1;';
+
+const insertOrUpdateJoinedExperimentsCommand = '''
+insert into experiments(id, json, joined, paused) values (?, ?, 1, 0)
+  on conflict(id) do update set json=excluded.json, joined=1,
+  paused=case joined when 0 then 0 else paused end;
+''';
+
+const selectExperimentByIdCommand = 'select json from experiments where id = ?;';
+const selectJoindExperimentsCommand = 'select json from experiments where joined = 1;';

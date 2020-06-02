@@ -4,6 +4,7 @@ import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
+import '../../experiment_service_local.dart';
 import '../../utils.dart';
 import 'pal_event_helper.dart';
 
@@ -18,13 +19,25 @@ abstract class PacoEventLogger {
   void start();
   void stop();
 
-  void sendToPal(List<Event> events, Timer timer) {
+  void sendToPal(List<Event> events, Timer timer) async {
     if (events.isNotEmpty) {
       storePacoEvent(events);
     }
 
-    if (!active) {
-      timer.cancel();
+    final storageDir = DartFileStorage.getLocalStorageDir().path;
+    final sharedPrefs = TaqoSharedPrefs(storageDir);
+    final experimentService = await ExperimentServiceLocal.getInstance();
+    final experiments = await experimentService.getJoinedExperiments();
+
+    for (var e in experiments) {
+      final paused = await sharedPrefs.getBool("${sharedPrefsExperimentPauseKey}_${e.id}");
+      if (e.isOver() || (paused ?? false)) {
+        continue;
+      }
+
+      if (!active) {
+        timer.cancel();
+      }
     }
   }
 }
@@ -32,7 +45,8 @@ abstract class PacoEventLogger {
 Future<bool> shouldStartLoggers() async {
   final storageDir = DartFileStorage.getLocalStorageDir().path;
   final sharedPrefs = TaqoSharedPrefs(storageDir);
-  final experiments = await readJoinedExperiments();
+  final experimentService = await ExperimentServiceLocal.getInstance();
+  final experiments = await experimentService.getJoinedExperiments();
 
   for (var e in experiments) {
     final paused = await sharedPrefs.getBool("${sharedPrefsExperimentPauseKey}_${e.id}");

@@ -37,7 +37,7 @@ Experiment _$ExperimentFromJson(Map<String, dynamic> json) {
         ?.toList()
     ..ringtoneUri = json['ringtoneUri'] as String
     ..postInstallInstructions = json['postInstallInstructions'] as String
-    ..anonymousPublic = json['anonymousPublic'] as bool
+    ..anonymousPublic = json['anonymousPublic'] as bool ?? false
     ..visualizations = (json['visualizations'] as List)
         ?.map((e) => e == null
             ? null
