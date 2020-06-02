@@ -12,7 +12,7 @@ import 'xprop_util.dart' as xprop;
 
 const _queryInterval = const Duration(seconds: 1);
 
-String _lastResult;
+String _prevWindowName;
 
 // Isolate entry point must be a top-level function (or static?)
 // Query xprop for the active window
@@ -25,15 +25,17 @@ void _appLoggerIsolate(SendPort sendPort) {
       if (windowId != xprop.invalidWindowId) {
         // Gets the active window name
         Process.run(xprop.command, xprop.getAppArgs(windowId)).then((result) {
-          final res = result.stdout;
-          if (res != _lastResult) {
+          final currWindow = result.stdout;
+          final resultMap = xprop.buildResultMap(currWindow);
+          final currWindowName = resultMap[xprop.appNameField];
+
+          if (currWindowName != _prevWindowName) {
             // Send APP_CLOSED
-            if (_lastResult != null && _lastResult.isNotEmpty) {
-              sendPort.send(_lastResult);
+            if (_prevWindowName != null && _prevWindowName.isNotEmpty) {
+              sendPort.send(_prevWindowName);
             }
 
-            final resultMap = xprop.buildResultMap(res);
-            _lastResult = resultMap[xprop.appNameField];
+            _prevWindowName = currWindowName;
 
             // Send PacoEvent && APP_USAGE
             if (resultMap != null) {

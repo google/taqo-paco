@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'linux_daemon.dart';
+import 'linux_daemon.dart' as linux_daemon;
 
 const _objectPath = '/org/freedesktop/Notifications';
 const _dest = 'org.freedesktop.Notifications';
@@ -29,7 +29,7 @@ void _listen(String event) {
       if (notifId != null) {
         // Not super efficient, but fine for now
         final id = _notifications.keys.firstWhere((k) => _notifications[k] == notifId);
-        openSurvey(id);
+        linux_daemon.openSurvey(id);
       }
     }
   }
@@ -45,7 +45,7 @@ void cancel(int id) {
   final notifId = _notifications[id];
   if (notifId == null) return;
   _notifications.remove(id);
-  
+
   Process.run('gdbus', ['call',
     '--session',
     '--dest', _dest,

@@ -12,16 +12,17 @@ import 'linux_alarm_manager.dart' as linux_alarm_manager;
 import 'linux_notification_manager.dart' as linux_notification_manager;
 
 void openSurvey(int id) {
-  try {
-    // If the app is running, just notify it to open a survey
-    // TODO
-  } catch (e) {
-    // Else launch the app and it will automatically open the survey
-    // Note: this will only work if Taqo is in the user's PATH
-    // For debugging/testing, maybe create a symlink in /usr/local/bin pointing
-    // to build/linux/debug/taqo_client
-    Process.run('taqo_client', []);
-  }
+  Process.run('taqo_client', []);
+  // try {
+  //   // If the app is running, just notify it to open a survey
+  //   // TODO
+  // } catch (e) {
+  //   // Else launch the app and it will automatically open the survey
+  //   // Note: this will only work if Taqo is in the user's PATH
+  //   // For debugging/testing, maybe create a symlink in /usr/local/bin pointing
+  //   // to build/linux/debug/taqo_client
+  //   Process.run('taqo_client', []);
+  // }
 }
 
 void handleCreateMissedEvent(Event event) async {
