@@ -172,7 +172,8 @@ class ExperimentGroup {
   }
 
   bool isOver(DateTime now) {
-    return fixedDuration && DateFormat.yMd().parse(endDate).isBefore(now);
+    final end = parseYMDTime(endDate);
+    return fixedDuration && end.isBefore(now);
   }
 
   bool isStarted(DateTime now) {
