@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:taqo_email_plugin/taqo_email_plugin.dart' as taqo_email_plugin;
 
 import 'package:taqo_common/model/experiment.dart';
-import 'package:taqo_common/model/experiment_group.dart';
 
 import '../providers/experiment_provider.dart';
 import '../widgets/taqo_page.dart';
