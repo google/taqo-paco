@@ -33,7 +33,6 @@ class TriggerEvent {
 
 mixin EventTriggerSource {
   static const sharedPrefsRecentlyTriggeredKey = 'recentlyTriggered';
-  static const sourceIdWildCard = '*';
 
   /// Create [TriggerEvent] objects
   TriggerEvent createEventTriggers(int code, String sourceId,
@@ -129,12 +128,12 @@ mixin EventTriggerSource {
 
   List<ExperimentGroup> _groupsListening(Experiment experiment, TriggerEvent event) {
     final groups = <ExperimentGroup>[];
+    final pattern = RegExp(event.sourceId);
 
     for (final group in experiment.groups) {
       if (!group.isOver(event.dateTime) && group.backgroundListen) {
         final groupListenId = group.backgroundListenSourceIdentifier;
-        // TODO Switch to RegExp matching
-        if (groupListenId == sourceIdWildCard || groupListenId == event.sourceId) {
+        if (pattern.hasMatch(groupListenId)) {
           groups.add(group);
         }
       }
