@@ -3,13 +3,15 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/interrupt_cue.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
 
+import '../triggers/triggers.dart';
 import 'loggers.dart';
 import 'pal_event_helper.dart';
 import 'shell_util.dart' as shell;
 
-class CmdLineLogger extends PacoEventLogger {
+class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
   static CmdLineLogger _instance;
 
   CmdLineLogger._();
@@ -31,8 +33,15 @@ class CmdLineLogger extends PacoEventLogger {
     await shell.enableCmdLineLogging();
     active = true;
     Timer.periodic(sendInterval, (Timer t) async {
-      final events = await _readLoggedCommands();
-      sendToPal(events, t);
+      final pacoEvents = await _readLoggedCommands();
+      sendToPal(pacoEvents, t);
+
+      final triggerEvents = <TriggerEvent>[];
+      for (final e in pacoEvents) {
+        // TODO Use a different InterruptCue?
+        triggerEvents.add(createEventTriggers(InterruptCue.APP_USAGE, e.responses[cmdRawKey]));
+      }
+      broadcastEventsForTriggers(triggerEvents);
     });
   }
 
@@ -52,15 +61,21 @@ class CmdLineLogger extends PacoEventLogger {
         // TODO race condition here
         await file.delete();
         for (var line in lines) {
-          // TODO jsonDecode can fail with special characters in line, e.g. '{'
-          events.addAll(await createLoggerPacoEvents(jsonDecode(line),
-              pacoEventCreator: createCmdUsagePacoEvent));
+          try {
+            events.addAll(await createLoggerPacoEvents(jsonDecode(line),
+                pacoEventCreator: createCmdUsagePacoEvent));
+          } catch (_) {
+            // TODO jsonDecode can fail with special characters in line, e.g.
+            // Need to escape \ inside strings, i.e. \ -> \\
+            // Need to escape " inside strings, i.e. " -> \"
+            // Anything less than U+0020
+          }
         }
         return events;
       }
-      print("command.log file does not exist or is corrupted");
+      print("No new terminal commands to log");
     } catch (e) {
-      print("Error loading command.log file: $e");
+      print("Error loading terminal commands file: $e");
     }
     return events;
   }

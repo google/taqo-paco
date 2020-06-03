@@ -81,7 +81,7 @@ Future<Event> createAppUsagePacoEvent(Experiment experiment, String groupName,
 
 const _uidKey = 'uid';
 const _pidKey = 'pid';
-const _cmdRawKey = 'cmd_raw';
+const cmdRawKey = 'cmd_raw';
 const _cmdRetKey = 'cmd_ret';
 
 Future<Event> createCmdUsagePacoEvent(Experiment experiment, String groupName,
@@ -91,7 +91,7 @@ Future<Event> createCmdUsagePacoEvent(Experiment experiment, String groupName,
       _uidKey: response[_uidKey],
       _pidKey: '${response[_pidKey]}',
       _cmdRetKey: '${response[_cmdRetKey]}',
-      _cmdRawKey: response[_cmdRawKey].trim(),
+      cmdRawKey: response[cmdRawKey].trim(),
   };
   event.responses.addAll(responses);
   return event;
