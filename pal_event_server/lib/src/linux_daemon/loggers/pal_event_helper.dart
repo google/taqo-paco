@@ -79,7 +79,7 @@ Future<Event> createAppUsagePacoEvent(Experiment experiment, String groupName,
   return event;
 }
 
-const _uidKey = 'uid';
+//const _uidKey = 'uid';
 const _pidKey = 'pid';
 const cmdRawKey = 'cmd_raw';
 const _cmdRetKey = 'cmd_ret';
@@ -88,7 +88,7 @@ Future<Event> createCmdUsagePacoEvent(Experiment experiment, String groupName,
     Map<String, dynamic> response) async {
   final event = await _createPacoEvent(experiment, groupName);
   final responses = <String, String>{
-      _uidKey: response[_uidKey],
+      //_uidKey: response[_uidKey],
       _pidKey: '${response[_pidKey]}',
       _cmdRetKey: '${response[_cmdRetKey]}',
       cmdRawKey: response[cmdRawKey].trim(),

@@ -6,9 +6,9 @@ import 'package:path/path.dart';
 const _beginTaqo = '# Begin Taqo\n';
 const _endTaqo = '# End Taqo\n';
 const _bashPromptCommand = r"""
-RETURN_VAL=$?;echo "{\"uid\":\"$(whoami)\",\"pid\":$$,\"cmd_raw\":\"$(history 1 | sed "s/^[ ]*[0-9]*[ ]*\(\[\([^]]*\)\]\)*[ ]*//")\",\"cmd_ret\":$RETURN_VAL}" >> ~/.taqo/command.log""";
+RETURN_VAL=$?;echo "{\"pid\":$$,\"cmd_raw\":\"$(history 1 | sed "s/^[ ]*[0-9]*[ ]*\(\[\([^]]*\)\]\)*[ ]*//")\",\"cmd_ret\":$RETURN_VAL}" >> ~/.taqo/command.log""";
 const _zshPreCmd = r"""
-precmd() { eval 'RETURN_VAL=$?;echo "{\"uid\":\"$(whoami)\",\"pid\":$$,\"cmd_raw\":$(history | tail -1 | sed "s/^[ ]*[0-9]*[ ]*//"),\"cmd_ret\":$RETURN_VAL}" >> /tmp/log' }""" + '\n';
+precmd() { eval 'RETURN_VAL=$?;echo "{\"pid\":$$,\"cmd_raw\":$(history | tail -1 | sed "s/^[ ]*[0-9]*[ ]*//"),\"cmd_ret\":$RETURN_VAL}" >> /tmp/log' }""" + '\n';
 
 Future<bool> enableCmdLineLogging() async {
   bool ret = true;
