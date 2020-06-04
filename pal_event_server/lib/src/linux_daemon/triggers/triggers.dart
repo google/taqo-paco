@@ -47,8 +47,6 @@ mixin EventTriggerSource {
     final experimentService = await ExperimentServiceLocal.getInstance();
     final experiments = await experimentService.getJoinedExperiments();
 
-    bool shouldSync = false;
-
     for (final event in events) {
       for (Experiment experiment in experiments) {
         final paused = await sharedPrefs.getBool("${sharedPrefsExperimentPauseKey}_${experiment.id}");
@@ -57,35 +55,13 @@ mixin EventTriggerSource {
           continue;
         }
 
-        shouldSync |= await _broadcastTriggerForExperiment(event, experiment);
+        _broadcastTriggerForExperiment(event, experiment);
       }
-    }
-
-    if (shouldSync) {
-      //notifySyncService();
     }
   }
 
   /// Process trigger for experiment
-  Future<bool> _broadcastTriggerForExperiment(TriggerEvent event, Experiment experiment) async {
-    bool shouldSync = false;
-
-    final groups = _groupsListening(experiment, event);
-    if (groups.isNotEmpty) {
-      shouldSync |= _persistBroadcastData(experiment, groups);
-    }
-
-    final accessibilityGroupsListening = _groupsListeningForAccessibilityEvents(experiment, event);
-    if (accessibilityGroupsListening.isNotEmpty) {
-      shouldSync |= _persistAccessibilityData(experiment, accessibilityGroupsListening);
-    }
-
-    // TODO Why is this calling persistAccessibilityData instead of something like persistNotificatonData?
-    final groupsListeningForNotificationEvents = _groupsListeningForNotificationEvents(experiment, event);
-    if (groupsListeningForNotificationEvents.isNotEmpty) {
-      shouldSync |= _persistAccessibilityData(experiment, groupsListeningForNotificationEvents);
-    }
-
+  Future _broadcastTriggerForExperiment(TriggerEvent event, Experiment experiment) async {
     final groupsToTrigger = _shouldTriggerBy(experiment, event);
     for (final triggerInfo in groupsToTrigger) {
       final uniqueStringForTrigger = _createUniqueTriggerString(experiment, triggerInfo);
@@ -121,8 +97,6 @@ mixin EventTriggerSource {
         }
       }
     }
-
-    return shouldSync;
   }
 
   List<ExperimentGroup> _groupsListening(Experiment experiment, TriggerEvent event) {
@@ -139,11 +113,6 @@ mixin EventTriggerSource {
     }
 
     return groups;
-  }
-
-  bool _persistBroadcastData(Experiment experiment, List<ExperimentGroup> groups) {
-    // TODO
-    return false;
   }
 
   List<ExperimentGroup> _groupsListeningForAccessibilityEvents(Experiment experiment, TriggerEvent event) {
@@ -176,11 +145,6 @@ mixin EventTriggerSource {
     }
 
     return groups;
-  }
-
-  bool _persistAccessibilityData(Experiment experiment, List<ExperimentGroup> groups) {
-    // TODO
-    return false;
   }
 
   List _shouldTriggerBy(Experiment experiment, TriggerEvent event) {
