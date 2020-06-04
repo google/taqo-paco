@@ -109,9 +109,8 @@ mixin EventTriggerSource {
               event.dateTime, experiment, group, interruptTrigger, notificationAction, actionTriggerSpecId);
             final delay = notificationAction.delay;
 
-            // TODO Discrepancy, PacoNotificationAction says milliseconds, Android code implies seconds
-            // TODO Only supports linux
             Future.delayed(Duration(milliseconds: delay), () {
+            // TODO Only supports linux
               linux_notification_manager.showNotification(actionSpec);
             });
             break;

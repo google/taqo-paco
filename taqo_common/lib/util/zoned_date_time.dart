@@ -1,5 +1,6 @@
 class ZonedDateTime {
-  static const String ISO8601_FORMAT_LOCAL = 'yyyy-MM-ddTHH:mm:ss.mmmuuu';
+  static const String ISO8601_FORMAT_LOCAL_WITHOUT_US = 'yyyy-MM-ddTHH:mm:ss.mmm';
+  static const String ISO8601_FORMAT_LOCAL_WITH_US = 'yyyy-MM-ddTHH:mm:ss.mmmuuu';
   static const String DATETIME_FORMAT_LOCAL = 'yyyy/MM/dd HH:mm:ss';
 
   final Duration timeZoneOffset;
@@ -28,10 +29,12 @@ class ZonedDateTime {
 
   factory ZonedDateTime.fromIso8601String(String iso8601String) {
     final dateTime = DateTime.parse(iso8601String);
-    final timeZoneOffset = parseTimeZoneOffset(iso8601String.substring(
-        dateTime.toIso8601String().length-1, iso8601String.length));
-    final iso8601StringLocal =
-        iso8601String.substring(0, ISO8601_FORMAT_LOCAL.length);
+    final tzStartIndex = dateTime.microsecond == 0 ?
+        ISO8601_FORMAT_LOCAL_WITHOUT_US.length :
+        ISO8601_FORMAT_LOCAL_WITH_US.length;
+    final timeZoneOffset = parseTimeZoneOffset(
+        iso8601String.substring(tzStartIndex, iso8601String.length));
+    final iso8601StringLocal = iso8601String.substring(0, tzStartIndex);
     return ZonedDateTime._(timeZoneOffset, dateTime, iso8601StringLocal);
   }
 
@@ -52,7 +55,7 @@ class ZonedDateTime {
     final stringTimeZoneOffset =
         string.substring(string.length - 5, string.length);
     final iso8601String =
-        '${stringLocalDateTime}.000000${stringTimeZoneOffset}';
+        '${stringLocalDateTime}.000${stringTimeZoneOffset}';
     return ZonedDateTime.fromIso8601String(iso8601String);
   }
 
@@ -63,10 +66,13 @@ class ZonedDateTime {
       return stringLocal;
     } else {
       // very rare case where the time zone changes immediately after calling DateTime.now()
-      final dateTimeLocal = dateTime.toUtc().add(timeZoneOffset);
+    final dateTimeLocal = dateTime.toUtc().add(timeZoneOffset);
+    final tzStartIndex = dateTime.microsecond == 0 ?
+        ISO8601_FORMAT_LOCAL_WITHOUT_US.length :
+        ISO8601_FORMAT_LOCAL_WITH_US.length;
       return dateTimeLocal
           .toIso8601String()
-          .substring(0, ISO8601_FORMAT_LOCAL.length);
+          .substring(0, tzStartIndex);
     }
   }
 
