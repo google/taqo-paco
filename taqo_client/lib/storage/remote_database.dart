@@ -168,4 +168,27 @@ class RemoteDatabase extends BaseDatabase {
       }
     });
   }
+
+  @override
+  Future<Map<int, bool>> getExperimentsPausedStatus(Iterable<Experiment> experiments) {
+    return global.tespClient.then((tespClient) async {
+      final TespResponse response = await tespClient.experimentGetPausedStatuses(experiments.toList());
+      if (response is TespResponseError) {
+        logger.warning('$response');
+        return <int, bool>{};
+      } else {
+        return (((response as TespResponseAnswer).payload) as Map).cast<int, bool>();
+      }
+    });
+  }
+
+  @override
+  Future<void> setExperimentPausedStatus(Experiment experiment, bool paused) async {
+    await global.tespClient.then((tespClient) async {
+      final TespResponse response = await tespClient.experimentSetPausedStatus(experiment, paused);
+      if (response is TespResponseError) {
+        logger.warning('$response');
+      }
+    });
+  }
 }

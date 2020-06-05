@@ -238,9 +238,8 @@ class SqliteDatabase implements BaseDatabase {
 
   @override
   Future<void> markEventsAsUploaded(Iterable<Event> events) async {
-    for (var event in events) {
-      _db.execute(markEventAsUploadedCommand, params: [event.id]);
-    }
+    _db.execute(buildMarkEventAsUploadedCommand(events.length),
+        params: [for (var event in events) event.id]);
   }
 
   @override
@@ -269,5 +268,20 @@ class SqliteDatabase implements BaseDatabase {
       _db.execute(insertOrUpdateJoinedExperimentsCommand, params: [experiment.id, jsonEncode(experiment)]);
     }
     _db.execute(commitCommand);
+  }
+
+  @override
+  Future<Map<int, bool>> getExperimentsPausedStatus(Iterable<Experiment> experiments) async {
+    final result = _db.query(
+        buildQueryExperimentPausedStatusCommand(experiments.length),
+        params: [for (var experiment in experiments) experiment.id]);
+    return <int,bool>{for (var row in result)
+      row.readColumnByIndexAsInt(0): row.readColumnByIndexAsInt(1) == 1};
+  }
+
+  @override
+  Future<void> setExperimentPausedStatus(Experiment experiment, bool paused) async {
+    _db.execute(updateExperimentPausedStatusCommand,
+        params: [paused ? 1 : 0, experiment.id]);
   }
 }
