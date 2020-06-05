@@ -26,6 +26,7 @@ void _notify(int alarmId) async {
   final database = await SqliteDatabase.get();
   final actionSpec = await database.getAlarm(alarmId);
   if (actionSpec != null) {
+    final allAlarms = Set.from([actionSpec]);
     // To handle simultaneous alarms as well as possible delay in alarm callbacks,
     // show all notifications from the originally schedule alarm time until
     // 30 seconds after the current time
@@ -33,8 +34,8 @@ void _notify(int alarmId) async {
     duration = DateTime.now().add(Duration(seconds: 30)).difference(start);
     final experimentService = await ExperimentServiceLocal.getInstance();
     final experiments = await experimentService.getJoinedExperiments();
-    final allAlarms = await getAllAlarmsWithinRange(DartFileStorage(ESMSignalStorage.filename),
-        experiments, start: start, duration: duration);
+    allAlarms.addAll(await getAllAlarmsWithinRange(DartFileStorage(ESMSignalStorage.filename),
+        experiments, start: start, duration: duration));
     print('Showing ${allAlarms.length} alarms from: $start to: ${start.add(duration)}');
     var i = 0;
     for (var a in allAlarms) {
@@ -142,13 +143,17 @@ void _scheduleNextNotification({DateTime from}) async {
   getNextAlarmTime(DartFileStorage(ESMSignalStorage.filename), experiments, now: from)
       .then((actionSpec) async {
     if (actionSpec != null) {
-      // Schedule a notification
-      _scheduleNotification(actionSpec).then((scheduled) {
-        if (scheduled) {
-          // Schedule a timeout
-          _scheduleTimeout(actionSpec);
-        }
-      });
+      createNotificationWithTimeout(actionSpec);
+    }
+  });
+}
+
+void createNotificationWithTimeout(ActionSpecification actionSpec) {
+  // Schedule a notification
+  _scheduleNotification(actionSpec).then((scheduled) {
+    if (scheduled) {
+      // Schedule a timeout
+      _scheduleTimeout(actionSpec);
     }
   });
 }

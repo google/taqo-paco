@@ -1,3 +1,5 @@
+import 'dart:math' as math show max;
+
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/paco_action.dart';
 import 'package:taqo_common/model/experiment.dart';
@@ -11,7 +13,7 @@ import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
 import '../../experiment_service_local.dart';
 import '../../utils.dart';
-import '../linux_notification_manager.dart' as linux_notification_manager;
+import '../linux_alarm_manager.dart' as linux_alarm_manager;
 
 class TriggerEvent {
   DateTime dateTime;
@@ -81,14 +83,14 @@ mixin EventTriggerSource {
         switch (action.actionCode) {
           case PacoAction.NOTIFICATION_TO_PARTICIPATE_ACTION_CODE:
             final PacoNotificationAction notificationAction = action as PacoNotificationAction;
+            // Always use a small delay to avoid requesting to schedule a notification in the past
+            final delay = Duration(milliseconds: math.max(1000, notificationAction.delay));
             final actionSpec = ActionSpecification(
-              event.dateTime, experiment, group, interruptTrigger, notificationAction, actionTriggerSpecId);
-            final delay = notificationAction.delay;
+                event.dateTime.add(delay), experiment, group, interruptTrigger,
+                notificationAction, actionTriggerSpecId);
 
-            Future.delayed(Duration(milliseconds: delay), () {
-            // TODO Only supports linux
-              linux_notification_manager.showNotification(actionSpec);
-            });
+            // TODO Only supports linux for now
+            linux_alarm_manager.createNotificationWithTimeout(actionSpec);
             break;
           case PacoAction.NOTIFICATION_ACTION_CODE:
           case PacoAction.LOG_EVENT_ACTION_CODE:
