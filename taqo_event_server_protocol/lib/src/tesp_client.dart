@@ -304,4 +304,12 @@ class TespFullClient extends TespEventClient {
 
   Future<TespResponse> experimentSelectById(int experimentId) =>
       send(TespRequestExperimentSelectById(experimentId));
+
+  Future<TespResponse> experimentGetPausedStatuses(
+      List<Experiment> experiments) =>
+      send(TespRequestExperimentGetPausedStatuses(experiments));
+
+  Future<TespResponse> experimentSetPausedStatus(
+      Experiment experiment, bool paused) =>
+      send(TespRequestExperimentSetPausedStatus(experiment, paused));
 }

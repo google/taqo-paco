@@ -137,6 +137,18 @@ class ExampleEventServer with TespRequestHandlerMixin {
     print('experimentSelectJoined');
     return Future.value(TespResponseAnswer(['Experiment(1)', 'Experiment(2)']));
   }
+
+  @override
+  Future<TespResponse> experimentGetPausedStatuses(List<int> experimentIds) {
+    print('experimentGetPausedStatuses: ${experimentIds}');
+    return Future.value(TespResponseAnswer({for (var id in experimentIds) id: false}));
+  }
+
+  @override
+  Future<TespResponse> experimentSetPausedStatus(int experimentId, bool paused) {
+    print('experimentSetPausedStatus: $experimentId, $paused');
+    return Future.value(TespResponseSuccess());
+  }
 }
 
 void main() async {
