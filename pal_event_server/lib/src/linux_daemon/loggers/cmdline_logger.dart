@@ -43,6 +43,11 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
         triggerEvents.add(createEventTriggers(InterruptCue.APP_USAGE, e.responses[cmdRawKey]));
       }
       broadcastEventsForTriggers(triggerEvents);
+
+      // Not active and no events means we stopped logging and flushed all prior events
+      if (pacoEvents.isEmpty && !active) {
+        t.cancel();
+      }
     });
 
     // Create Paco Events
