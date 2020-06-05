@@ -40,7 +40,6 @@ Future<List<Event>> createLoggerPacoEvents(Map<String, dynamic> response,
 }
 
 const _participantId = 'participantId';
-
 const _responseName = 'name';
 const _responseAnswer = 'answer';
 
@@ -60,6 +59,19 @@ Event _createPacoEvent(Experiment experiment, String groupName) {
       _responseAnswer: 'TODO:participantId',
   };
 
+  return event;
+}
+
+const _loggerStarted = 'started';
+const _loggerStopped = 'stopped';
+
+Future<Event> createLoggerStatusPacoEvent(Experiment experiment, String groupName,
+    String loggerName, bool status) async {
+  final event = await _createPacoEvent(experiment, groupName);
+  final responses = <String, dynamic>{
+    loggerName: status ? _loggerStarted : _loggerStopped,
+  };
+  event.responses.addAll(responses);
   return event;
 }
 

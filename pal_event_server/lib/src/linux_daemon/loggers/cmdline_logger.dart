@@ -12,9 +12,10 @@ import 'pal_event_helper.dart';
 import 'shell_util.dart' as shell;
 
 class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
+  static const cliLoggerName = 'cli_logger';
   static CmdLineLogger _instance;
 
-  CmdLineLogger._();
+  CmdLineLogger._() : super(cliLoggerName);
 
   factory CmdLineLogger() {
     if (_instance == null) {
@@ -24,7 +25,7 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
   }
 
   @override
-  void start() async {
+  void start(List<ExperimentLoggerInfo> experiments) async {
     if (active) {
       return;
     }
@@ -43,13 +44,26 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
       }
       broadcastEventsForTriggers(triggerEvents);
     });
+
+    // Create Paco Events
+    super.start(experiments);
   }
 
   @override
-  void stop() async {
-    print('Stopping CmdLineLogger');
-    await shell.disableCmdLineLogging();
-    active = false;
+  void stop(List<ExperimentLoggerInfo> experiments) async {
+    if (!active) {
+      return;
+    }
+
+    // Create Paco Events
+    await super.stop(experiments);
+
+    if (experimentsBeingLogged.isEmpty) {
+      // No more experiments -- shut down
+      print('Stopping CmdLineLogger');
+      await shell.disableCmdLineLogging();
+      active = false;
+    }
   }
 
   Future<List<Event>> _readLoggedCommands() async {

@@ -55,13 +55,14 @@ void handleScheduleAlarm() async {
   // 'schedule' is called when we join, pause, un-pause, and leave experiments,
   // the experiment schedule is edited, or the time zone changes.
   // Configure app loggers appropriately here
-  if (await shouldStartLoggers()) {
+  final experimentsToLog = await getExperimentsToLog();
+  if (experimentsToLog.isNotEmpty) {
     // Found a non-paused experiment
-    AppLogger().start();
-    CmdLineLogger().start();
+    AppLogger().start(experimentsToLog);
+    CmdLineLogger().start(experimentsToLog);
   } else {
-    AppLogger().stop();
-    CmdLineLogger().stop();
+    AppLogger().stop(experimentsToLog);
+    CmdLineLogger().stop(experimentsToLog);
   }
 }
 

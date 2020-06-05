@@ -49,6 +49,7 @@ void _appLoggerIsolate(SendPort sendPort) {
 }
 
 class AppLogger extends PacoEventLogger with EventTriggerSource {
+  static const appUsageLoggerName = 'app_usage_logger';
   static const Object _isolateDiedObj = Object();
   static AppLogger _instance;
 
@@ -60,7 +61,7 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
   // List of Events that should be sent to PAL
   final _eventsToSend = <Event>[];
 
-  AppLogger._();
+  AppLogger._() : super(appUsageLoggerName);
 
   factory AppLogger() {
     if (_instance == null) {
@@ -70,7 +71,7 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
   }
 
   @override
-  void start() async {
+  void start(List<ExperimentLoggerInfo> experiments) async {
     if (active) {
       return;
     }
@@ -87,14 +88,27 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
       _eventsToSend.clear();
       sendToPal(events, t);
     });
+
+    // Create Paco Events
+    super.start(experiments);
   }
 
   @override
-  void stop() {
-    print('Stopping AppLogger');
-    active = false;
-    _isolate?.kill();
-    _receivePort?.close();
+  void stop(List<ExperimentLoggerInfo> experiments) async {
+    if (!active) {
+      return;
+    }
+
+    // Create Paco Events
+    await super.stop(experiments);
+
+    if (experimentsBeingLogged.isEmpty) {
+      // No more experiments -- shut down
+      print('Stopping AppLogger');
+      active = false;
+      _isolate?.kill();
+      _receivePort?.close();
+    }
   }
 
   void _listen(dynamic data) async {
@@ -103,7 +117,7 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
       _isolate?.kill();
       _receivePort?.close();
       if (active) {
-        start();
+        start(experimentsBeingLogged);
       }
       return;
     }
