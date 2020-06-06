@@ -98,11 +98,18 @@ class ExperimentList extends StatelessWidget {
   }
 }
 
-class ExperimentListItem extends StatelessWidget {
+class ExperimentListItem extends StatefulWidget {
   final ExperimentProvider provider;
   final Experiment experiment;
 
   ExperimentListItem(this.provider, this.experiment);
+
+  @override
+  _ExperimentListItemState createState() => _ExperimentListItemState();
+}
+
+class _ExperimentListItemState extends State<ExperimentListItem> {
+  bool _pauseButtonDisabled = false;
 
   void _onTapExperiment(BuildContext context, Experiment experiment) {
     if (experiment.getActiveSurveys().length == 1) {
@@ -125,7 +132,7 @@ class ExperimentListItem extends StatelessWidget {
     return TaqoCard(
       child: Row(
         children: <Widget>[
-          if (experiment.active) Padding(
+          if (widget.experiment.active) Padding(
             padding: EdgeInsets.only(right: 8),
             child: Icon(
               Icons.notifications_active, color: Colors.redAccent),
@@ -136,30 +143,34 @@ class ExperimentListItem extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text(experiment.title, textScaleFactor: 1.5),
-                    if (experiment.organization != null &&
-                        experiment.organization.isNotEmpty)
-                      Text(experiment.organization),
-                    Text(experiment.contactEmail != null
-                        ? experiment.contactEmail
-                        : experiment.creator),
+                    Text(widget.experiment.title, textScaleFactor: 1.5),
+                    if (widget.experiment.organization != null &&
+                        widget.experiment.organization.isNotEmpty)
+                      Text(widget.experiment.organization),
+                    Text(widget.experiment.contactEmail != null
+                        ? widget.experiment.contactEmail
+                        : widget.experiment.creator),
                   ],
                 ),
-                onTap: () => _onTapExperiment(context, experiment),
+                onTap: () => _onTapExperiment(context, widget.experiment),
               )
           ),
 
           IconButton(
-              icon: Icon(experiment.paused ? Icons.play_arrow : Icons.pause),
-              onPressed: () => provider.setPaused(experiment, !experiment.paused)
+              icon: Icon(widget.experiment.paused ? Icons.play_arrow : Icons.pause),
+              onPressed: _pauseButtonDisabled ? null : () async {
+                setState(() => _pauseButtonDisabled = true);
+                await widget.provider.setPausedAndNotifyListeners(widget.experiment, !widget.experiment.paused);
+                setState(() => _pauseButtonDisabled = false);
+              }
           ),
           IconButton(
               icon: Icon(Icons.edit),
-              onPressed: () => editExperiment(context, experiment)
+              onPressed: () => editExperiment(context, widget.experiment)
           ),
           IconButton(
               icon: Icon(Icons.email),
-              onPressed: () => emailExperiment(context, experiment)
+              onPressed: () => emailExperiment(context, widget.experiment)
           ),
           IconButton(
               icon: Icon(Icons.close),
@@ -243,7 +254,7 @@ class ExperimentListItem extends StatelessWidget {
   void stopExperiment(BuildContext context) {
     _confirmStopDialog(context).then((result) async {
       if (result == ConfirmAction.ACCEPT) {
-        provider.stopExperiment(experiment);
+        widget.provider.stopExperiment(widget.experiment);
       }
     });
   }

@@ -150,7 +150,7 @@ class RemoteDatabase extends BaseDatabase {
         logger.warning('$response');
         return null;
       } else {
-        return Experiment.fromJson(jsonDecode((response as TespResponseAnswer).payload));
+        return Experiment.fromJson(((response as TespResponseAnswer).payload));
       }
     });
   }
@@ -163,7 +163,7 @@ class RemoteDatabase extends BaseDatabase {
         logger.warning('$response');
         return <Experiment>[];
       } else {
-        return (jsonDecode((response as TespResponseAnswer).payload) as List)
+        return (((response as TespResponseAnswer).payload) as List)
             .map((e) => Experiment.fromJson(e)).toList();
       }
     });
@@ -177,7 +177,8 @@ class RemoteDatabase extends BaseDatabase {
         logger.warning('$response');
         return <int, bool>{};
       } else {
-        return (((response as TespResponseAnswer).payload) as Map).cast<int, bool>();
+        return (((response as TespResponseAnswer).payload) as Map)
+            .map((key, value) => MapEntry<int,bool>(int.parse(key), value));
       }
     });
   }
