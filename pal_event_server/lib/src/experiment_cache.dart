@@ -31,7 +31,12 @@ class ExperimentCache {
 
   Future<void> _init() async {
     _storage = await JoinedExperimentsStorage.get();
-    updateCacheWithJoinedExperiment(await _storage.readJoinedExperiments());
+    List<Experiment> experiments = await _storage.readJoinedExperiments();
+    Map<int, bool> pausedStatuses = await _storage.loadPausedStatuses(experiments);
+    for (var experiment in experiments) {
+      experiment.paused = pausedStatuses[experiment.id] ?? false;
+    }
+    updateCacheWithJoinedExperiment(experiments);
   }
 
   void updateCacheWithJoinedExperiment(List<Experiment> experiments) {
