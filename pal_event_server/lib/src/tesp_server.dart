@@ -199,7 +199,7 @@ class PALTespServer with TespRequestHandlerMixin {
   Future<TespResponse> experimentGetPausedStatuses(List<int> experimentIds) async {
     final database = await SqliteDatabase.get();
     final experimentCache = await ExperimentCache.getInstance();
-    var statuses;
+    Map<int, bool> statuses;
     try {
       statuses = await database.getExperimentsPausedStatus(
           [for (var experimentId in experimentIds)
@@ -207,19 +207,21 @@ class PALTespServer with TespRequestHandlerMixin {
     } catch (e) {
       return TespResponseError(TespResponseError.tespServerErrorDatabase, '$e');
     }
-    return TespResponseAnswer(statuses);
+    // JSON only supports strings as keys.
+    return TespResponseAnswer(statuses.map((key, value) => MapEntry(key.toString(), value)));
   }
 
   @override
   Future<TespResponse> experimentSetPausedStatus(int experimentId, bool paused) async {
     final database = await SqliteDatabase.get();
     final experimentCache = await ExperimentCache.getInstance();
-    final experiment = await experimentCache.getExperimentById(experimentId);
+    final Experiment experiment = await experimentCache.getExperimentById(experimentId);
     try {
       await database.setExperimentPausedStatus(experiment, paused);
     } catch (e) {
       return TespResponseError(TespResponseError.tespServerErrorDatabase, '$e');
     }
+    experiment.paused = paused;
     return TespResponseSuccess();
 
   }

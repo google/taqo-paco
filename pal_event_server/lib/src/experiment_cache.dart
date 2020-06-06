@@ -9,7 +9,7 @@ final logger = Logger('ExperimentCache');
 class ExperimentCache {
   JoinedExperimentsStorage _storage;
   Map<int, Experiment> _cache = <int, Experiment>{};
-  List<Experiment> _joinedExperiments = <Experiment>[];
+  List<int> _joinedExperimentIds = <int>[];
 
   static ExperimentCache _instance;
 
@@ -35,14 +35,14 @@ class ExperimentCache {
   }
 
   void updateCacheWithJoinedExperiment(List<Experiment> experiments) {
-    _joinedExperiments = experiments;
     for (var experiment in experiments) {
+      _joinedExperimentIds.add(experiment.id);
       _cache[experiment.id] = experiment;
     }
   }
 
   List<Experiment> getJoinedExperiments() {
-    return _joinedExperiments;
+    return [for (var experimentId in _joinedExperimentIds) _cache[experimentId]];
   }
 
   Future<Experiment> getExperimentById(int experimentId) async {
