@@ -23,6 +23,9 @@ class LoggingService {
   // LocalFileStorageFactory is initialized
   static Future<void> initialize({bool outputsToStdout = true}) async {
     _outputsToStdout = outputsToStdout;
+    if (!LocalFileStorageFactory.isInitialized) {
+      throw StateError("LoggingService must be initialized after LocalFileStorageFactory.");
+    }
     _logDirectoryPath = LocalFileStorageFactory.localStorageDirectory.path;
 
     // Configure log level and handler for logging package
