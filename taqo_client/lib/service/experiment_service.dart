@@ -3,19 +3,20 @@ import 'dart:convert';
 
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/net/paco_api.dart';
+import 'package:taqo_common/service/experiment_service_lite.dart';
 import 'package:taqo_common/storage/joined_experiments_storage.dart';
+import 'package:taqo_common/storage/local_file_storage.dart';
 import 'package:taqo_common/util/schedule_printer.dart' as schedule_printer;
 import 'package:taqo_common/util/zoned_date_time.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
 import '../providers/experiment_provider.dart' show sharedPrefsExperimentPauseKey;
-import '../net/paco_api.dart';
 import '../net/invitation_response.dart';
 import '../service/platform_service.dart' as platform_service;
-import '../storage/flutter_file_storage.dart';
 import 'alarm/taqo_alarm.dart' as taqo_alarm;
 
-class ExperimentService {
+class ExperimentService implements ExperimentServiceLite{
   final PacoApi _pacoApi;
 
   var _joined = Map<int, Experiment>();
@@ -39,7 +40,7 @@ class ExperimentService {
   }
 
   Future<void> _loadJoinedExperiments() async {
-    final storage = await JoinedExperimentsStorage.get(FlutterFileStorage(JoinedExperimentsStorage.filename));
+    final storage = await JoinedExperimentsStorage.get();
     return storage.readJoinedExperiments().then((List<Experiment> experiments) {
       _mapifyExperimentsById(experiments);
     });
@@ -148,7 +149,6 @@ class ExperimentService {
   Event _createPacoEvent(Experiment experiment, PacoEventType eventType) {
     final event = Event();
     event.experimentId = experiment.id;
-    event.experimentServerId = experiment.id;
     event.experimentName = experiment.title;
     event.experimentVersion = experiment.version;
     event.responseTime = ZonedDateTime.now();
@@ -185,7 +185,7 @@ class ExperimentService {
   bool isJoined(Experiment experiment) => _joined.containsKey(experiment.id);
 
   void stopExperiment(Experiment experiment) async {
-    final storageDir = await FlutterFileStorage.getLocalStorageDir();
+    final storageDir = await LocalFileStorageFactory.localStorageDirectory;
     final sharedPreferences = TaqoSharedPrefs(storageDir.path);
     await sharedPreferences.remove("${sharedPrefsExperimentPauseKey}_${experiment.id}");
 
@@ -202,7 +202,7 @@ class ExperimentService {
   }
 
   void saveJoinedExperiments() async {
-    final storage = await JoinedExperimentsStorage.get(FlutterFileStorage(JoinedExperimentsStorage.filename));
+    final storage = await JoinedExperimentsStorage.get();
     await storage.saveJoinedExperiments(_joined.values.toList());
     taqo_alarm.schedule();
   }
@@ -241,10 +241,14 @@ class ExperimentService {
         });
   }
 
-  Future<void> clear() async {
-    _joined.clear();
-    final storage = await JoinedExperimentsStorage.get(FlutterFileStorage(JoinedExperimentsStorage.filename));
-    await storage.clear();
+  @override
+  Future<Experiment> getExperimentById(int experimentId) async {
+    var experiment = _joined[experimentId];
+    if (experiment == null) {
+      var storage = await JoinedExperimentsStorage.get();
+      experiment = await storage.getExperimentById(experimentId);
+    }
+    return experiment;
   }
 }
 
