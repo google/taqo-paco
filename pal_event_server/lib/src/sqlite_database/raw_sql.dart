@@ -1,4 +1,6 @@
-import 'package:taqo_common/model/event.dart';
+const beginTransactionCommand = 'begin transaction;';
+
+const commitCommand = 'commit;';
 
 const createAlarmsTable = '''
 create table alarms (
@@ -46,6 +48,15 @@ create table outputs (
   answer text
 );''';
 
+const createExperimentsTable = '''
+create table experiments (
+  id integer primary key, 
+  json text, 
+  joined integer, 
+  paused integer
+);
+''';
+
 const insertAlarmCommand = '''
 insert into alarms (
   json
@@ -84,7 +95,7 @@ insert into events (
   action_trigger_spec_id,
   action_id
 ) values (
-  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 )''';
 
 const insertOutputCommand = '''
@@ -117,3 +128,14 @@ const selectUnuploadedEventsCommand = 'select * from events where uploaded = 0;'
 const selectOutputsCommand = 'select text, answer from outputs where event_id=?;';
 
 const markEventAsUploadedCommand = 'update events set uploaded = 1 where _id = ?;';
+
+const quitAllExperimentsCommand = 'update experiments set joined = 0 where joined = 1;';
+
+const insertOrUpdateJoinedExperimentsCommand = '''
+insert into experiments(id, json, joined, paused) values (?, ?, 1, 0)
+  on conflict(id) do update set json=excluded.json, joined=1,
+  paused=case joined when 0 then 0 else paused end;
+''';
+
+const selectExperimentByIdCommand = 'select json from experiments where id = ?;';
+const selectJoindExperimentsCommand = 'select json from experiments where joined = 1;';

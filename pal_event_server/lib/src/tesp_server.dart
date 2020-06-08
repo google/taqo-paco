@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:pal_event_server/src/experiment_cache.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/service/experiment_service_lite.dart';
 import 'package:taqo_common/service/sync_service.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
@@ -154,5 +156,42 @@ class PALTespServer with TespRequestHandlerMixin {
     final experimentServiceLite = await ExperimentServiceLiteFactory.makeExperimentServiceLiteOrFuture();
     final notifications = await database.getAllNotificationsForExperiment(await experimentServiceLite.getExperimentById(experimentId));
     return TespResponseAnswer(jsonEncode(notifications));
+  }
+
+  @override
+  Future<TespResponse> experimentSaveJoined(List<Experiment> experiments) async {
+   final database = await SqliteDatabase.get();
+   try {
+     await database.saveJoinedExperiments(experiments);
+   } catch (e) {
+     return TespResponseError(TespResponseError.tespServerErrorDatabase, '$e');
+   }
+   var experimentCache = await ExperimentCache.getInstance();
+   experimentCache.updateCacheWithJoinedExperiment(experiments);
+   return TespResponseSuccess();
+  }
+
+  @override
+  Future<TespResponse> experimentSelectById(int experimentId) async {
+    final database = await SqliteDatabase.get();
+    var experiment;
+    try {
+      experiment = await database.getExperimentById(experimentId);
+    } catch (e) {
+      return TespResponseError(TespResponseError.tespServerErrorDatabase, '$e');
+    }
+    return TespResponseAnswer(jsonEncode(experiment));
+  }
+
+  @override
+  Future<TespResponse> experimentSelectJoined() async {
+    final database = await SqliteDatabase.get();
+    var experiments;
+    try {
+      experiments = await database.getJoinedExperiments();
+    } catch (e) {
+      return TespResponseError(TespResponseError.tespServerErrorDatabase, '$e');
+    }
+    return TespResponseAnswer(jsonEncode(experiments));
   }
 }

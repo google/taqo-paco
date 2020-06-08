@@ -5,7 +5,7 @@ import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
-import '../../utils.dart';
+import '../../experiment_service_local.dart';
 
 typedef CreateEventFunc = Future<Event> Function(
     Experiment experiment, String groupname, Map<String, dynamic> response);
@@ -18,7 +18,8 @@ Future<List<Event>> createLoggerPacoEvents(
 
   final storageDir = DartFileStorage.getLocalStorageDir().path;
   final sharedPrefs = TaqoSharedPrefs(storageDir);
-  final experiments = await readJoinedExperiments();
+  final experimentService = await ExperimentServiceLocal.getInstance();
+  final experiments = await experimentService.getJoinedExperiments();
 
   for (var e in experiments) {
     final paused = await sharedPrefs.getBool("${sharedPrefsExperimentPauseKey}_${e.id}");
@@ -39,7 +40,8 @@ Future<List<Event>> createLoggerPacoEvents(
 Future<bool> shouldStartLoggers() async {
   final storageDir = DartFileStorage.getLocalStorageDir().path;
   final sharedPrefs = TaqoSharedPrefs(storageDir);
-  final experiments = await readJoinedExperiments();
+  final experimentService = await ExperimentServiceLocal.getInstance();
+  final experiments = await experimentService.getJoinedExperiments();
 
   for (var e in experiments) {
     final paused = await sharedPrefs.getBool("${sharedPrefsExperimentPauseKey}_${e.id}");

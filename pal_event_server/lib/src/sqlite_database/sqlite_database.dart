@@ -66,6 +66,7 @@ class SqliteDatabase implements BaseDatabase {
     'notifications': createNotificationsTable,
     'events': createEventsTable,
     'outputs': createOutputsTable,
+    'experiments': createExperimentsTable,
   };
 
   Future _maybeCreateTable(String tableName) async {
@@ -186,10 +187,6 @@ class SqliteDatabase implements BaseDatabase {
   }
 
   Future<int> insertEvent(Event event) async {
-    // Event.uploaded is not serialized into json so any Event received by the
-    // server has this field as null. We set it to false here because an event
-    // can only be uploaded after it is inserted.
-    event.uploaded = false;
     event.id = await _db.execute(insertEventCommand, params: [
       event.experimentId,
       event.experimentName,
@@ -240,9 +237,37 @@ class SqliteDatabase implements BaseDatabase {
   }
 
   @override
-  Future<void> markEventsAsUploaded(Iterable<Event> events) {
+  Future<void> markEventsAsUploaded(Iterable<Event> events) async {
     for (var event in events) {
       _db.execute(markEventAsUploadedCommand, params: [event.id]);
     }
+  }
+
+  @override
+  Future<Experiment> getExperimentById(int experimentId) async {
+    final result = _db.query(selectExperimentByIdCommand,params: [experimentId]);
+    var experiments = <Experiment>[for (var row in result) Experiment.fromJson(jsonDecode(row.readColumnByIndexAsText(0)))];
+    if (experiments.length > 0) {
+      assert(experiments.length == 1);
+      return experiments[0];
+    } else {
+      return null;
+    }
+  }
+
+  @override
+  Future<List<Experiment>> getJoinedExperiments() async {
+    final result = _db.query(selectJoindExperimentsCommand);
+    return [for (var row in result) Experiment.fromJson(jsonDecode(row.readColumnByIndexAsText(0)))];
+  }
+
+  @override
+  Future<void> saveJoinedExperiments(Iterable<Experiment> experiments) async {
+    _db.execute(beginTransactionCommand);
+    _db.execute(quitAllExperimentsCommand);
+    for (var experiment in experiments) {
+      _db.execute(insertOrUpdateJoinedExperimentsCommand, params: [experiment.id, jsonEncode(experiment)]);
+    }
+    _db.execute(commitCommand);
   }
 }

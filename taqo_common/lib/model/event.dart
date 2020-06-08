@@ -47,7 +47,7 @@ class Event {
   int experimentId;
 
   @JsonKey(ignore: true)
-  bool uploaded;
+  bool uploaded = false;
 
   Event();
 
@@ -56,7 +56,6 @@ class Event {
     experimentName = experiment.title;
     experimentVersion = experiment.version;
     groupName = experimentGroup.name;
-    uploaded = false;
   }
 
   factory Event.fromJson(Map<String, dynamic> json) => _$EventFromJson(json);

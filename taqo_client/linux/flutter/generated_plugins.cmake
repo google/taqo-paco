@@ -1,6 +1,5 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   url_launcher_fde
-  path_provider_linux
   taqo_time_plugin
 )
 

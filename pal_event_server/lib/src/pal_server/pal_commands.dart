@@ -1,8 +1,8 @@
 import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
+import '../experiment_service_local.dart';
 import 'pal_constants.dart';
-import '../utils.dart';
 
 void _setBoolPref(String pref, bool value) async {
   final taqoDir = DartFileStorage.getLocalStorageDir().path;
@@ -42,6 +42,7 @@ Future<bool> isWhitelistedDataOnly() async {
 }
 
 Future<bool> isRunning() async {
-  final experiments = await readJoinedExperiments();
+  final experimentService = await ExperimentServiceLocal.getInstance();
+  final experiments = await experimentService.getJoinedExperiments();
   return experiments.isNotEmpty;
 }

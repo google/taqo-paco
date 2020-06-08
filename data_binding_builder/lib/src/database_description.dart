@@ -12,15 +12,16 @@ class DatabaseTableInfo {
   final String name;
   final String objectName;
   final String parentObjectName;
+  final bool prependIdColumn;
   DatabaseTableInfo(
-      {@required this.name, this.objectName, this.parentObjectName});
+      {@required this.name, this.objectName, this.parentObjectName, this.prependIdColumn = false});
 }
 
 class DatabaseColumnSpecification {
   final String name;
   final SqlLiteDatatype type;
   String fromObject;
-  String toObject;
+  final String constraints;
   final DatabaseTableInfo dbTableInfo;
 
   String get typeAsString => getEnumName(type);
@@ -29,11 +30,10 @@ class DatabaseColumnSpecification {
     @required this.name,
     @required this.type,
     @required TranslatorFromObject fromObject,
-    @required Function toObject,
+    @required this.constraints,
     @required this.dbTableInfo,
   }) {
     this.fromObject = fromObject(this);
-    this.toObject = '';
   }
 }
 
@@ -46,7 +46,7 @@ class DatabaseDescription extends DatabaseDescriptionBase {
   static const _SPEC_COLUMN_NAME = 'columnName';
   static const _SPEC_COLUMN_TYPE = 'columnType';
   static const _SPEC_FROM_OBJECT = 'fromObject';
-  static const _SPEC_TO_OBJECT = 'toObject';
+  static const _SPEC_CONSTRAINTS = 'constraints';
 
   DatabaseDescription({Map<String, dynamic> meta}) : super(meta: meta);
 
@@ -58,10 +58,11 @@ class DatabaseDescription extends DatabaseDescriptionBase {
       String parentObjectName,
       TranslatorFromObject defaultFromObjectTranslator,
       Function defaultToObjectTranslator,
+      bool prependIdColumnOverride,
       @required List<List<dynamic>> specContent // content of the specification
       }) {
     dbTableInfos[name] = DatabaseTableInfo(
-        name: name, objectName: objectName, parentObjectName: parentObjectName);
+        name: name, objectName: objectName, parentObjectName: parentObjectName, prependIdColumn: prependIdColumnOverride ?? meta[META_PREPEND_ID_COLUMN] ?? false);
 
     if (specContent == null || specContent.isEmpty) {
       throw ArgumentError('Empty or null specContent');
@@ -87,7 +88,7 @@ class DatabaseDescription extends DatabaseDescriptionBase {
       _SPEC_COLUMN_TYPE: Table.columnProcessorTakeType(SqlLiteDatatype),
       _SPEC_FROM_OBJECT:
           _specColumnProcessorFromObject(defaultFromObjectTranslator),
-      _SPEC_TO_OBJECT: Table.columnProcessorIdentity
+      _SPEC_CONSTRAINTS: Table.columnProcessorTakeType(String)
     });
 
     addTableSpecification(
@@ -110,7 +111,7 @@ class DatabaseDescription extends DatabaseDescriptionBase {
           name: row[_SPEC_COLUMN_NAME],
           type: row[_SPEC_COLUMN_TYPE],
           fromObject: row[_SPEC_FROM_OBJECT],
-          toObject: row[_SPEC_TO_OBJECT],
+          constraints: row[_SPEC_CONSTRAINTS],
           dbTableInfo: dbTableInfo);
     }
   }
