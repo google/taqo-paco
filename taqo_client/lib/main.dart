@@ -50,11 +50,14 @@ void main() async {
   DatabaseFactory.initialize(() => databaseImpl);
   ExperimentServiceLiteFactory.initialize(ExperimentService.getInstance);
   setupLoggingMethodChannel();
-  setupSyncServiceMethodChannel();
-  notifySyncService();
+
+  // PAL Event server handles sync service on desktop
+  if (!isTaqoDesktop) {
+    setupSyncServiceMethodChannel();
+    notifySyncService();
+  }
+
   taqo_time_plugin.initialize(_onTimeChange);
-
-
 
   // LoggingService.initialize() and taqo_alarm.init() should be called once and only once
   // Calling them here ensures that they complete before the app launches

@@ -39,7 +39,7 @@ Future _tespInit() async {
   return completer.future;
 }
 
-/// Desktop platforms use RPC for sqlite
+/// Desktop platforms use RPC for sqlite and sync service
 bool get isTaqoDesktop => Platform.isLinux || Platform.isMacOS;
 
 Future<BaseDatabase> get databaseImpl {
