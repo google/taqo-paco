@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:taqo_client/providers/auth_provider.dart';
 import 'package:taqo_common/model/experiment.dart';
 
 import '../providers/experiment_provider.dart';
@@ -31,8 +32,15 @@ class _FindExperimentsPageState extends State<FindExperimentsPage> {
               color: Colors.black,
             ),
             Expanded(
-              child: ChangeNotifierProvider<ExperimentProvider>(
-                create: (_) => ExperimentProvider.withAvailableExperiments(),
+              child: MultiProvider(
+                providers: [
+                  ChangeNotifierProvider<ExperimentProvider>(
+                    create: (_) => ExperimentProvider(),
+                  ),
+                  ChangeNotifierProvider<AuthProvider>(
+                    create: (_) => AuthProvider(),
+                  ),
+                ],
                 child: ExperimentList(),
               ),
             ),
@@ -48,8 +56,12 @@ class _FindExperimentsPageState extends State<FindExperimentsPage> {
     );
   }
 }
+class ExperimentList extends StatefulWidget {
+  @override
+  State<ExperimentList> createState() => ExperimentListState();
+}
 
-class ExperimentList extends StatelessWidget {
+class ExperimentListState extends State<ExperimentList> {
   static const _noExperimentsMsg = "No Experiments available to join.";
 
   final Widget _loadingWidget = Center(
@@ -59,22 +71,37 @@ class ExperimentList extends StatelessWidget {
     ),
   );
 
+  bool authStatus;
+
+  @override
+  void initState() {
+    super.initState();
+    authStatus = false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<ExperimentProvider>(context);
+    final exProvider = Provider.of<ExperimentProvider>(context);
 
-    if (provider.experiments == null) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    if (authProvider.isAuthenticated != authStatus) {
+      // Change in login state
+      authStatus = authProvider.isAuthenticated;
+      exProvider.loadAvailableExperiments();
+    }
+
+    if (exProvider.experiments == null) {
       return Center(
         child: _loadingWidget,
       );
-    } else if (provider.experiments.isEmpty) {
+    } else if (exProvider.experiments.isEmpty) {
       return Center(
         child: const Text(_noExperimentsMsg),
       );
     }
 
     final listItems = <Widget>[];
-    for (var experiment in provider.experiments) {
+    for (var experiment in exProvider.experiments) {
       listItems.add(ExperimentListItem(experiment));
     }
     return ListView(children: listItems, shrinkWrap: true,);
