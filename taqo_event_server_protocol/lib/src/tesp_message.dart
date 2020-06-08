@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/model/notification_holder.dart';
 import 'package:taqo_event_server_protocol/src/json_utils.dart';
 
 abstract class TespMessage {
@@ -21,6 +23,7 @@ abstract class TespMessage {
   static const tespCodeRequestAlarmCancel = 0x11;
   static const tespCodeRequestAlarmSelectAll = 0x12;
   static const tespCodeRequestAlarmSelectById = 0x13;
+  static const tespCodeRequestAlarmAdd = 0x15;
 
   static const tespCodeRequestNotificationCheckActive = 0x20;
   static const tespCodeRequestNotificationCancel = 0x21;
@@ -28,6 +31,7 @@ abstract class TespMessage {
   static const tespCodeRequestNotificationSelectAll = 0x24;
   static const tespCodeRequestNotificationSelectById = 0x25;
   static const tespCodeRequestNotificationSelectByExperiment = 0x27;
+  static const tespCodeRequestNotificationAdd = 0x29;
 
   static const tespCodeRequestCreateMissedEvent = 0x31;
 
@@ -61,6 +65,8 @@ abstract class TespMessage {
         return TespRequestPing();
       case tespCodeRequestAlarmSchedule:
         return TespRequestAlarmSchedule();
+      case tespCodeRequestAlarmAdd:
+        return TespRequestAlarmAdd.withEncodedPayload(encodedPayload);
       case tespCodeRequestAlarmCancel:
         return TespRequestAlarmCancel.withEncodedPayload(encodedPayload);
       case tespCodeRequestAlarmSelectAll:
@@ -69,6 +75,8 @@ abstract class TespMessage {
         return TespRequestAlarmSelectById.withEncodedPayload(encodedPayload);
       case tespCodeRequestNotificationCheckActive:
         return TespRequestNotificationCheckActive();
+      case tespCodeRequestNotificationAdd:
+        return TespRequestNotificationAdd.withEncodedPayload(encodedPayload);
       case tespCodeRequestNotificationCancel:
         return TespRequestNotificationCancel.withEncodedPayload(encodedPayload);
       case tespCodeRequestNotificationCancelByExperiment:
@@ -166,6 +174,20 @@ mixin ExperimentsDeserializer on Payload<List<Experiment>> {
   }
 }
 
+mixin AlarmDeserializer on Payload<ActionSpecification> {
+  @override
+  ActionSpecification createObjectFromJson(jsonObject) {
+    return ActionSpecification.fromJson(jsonObject);
+  }
+}
+
+mixin NotificationDeserializer on Payload<NotificationHolder> {
+  @override
+  NotificationHolder createObjectFromJson(jsonObject) {
+    return NotificationHolder.fromJson(jsonObject);
+  }
+}
+
 class TespRequestPalAddEvents extends TespRequest
     with Payload<List<Event>>, EventsDeserializer {
   @override
@@ -214,6 +236,24 @@ class TespRequestAlarmSchedule extends TespRequest {
   final code = TespMessage.tespCodeRequestAlarmSchedule;
 }
 
+class TespRequestAlarmAdd extends TespRequest
+    with Payload<ActionSpecification>, AlarmDeserializer {
+  @override
+  final code = TespMessage.tespCodeRequestAlarmAdd;
+
+  ActionSpecification get alarm => payload;
+
+  TespRequestAlarmAdd(alarm) {
+    setPayload(alarm);
+  }
+  TespRequestAlarmAdd.withAlarmJson(json) {
+    setPayload(createObjectFromJson(json));
+  }
+  TespRequestAlarmAdd.withEncodedPayload(Uint8List encodedPayload) {
+    setPayloadWithEncoded(encodedPayload);
+  }
+}
+
 class TespRequestAlarmCancel extends TespRequest with Payload<int> {
   @override
   final code = TespMessage.tespCodeRequestAlarmCancel;
@@ -252,6 +292,24 @@ class TespRequestAlarmSelectById extends TespRequest with Payload<int> {
 class TespRequestNotificationCheckActive extends TespRequest {
   @override
   final code = TespMessage.tespCodeRequestNotificationCheckActive;
+}
+
+class TespRequestNotificationAdd extends TespRequest
+    with Payload<NotificationHolder>, NotificationDeserializer {
+  @override
+  final code = TespMessage.tespCodeRequestNotificationAdd;
+
+  NotificationHolder get notification => payload;
+
+  TespRequestNotificationAdd(notification) {
+    setPayload(notification);
+  }
+  TespRequestNotificationAdd.withNotificationJson(json) {
+    setPayload(createObjectFromJson(json));
+  }
+  TespRequestNotificationAdd.withEncodedPayload(Uint8List encodedPayload) {
+    setPayloadWithEncoded(encodedPayload);
+  }
 }
 
 class TespRequestNotificationCancel extends TespRequest with Payload<int> {

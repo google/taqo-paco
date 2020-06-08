@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:logging/logging.dart';
 
@@ -48,12 +49,30 @@ class RemoteDatabase extends BaseDatabase {
 
   @override
   Future<int> insertAlarm(ActionSpecification actionSpecification) {
-    // no-op on desktop
+    // On Linux, alarms and notifications are handled entirely in the
+    // linux_daemon. On MacOS (for now), taqo_client handles it
+    if (Platform.isMacOS) {
+      return global.tespClient.then((tespClient) async {
+        final TespResponseAnswer response =
+            await tespClient.alarmAdd(actionSpecification.toJson());
+        return response.payload;
+      });
+    }
+    return Future.value(-1);
   }
 
   @override
   Future<int> insertNotification(NotificationHolder notificationHolder) {
-    // no-op on desktop
+    // On Linux, alarms and notifications are handled entirely in the
+    // linux_daemon. On MacOS (for now), taqo_client handles it
+    if (Platform.isMacOS) {
+      return global.tespClient.then((tespClient) async {
+        final TespResponseAnswer response =
+            await tespClient.notificationAdd(notificationHolder.toJson());
+        return response.payload;
+      });
+    }
+    return Future.value(-1);
   }
 
   @override

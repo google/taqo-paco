@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/model/notification_holder.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 
 // This is only a no-op example event server.
@@ -64,6 +66,12 @@ class ExampleEventServer with TespRequestHandlerMixin {
   }
 
   @override
+  Future<TespResponse> alarmAdd(ActionSpecification alarm) {
+    print('alarmAdd: $alarm');
+    return Future.value(TespResponseSuccess());
+  }
+
+  @override
   Future<TespResponse> alarmSelectAll() {
     print('alarmSelectAll');
     // Here we don't have access to the Alarm class, used string instead
@@ -80,6 +88,12 @@ class ExampleEventServer with TespRequestHandlerMixin {
   @override
   Future<TespResponse> createMissedEvent(Event event) {
     print('createMissedEvent: $event');
+    return Future.value(TespResponseSuccess());
+  }
+
+  @override
+  Future<TespResponse> notificationAdd(NotificationHolder notification) {
+    print('notificationAdd: $notification');
     return Future.value(TespResponseSuccess());
   }
 

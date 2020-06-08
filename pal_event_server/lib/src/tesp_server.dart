@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:pal_event_server/src/experiment_cache.dart';
 import 'package:pedantic/pedantic.dart';
+import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/model/notification_holder.dart';
 import 'package:taqo_common/service/experiment_service_lite.dart';
 import 'package:taqo_common/service/sync_service.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
@@ -87,6 +90,18 @@ class PALTespServer with TespRequestHandlerMixin {
   }
 
   @override
+  FutureOr<TespResponse> alarmAdd(ActionSpecification actionSpecification) async {
+    // On Linux, alarms and notifications are handled entirely in the
+    // linux_daemon. On MacOS (for now), taqo_client handles it
+    if (Platform.isMacOS) {
+      final database = await SqliteDatabase.get();
+      final id = await database.insertAlarm(actionSpecification);
+      return TespResponseAnswer(id);
+    }
+    return TespResponseError('Unsupported platform for alarmAdd: ${Platform.operatingSystem}');
+  }
+
+  @override
   FutureOr<TespResponse> alarmCancel(int alarmId) async {
     await linux_daemon.handleCancelAlarm(alarmId);
     return TespResponseSuccess();
@@ -96,6 +111,19 @@ class PALTespServer with TespRequestHandlerMixin {
   FutureOr<TespResponse> notificationCheckActive() async {
     await linux_daemon.handleScheduleAlarm();
     return TespResponseSuccess();
+  }
+
+  @override
+  FutureOr<TespResponse> notificationAdd(NotificationHolder notification) async {
+    // On Linux, alarms and notifications are handled entirely in the
+    // linux_daemon. On MacOS (for now), taqo_client handles it
+    if (Platform.isMacOS) {
+      final database = await SqliteDatabase.get();
+      final id = await database.insertNotification(notification);
+      return TespResponseAnswer(id);
+    }
+    return TespResponseError('Unsupported platform for notificationAdd: '
+        '${Platform.operatingSystem}');
   }
 
   @override

@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/model/notification_holder.dart';
 
 import 'tesp_message_socket.dart';
 import 'tesp_message.dart';
@@ -18,11 +20,13 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
   FutureOr<TespResponse> palAllData();
 
   FutureOr<TespResponse> alarmSchedule();
+  FutureOr<TespResponse> alarmAdd(ActionSpecification alarm);
   FutureOr<TespResponse> alarmCancel(int alarmId);
   FutureOr<TespResponse> alarmSelectAll();
   FutureOr<TespResponse> alarmSelectById(int alarmId);
 
   FutureOr<TespResponse> notificationCheckActive();
+  FutureOr<TespResponse> notificationAdd(NotificationHolder notification);
   FutureOr<TespResponse> notificationCancel(int notificationId);
   FutureOr<TespResponse> notificationCancelByExperiment(int experimentId);
   FutureOr<TespResponse> notificationSelectAll();
@@ -56,6 +60,8 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
         return ping();
       case TespRequestAlarmSchedule:
         return alarmSchedule();
+      case TespRequestAlarmAdd:
+        return alarmAdd((tespRequest as TespRequestAlarmAdd).alarm);
       case TespRequestAlarmCancel:
         return alarmCancel((tespRequest as TespRequestAlarmCancel).alarmId);
       case TespRequestAlarmSelectAll:
@@ -65,6 +71,8 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
             (tespRequest as TespRequestAlarmSelectById).alarmId);
       case TespRequestNotificationCheckActive:
         return notificationCheckActive();
+      case TespRequestNotificationAdd:
+        return notificationAdd((tespRequest as TespRequestNotificationAdd).notification);
       case TespRequestNotificationCancel:
         return notificationCancel(
             (tespRequest as TespRequestNotificationCancel).notificationId);

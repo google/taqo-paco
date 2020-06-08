@@ -3,9 +3,10 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
-import 'package:taqo_event_server_protocol/src/tesp_codec.dart';
+import 'package:taqo_common/model/notification_holder.dart';
 import 'package:taqo_event_server_protocol/src/tesp_message_socket.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 import 'package:test/test.dart';
@@ -18,10 +19,12 @@ const _stringResume = 'resume';
 const _stringAllData = 'allData';
 const _stringWhiteListDataOnly = 'whiteListDataOnly';
 const _stringAlarmSchedule = 'alarmSchedule';
+const _stringAlarmAdd = 'addAlarm';
 const _stringAlarmCancel = 'alarmCancel';
 const _stringAlarmSelectAll = 'alarmSelectAll';
 const _stringAlarmSelectById = 'alarmSelectById';
 const _stringNotificationCheckActive = 'notificationCheckActive';
+const _stringNotificationAdd = 'addNotification';
 const _stringNotificationCancel = 'notificationCancel';
 const _stringNotificationCancelByExperiment = 'notificationCancelByExperiment';
 const _stringNotificationSelectAll = 'notificationSelectAll';
@@ -664,6 +667,13 @@ class TestingEventServer with TespRequestHandlerMixin {
   }
 
   @override
+  Future<TespResponse> alarmAdd(ActionSpecification alarm) async {
+    await Future.delayed(Duration(milliseconds: 200));
+    return TespResponseAnswer(
+        '${_stringAlarmAdd}: ${alarm.time}');
+  }
+
+  @override
   Future<TespResponse> alarmSchedule() {
     return Future.value(TespResponseAnswer('$_stringAlarmSchedule'));
   }
@@ -686,6 +696,13 @@ class TestingEventServer with TespRequestHandlerMixin {
   }
 
   @override
+  Future<TespResponse> notificationAdd(NotificationHolder notification) async {
+    await Future.delayed(Duration(milliseconds: 200));
+    return TespResponseAnswer(
+        '${_stringNotificationAdd}: ${notification.id}');
+  }
+
+ @override
   Future<TespResponse> notificationCancel(int notificationId) {
     return Future.value(
         TespResponseAnswer('$_stringNotificationCancel: $notificationId'));

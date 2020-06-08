@@ -267,6 +267,9 @@ class TespFullClient extends TespEventClient {
 
   Future<TespResponse> alarmSchedule() => send(TespRequestAlarmSchedule());
 
+  Future<TespResponse> alarmAdd(alarmJson) =>
+      send(TespRequestAlarmAdd.withAlarmJson(alarmJson));
+
   Future<TespResponse> alarmCancel(int alarmId) =>
       send(TespRequestAlarmCancel(alarmId));
 
@@ -277,6 +280,9 @@ class TespFullClient extends TespEventClient {
 
   Future<TespResponse> notificationCheckActive() =>
       send(TespRequestNotificationCheckActive());
+
+  Future<TespResponse> notificationAdd(notificationJson) =>
+      send(TespRequestNotificationAdd.withNotificationJson(notificationJson));
 
   Future<TespResponse> notificationCancel(int notificationId) =>
       send(TespRequestNotificationCancel(notificationId));
