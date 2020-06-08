@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(runner LANGUAGES CXX)
 
-set(BINARY_NAME "taqo_client")
+set(BINARY_NAME "taqo")
 
 cmake_policy(SET CMP0063 NEW)
 
@@ -82,3 +82,9 @@ INSTALL(CODE "
   " COMPONENT Runtime)
 INSTALL(DIRECTORY "${PROJECT_BUILD_DIR}/${FLUTTER_ASSET_DIR_NAME}"
   DESTINATION "${INSTALL_BUNDLE_DATA_DIR}" COMPONENT Runtime)
+
+# Install the lib directory on non-Debug builds only.
+if (NOT CMAKE_BUILD_TYPE MATCHES "Debug")
+  INSTALL(DIRECTORY "${PROJECT_BUILD_DIR}/lib"
+    DESTINATION "${CMAKE_INSTALL_PREFIX}" COMPONENT Runtime)
+endif()
