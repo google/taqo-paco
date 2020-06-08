@@ -13,7 +13,11 @@ const MethodChannel _channel = const MethodChannel(_channelName);
 
 const gmailTemplate = ["https://mail.google.com/mail/?view=cm&fs=1&to=", "&su=", ];
 
-Future<void> sendEmail(String to, String subject) async {
+String getEmailSubjectForExperiment(String experimentTitle) =>
+    'Participant email: $experimentTitle';
+
+Future<void> sendEmail(String to, String experimentTitle) async {
+  final subject = getEmailSubjectForExperiment(experimentTitle);
   if (Platform.isLinux) {
     final subjEncode = Uri.encodeQueryComponent(subject);
     final url = gmailTemplate[0] + to + gmailTemplate[1] + subjEncode;

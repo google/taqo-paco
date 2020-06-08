@@ -200,7 +200,9 @@ class ExperimentListItem extends StatelessWidget {
     );
   }
 
-  Future<ConfirmAction> _confirmEmailDialog(BuildContext context, String to, String subject) async {
+  Future<ConfirmAction> _confirmEmailDialog(BuildContext context, String to,
+      String experimentTitle) async {
+    final subject = taqo_email_plugin.getEmailSubjectForExperiment(experimentTitle);
     return showDialog<ConfirmAction>(
       context: context,
       barrierDismissible: false,
