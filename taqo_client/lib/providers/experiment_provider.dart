@@ -1,19 +1,17 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:taqo_client/service/experiment_paused_status_cache.dart';
 import 'package:taqo_common/model/experiment.dart';
-import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
 import '../service/alarm/taqo_alarm.dart' as taqo_alarm;
 import '../service/platform_service.dart' as platform_service;
 import '../service/experiment_service.dart';
-import '../storage/flutter_file_storage.dart';
-
-const sharedPrefsExperimentPauseKey = "paused";
 
 class ExperimentProvider with ChangeNotifier {
   ExperimentService _service;
   List<Experiment> _experiments;
+  ExperimentPausedStatusCache _pausedStatusCache;
 
   ExperimentProvider();
 
@@ -36,6 +34,7 @@ class ExperimentProvider with ChangeNotifier {
   Future loadRunningExperiments() async {
     _service = await ExperimentService.getInstance();
     _experiments = _service.getJoinedExperiments();
+    _pausedStatusCache = await ExperimentPausedStatusCache.getInstance();
     notifyListeners();
 
     // TODO Not dynamically updated
@@ -55,15 +54,10 @@ class ExperimentProvider with ChangeNotifier {
 
   List<Experiment> get experiments => _experiments;
 
-  void setPaused(Experiment e, bool value) {
-    e.paused = value;
-
-    FlutterFileStorage.getLocalStorageDir().then((storageDir) async {
-      final sharedPreferences = TaqoSharedPrefs(storageDir.path);
-      await sharedPreferences.setBool("${sharedPrefsExperimentPauseKey}_${e.id}", value);
-      notifyListeners();
-      taqo_alarm.schedule();
-    });
+  Future<void> setPausedAndNotifyListeners(Experiment e, bool value) async {
+    await _pausedStatusCache.setPaused(e, value);
+    notifyListeners();
+    taqo_alarm.schedule();
   }
 
   void stopExperiment(Experiment e) {

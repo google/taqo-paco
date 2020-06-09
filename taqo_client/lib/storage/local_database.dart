@@ -154,4 +154,16 @@ class LocalDatabase extends BaseDatabase {
     final experimentFieldsMaps = await _db.query('experiments', where: 'joined=1');
     return experimentFieldsMaps.map((e) => Experiment.fromJson(jsonDecode(e['json']))).toList();
   }
+
+  @override
+  Future<Map<int, bool>> getExperimentsPausedStatus(Iterable<Experiment> experiments) {
+    // TODO: implement getExperimentsPausedStatus
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> setExperimentPausedStatus(Experiment experiment, bool paused) {
+    // TODO: implement setExperimentPausedStatus
+    throw UnimplementedError();
+  }
 }

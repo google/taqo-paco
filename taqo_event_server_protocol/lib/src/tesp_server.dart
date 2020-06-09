@@ -34,6 +34,8 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
   FutureOr<TespResponse> experimentSaveJoined(List<Experiment> experiments);
   FutureOr<TespResponse> experimentSelectJoined();
   FutureOr<TespResponse> experimentSelectById(int experimentId);
+  FutureOr<TespResponse> experimentGetPausedStatuses(List<int> experimentIds);
+  FutureOr<TespResponse> experimentSetPausedStatus(int experimentId, bool paused);
 
   TespResponse ping() {
     return TespResponseSuccess();
@@ -92,6 +94,13 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
       case TespRequestExperimentSelectById:
         return experimentSelectById(
             (tespRequest as TespRequestExperimentSelectById).experimentId);
+      case TespRequestExperimentGetPausedStatuses:
+        return experimentGetPausedStatuses(
+            (tespRequest as TespRequestExperimentGetPausedStatuses).experimentIds);
+      case TespRequestExperimentSetPausedStatus:
+        return experimentSetPausedStatus(
+            (tespRequest as TespRequestExperimentSetPausedStatus).experimentId,
+            (tespRequest as TespRequestExperimentSetPausedStatus).paused);
       default:
         return TespResponseInvalidRequest.withPayload(
             'Unsupported TespRequest type');

@@ -150,7 +150,7 @@ class RemoteDatabase extends BaseDatabase {
         logger.warning('$response');
         return null;
       } else {
-        return Experiment.fromJson(jsonDecode((response as TespResponseAnswer).payload));
+        return Experiment.fromJson(((response as TespResponseAnswer).payload));
       }
     });
   }
@@ -163,8 +163,32 @@ class RemoteDatabase extends BaseDatabase {
         logger.warning('$response');
         return <Experiment>[];
       } else {
-        return (jsonDecode((response as TespResponseAnswer).payload) as List)
+        return (((response as TespResponseAnswer).payload) as List)
             .map((e) => Experiment.fromJson(e)).toList();
+      }
+    });
+  }
+
+  @override
+  Future<Map<int, bool>> getExperimentsPausedStatus(Iterable<Experiment> experiments) {
+    return global.tespClient.then((tespClient) async {
+      final TespResponse response = await tespClient.experimentGetPausedStatuses(experiments.toList());
+      if (response is TespResponseError) {
+        logger.warning('$response');
+        return <int, bool>{};
+      } else {
+        return (((response as TespResponseAnswer).payload) as Map)
+            .map((key, value) => MapEntry<int,bool>(int.parse(key), value));
+      }
+    });
+  }
+
+  @override
+  Future<void> setExperimentPausedStatus(Experiment experiment, bool paused) async {
+    await global.tespClient.then((tespClient) async {
+      final TespResponse response = await tespClient.experimentSetPausedStatus(experiment, paused);
+      if (response is TespResponseError) {
+        logger.warning('$response');
       }
     });
   }
