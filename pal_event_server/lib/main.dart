@@ -15,7 +15,8 @@ void main() async {
       await DartFileStorage.getLocalStorageDir());
   DatabaseFactory.initialize(() => SqliteDatabase.get());
   ExperimentServiceLiteFactory.initialize(ExperimentServiceLocal.getInstance);
-  await LoggingService.initialize(outputsToStdout: true);
+  await LoggingService.initialize(logFilePrefix: 'server-',
+      outputsToStdout: true);
 
   final server = PALTespServer();
   await server.serve(address: localServerHost, port: localServerPort);

@@ -58,7 +58,8 @@ void main() async {
 
   // LoggingService.initialize() and taqo_alarm.init() should be called once and only once
   // Calling them here ensures that they complete before the app launches
-  await LoggingService.initialize(outputsToStdout: kDebugMode);
+  await LoggingService.initialize(logFilePrefix: 'client-',
+      outputsToStdout: kDebugMode);
   await taqo_alarm.init();
 
   // If there is an active notification when the app is open,
