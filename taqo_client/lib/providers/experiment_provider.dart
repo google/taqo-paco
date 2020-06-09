@@ -15,12 +15,25 @@ class ExperimentProvider with ChangeNotifier {
   ExperimentService _service;
   List<Experiment> _experiments;
 
+  ExperimentProvider();
+
   /// A [Provider] with the user's joined Experiments
   ExperimentProvider.withRunningExperiments() {
-    _initWithRunning();
+    loadRunningExperiments();
   }
 
-  Future _initWithRunning() async {
+  /// A [Provider] with the Experiments available to join
+  ExperimentProvider.withAvailableExperiments() {
+    loadAvailableExperiments();
+  }
+
+  Future loadAvailableExperiments() async {
+    _service = await ExperimentService.getInstance();
+    _experiments = await _service.getExperimentsFromServer();
+    notifyListeners();
+  }
+
+  Future loadRunningExperiments() async {
     _service = await ExperimentService.getInstance();
     _experiments = _service.getJoinedExperiments();
     notifyListeners();
@@ -38,17 +51,6 @@ class ExperimentProvider with ChangeNotifier {
         notifyListeners();
       });
     });
-  }
-
-  /// A [Provider] with the Experiments available to join
-  ExperimentProvider.withAvailableExperiments() {
-    _initWithAvailable();
-  }
-
-  Future _initWithAvailable() async {
-    _service = await ExperimentService.getInstance();
-    _experiments = await _service.getExperimentsFromServer();
-    notifyListeners();
   }
 
   List<Experiment> get experiments => _experiments;
