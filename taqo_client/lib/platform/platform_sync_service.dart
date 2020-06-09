@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:taqo_common/service/sync_service.dart';
 
-final logger = Logger('SyncService');
+final _logger = Logger('SyncService');
 
 const _platform =
     const MethodChannel('com.taqo.survey.taqosurvey/sync-service');
@@ -32,6 +32,6 @@ Future<void> notifySyncService() async {
   try {
     await _platform.invokeMethod(_notifySyncServiceMethod);
   } on PlatformException catch (e) {
-    logger.warning("Failed calling $_notifySyncServiceMethod: '${e.message}'.");
+    _logger.warning("Failed calling $_notifySyncServiceMethod: '${e.message}'.");
   }
 }
