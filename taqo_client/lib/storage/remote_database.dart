@@ -42,7 +42,7 @@ class RemoteDatabase extends BaseDatabase {
 
   @override
   Future<void> insertEvent(Event event) {
-    global.tespClient.then((tespClient) async {
+    return global.tespClient.then((tespClient) async {
       tespClient.palAddEventJson(event.toJson());
     });
   }
@@ -54,7 +54,7 @@ class RemoteDatabase extends BaseDatabase {
     if (Platform.isMacOS) {
       return global.tespClient.then((tespClient) async {
         final TespResponseAnswer response =
-            await tespClient.alarmAdd(actionSpecification.toJson());
+            await tespClient.alarmAdd(actionSpecification);
         return response.payload;
       });
     }
@@ -68,7 +68,7 @@ class RemoteDatabase extends BaseDatabase {
     if (Platform.isMacOS) {
       return global.tespClient.then((tespClient) async {
         final TespResponseAnswer response =
-            await tespClient.notificationAdd(notificationHolder.toJson());
+            await tespClient.notificationAdd(notificationHolder);
         return response.payload;
       });
     }
