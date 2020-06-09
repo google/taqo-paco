@@ -16,6 +16,22 @@ class PacoResponse {
 
   PacoResponse(this.statusCode, this.statusMsg, {this.body});
 
+  static Future<PacoResponse> futureFromHttpResponseFuture(Future<http.Response> responseFuture) async {
+    http.Response response;
+    try {
+      response = await responseFuture;
+    } catch (e) {
+      return PacoResponse(PacoResponse.exception, e.toString());
+    }
+
+    if (response.statusCode == 200) {
+      return PacoResponse(PacoResponse.success, 'Success',
+          body: response.body);
+    } else {
+      return PacoResponse(PacoResponse.failure, response.reasonPhrase);
+    }
+  }
+
   bool get isSuccess => statusCode == success;
   bool get isFailure => statusCode == failure;
   bool get isException => statusCode == exception;
@@ -86,43 +102,16 @@ class PacoApi {
   }
 
   // Public API
+  Future<PacoResponse> postEvents(String body) =>
+      PacoResponse.futureFromHttpResponseFuture(
+        _refreshAndPost(_eventsUri, body));
 
-  Future<PacoResponse> postEvents(String body) async {
-    return _refreshAndPost(_eventsUri, body).then((response) {
-      if (response.statusCode == 200) {
-        return PacoResponse(PacoResponse.success, 'Success',
-            body: response.body);
-      }
-      return PacoResponse(PacoResponse.failure, response.reasonPhrase);
-    }).catchError((e) {
-      return PacoResponse(PacoResponse.exception, e.toString());
-    });
-  }
+  Future<PacoResponse> postEventsPublic(String body) =>
+      PacoResponse.futureFromHttpResponseFuture(
+        _refreshAndPost(_pubExperimentUri, body, isPublic: true));
 
-  Future<PacoResponse> postEventsPublic(String body) async {
-    return _refreshAndPost(_pubExperimentUri, body, isPublic: true)
-        .then((response) {
-      if (response.statusCode == 200) {
-        return PacoResponse(PacoResponse.success, 'Success',
-            body: response.body);
-      }
-      return PacoResponse(PacoResponse.failure, response.reasonPhrase);
-    }).catchError((e) {
-      return PacoResponse(PacoResponse.exception, e.toString());
-    });
-  }
-
-  Future<PacoResponse> _refreshAndGetPacoResponse(Uri url) {
-    return _refreshAndGet(url).then((response) {
-      if (response.statusCode == 200) {
-        return PacoResponse(PacoResponse.success, 'Success',
-            body: response.body);
-      }
-      return PacoResponse(PacoResponse.failure, response.reasonPhrase);
-    }).catchError((e) {
-      return PacoResponse(PacoResponse.exception, e.toString());
-    });
-  }
+  Future<PacoResponse> _refreshAndGetPacoResponse(Uri url) =>
+      PacoResponse.futureFromHttpResponseFuture(_refreshAndGet(url));
 
   /// Gets all Experiments
   Future<PacoResponse> getExperimentsWithSavedCredentials() {
