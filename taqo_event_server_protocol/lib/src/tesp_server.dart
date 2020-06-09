@@ -24,6 +24,7 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
   FutureOr<TespResponse> alarmCancel(int alarmId);
   FutureOr<TespResponse> alarmSelectAll();
   FutureOr<TespResponse> alarmSelectById(int alarmId);
+  FutureOr<TespResponse> alarmRemove(int alarmId);
 
   FutureOr<TespResponse> notificationCheckActive();
   FutureOr<TespResponse> notificationAdd(NotificationHolder notification);
@@ -32,6 +33,8 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
   FutureOr<TespResponse> notificationSelectAll();
   FutureOr<TespResponse> notificationSelectById(int notificationId);
   FutureOr<TespResponse> notificationSelectByExperiment(int experimentId);
+  FutureOr<TespResponse> notificationRemove(int notificationId);
+  FutureOr<TespResponse> notificationRemoveAll();
 
   FutureOr<TespResponse> createMissedEvent(Event event);
 
@@ -69,6 +72,8 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
       case TespRequestAlarmSelectById:
         return alarmSelectById(
             (tespRequest as TespRequestAlarmSelectById).alarmId);
+      case TespRequestAlarmRemove:
+        return alarmRemove((tespRequest as TespRequestAlarmRemove).alarmId);
       case TespRequestNotificationCheckActive:
         return notificationCheckActive();
       case TespRequestNotificationAdd:
@@ -89,6 +94,10 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
         return notificationSelectByExperiment(
             (tespRequest as TespRequestNotificationSelectByExperiment)
                 .experimentId);
+      case TespRequestNotificationRemove:
+        return notificationRemove((tespRequest as TespRequestNotificationRemove).notificationId);
+      case TespRequestNotificationRemoveAll:
+        return notificationRemoveAll();
       case TespRequestCreateMissedEvent:
         return createMissedEvent(
             (tespRequest as TespRequestCreateMissedEvent).event);

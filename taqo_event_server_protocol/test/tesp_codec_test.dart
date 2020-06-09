@@ -90,6 +90,7 @@ void main() {
     final msgRequestAlarmCancel = TespRequestAlarmCancel(1);
     final msgRequestAlarmSelectAll = TespRequestAlarmSelectAll();
     final msgRequestAlarmSelectById = TespRequestAlarmSelectById(2);
+    final msgRequestAlarmRemove = TespRequestAlarmRemove(8);
     final msgRequestNotificationCheckActive =
         TespRequestNotificationCheckActive();
     final msgRequestNotificationAdd = TespRequestNotificationAdd(notification1);
@@ -101,6 +102,8 @@ void main() {
         TespRequestNotificationSelectById(5);
     final msgRequestNotificationSelectByExperiment =
         TespRequestNotificationSelectByExperiment(6);
+    final msgRequestNotificationRemove = TespRequestNotificationRemove(9);
+    final msgRequestNotificationRemoveAll = TespRequestNotificationRemoveAll();
     final msgRequestCreateMissedEvent = TespRequestCreateMissedEvent(event1);
     final msgRequestExperimentSaveJoined = TespRequestExperimentSaveJoined([experiment1,experiment2]);
     final msgRequestExperimentSelectJoined = TespRequestExperimentSelectJoined();
@@ -145,6 +148,8 @@ void main() {
           equalsTespMessage(msgRequestAlarmSelectAll));
       expect(tesp.decode(tesp.encode(msgRequestAlarmSelectById)),
           equalsTespMessage(msgRequestAlarmSelectById));
+      expect(tesp.decode(tesp.encode(msgRequestAlarmRemove)),
+          equalsTespMessage(msgRequestAlarmRemove));
       expect(tesp.decode(tesp.encode(msgRequestNotificationCheckActive)),
           equalsTespMessage(msgRequestNotificationCheckActive));
       expect(tesp.decode(tesp.encode(msgRequestNotificationAdd)),
@@ -161,6 +166,10 @@ void main() {
           equalsTespMessage(msgRequestNotificationSelectByExperiment));
       expect(tesp.decode(tesp.encode(msgRequestCreateMissedEvent)),
           equalsTespMessage(msgRequestCreateMissedEvent));
+      expect(tesp.decode(tesp.encode(msgRequestNotificationRemove)),
+          equalsTespMessage(msgRequestNotificationRemove));
+      expect(tesp.decode(tesp.encode(msgRequestNotificationRemoveAll)),
+          equalsTespMessage(msgRequestNotificationRemoveAll));
 
       expect(tesp.decode(tesp.encode(msgRequestExperimentSaveJoined)),
           equalsTespMessage(msgRequestExperimentSaveJoined));
@@ -180,11 +189,13 @@ void main() {
         msgResponseInvalidRequest, msgResponseError, msgResponseAnswer, //
         msgRequestPing, msgResponseSuccess, msgRequestAlarmSchedule, //
         msgRequestAlarmAdd, msgRequestAlarmCancel, msgRequestAlarmSelectAll, //
-        msgRequestAlarmSelectById, msgRequestNotificationCheckActive, //
-        msgRequestNotificationAdd, msgRequestNotificationCancel,
+        msgRequestAlarmSelectById, msgRequestAlarmRemove, //
+        msgRequestNotificationCheckActive, //
+        msgRequestNotificationAdd, msgRequestNotificationCancel, //
         msgRequestNotificationCancelByExperiment, //
         msgRequestNotificationSelectAll, msgRequestNotificationSelectById, //
-        msgRequestNotificationSelectByExperiment,
+        msgRequestNotificationSelectByExperiment, //
+        msgRequestNotificationRemove, msgRequestNotificationRemoveAll, //
         msgRequestCreateMissedEvent, msgRequestExperimentSaveJoined, //
         msgRequestExperimentSelectJoined, msgRequestExperimentSelectJoined, //
         msgRequestPing, msgResponseSuccess

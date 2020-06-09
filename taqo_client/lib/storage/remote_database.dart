@@ -128,17 +128,38 @@ class RemoteDatabase extends BaseDatabase {
 
   @override
   Future<void> removeAlarm(int id) {
-    // no-op on desktop
+    // On Linux, alarms and notifications are handled entirely in the
+    // linux_daemon. On MacOS (for now), taqo_client handles it
+    if (Platform.isMacOS) {
+      return global.tespClient.then((tespClient) {
+        return tespClient.alarmRemove(id);
+      });
+    }
+    return Future.value();
   }
 
   @override
   Future<void> removeNotification(int id) {
-    // no-op on desktop
+    // On Linux, alarms and notifications are handled entirely in the
+    // linux_daemon. On MacOS (for now), taqo_client handles it
+    if (Platform.isMacOS) {
+      return global.tespClient.then((tespClient) {
+        return tespClient.notificationRemove(id);
+      });
+    }
+    return Future.value();
   }
 
   @override
   Future<void> removeAllNotifications() {
-    // no-op on desktop
+    // On Linux, alarms and notifications are handled entirely in the
+    // linux_daemon. On MacOS (for now), taqo_client handles it
+    if (Platform.isMacOS) {
+      return global.tespClient.then((tespClient) {
+        return tespClient.notificationRemoveAll();
+      });
+    }
+    return Future.value();
   }
 
   @override

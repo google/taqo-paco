@@ -23,6 +23,7 @@ const _stringAlarmAdd = 'addAlarm';
 const _stringAlarmCancel = 'alarmCancel';
 const _stringAlarmSelectAll = 'alarmSelectAll';
 const _stringAlarmSelectById = 'alarmSelectById';
+const _stringAlarmRemove = 'alarmRemove';
 const _stringNotificationCheckActive = 'notificationCheckActive';
 const _stringNotificationAdd = 'addNotification';
 const _stringNotificationCancel = 'notificationCancel';
@@ -30,6 +31,8 @@ const _stringNotificationCancelByExperiment = 'notificationCancelByExperiment';
 const _stringNotificationSelectAll = 'notificationSelectAll';
 const _stringNotificationSelectById = 'notificationSelectById';
 const _stringNotificationSelectByExperiment = 'notificationSelectByExperiment';
+const _stringNotificationRemove = 'notificationRemove';
+const _stringNotificationRemoveAll = 'notificationRemoveAll';
 const _stringCreateMissedEvent = 'createMissedEvent';
 const _stringExperimentSaveJoined = 'experimentSaveJoined';
 const _stringExperimentSelectJoined = 'experimentSelectJoined';
@@ -674,6 +677,11 @@ class TestingEventServer with TespRequestHandlerMixin {
   }
 
   @override
+  Future<TespResponse> alarmRemove(int alarmId) {
+    return Future.value(TespResponseAnswer('$_stringAlarmRemove: $alarmId'));
+  }
+
+  @override
   Future<TespResponse> alarmSchedule() {
     return Future.value(TespResponseAnswer('$_stringAlarmSchedule'));
   }
@@ -734,6 +742,17 @@ class TestingEventServer with TespRequestHandlerMixin {
   Future<TespResponse> notificationSelectById(int notificationId) {
     return Future.value(
         TespResponseAnswer('$_stringNotificationSelectById: $notificationId'));
+  }
+
+ @override
+  Future<TespResponse> notificationRemove(int notificationId) {
+    return Future.value(
+        TespResponseAnswer('$_stringNotificationRemove: $notificationId'));
+  }
+
+ @override
+  Future<TespResponse> notificationRemoveAll() {
+    return Future.value(TespResponseAnswer('$_stringNotificationRemove'));
   }
 
   @override

@@ -280,6 +280,9 @@ class TespFullClient extends TespEventClient {
   Future<TespResponse> alarmSelectById(int alarmId) =>
       send(TespRequestAlarmSelectById(alarmId));
 
+  Future<TespResponse> alarmRemove(int alarmId) =>
+      send(TespRequestAlarmRemove(alarmId));
+
   Future<TespResponse> notificationCheckActive() =>
       send(TespRequestNotificationCheckActive());
 
@@ -300,6 +303,12 @@ class TespFullClient extends TespEventClient {
 
   Future<TespResponse> notificationSelectByExperiment(int experimentId) =>
       send(TespRequestNotificationSelectByExperiment(experimentId));
+
+  Future<TespResponse> notificationRemove(int notificationId) =>
+      send(TespRequestNotificationRemove(notificationId));
+
+  Future<TespResponse> notificationRemoveAll() =>
+      send(TespRequestNotificationRemoveAll());
 
   Future<TespResponse> createMissedEvent(Event event) =>
       send(TespRequestCreateMissedEvent(event));

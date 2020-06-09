@@ -86,6 +86,12 @@ class ExampleEventServer with TespRequestHandlerMixin {
   }
 
   @override
+  Future<TespResponse> alarmRemove(int alarmId) {
+    print('alarmRemove: $alarmId');
+    return Future.value(TespResponseSuccess());
+  }
+
+  @override
   Future<TespResponse> createMissedEvent(Event event) {
     print('createMissedEvent: $event');
     return Future.value(TespResponseSuccess());
@@ -132,6 +138,18 @@ class ExampleEventServer with TespRequestHandlerMixin {
   Future<TespResponse> notificationSelectById(int notificationId) {
     print('notificationSelectById: $notificationId');
     return Future.value(TespResponseAnswer('Notification($notificationId)'));
+  }
+
+  @override
+  Future<TespResponse> notificationRemove(int notificationId) {
+    print('notificationRemove: $notificationId');
+    return Future.value(TespResponseSuccess());
+  }
+
+  @override
+  Future<TespResponse> notificationRemoveAll() {
+    print('notificationRemoveAll');
+    return Future.value(TespResponseSuccess());
   }
 
   @override

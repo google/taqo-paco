@@ -24,6 +24,7 @@ abstract class TespMessage {
   static const tespCodeRequestAlarmSelectAll = 0x12;
   static const tespCodeRequestAlarmSelectById = 0x13;
   static const tespCodeRequestAlarmAdd = 0x15;
+  static const tespCodeRequestAlarmRemove = 0x17;
 
   static const tespCodeRequestNotificationCheckActive = 0x20;
   static const tespCodeRequestNotificationCancel = 0x21;
@@ -32,6 +33,8 @@ abstract class TespMessage {
   static const tespCodeRequestNotificationSelectById = 0x25;
   static const tespCodeRequestNotificationSelectByExperiment = 0x27;
   static const tespCodeRequestNotificationAdd = 0x29;
+  static const tespCodeRequestNotificationRemove = 0x2b;
+  static const tespCodeRequestNotificationRemoveAll = 0x2c;
 
   static const tespCodeRequestCreateMissedEvent = 0x31;
 
@@ -73,6 +76,8 @@ abstract class TespMessage {
         return TespRequestAlarmSelectAll();
       case tespCodeRequestAlarmSelectById:
         return TespRequestAlarmSelectById.withEncodedPayload(encodedPayload);
+      case tespCodeRequestAlarmRemove:
+        return TespRequestAlarmRemove.withEncodedPayload(encodedPayload);
       case tespCodeRequestNotificationCheckActive:
         return TespRequestNotificationCheckActive();
       case tespCodeRequestNotificationAdd:
@@ -90,6 +95,10 @@ abstract class TespMessage {
       case tespCodeRequestNotificationSelectByExperiment:
         return TespRequestNotificationSelectByExperiment.withEncodedPayload(
             encodedPayload);
+      case tespCodeRequestNotificationRemove:
+        return TespRequestNotificationRemove.withEncodedPayload(encodedPayload);
+      case tespCodeRequestNotificationRemoveAll:
+        return TespRequestNotificationRemoveAll();
       case tespCodeRequestCreateMissedEvent:
         return TespRequestCreateMissedEvent.withEncodedPayload(encodedPayload);
       case tespCodeRequestExperimentSaveJoined:
@@ -289,6 +298,21 @@ class TespRequestAlarmSelectById extends TespRequest with Payload<int> {
   }
 }
 
+class TespRequestAlarmRemove extends TespRequest with Payload<int> {
+  @override
+  final code = TespMessage.tespCodeRequestAlarmRemove;
+
+  int get alarmId => payload;
+
+  TespRequestAlarmRemove(int alarmId) {
+    setPayload(alarmId);
+  }
+
+  TespRequestAlarmRemove.withEncodedPayload(Uint8List encodedPayload) {
+    setPayloadWithEncoded(encodedPayload);
+  }
+}
+
 class TespRequestNotificationCheckActive extends TespRequest {
   @override
   final code = TespMessage.tespCodeRequestNotificationCheckActive;
@@ -380,6 +404,26 @@ class TespRequestNotificationSelectByExperiment extends TespRequest
       Uint8List encodedPayload) {
     setPayloadWithEncoded(encodedPayload);
   }
+}
+
+class TespRequestNotificationRemove extends TespRequest with Payload<int> {
+  @override
+  final code = TespMessage.tespCodeRequestNotificationRemove;
+
+  int get notificationId => payload;
+
+  TespRequestNotificationRemove(int notificationId) {
+    setPayload(notificationId);
+  }
+
+  TespRequestNotificationRemove.withEncodedPayload(Uint8List encodedPayload) {
+    setPayloadWithEncoded(encodedPayload);
+  }
+}
+
+class TespRequestNotificationRemoveAll extends TespRequest {
+  @override
+  final code = TespMessage.tespCodeRequestNotificationRemoveAll;
 }
 
 class TespRequestCreateMissedEvent extends TespRequest
