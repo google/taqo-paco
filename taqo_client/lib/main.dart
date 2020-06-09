@@ -51,11 +51,8 @@ void main() async {
   ExperimentServiceLiteFactory.initialize(ExperimentService.getInstance);
   setupLoggingMethodChannel();
 
-  // PAL Event server handles sync service on desktop
-  if (!isTaqoDesktop) {
-    setupSyncServiceMethodChannel();
-    notifySyncService();
-  }
+  setupSyncServiceMethodChannel();
+  notifySyncService();
 
   taqo_time_plugin.initialize(_onTimeChange);
 
