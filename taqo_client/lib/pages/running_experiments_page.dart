@@ -55,36 +55,64 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return TaqoScaffold(
+    return ChangeNotifierProvider<ExperimentProvider>(
+      create: (_) => ExperimentProvider.withRunningExperiments(),
+      child: TaqoScaffold(
         title: 'Running Experiments',
         body: Container(
           padding: EdgeInsets.all(8.0),
           child: Column(
             children: <Widget>[
-              ChangeNotifierProvider<ExperimentProvider>(
-                create: (_) => ExperimentProvider.withRunningExperiments(),
-                child: ExperimentList(),
+              Consumer<ExperimentProvider>(
+                builder: (_, __, ___) => ExperimentList(),
               ),
             ],
           ),
         ),
+        actions: <Widget>[
+          Consumer<ExperimentProvider>(
+            builder: (_, provider, __) {
+              return IconButton(
+                icon: Icon(Icons.refresh),
+                onPressed: () {
+                  updateExperiments(provider);
+                },
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 
-  // TODO Add to UI
   // Show progress indicator of some sort and remove once done
-  void updateExperiments() async {
+  void updateExperiments(ExperimentProvider provider) async {
+    provider.refreshRunningExperiments();
   }
 }
 
 class ExperimentList extends StatelessWidget {
   static const _joinMsg = "Join some Experiments to get started.";
 
+  final Widget _loadingWidget = Center(
+    child: Padding(
+      padding: EdgeInsets.only(top: 16.0),
+      child: CircularProgressIndicator(),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<ExperimentProvider>(context);
 
-    if (provider.experiments == null || provider.experiments.isEmpty) {
+    if (provider.experiments == null) {
+      // Still loading
+      return Center(
+        child: _loadingWidget,
+      );
+    }
+    else if (provider.experiments.isEmpty) {
+      // No experiments joined
       return Center(
         child: const Text(_joinMsg),
       );
