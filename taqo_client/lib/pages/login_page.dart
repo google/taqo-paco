@@ -60,6 +60,17 @@ To get started, please either login with a Google account or enter an invitation
     );
   }
 
+  Widget buildLogoutButtonWidget(BuildContext context,
+      AuthProvider authProvider, bool isAuthenticated) {
+    return buildButtonWidget(
+      context,
+      isAuthenticated ? () {
+        authProvider.signOut();
+      } : null,
+      const Text('Logout'),
+    );
+  }
+
   Widget buildInvitationButtonWidget(BuildContext context,
       bool isAuthenticated) {
     return buildButtonWidget(
@@ -88,6 +99,8 @@ To get started, please either login with a Google account or enter an invitation
               color: Colors.black,
             ),
             buildLoginButtonWidget(context, authProvider,
+                authProvider.isAuthenticated),
+            buildLogoutButtonWidget(context, authProvider,
                 authProvider.isAuthenticated),
             buildInvitationButtonWidget(context, authProvider.isAuthenticated),
           ],

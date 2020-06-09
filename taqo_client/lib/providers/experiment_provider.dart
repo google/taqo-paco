@@ -52,6 +52,30 @@ class ExperimentProvider with ChangeNotifier {
     });
   }
 
+  Future refreshRunningExperiments() async {
+    _experiments.clear();
+    _experiments = null;
+    notifyListeners();
+
+    _service = await ExperimentService.getInstance();
+    _experiments = await _service.updateJoinedExperiments();
+    notifyListeners();
+
+    // TODO Not dynamically updated
+    platform_service.databaseImpl.then((db) {
+      db.getAllNotifications().then((all) {
+        for (Experiment e in _experiments) {
+          final n = all.firstWhere((n) => n.experimentId == e.id,
+              orElse: () => null);
+          if (n != null) {
+            e.active = n.isActive;
+          }
+        }
+        notifyListeners();
+      });
+    });
+  }
+
   List<Experiment> get experiments => _experiments;
 
   Future<void> setPausedAndNotifyListeners(Experiment e, bool value) async {
