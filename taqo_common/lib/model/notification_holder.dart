@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
 
 import 'action_specification.dart';
 
@@ -27,6 +28,9 @@ class NotificationHolder {
 
   int snoozeTime;
   int snoozeCount;
+
+  @visibleForTesting
+  NotificationHolder.empty();
 
   NotificationHolder(this.id, this.alarmTime, this.experimentId, this.noticeCount, this.timeoutMillis,
       this.experimentGroupName, this.actionTriggerId, this.actionId, this.notificationSource,
