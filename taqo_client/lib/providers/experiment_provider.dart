@@ -20,17 +20,6 @@ class ExperimentProvider with ChangeNotifier {
     loadRunningExperiments();
   }
 
-  /// A [Provider] with the Experiments available to join
-  ExperimentProvider.withAvailableExperiments() {
-    loadAvailableExperiments();
-  }
-
-  Future loadAvailableExperiments() async {
-    _service = await ExperimentService.getInstance();
-    _experiments = await _service.getExperimentsFromServer();
-    notifyListeners();
-  }
-
   Future loadRunningExperiments() async {
     _service = await ExperimentService.getInstance();
     _experiments = _service.getJoinedExperiments();
