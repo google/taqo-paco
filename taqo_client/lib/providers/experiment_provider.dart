@@ -13,12 +13,25 @@ class ExperimentProvider with ChangeNotifier {
   List<Experiment> _experiments;
   ExperimentPausedStatusCache _pausedStatusCache;
 
+  ExperimentProvider();
+
   /// A [Provider] with the user's joined Experiments
   ExperimentProvider.withRunningExperiments() {
-    _initWithRunning();
+    loadRunningExperiments();
   }
 
-  Future _initWithRunning() async {
+  /// A [Provider] with the Experiments available to join
+  ExperimentProvider.withAvailableExperiments() {
+    loadAvailableExperiments();
+  }
+
+  Future loadAvailableExperiments() async {
+    _service = await ExperimentService.getInstance();
+    _experiments = await _service.getExperimentsFromServer();
+    notifyListeners();
+  }
+
+  Future loadRunningExperiments() async {
     _service = await ExperimentService.getInstance();
     _experiments = _service.getJoinedExperiments();
     _pausedStatusCache = await ExperimentPausedStatusCache.getInstance();
@@ -37,18 +50,6 @@ class ExperimentProvider with ChangeNotifier {
         notifyListeners();
       });
     });
-  }
-
-  /// A [Provider] with the Experiments available to join
-  ExperimentProvider.withAvailableExperiments() {
-    _initWithAvailable();
-  }
-
-  Future _initWithAvailable() async {
-    _service = await ExperimentService.getInstance();
-    _experiments = await _service.getExperimentsFromServer();
-    _pausedStatusCache = await ExperimentPausedStatusCache.getInstance();
-    notifyListeners();
   }
 
   List<Experiment> get experiments => _experiments;
