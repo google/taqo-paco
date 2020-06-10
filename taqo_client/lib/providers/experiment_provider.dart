@@ -41,6 +41,12 @@ class ExperimentProvider with ChangeNotifier {
     });
   }
 
+  Future loadAvailableExperiments() async {
+    _service = await ExperimentService.getInstance();
+    _experiments = await _service.getExperimentsFromServer();
+    notifyListeners();
+  }
+
   Future refreshRunningExperiments() async {
     _experiments.clear();
     _experiments = null;
