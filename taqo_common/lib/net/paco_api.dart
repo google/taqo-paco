@@ -49,7 +49,7 @@ class PacoApi {
   static Uri _pubExperimentByIdUrl(id) =>
       Uri.https(_server, "/pubexperiments", {"id": "$id"});
   static Uri _inviteUrl(code) =>
-      Uri.https(_server, "/invite", {"code": "$code"});
+      Uri.https(_server, "/inviteCheck", {"code": "$code"});
   static final _eventsUri = Uri.https(_server, '/events');
   static final _pubExperimentUri = Uri.https(_server, '/pubexperiments');
 
