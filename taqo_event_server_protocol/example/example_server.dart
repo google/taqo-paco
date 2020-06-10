@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 
 // This is only a no-op example event server.
@@ -116,7 +117,37 @@ class ExampleEventServer with TespRequestHandlerMixin {
   @override
   Future<TespResponse> notificationSelectById(int notificationId) {
     print('notificationSelectById: $notificationId');
-    return Future.value(TespResponseAnswer('Notification(2)'));
+    return Future.value(TespResponseAnswer('Notification($notificationId)'));
+  }
+
+  @override
+  Future<TespResponse> experimentSaveJoined(List<Experiment> experiments) {
+    print('experimentSaveJoined: $experiments');
+    return Future.value(TespResponseSuccess());
+  }
+
+  @override
+  FutureOr<TespResponse> experimentSelectById(int experimentId) {
+    print('experimentSelectById: $experimentId');
+    return Future.value(TespResponseAnswer('Experiment($experimentId)'));
+  }
+
+  @override
+  FutureOr<TespResponse> experimentSelectJoined() {
+    print('experimentSelectJoined');
+    return Future.value(TespResponseAnswer(['Experiment(1)', 'Experiment(2)']));
+  }
+
+  @override
+  Future<TespResponse> experimentGetPausedStatuses(List<int> experimentIds) {
+    print('experimentGetPausedStatuses: ${experimentIds}');
+    return Future.value(TespResponseAnswer({for (var id in experimentIds) id: false}));
+  }
+
+  @override
+  Future<TespResponse> experimentSetPausedStatus(int experimentId, bool paused) {
+    print('experimentSetPausedStatus: $experimentId, $paused');
+    return Future.value(TespResponseSuccess());
   }
 }
 

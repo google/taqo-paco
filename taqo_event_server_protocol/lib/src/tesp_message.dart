@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_event_server_protocol/src/json_utils.dart';
 
 abstract class TespMessage {
@@ -29,6 +30,12 @@ abstract class TespMessage {
   static const tespCodeRequestNotificationSelectByExperiment = 0x27;
 
   static const tespCodeRequestCreateMissedEvent = 0x31;
+
+  static const tespCodeRequestExperimentSaveJoined = 0x41;
+  static const tespCodeRequestExperimentSelectJoined = 0x42;
+  static const tespCodeRequestExperimentSelectById = 0x43;
+  static const tespCodeRequestExperimentGetPausedStatuses = 0x45;
+  static const tespCodeRequestExperimentSetPausedStatus = 0x47;
 
   static const tespCodeResponseSuccess = 0x80;
   static const tespCodeResponseError = 0x81;
@@ -79,6 +86,16 @@ abstract class TespMessage {
             encodedPayload);
       case tespCodeRequestCreateMissedEvent:
         return TespRequestCreateMissedEvent.withEncodedPayload(encodedPayload);
+      case tespCodeRequestExperimentSaveJoined:
+        return TespRequestExperimentSaveJoined.withEncodedPayload(encodedPayload);
+      case tespCodeRequestExperimentSelectJoined:
+        return TespRequestExperimentSelectJoined();
+      case tespCodeRequestExperimentSelectById:
+        return TespRequestExperimentSelectById.withEncodedPayload(encodedPayload);
+      case tespCodeRequestExperimentGetPausedStatuses:
+        return TespRequestExperimentGetPausedStatuses.withEncodedPayload(encodedPayload);
+      case tespCodeRequestExperimentSetPausedStatus:
+        return TespRequestExperimentSetPausedStatus.withEncodedPayload(encodedPayload);
       case tespCodeResponseSuccess:
         return TespResponseSuccess();
       case tespCodeResponseError:
@@ -102,7 +119,7 @@ abstract class TespResponse extends TespMessage {}
 mixin Payload<T> on TespMessage {
   final _codec = (T == String ? utf8 : json.fuse(utf8));
 
-  T createObjectFromJson(jsonObject) => jsonObject;
+  T createObjectFromJson(jsonObject) => jsonObject as T;
 
   Uint8List _encodedPayload;
   T _payload;
@@ -129,7 +146,11 @@ mixin Payload<T> on TespMessage {
     if (encodedPayload == null) {
       throw ArgumentError('encodedPayload must not be null for $runtimeType');
     }
-    setPayload(createObjectFromJson(_codec.decode(encodedPayload)));
+    try {
+      setPayload(createObjectFromJson(_codec.decode(encodedPayload)));
+    } catch (e) {
+      throw FormatException('encodedPayload is not valid for $runtimeType');
+    }
     _encodedPayload = encodedPayload;
   }
 }
@@ -145,6 +166,20 @@ mixin EventDeserializer on Payload<Event> {
   @override
   Event createObjectFromJson(jsonObject) {
     return Event.fromJson(jsonObject);
+  }
+}
+
+mixin ExperimentsDeserializer on Payload<List<Experiment>> {
+  @override
+  List<Experiment> createObjectFromJson(jsonObject) {
+    return (jsonObject as List).map((e) => Experiment.fromJson(e)).toList();
+  }
+}
+
+mixin IntegersDeserializer on Payload<List<int>> {
+  @override
+  List<int> createObjectFromJson(jsonObject) {
+    return (jsonObject as List).cast<int>();
   }
 }
 
@@ -324,6 +359,83 @@ class TespRequestCreateMissedEvent extends TespRequest
   }
 }
 
+class TespRequestExperimentSaveJoined extends TespRequest
+    with Payload<List<Experiment>>, ExperimentsDeserializer {
+  @override
+  final code = TespMessage.tespCodeRequestExperimentSaveJoined;
+
+  List<Experiment> get experiments => payload;
+
+  TespRequestExperimentSaveJoined(List<Experiment> experiments) {
+    setPayload(experiments);
+  }
+  TespRequestExperimentSaveJoined.withExperimentsJson(json) {
+    setPayload(createObjectFromJson(json));
+  }
+  TespRequestExperimentSaveJoined.withEncodedPayload(Uint8List encodedPayload) {
+    setPayloadWithEncoded(encodedPayload);
+  }
+}
+
+class TespRequestExperimentSelectJoined extends TespRequest {
+  @override
+  final code = TespMessage.tespCodeRequestExperimentSelectJoined;
+}
+
+class TespRequestExperimentSelectById extends TespRequest with Payload<int> {
+  @override
+  final code = TespMessage.tespCodeRequestExperimentSelectById;
+
+  int get experimentId => payload;
+
+  TespRequestExperimentSelectById(int experimentId) {
+    setPayload(experimentId);
+  }
+
+  TespRequestExperimentSelectById.withEncodedPayload(Uint8List encodedPayload) {
+    setPayloadWithEncoded(encodedPayload);
+  }
+}
+
+class TespRequestExperimentGetPausedStatuses extends TespRequest
+    with Payload<List<int>>, IntegersDeserializer {
+  @override
+  final code = TespMessage.tespCodeRequestExperimentGetPausedStatuses;
+
+  List<int> get experimentIds => payload;
+
+  TespRequestExperimentGetPausedStatuses(Iterable<Experiment> experiments) {
+    setPayload([for (var experiment in experiments) experiment.id]);
+  }
+
+  TespRequestExperimentGetPausedStatuses.withEncodedPayload(
+      Uint8List encodedPayload) {
+    setPayloadWithEncoded(encodedPayload);
+  }
+}
+
+class TespRequestExperimentSetPausedStatus extends TespRequest
+    with Payload<List> {
+  @override
+  final code = TespMessage.tespCodeRequestExperimentSetPausedStatus;
+
+  int get experimentId => payload[0];
+  bool get paused => payload[1];
+
+  TespRequestExperimentSetPausedStatus(Experiment experiment, bool paused) {
+    setPayload([experiment.id, paused]);
+  }
+
+  TespRequestExperimentSetPausedStatus.withEncodedPayload(
+      Uint8List encodedPayload) {
+    setPayloadWithEncoded(encodedPayload);
+    if (payload.length != 2 || payload[0] is! int || payload[1] is! bool) {
+      throw FormatException('encodedPayload is invalid for $runtimeType');
+    }
+  }
+}
+
+
 class TespResponseSuccess extends TespResponse {
   @override
   final code = TespMessage.tespCodeResponseSuccess;
@@ -333,6 +445,7 @@ class TespResponseError extends TespResponse with Payload<String> {
   @override
   final code = TespMessage.tespCodeResponseError;
 
+  static const tespServerErrorDatabase = 'server-database';
   static const tespServerErrorUnknown = 'server-unknown';
   static const tespClientErrorResponseTimeout = 'client-response-timeout';
   static const tespClientErrorServerCloseEarly = 'client-server-close-early';
@@ -369,6 +482,11 @@ class TespResponseError extends TespResponse with Payload<String> {
       _jsonKeyDetails: errorDetails
     });
     setPayload(payload);
+  }
+
+  @override
+  String toString() {
+    return 'TespResponseError-$errorCode: $errorMessage';
   }
 }
 

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/util/zoned_date_time.dart';
 import 'package:taqo_event_server_protocol/src/tesp_codec.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
@@ -52,17 +53,20 @@ void main() {
     final event1 = Event()
       ..responses = json.decode(payload)
       ..experimentName = 'TestExperiment'
-      ..experimentServerId = 12345
+      ..experimentId = 12345
       ..responseTime =
           ZonedDateTime.fromIso8601String('2020-05-04T16:21:31.415926-0700')
       ..experimentVersion = 1;
     final event2 = Event()
       ..responses = json.decode(payload)
       ..experimentName = 'TestExperiment'
-      ..experimentServerId = 67890
+      ..experimentId = 67890
       ..responseTime =
           ZonedDateTime.fromIso8601String('2020-05-05T16:21:31.415926-0700')
       ..experimentVersion = 2;
+    final experiment1 = Experiment.fromJson(jsonDecode('{"title":"test experiment 1","description":"test","creator":"tester","organization":"test org","contactEmail":"test@email.com","contactPhone":null,"publicKey":null,"joinDate":null,"id":12345,"informedConsentForm":"test","recordPhoneDetails":false,"extraDataCollectionDeclarations":[],"deleted":false,"modifyDate":"2020/05/19","published":true,"admins":["test@email.com"],"publishedUsers":[],"version":3,"groups":[{"name":"SYSTEM","groupType":"SYSTEM","customRendering":false,"customRenderingCode":null,"fixedDuration":false,"startDate":null,"endDate":null,"logActions":false,"logShutdown":false,"backgroundListen":false,"backgroundListenSourceIdentifier":null,"accessibilityListen":false,"actionTriggers":[],"inputs":[{"name":"joined","required":false,"conditional":false,"conditionExpression":null,"responseType":"open text","text":"joined","likertSteps":5,"leftSideLabel":null,"rightSideLabel":null,"listChoices":null,"multiselect":false},{"name":"schedule","required":false,"conditional":false,"conditionExpression":null,"responseType":"open text","text":"schedule","likertSteps":5,"leftSideLabel":null,"rightSideLabel":null,"listChoices":null,"multiselect":false}],"endOfDayGroup":false,"endOfDayReferredGroupName":null,"feedback":{"text":"Thanks for Participating!","type":0},"feedbackType":0,"rawDataAccess":true,"logNotificationEvents":false},{"name":"Quick survey","groupType":"SURVEY","customRendering":false,"customRenderingCode":null,"fixedDuration":false,"startDate":null,"endDate":null,"logActions":false,"logShutdown":false,"backgroundListen":false,"backgroundListenSourceIdentifier":null,"accessibilityListen":false,"actionTriggers":[],"inputs":[{"name":"input1","required":false,"conditional":false,"conditionExpression":null,"responseType":"likert_smileys","text":"Pick one","likertSteps":5,"leftSideLabel":null,"rightSideLabel":null,"listChoices":null,"multiselect":false}],"endOfDayGroup":false,"endOfDayReferredGroupName":null,"feedback":{"text":"Thanks for Participating!","type":0},"feedbackType":0,"rawDataAccess":true,"logNotificationEvents":false}],"ringtoneUri":"/assets/ringtone/Paco Bark","postInstallInstructions":"<b>You have successfully joined the experiment!</b><br/><br/>\\nNo need to do anything else for now.<br/><br/>\\nPaco will send you a notification when it is time to participate.<br/><br/>\\nBe sure your ringer/buzzer is on so you will hear the notification.","anonymousPublic":true,"visualizations":[]}'));
+    final experiment2 = Experiment.fromJson(jsonDecode('{"title":"test experiment 2","description":"test","creator":"tester","organization":"test org","contactEmail":"test@email.com","contactPhone":null,"publicKey":null,"joinDate":null,"id":67890,"informedConsentForm":"test","recordPhoneDetails":false,"extraDataCollectionDeclarations":[],"deleted":false,"modifyDate":"2020/05/19","published":true,"admins":["test@email.com"],"publishedUsers":[],"version":3,"groups":[{"name":"SYSTEM","groupType":"SYSTEM","customRendering":false,"customRenderingCode":null,"fixedDuration":false,"startDate":null,"endDate":null,"logActions":false,"logShutdown":false,"backgroundListen":false,"backgroundListenSourceIdentifier":null,"accessibilityListen":false,"actionTriggers":[],"inputs":[{"name":"joined","required":false,"conditional":false,"conditionExpression":null,"responseType":"open text","text":"joined","likertSteps":5,"leftSideLabel":null,"rightSideLabel":null,"listChoices":null,"multiselect":false},{"name":"schedule","required":false,"conditional":false,"conditionExpression":null,"responseType":"open text","text":"schedule","likertSteps":5,"leftSideLabel":null,"rightSideLabel":null,"listChoices":null,"multiselect":false}],"endOfDayGroup":false,"endOfDayReferredGroupName":null,"feedback":{"text":"Thanks for Participating!","type":0},"feedbackType":0,"rawDataAccess":true,"logNotificationEvents":false},{"name":"Quick survey","groupType":"SURVEY","customRendering":false,"customRenderingCode":null,"fixedDuration":false,"startDate":null,"endDate":null,"logActions":false,"logShutdown":false,"backgroundListen":false,"backgroundListenSourceIdentifier":null,"accessibilityListen":false,"actionTriggers":[],"inputs":[{"name":"input1","required":false,"conditional":false,"conditionExpression":null,"responseType":"likert_smileys","text":"Pick one","likertSteps":5,"leftSideLabel":null,"rightSideLabel":null,"listChoices":null,"multiselect":false}],"endOfDayGroup":false,"endOfDayReferredGroupName":null,"feedback":{"text":"Thanks for Participating!","type":0},"feedbackType":0,"rawDataAccess":true,"logNotificationEvents":false}],"ringtoneUri":"/assets/ringtone/Paco Bark","postInstallInstructions":"<b>You have successfully joined the experiment!</b><br/><br/>\\nNo need to do anything else for now.<br/><br/>\\nPaco will send you a notification when it is time to participate.<br/><br/>\\nBe sure your ringer/buzzer is on so you will hear the notification.","anonymousPublic":false,"visualizations":[]}'));
+
     final msgRequestAddEvent = TespRequestPalAddEvents([event1, event2]);
     final msgResponseError = TespResponseError('error', 'message', 'details');
     final msgResponseInvalidRequest =
@@ -92,6 +96,11 @@ void main() {
     final msgRequestNotificationSelectByExperiment =
         TespRequestNotificationSelectByExperiment(6);
     final msgRequestCreateMissedEvent = TespRequestCreateMissedEvent(event1);
+    final msgRequestExperimentSaveJoined = TespRequestExperimentSaveJoined([experiment1,experiment2]);
+    final msgRequestExperimentSelectJoined = TespRequestExperimentSelectJoined();
+    final msgRequestExperimentSelectById = TespRequestExperimentSelectById(7);
+    final msgRequestExperimentGetPausedStatuses = TespRequestExperimentGetPausedStatuses([experiment1, experiment2]);
+    final msgRequestExperimentSetPausedStatus = TespRequestExperimentSetPausedStatus(experiment1, true);
 
     test('encode/decode (non-chunked)', () {
       // Briefly verify that the codec actually converts between [TespMessage] and List<int>.
@@ -144,6 +153,17 @@ void main() {
           equalsTespMessage(msgRequestNotificationSelectByExperiment));
       expect(tesp.decode(tesp.encode(msgRequestCreateMissedEvent)),
           equalsTespMessage(msgRequestCreateMissedEvent));
+
+      expect(tesp.decode(tesp.encode(msgRequestExperimentSaveJoined)),
+          equalsTespMessage(msgRequestExperimentSaveJoined));
+      expect(tesp.decode(tesp.encode(msgRequestExperimentSelectJoined)),
+          equalsTespMessage(msgRequestExperimentSelectJoined));
+      expect(tesp.decode(tesp.encode(msgRequestExperimentSelectById)),
+          equalsTespMessage(msgRequestExperimentSelectById));
+      expect(tesp.decode(tesp.encode(msgRequestExperimentGetPausedStatuses)),
+          equalsTespMessage(msgRequestExperimentGetPausedStatuses));
+      expect(tesp.decode(tesp.encode(msgRequestExperimentSetPausedStatus)),
+          equalsTespMessage(msgRequestExperimentSetPausedStatus));
     });
 
     test('encode/decode (chunked)', () {
@@ -161,7 +181,10 @@ void main() {
         msgRequestNotificationCancelByExperiment, //
         msgRequestNotificationSelectAll, msgRequestNotificationSelectById, //
         msgRequestNotificationSelectByExperiment,
-        msgRequestCreateMissedEvent, //
+        msgRequestCreateMissedEvent, msgRequestExperimentSaveJoined, //
+        msgRequestExperimentSelectJoined, msgRequestExperimentSelectJoined, //
+        msgRequestExperimentGetPausedStatuses, //
+        msgRequestExperimentSetPausedStatus, //
         msgRequestPing, msgResponseSuccess
       ];
       final matcher = emitsInOrder(

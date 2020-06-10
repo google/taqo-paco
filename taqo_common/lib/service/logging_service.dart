@@ -1,12 +1,11 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
 import 'package:glob/glob.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
+
+import '../storage/local_file_storage.dart';
 
 class LoggingService {
   static const _MAX_LOG_FILES_COUNT = 7;
@@ -18,11 +17,16 @@ class LoggingService {
   static File _logFile;
   static IOSink __logSink;
   static final Glob _logGlob = Glob('*.log');
+  static bool _outputsToStdout;
 
-  // This init() function must be called before any logging activity.
-  static Future<void> init() async {
-    WidgetsFlutterBinding.ensureInitialized();
-    _logDirectoryPath = (await getApplicationSupportDirectory()).path;
+  // This init() function must be called before any logging activity and after
+  // LocalFileStorageFactory is initialized
+  static Future<void> initialize({bool outputsToStdout = true}) async {
+    _outputsToStdout = outputsToStdout;
+    if (!LocalFileStorageFactory.isInitialized) {
+      throw StateError("LoggingService must be initialized after LocalFileStorageFactory.");
+    }
+    _logDirectoryPath = LocalFileStorageFactory.localStorageDirectory.path;
 
     // Configure log level and handler for logging package
     Logger.root.level = Level.INFO;
@@ -77,9 +81,9 @@ class LoggingService {
   }
 
   static void log(String message) {
-    // Output to stdout (will be captured by console), only in debug mode
-    if (kDebugMode) {
-      debugPrint(message);
+    // Output to stdout (will be captured by console)
+    if (_outputsToStdout) {
+      print(message);
     }
     // Output to file
     _logSink.writeln(message);

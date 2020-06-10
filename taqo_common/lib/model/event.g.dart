@@ -9,7 +9,6 @@ part of 'event.dart';
 Event _$EventFromJson(Map<String, dynamic> json) {
   return Event()
     ..responses = Event._responsesFromListOfMap(json['responses'] as List)
-    ..experimentServerId = json['experimentId'] as int
     ..experimentName = json['experimentName'] as String
     ..scheduleTime =
         Event._zonedDateTimeFromString(json['scheduledTime'] as String)
@@ -19,12 +18,12 @@ Event _$EventFromJson(Map<String, dynamic> json) {
     ..groupName = json['experimentGroupName'] as String
     ..actionTriggerId = json['actionTriggerId'] as int
     ..actionTriggerSpecId = json['actionTriggerSpecId'] as int
-    ..actionId = json['actionId'] as int;
+    ..actionId = json['actionId'] as int
+    ..experimentId = json['experimentId'] as int;
 }
 
 Map<String, dynamic> _$EventToJson(Event instance) => <String, dynamic>{
       'responses': Event._responsesToListOfMap(instance.responses),
-      'experimentId': instance.experimentServerId,
       'experimentName': instance.experimentName,
       'scheduledTime': Event._zonedDateTimeToString(instance.scheduleTime),
       'responseTime': Event._zonedDateTimeToString(instance.responseTime),
@@ -33,4 +32,5 @@ Map<String, dynamic> _$EventToJson(Event instance) => <String, dynamic>{
       'actionTriggerId': instance.actionTriggerId,
       'actionTriggerSpecId': instance.actionTriggerSpecId,
       'actionId': instance.actionId,
+      'experimentId': instance.experimentId,
     };

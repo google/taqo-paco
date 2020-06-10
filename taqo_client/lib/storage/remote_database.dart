@@ -1,14 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:taqo_client/storage/base_database.dart';
+import 'package:logging/logging.dart';
+
+import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/storage/base_database.dart';
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
-import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 
 import '../service/platform_service.dart' as global;
+
+final logger = Logger('RemoteDatabase');
 
 /// Desktop clients use the PAL event server for all database functions over IPC
 class RemoteDatabase extends BaseDatabase {
@@ -126,5 +130,66 @@ class RemoteDatabase extends BaseDatabase {
   @override
   Future<void> markEventsAsUploaded(Iterable<Event> events) {
     // no-op on desktop
+  }
+
+  @override
+  Future<void> saveJoinedExperiments(Iterable<Experiment> experiments) async {
+    await global.tespClient.then((tespClient) async {
+      final TespResponse response = await tespClient.experimentSaveJoined(experiments);
+      if (response is TespResponseError) {
+        logger.warning('$response');
+      }
+    });
+  }
+
+  @override
+  Future<Experiment> getExperimentById(int experimentId) {
+    return global.tespClient.then((tespClient) async {
+      final TespResponse response = await tespClient.experimentSelectById(experimentId);
+      if (response is TespResponseError) {
+        logger.warning('$response');
+        return null;
+      } else {
+        return Experiment.fromJson(((response as TespResponseAnswer).payload));
+      }
+    });
+  }
+
+  @override
+  Future<List<Experiment>> getJoinedExperiments() {
+    return global.tespClient.then((tespClient) async {
+      final TespResponse response = await tespClient.experimentSelectJoined();
+      if (response is TespResponseError) {
+        logger.warning('$response');
+        return <Experiment>[];
+      } else {
+        return (((response as TespResponseAnswer).payload) as List)
+            .map((e) => Experiment.fromJson(e)).toList();
+      }
+    });
+  }
+
+  @override
+  Future<Map<int, bool>> getExperimentsPausedStatus(Iterable<Experiment> experiments) {
+    return global.tespClient.then((tespClient) async {
+      final TespResponse response = await tespClient.experimentGetPausedStatuses(experiments.toList());
+      if (response is TespResponseError) {
+        logger.warning('$response');
+        return <int, bool>{};
+      } else {
+        return (((response as TespResponseAnswer).payload) as Map)
+            .map((key, value) => MapEntry<int,bool>(int.parse(key), value));
+      }
+    });
+  }
+
+  @override
+  Future<void> setExperimentPausedStatus(Experiment experiment, bool paused) async {
+    await global.tespClient.then((tespClient) async {
+      final TespResponse response = await tespClient.experimentSetPausedStatus(experiment, paused);
+      if (response is TespResponseError) {
+        logger.warning('$response');
+      }
+    });
   }
 }

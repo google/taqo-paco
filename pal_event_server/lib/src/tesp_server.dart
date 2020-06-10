@@ -1,7 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:pal_event_server/src/experiment_cache.dart';
+import 'package:pedantic/pedantic.dart';
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/service/experiment_service_lite.dart';
+import 'package:taqo_common/service/sync_service.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 
 import 'linux_daemon/linux_daemon.dart' as linux_daemon;
@@ -41,6 +46,7 @@ class PALTespServer with TespRequestHandlerMixin {
     } else {
       await _storeEvent(events);
     }
+    unawaited(SyncService.syncData());
     return TespResponseSuccess();
   }
 
@@ -147,7 +153,76 @@ class PALTespServer with TespRequestHandlerMixin {
   @override
   FutureOr<TespResponse> notificationSelectByExperiment(int experimentId) async {
     final database = await SqliteDatabase.get();
-    final notifications = await database.getAllNotificationsForExperiment(experimentId);
+    final experimentServiceLite = await ExperimentServiceLiteFactory.makeExperimentServiceLiteOrFuture();
+    final notifications = await database.getAllNotificationsForExperiment(await experimentServiceLite.getExperimentById(experimentId));
     return TespResponseAnswer(jsonEncode(notifications));
+  }
+
+  @override
+  Future<TespResponse> experimentSaveJoined(List<Experiment> experiments) async {
+   final database = await SqliteDatabase.get();
+   try {
+     await database.saveJoinedExperiments(experiments);
+   } catch (e) {
+     return TespResponseError(TespResponseError.tespServerErrorDatabase, '$e');
+   }
+   var experimentCache = await ExperimentCache.getInstance();
+   experimentCache.updateCacheWithJoinedExperiment(experiments);
+   return TespResponseSuccess();
+  }
+
+  @override
+  Future<TespResponse> experimentSelectById(int experimentId) async {
+    final database = await SqliteDatabase.get();
+    var experiment;
+    try {
+      experiment = await database.getExperimentById(experimentId);
+    } catch (e) {
+      return TespResponseError(TespResponseError.tespServerErrorDatabase, '$e');
+    }
+    return TespResponseAnswer(experiment);
+  }
+
+  @override
+  Future<TespResponse> experimentSelectJoined() async {
+    final database = await SqliteDatabase.get();
+    var experiments;
+    try {
+      experiments = await database.getJoinedExperiments();
+    } catch (e) {
+      return TespResponseError(TespResponseError.tespServerErrorDatabase, '$e');
+    }
+    return TespResponseAnswer(experiments);
+  }
+
+  @override
+  Future<TespResponse> experimentGetPausedStatuses(List<int> experimentIds) async {
+    final database = await SqliteDatabase.get();
+    final experimentCache = await ExperimentCache.getInstance();
+    Map<int, bool> statuses;
+    try {
+      statuses = await database.getExperimentsPausedStatus(
+          [for (var experimentId in experimentIds)
+            await experimentCache.getExperimentById(experimentId)]);
+    } catch (e) {
+      return TespResponseError(TespResponseError.tespServerErrorDatabase, '$e');
+    }
+    // JSON only supports strings as keys.
+    return TespResponseAnswer(statuses.map((key, value) => MapEntry(key.toString(), value)));
+  }
+
+  @override
+  Future<TespResponse> experimentSetPausedStatus(int experimentId, bool paused) async {
+    final database = await SqliteDatabase.get();
+    final experimentCache = await ExperimentCache.getInstance();
+    final Experiment experiment = await experimentCache.getExperimentById(experimentId);
+    try {
+      await database.setExperimentPausedStatus(experiment, paused);
+    } catch (e) {
+      return TespResponseError(TespResponseError.tespServerErrorDatabase, '$e');
+    }
+    experiment.paused = paused;
+    return TespResponseSuccess();
+
   }
 }
