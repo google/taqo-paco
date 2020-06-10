@@ -146,8 +146,6 @@ abstract class PacoEventLogger {
 
 /// Return a Map of Experiments and Groups that should enable logging
 Future<List<ExperimentLoggerInfo>> getExperimentsToLog() async {
-  final storageDir = DartFileStorage.getLocalStorageDir().path;
-  final sharedPrefs = TaqoSharedPrefs(storageDir);
   final experimentService = await ExperimentServiceLocal.getInstance();
   final experiments = await experimentService.getJoinedExperiments();
 
@@ -156,8 +154,7 @@ Future<List<ExperimentLoggerInfo>> getExperimentsToLog() async {
   for (var e in experiments) {
     final toLog = ExperimentLoggerInfo(e);
 
-    final paused = await sharedPrefs.getBool("${sharedPrefsExperimentPauseKey}_${e.id}");
-    if (e.isOver() || (paused ?? false)) {
+    if (e.isOver() || (e.paused ?? false)) {
       continue;
     }
 

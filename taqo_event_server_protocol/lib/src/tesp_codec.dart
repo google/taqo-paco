@@ -179,7 +179,7 @@ class TespDecoder extends Converter<List<int>, TespMessage> {
         throw TespUndefinedCodeException(code, bytes, TespCodec.codeOffset);
       } on FormatException catch (e) {
         throw TespPayloadDecodingException(
-            e, bytes, TespCodec.payloadOffset + e.offset);
+            e, bytes, TespCodec.payloadOffset + (e.offset??0));
       }
     }
   }

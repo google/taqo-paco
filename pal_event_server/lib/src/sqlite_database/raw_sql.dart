@@ -1,3 +1,5 @@
+import 'package:taqo_common/util/sql_statement_building_helper.dart';
+
 const beginTransactionCommand = 'begin transaction;';
 
 const commitCommand = 'commit;';
@@ -127,7 +129,8 @@ const selectUnuploadedEventsCommand = 'select * from events where uploaded = 0;'
 
 const selectOutputsCommand = 'select text, answer from outputs where event_id=?;';
 
-const markEventAsUploadedCommand = 'update events set uploaded = 1 where _id = ?;';
+String buildMarkEventAsUploadedCommand(int eventCount) =>
+    'update events set uploaded = 1 where _id in (${buildQuestionMarksJoinedByComma(eventCount)});';
 
 const quitAllExperimentsCommand = 'update experiments set joined = 0 where joined = 1;';
 
@@ -139,3 +142,9 @@ insert into experiments(id, json, joined, paused) values (?, ?, 1, 0)
 
 const selectExperimentByIdCommand = 'select json from experiments where id = ?;';
 const selectJoindExperimentsCommand = 'select json from experiments where joined = 1;';
+
+String buildQueryExperimentPausedStatusCommand (int experimentCount) =>
+    'select id, paused from experiments where id in (${buildQuestionMarksJoinedByComma(experimentCount)});';
+
+const updateExperimentPausedStatusCommand = 'update experiments set paused = ? where id = ?;';
+
