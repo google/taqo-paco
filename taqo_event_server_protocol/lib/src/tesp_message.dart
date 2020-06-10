@@ -41,6 +41,8 @@ abstract class TespMessage {
   static const tespCodeRequestExperimentSaveJoined = 0x41;
   static const tespCodeRequestExperimentSelectJoined = 0x42;
   static const tespCodeRequestExperimentSelectById = 0x43;
+  static const tespCodeRequestExperimentGetPausedStatuses = 0x45;
+  static const tespCodeRequestExperimentSetPausedStatus = 0x47;
 
   static const tespCodeResponseSuccess = 0x80;
   static const tespCodeResponseError = 0x81;
@@ -107,6 +109,10 @@ abstract class TespMessage {
         return TespRequestExperimentSelectJoined();
       case tespCodeRequestExperimentSelectById:
         return TespRequestExperimentSelectById.withEncodedPayload(encodedPayload);
+      case tespCodeRequestExperimentGetPausedStatuses:
+        return TespRequestExperimentGetPausedStatuses.withEncodedPayload(encodedPayload);
+      case tespCodeRequestExperimentSetPausedStatus:
+        return TespRequestExperimentSetPausedStatus.withEncodedPayload(encodedPayload);
       case tespCodeResponseSuccess:
         return TespResponseSuccess();
       case tespCodeResponseError:
@@ -130,7 +136,7 @@ abstract class TespResponse extends TespMessage {}
 mixin Payload<T> on TespMessage {
   final _codec = (T == String ? utf8 : json.fuse(utf8));
 
-  T createObjectFromJson(jsonObject) => jsonObject;
+  T createObjectFromJson(jsonObject) => jsonObject as T;
 
   Uint8List _encodedPayload;
   T _payload;
@@ -157,7 +163,11 @@ mixin Payload<T> on TespMessage {
     if (encodedPayload == null) {
       throw ArgumentError('encodedPayload must not be null for $runtimeType');
     }
-    setPayload(createObjectFromJson(_codec.decode(encodedPayload)));
+    try {
+      setPayload(createObjectFromJson(_codec.decode(encodedPayload)));
+    } catch (e) {
+      throw FormatException('encodedPayload is not valid for $runtimeType');
+    }
     _encodedPayload = encodedPayload;
   }
 }
@@ -194,6 +204,13 @@ mixin NotificationDeserializer on Payload<NotificationHolder> {
   @override
   NotificationHolder createObjectFromJson(jsonObject) {
     return NotificationHolder.fromJson(jsonObject);
+  }
+}
+
+mixin IntegersDeserializer on Payload<List<int>> {
+  @override
+  List<int> createObjectFromJson(jsonObject) {
+    return (jsonObject as List).cast<int>();
   }
 }
 
@@ -481,6 +498,45 @@ class TespRequestExperimentSelectById extends TespRequest with Payload<int> {
     setPayloadWithEncoded(encodedPayload);
   }
 }
+
+class TespRequestExperimentGetPausedStatuses extends TespRequest
+    with Payload<List<int>>, IntegersDeserializer {
+  @override
+  final code = TespMessage.tespCodeRequestExperimentGetPausedStatuses;
+
+  List<int> get experimentIds => payload;
+
+  TespRequestExperimentGetPausedStatuses(Iterable<Experiment> experiments) {
+    setPayload([for (var experiment in experiments) experiment.id]);
+  }
+
+  TespRequestExperimentGetPausedStatuses.withEncodedPayload(
+      Uint8List encodedPayload) {
+    setPayloadWithEncoded(encodedPayload);
+  }
+}
+
+class TespRequestExperimentSetPausedStatus extends TespRequest
+    with Payload<List> {
+  @override
+  final code = TespMessage.tespCodeRequestExperimentSetPausedStatus;
+
+  int get experimentId => payload[0];
+  bool get paused => payload[1];
+
+  TespRequestExperimentSetPausedStatus(Experiment experiment, bool paused) {
+    setPayload([experiment.id, paused]);
+  }
+
+  TespRequestExperimentSetPausedStatus.withEncodedPayload(
+      Uint8List encodedPayload) {
+    setPayloadWithEncoded(encodedPayload);
+    if (payload.length != 2 || payload[0] is! int || payload[1] is! bool) {
+      throw FormatException('encodedPayload is invalid for $runtimeType');
+    }
+  }
+}
+
 
 class TespResponseSuccess extends TespResponse {
   @override

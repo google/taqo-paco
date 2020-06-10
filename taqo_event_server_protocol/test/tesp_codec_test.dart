@@ -108,6 +108,8 @@ void main() {
     final msgRequestExperimentSaveJoined = TespRequestExperimentSaveJoined([experiment1,experiment2]);
     final msgRequestExperimentSelectJoined = TespRequestExperimentSelectJoined();
     final msgRequestExperimentSelectById = TespRequestExperimentSelectById(7);
+    final msgRequestExperimentGetPausedStatuses = TespRequestExperimentGetPausedStatuses([experiment1, experiment2]);
+    final msgRequestExperimentSetPausedStatus = TespRequestExperimentSetPausedStatus(experiment1, true);
 
     test('encode/decode (non-chunked)', () {
       // Briefly verify that the codec actually converts between [TespMessage] and List<int>.
@@ -177,6 +179,10 @@ void main() {
           equalsTespMessage(msgRequestExperimentSelectJoined));
       expect(tesp.decode(tesp.encode(msgRequestExperimentSelectById)),
           equalsTespMessage(msgRequestExperimentSelectById));
+      expect(tesp.decode(tesp.encode(msgRequestExperimentGetPausedStatuses)),
+          equalsTespMessage(msgRequestExperimentGetPausedStatuses));
+      expect(tesp.decode(tesp.encode(msgRequestExperimentSetPausedStatus)),
+          equalsTespMessage(msgRequestExperimentSetPausedStatus));
     });
 
     test('encode/decode (chunked)', () {
@@ -198,6 +204,8 @@ void main() {
         msgRequestNotificationRemove, msgRequestNotificationRemoveAll, //
         msgRequestCreateMissedEvent, msgRequestExperimentSaveJoined, //
         msgRequestExperimentSelectJoined, msgRequestExperimentSelectJoined, //
+        msgRequestExperimentGetPausedStatuses, //
+        msgRequestExperimentSetPausedStatus, //
         msgRequestPing, msgResponseSuccess
       ];
       final matcher = emitsInOrder(

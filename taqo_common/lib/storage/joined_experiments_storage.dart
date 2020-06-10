@@ -50,4 +50,12 @@ class JoinedExperimentsStorage {
     return _db.getExperimentById(experimentId);
   }
 
+  Future<void> savePausedStatus(Experiment experiment, bool paused) async {
+    await _db.setExperimentPausedStatus(experiment, paused);
+  }
+
+  Future<Map<int, bool>> loadPausedStatuses(Iterable<Experiment> experiments) async {
+    return await _db.getExperimentsPausedStatus(experiments);
+  }
+
 }

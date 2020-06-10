@@ -37,6 +37,8 @@ const _stringCreateMissedEvent = 'createMissedEvent';
 const _stringExperimentSaveJoined = 'experimentSaveJoined';
 const _stringExperimentSelectJoined = 'experimentSelectJoined';
 const _stringExperimentSelectById = 'experimentSelectById';
+const _stringExperimentGetPausedStatuses = 'experimentGetPausedStatuses';
+const _stringExperimentSetPausedStatus = 'experimentSetPausedStatus';
 const _stringDummy = 'dummy';
 
 void main() {
@@ -127,6 +129,8 @@ void main() {
         TespRequestExperimentSaveJoined([Experiment()..title='15', Experiment()..title='16']),
         TespRequestExperimentSelectJoined(),
         TespRequestExperimentSelectById(17),
+        TespRequestExperimentGetPausedStatuses([Experiment()..id=18, Experiment()..id=19, Experiment()..id=20]),
+        TespRequestExperimentSetPausedStatus(Experiment()..id=21, true),
       ];
       var responses = [
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|1'),
@@ -161,6 +165,8 @@ void main() {
         TespResponseAnswer('${_stringExperimentSaveJoined}: 15|16'),
         TespResponseAnswer(_stringExperimentSelectJoined),
         TespResponseAnswer('${_stringExperimentSelectById}: 17'),
+        TespResponseAnswer('${_stringExperimentGetPausedStatuses}: 18|19|20'),
+        TespResponseAnswer('${_stringExperimentSetPausedStatus}: 21 true'),
       ];
       requests.forEach((element) {
         tespSocket.add(element);
@@ -571,6 +577,8 @@ void main() {
         TespRequestExperimentSaveJoined([Experiment()..title='15', Experiment()..title='16']),
         TespRequestExperimentSelectJoined(),
         TespRequestExperimentSelectById(17),
+        TespRequestExperimentGetPausedStatuses([Experiment()..id=18, Experiment()..id=19, Experiment()..id=20]),
+        TespRequestExperimentSetPausedStatus(Experiment()..id=21, true),
       ];
       var responses = [
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|1'),
@@ -605,6 +613,8 @@ void main() {
         TespResponseAnswer('${_stringExperimentSaveJoined}: 15|16'),
         TespResponseAnswer(_stringExperimentSelectJoined),
         TespResponseAnswer('${_stringExperimentSelectById}: 17'),
+        TespResponseAnswer('${_stringExperimentGetPausedStatuses}: 18|19|20'),
+        TespResponseAnswer('${_stringExperimentSetPausedStatus}: 21 true'),
       ];
       for (var i = 0; i < requests.length; i++) {
         expect(client.send(requests[i]),
@@ -812,6 +822,16 @@ class TestingEventServer with TespRequestHandlerMixin {
   FutureOr<TespResponse> experimentSelectJoined() {
     return Future.value(
       TespResponseAnswer('$_stringExperimentSelectJoined'));
+  }
+
+  @override
+  Future<TespResponse> experimentGetPausedStatuses(List<int> experimentIds) {
+    return Future.value(TespResponseAnswer('${_stringExperimentGetPausedStatuses}: ${experimentIds.join('|')}'));
+  }
+
+  @override
+  Future<TespResponse> experimentSetPausedStatus(int experimentId, bool paused) {
+    return Future.value(TespResponseAnswer('${_stringExperimentSetPausedStatus}: $experimentId $paused'));
   }
 }
 
