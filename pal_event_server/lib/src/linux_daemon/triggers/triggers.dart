@@ -1,5 +1,3 @@
-import 'dart:math' as math show max;
-
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/paco_action.dart';
 import 'package:taqo_common/model/experiment.dart';
@@ -83,8 +81,7 @@ mixin EventTriggerSource {
         switch (action.actionCode) {
           case PacoAction.NOTIFICATION_TO_PARTICIPATE_ACTION_CODE:
             final PacoNotificationAction notificationAction = action as PacoNotificationAction;
-            // Always use a small delay to avoid requesting to schedule a notification in the past
-            final delay = Duration(milliseconds: math.max(1000, notificationAction.delay));
+            final delay = Duration(milliseconds: notificationAction.delay ?? 0);
             final actionSpec = ActionSpecification(
                 event.dateTime.add(delay), experiment, group, interruptTrigger,
                 notificationAction, actionTriggerSpecId);

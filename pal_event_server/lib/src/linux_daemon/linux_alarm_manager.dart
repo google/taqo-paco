@@ -79,9 +79,6 @@ void _expire(int alarmId) async {
 
 /// Schedule an alarm for [actionSpec] at [when] to run [callback]
 Future<int> _schedule(ActionSpecification actionSpec, DateTime when, String what) async {
-  final duration = when.difference(DateTime.now());
-  if (duration.inMilliseconds < 0) return -1;
-
   final database = await SqliteDatabase.get();
   final alarmId = await database.insertAlarm(actionSpec);
 
