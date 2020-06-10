@@ -1,17 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:taqo_client/service/experiment_paused_status_cache.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/net/paco_api.dart';
 import 'package:taqo_common/service/experiment_service_lite.dart';
 import 'package:taqo_common/storage/joined_experiments_storage.dart';
-import 'package:taqo_common/storage/local_file_storage.dart';
 import 'package:taqo_common/util/schedule_printer.dart' as schedule_printer;
 import 'package:taqo_common/util/zoned_date_time.dart';
-import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
-import '../providers/experiment_provider.dart' show sharedPrefsExperimentPauseKey;
 import '../net/invitation_response.dart';
 import '../service/platform_service.dart' as platform_service;
 import 'alarm/taqo_alarm.dart' as taqo_alarm;
@@ -20,6 +18,7 @@ class ExperimentService implements ExperimentServiceLite{
   final PacoApi _pacoApi;
 
   var _joined = Map<int, Experiment>();
+  ExperimentPausedStatusCache _pausedStatusCache;
 
   static ExperimentService _instance;
 
@@ -41,9 +40,17 @@ class ExperimentService implements ExperimentServiceLite{
 
   Future<void> _loadJoinedExperiments() async {
     final storage = await JoinedExperimentsStorage.get();
-    return storage.readJoinedExperiments().then((List<Experiment> experiments) {
-      _mapifyExperimentsById(experiments);
-    });
+    var experiments = await storage.readJoinedExperiments();
+    _pausedStatusCache = await ExperimentPausedStatusCache.getInstance();
+    await _pausedStatusCache.loadPausedStatusForExperiments(experiments);
+    experiments.forEach((experiment) => _pausedStatusCache.restorePaused(experiment));
+    _mapifyExperimentsById(experiments);
+  }
+
+  Experiment _makeExperimentFromJson(Map<String, dynamic> json) {
+    var experiment = Experiment.fromJson(json);
+    _pausedStatusCache.restorePaused(experiment);
+    return experiment;
   }
 
   Future<List<Experiment>> getExperimentsFromServer() {
@@ -65,7 +72,7 @@ class ExperimentService implements ExperimentServiceLite{
           for (var experimentJson in experimentJsonList) {
             var experiment;
             try {
-              experiment = Experiment.fromJson(experimentJson);
+              experiment = _makeExperimentFromJson(experimentJson);
             } catch (e) {
               print('Error parsing experiment ${experimentJson['id']}: $e');
               continue;
@@ -88,7 +95,7 @@ class ExperimentService implements ExperimentServiceLite{
           final experimentJson = response.body;
           try {
             var experimentJsonObj = jsonDecode(experimentJson).elementAt(0);
-            return Experiment.fromJson(experimentJsonObj);
+            return _makeExperimentFromJson(experimentJsonObj);
           } catch (e) {
             print('Error decoding Experiments response: $e');
             print ('Response was: "$experimentJson"');
@@ -106,7 +113,7 @@ class ExperimentService implements ExperimentServiceLite{
           final experimentJson = response.body;
           try {
             var experimentJsonObj = jsonDecode(experimentJson).elementAt(0);
-            return Experiment.fromJson(experimentJsonObj);
+            return _makeExperimentFromJson(experimentJsonObj);
           } catch (e) {
             print('Error decoding Experiments response: $e');
             print ('Response was: "$experimentJson"');
@@ -135,7 +142,7 @@ class ExperimentService implements ExperimentServiceLite{
           }
           final experiments = <Experiment>[];
           for (var experimentJson in experimentJsonList) {
-            experiments.add(Experiment.fromJson(experimentJson));
+            experiments.add(_makeExperimentFromJson(experimentJson));
           }
 
           _mapifyExperimentsById(experiments);
@@ -185,10 +192,7 @@ class ExperimentService implements ExperimentServiceLite{
   bool isJoined(Experiment experiment) => _joined.containsKey(experiment.id);
 
   void stopExperiment(Experiment experiment) async {
-    final storageDir = await LocalFileStorageFactory.localStorageDirectory;
-    final sharedPreferences = TaqoSharedPrefs(storageDir.path);
-    await sharedPreferences.remove("${sharedPrefsExperimentPauseKey}_${experiment.id}");
-
+    _pausedStatusCache.removeExperiment(experiment);
     _joined.remove(experiment.id);
     saveJoinedExperiments();
     final db = await platform_service.databaseImpl;

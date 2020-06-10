@@ -31,11 +31,9 @@ dependencies:
   numberpicker: ^1.0.0
   cached_network_image: ^2.0.0
   provider: ^3.2.0
-  path_provider: ^1.5.1
-  path_provider_macos: ^0.0.1
-
-  path_provider_linux:
-    path: plugins/flutter/path_provider_linux
+  path_provider: ^1.6.10
+  path_provider_macos: '>=0.0.4 <2.0.0'
+  path_provider_linux: '>=0.0.1 <2.0.0'
 
   taqo_common:
     path: ../taqo_common

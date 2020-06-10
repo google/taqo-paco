@@ -10,6 +10,7 @@ import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
 import 'package:taqo_common/storage/base_database.dart';
 import 'package:taqo_common/storage/local_file_storage.dart';
+import 'package:taqo_common/util/sql_statement_building_helper.dart';
 import 'package:taqo_common/util/zoned_date_time.dart';
 
 part 'local_database.inc.dart';
@@ -153,5 +154,19 @@ class LocalDatabase extends BaseDatabase {
   Future<List<Experiment>> getJoinedExperiments() async {
     final experimentFieldsMaps = await _db.query('experiments', where: 'joined=1');
     return experimentFieldsMaps.map((e) => Experiment.fromJson(jsonDecode(e['json']))).toList();
+  }
+
+  @override
+  Future<Map<int, bool>> getExperimentsPausedStatus(Iterable<Experiment> experiments) async {
+    final fieldsMaps = await _db.query('experiments', columns: ['id', 'paused'],
+        where: 'id in (${buildQuestionMarksJoinedByComma(experiments.length)})',
+        whereArgs: [for (var experiment in experiments) experiment.id]);
+    return <int, bool>{for (var fieldsMap in fieldsMaps) fieldsMap['id']: fieldsMap['paused'] == 1};
+  }
+
+  @override
+  Future<void> setExperimentPausedStatus(Experiment experiment, bool paused) async {
+    await _db.update('experiments', {'paused': paused ? 1 : 0},
+        where: 'id=?', whereArgs: [experiment.id]);
   }
 }

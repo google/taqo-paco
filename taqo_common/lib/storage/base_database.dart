@@ -37,6 +37,11 @@ abstract class BaseDatabase {
   Future<List<Experiment>> getJoinedExperiments();
 
   Future<Experiment> getExperimentById(int experimentId);
+
+  Future<Map<int, bool>> getExperimentsPausedStatus(Iterable<Experiment> experiments);
+
+  Future<void> setExperimentPausedStatus(Experiment experiment, bool paused);
+
 }
 
 typedef DatabaseFactoryFunction = FutureOr<BaseDatabase> Function();
