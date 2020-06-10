@@ -19,9 +19,22 @@ String getHourOffsetAsTimeString(int millisFromMidnight) {
 
 /// Parses a string of YYYY/MM/DD into a [DateTime] object
 DateTime parseYMDTime(String time) {
-  // TODO (mike) Error check
-  final parse = time.split("/");
-  return DateTime(int.parse(parse[0]), int.parse(parse[1]), int.parse(parse[2]));
+  if (time == null || time.isEmpty) {
+    return null;
+  }
+
+  final pattern = RegExp(r'\d{4}\/\d{2}\/\d{2}');
+  if (pattern.matchAsPrefix(time) == null) {
+    return null;
+  }
+
+  try {
+    final parse = time.split("/");
+    return DateTime(int.parse(parse[0]), int.parse(parse[1]), int.parse(parse[2]));
+  } catch (e) {
+    print('Unexpected error parsing date string $time: $e');
+    return null;
+  }
 }
 
 /// Skips over Saturday and Sunday
