@@ -26,8 +26,8 @@ ARCH=amd64
 DEB=${PKG}_${VER}_${ARCH}
 
 BUILD=taqo_client/build/linux
-#DEBUG=${BUILD}/debug
-RELEASE=${BUILD}/release
+#DEBUG=${BUILD}/debug/bundle
+RELEASE=${BUILD}/release/bundle
 OUT=${BUILD}/${DEB}
 
 rm -rf ${OUT}
