@@ -4,77 +4,43 @@ import 'dart:isolate';
 
 import 'package:logging/logging.dart';
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/interrupt_cue.dart';
 
-import 'pal_event_helper.dart';
+import '../triggers/triggers.dart';
 import 'loggers.dart';
+import 'pal_event_helper.dart';
+import 'xprop_util.dart' as xprop;
 
 final _logger = Logger('AppLogger');
 
 const _queryInterval = const Duration(seconds: 1);
-const _xpropCommand = 'xprop';
-const _xpropGetIdArgs = ['-root', '32x', '\t\$0', '_NET_ACTIVE_WINDOW', ];
 
-const appNameField = 'WM_CLASS';
-const windowNameField = '_NET_WM_NAME';
-const _xpropNameFields = [appNameField, windowNameField, ];
+String _prevWindowName;
 
-List<String> _xpropGetAppArgs(int windowId) {
-  return ['-id', '$windowId', ] + _xpropNameFields;
-}
-
-const _invalidWindowId = -1;
-String _lastResult;
-
-/// Query xprop for the active window
+// Isolate entry point must be a top-level function (or static?)
+// Query xprop for the active window
 void _appLoggerIsolate(SendPort sendPort) {
-  final idSplitRegExp = RegExp(r'\s+');
-  final fieldSplitRegExp = RegExp(r'\s+=\s+|\n');
-  final appSplitRegExp = RegExp(r',\s*');
-
-  int parseWindowId(dynamic result) {
-    if (result is String) {
-      final windowId = result.split(idSplitRegExp);
-      if (windowId.length > 1) {
-        return int.tryParse(windowId[1]) ?? _invalidWindowId;
-      }
-    }
-    return _invalidWindowId;
-  }
-
-  Map<String, dynamic> buildResultMap(dynamic result) {
-    if (result is! String) return null;
-    final resultMap = <String, dynamic>{};
-    final fields = result.split(fieldSplitRegExp);
-    int i = 1;
-    for (var name in _xpropNameFields) {
-      if (i >= fields.length) break;
-      if (name == appNameField) {
-        final split = fields[i].split(appSplitRegExp);
-        if (split.length > 1) {
-          resultMap[name] = split[1].trim().replaceAll('"', '');
-        } else {
-          resultMap[name] = fields[i].trim().replaceAll('"', '');
-        }
-      } else {
-        resultMap[name] = fields[i].trim().replaceAll('"', '');
-      }
-      i += 2;
-    }
-    return resultMap;
-  }
-
   Timer.periodic(_queryInterval, (Timer _) {
     // Gets the active window ID
-    Process.run(_xpropCommand, _xpropGetIdArgs).then((result) {
+    Process.run(xprop.command, xprop.getIdArgs).then((result) {
       // Parse the window ID
-      final windowId = parseWindowId(result.stdout);
-      if (windowId != _invalidWindowId) {
+      final windowId = xprop.parseWindowId(result.stdout);
+      if (windowId != xprop.invalidWindowId) {
         // Gets the active window name
-        Process.run(_xpropCommand, _xpropGetAppArgs(windowId)).then((result) {
-          final res = result.stdout;
-          if (res != _lastResult) {
-            _lastResult = res;
-            final resultMap = buildResultMap(res);
+        Process.run(xprop.command, xprop.getAppArgs(windowId)).then((result) {
+          final currWindow = result.stdout;
+          final resultMap = xprop.buildResultMap(currWindow);
+          final currWindowName = resultMap[xprop.appNameField];
+
+          if (currWindowName != _prevWindowName) {
+            // Send APP_CLOSED
+            if (_prevWindowName != null && _prevWindowName.isNotEmpty) {
+              sendPort.send(_prevWindowName);
+            }
+
+            _prevWindowName = currWindowName;
+
+            // Send PacoEvent && APP_USAGE
             if (resultMap != null) {
               sendPort.send(resultMap);
             }
@@ -85,73 +51,92 @@ void _appLoggerIsolate(SendPort sendPort) {
   });
 }
 
-class AppLogger {
-  static const _sendDelay = const Duration(seconds: 9);
-  static final _instance = AppLogger._();
+class AppLogger extends PacoEventLogger with EventTriggerSource {
+  static const appUsageLoggerName = 'app_usage_logger';
+  static const Object _isolateDiedObj = Object();
+  static AppLogger _instance;
 
+  // Port for the main Isolate to receive msg from AppLogger Isolate
   ReceivePort _receivePort;
+  // Background Isolate that will poll for the active window
   Isolate _isolate;
 
+  // List of Events that should be sent to PAL
   final _eventsToSend = <Event>[];
-  bool _active = false;
 
-  AppLogger._();
+  AppLogger._() : super(appUsageLoggerName);
 
   factory AppLogger() {
+    if (_instance == null) {
+      _instance = AppLogger._();
+    }
     return _instance;
   }
 
-  void stop() {
-    _logger.info('Stopping AppLogger');
-    _active = false;
-    _isolate?.kill();
-    _receivePort?.close();
-  }
+  @override
+  void start(List<ExperimentLoggerInfo> experiments) async {
+    if (active) {
+      return;
+    }
 
-  void start() async {
-    if (_active) return;
     _logger.info('Starting AppLogger');
-    // Port for the main Isolate to receive msg from AppLogger Isolate
     _receivePort = ReceivePort();
     _isolate = await Isolate.spawn(_appLoggerIsolate, _receivePort.sendPort);
-    _isolate.addOnExitListener(_receivePort.sendPort, response: null);
+    _isolate.addOnExitListener(_receivePort.sendPort, response: _isolateDiedObj);
     _receivePort.listen(_listen);
-    _active = true;
+    active = true;
 
-    Timer.periodic(_sendDelay, _sendToPal);
+    Timer.periodic(sendInterval, (Timer t) {
+      final events = List.of(_eventsToSend);
+      _eventsToSend.clear();
+      sendToPal(events, t);
+    });
+
+    // Create Paco Events
+    super.start(experiments);
   }
 
-  void _listen(dynamic data) {
-    // The Isolate died
-    if (data == null) {
-      _receivePort.close();
-      _isolate.kill();
-      if (_active) {
-        // Restart?
-        start();
+  @override
+  void stop(List<ExperimentLoggerInfo> experiments) async {
+    if (!active) {
+      return;
+    }
+
+    // Create Paco Events
+    await super.stop(experiments);
+
+    if (experimentsBeingLogged.isEmpty) {
+      // No more experiments -- shut down
+      _logger.info('Stopping AppLogger');
+      active = false;
+      _isolate?.kill();
+      _receivePort?.close();
+    }
+  }
+
+  void _listen(dynamic data) async {
+    if (data == _isolateDiedObj) {
+      // The background Isolate died
+      _isolate?.kill();
+      _receivePort?.close();
+      if (active) {
+        start(experimentsBeingLogged);
       }
       return;
     }
 
     if (data is Map && data.isNotEmpty) {
-      createLoggerPacoEvents(data, createAppUsagePacoEvent).then((events) {
-        _eventsToSend.addAll(events);
-      });
-    }
-  }
+      final pacoEvents = await createLoggerPacoEvents(data, pacoEventCreator: createAppUsagePacoEvent);
+      _eventsToSend.addAll(pacoEvents);
 
-  void _sendToPal(Timer timer) {
-    List<Event> events = List.of(_eventsToSend);
-    _eventsToSend.clear();
-    if (events.isNotEmpty) {
-      storePacoEvent(events);
-    }
-    if (!_active) {
-      timer.cancel();
+      final triggerEvents = <TriggerEvent>[];
+      for (final e in pacoEvents) {
+        triggerEvents.add(createEventTriggers(InterruptCue.APP_USAGE, e.responses[appsUsedKey]));
+      }
+      broadcastEventsForTriggers(triggerEvents);
+    } else if (data is String && data.isNotEmpty) {
+      final triggerEvent = createEventTriggers(InterruptCue.APP_CLOSED, data);
+      broadcastEventsForTriggers(<TriggerEvent>[triggerEvent]);
     }
   }
 }
-
-//void main() {
-//  AppLogger();
-//}

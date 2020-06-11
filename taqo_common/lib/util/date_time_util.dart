@@ -11,6 +11,10 @@ DateTime getLater(DateTime dt1, DateTime dt2) {
   return dt1.isAfter(dt2) ? dt1 : dt2;
 }
 
+int getMillisFromMidnight(DateTime dt) {
+  return 1000 * (60 * (60 * dt.hour + dt.minute) + dt.second) + dt.millisecond;
+}
+
 String getHourOffsetAsTimeString(int millisFromMidnight) {
   final hourFormatter = DateFormat('hh:mma');
   final endHour = getDateWithoutTime(DateTime.now()).add(Duration(milliseconds: millisFromMidnight));
@@ -19,9 +23,22 @@ String getHourOffsetAsTimeString(int millisFromMidnight) {
 
 /// Parses a string of YYYY/MM/DD into a [DateTime] object
 DateTime parseYMDTime(String time) {
-  // TODO (mike) Error check
-  final parse = time.split("/");
-  return DateTime(int.parse(parse[0]), int.parse(parse[1]), int.parse(parse[2]));
+  if (time == null || time.isEmpty) {
+    return null;
+  }
+
+  final pattern = RegExp(r'\d{4}\/\d{2}\/\d{2}');
+  if (pattern.matchAsPrefix(time) == null) {
+    return null;
+  }
+
+  try {
+    final parse = time.split("/");
+    return DateTime(int.parse(parse[0]), int.parse(parse[1]), int.parse(parse[2]));
+  } catch (e) {
+    print('Unexpected error parsing date string $time: $e');
+    return null;
+  }
 }
 
 /// Skips over Saturday and Sunday

@@ -3,114 +3,74 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:logging/logging.dart';
-import 'package:path/path.dart';
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/interrupt_cue.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
 
-import 'pal_event_helper.dart';
+import '../triggers/triggers.dart';
 import 'loggers.dart';
-
+import 'pal_event_helper.dart';
+import 'shell_util.dart' as shell;
 final _logger = Logger('CmdLineLogger');
 
-const _beginTaqo = '# Begin Taqo\n';
-const _endTaqo = '# End Taqo\n';
-const _bashPromptCommand = r"""
-RETURN_VAL=$?;echo "{\"uid\":\"$(whoami)\",\"pid\":$$,\"cmd_raw\":\"$(history 1 | sed "s/^[ ]*[0-9]*[ ]*\[\([^]]*\)\][ ]*//")\",\"cmd_ret\":$RETURN_VAL}" >> ~/.taqo/command.log""";
-const _zshPreCmd = r"""
-precmd() { eval 'RETURN_VAL=$?;echo "{\"uid\":\"$(whoami)\",\"pid\":$$,\"cmd_raw\":$(history | tail -1 | sed "s/^[ ]*[0-9]*[ ]*//"),\"cmd_ret\":$RETURN_VAL}" >> /tmp/log' }""" + '\n';
+class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
+  static const cliLoggerName = 'cli_logger';
+  static CmdLineLogger _instance;
 
-Future<bool> _enableCmdLineLogging() async {
-  bool ret = true;
-
-  final existingCommand = Platform.environment['PROMPT_COMMAND'];
-  final bashrc = File(join(Platform.environment['HOME'], '.bashrc'));
-  try {
-    await bashrc.writeAsString(_beginTaqo, mode: FileMode.append);
-    if (existingCommand == null) {
-      await bashrc.writeAsString("export PROMPT_COMMAND='$_bashPromptCommand'\n",
-          mode: FileMode.append);
-    } else {
-      await bashrc.writeAsString("export PROMPT_COMMAND='${existingCommand.trim()};$_bashPromptCommand'\n",
-          mode: FileMode.append);
-    }
-    await bashrc.writeAsString(_endTaqo, mode: FileMode.append);
-  } on Exception catch (e) {
-    _logger.warning(e);
-    ret = false;
-  }
-
-  final zshrc = File(join(Platform.environment['HOME'], '.zshrc'));
-  try {
-    // TODO Could we check for an existing function definition?
-    await zshrc.writeAsString(_beginTaqo, mode: FileMode.append);
-    await zshrc.writeAsString(_zshPreCmd, mode: FileMode.append);
-    await zshrc.writeAsString(_endTaqo, mode: FileMode.append);
-  } on Exception catch (e) {
-    _logger.warning(e);
-    ret = false;
-  }
-
-  return ret;
-}
-
-Future<bool> _disableCmdLineLogging() async {
-  Future<bool> disable(String shFile) async {
-    final withTaqo = File(join(Platform.environment['HOME'], shFile));
-    final withoutTaqo = File(join(Directory.systemTemp.path, shFile));
-    if (await withoutTaqo.exists()) {
-      await withoutTaqo.delete();
-    }
-
-    var skip = false;
-    try {
-      final lines = await withTaqo.readAsLines();
-      for (var line in lines) {
-        if (line == _beginTaqo.trim()) {
-          skip = true;
-        } else if (line == _endTaqo.trim()) {
-          skip = false;
-        } else if (!skip) {
-          await withoutTaqo.writeAsString('$line\n', mode: FileMode.append);
-        }
-      }
-      await withTaqo.delete();
-      await withoutTaqo.copy(join(Platform.environment['HOME'], shFile));
-    } on Exception catch (e) {
-      _logger.warning(e);
-      return false;
-    }
-    return true;
-  }
-
-  var ret = await disable('.bashrc');
-  ret = ret && await disable('.zshrc');
-  return ret;
-}
-
-class CmdLineLogger {
-  static const _sendDelay = const Duration(seconds: 11);
-  static final _instance = CmdLineLogger._();
-
-  bool _active = false;
-
-  CmdLineLogger._();
+  CmdLineLogger._() : super(cliLoggerName);
 
   factory CmdLineLogger() {
+    if (_instance == null) {
+      _instance = CmdLineLogger._();
+    }
     return _instance;
   }
 
-  void start() async {
-    if (_active) return;
+  @override
+  void start(List<ExperimentLoggerInfo> experiments) async {
+    if (active) {
+      return;
+    }
+
     _logger.info('Starting CmdLineLogger');
-    await _enableCmdLineLogging();
-    _active = true;
-    Timer.periodic(_sendDelay, _sendToPal);
+    await shell.enableCmdLineLogging();
+    active = true;
+    Timer.periodic(sendInterval, (Timer t) async {
+      final pacoEvents = await _readLoggedCommands();
+      sendToPal(pacoEvents, t);
+
+      final triggerEvents = <TriggerEvent>[];
+      for (final e in pacoEvents) {
+        // TODO Use a different InterruptCue?
+        triggerEvents.add(createEventTriggers(InterruptCue.APP_USAGE, e.responses[cmdRawKey]));
+      }
+      broadcastEventsForTriggers(triggerEvents);
+
+      // Not active and no events means we stopped logging and flushed all prior events
+      if (pacoEvents.isEmpty && !active) {
+        t.cancel();
+      }
+    });
+
+    // Create Paco Events
+    super.start(experiments);
   }
 
-  void stop() async {
+  @override
+  void stop(List<ExperimentLoggerInfo> experiments) async {
+    if (!active) {
+      return;
+    }
+
+    // Create Paco Events
+    await super.stop(experiments);
+
+    if (experimentsBeingLogged.isEmpty) {
+      // No more experiments -- shut down
     _logger.info('Stopping CmdLineLogger');
-    await _disableCmdLineLogging();
-    _active = false;
+      await shell.disableCmdLineLogging();
+      active = false;
+    }
   }
 
   Future<List<Event>> _readLoggedCommands() async {
@@ -122,30 +82,22 @@ class CmdLineLogger {
         // TODO race condition here
         await file.delete();
         for (var line in lines) {
-          // TODO Handle special characters in line
-          events.addAll(await createLoggerPacoEvents(jsonDecode(line), createCmdUsagePacoEvent));
+          try {
+            events.addAll(await createLoggerPacoEvents(jsonDecode(line),
+                pacoEventCreator: createCmdUsagePacoEvent));
+          } catch (_) {
+            // TODO jsonDecode can fail with special characters in line, e.g.
+            // Need to escape \ inside strings, i.e. \ -> \\
+            // Need to escape " inside strings, i.e. " -> \"
+            // Anything less than U+0020
+          }
         }
         return events;
       }
-      _logger.info("command.log file does not exist or is corrupted");
+      _logger.info("No new terminal commands to log");
     } catch (e) {
-      _logger.warning("Error loading command.log file: $e");
+      _logger.warning("Error loading terminal commands file: $e");
     }
-    return [];
-  }
-
-  void _sendToPal(Timer timer) {
-    _readLoggedCommands().then((events) {
-      if (events != null && events.isNotEmpty) {
-        storePacoEvent(events);
-      }
-      if (!_active) {
-        timer.cancel();
-      }
-    });
+    return events;
   }
 }
-
-//void main() {
-//  CmdLineLogger();
-//}

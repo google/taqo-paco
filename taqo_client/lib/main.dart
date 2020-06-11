@@ -55,8 +55,10 @@ void main() async {
   DatabaseFactory.initialize(() => databaseImpl);
   ExperimentServiceLiteFactory.initialize(ExperimentService.getInstance);
   setupLoggingMethodChannel();
+
   setupSyncServiceMethodChannel();
   notifySyncService();
+
   taqo_time_plugin.initialize(_onTimeChange);
   await taqo_alarm.init();
 
