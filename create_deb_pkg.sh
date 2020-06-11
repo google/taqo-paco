@@ -10,16 +10,6 @@ if [ -z ${DART_SDK} ]; then
   exit 1
 fi
 
-# Build flutter app
-pushd taqo_client || exit
-${FLUTTER_SDK}/bin/flutter clean && ${FLUTTER_SDK}/bin/flutter build linux
-popd || exit
-
-# Build PAL event server / linux daemon
-${DART_SDK}/bin/dart2native -p pal_event_server/.packages \
-  -o taqo_client/build/linux/release/taqo_daemon \
-  pal_event_server/lib/main.dart
-
 PKG=taqosurvey
 VER=1.0-1
 ARCH=amd64
@@ -29,6 +19,19 @@ BUILD=taqo_client/build/linux
 #DEBUG=${BUILD}/debug/bundle
 RELEASE=${BUILD}/release/bundle
 OUT=${BUILD}/${DEB}
+
+./resolve_deps.sh
+
+# Build flutter app
+pushd taqo_client || exit
+${FLUTTER_SDK}/bin/flutter clean && ${FLUTTER_SDK}/bin/flutter build linux
+popd || exit
+
+# Build PAL event server / linux daemon
+${DART_SDK}/bin/dart2native -p pal_event_server/.packages \
+  -o ${RELEASE}/taqo_daemon \
+  pal_event_server/lib/main.dart
+
 
 rm -rf ${OUT}
 
@@ -102,7 +105,7 @@ Maintainer: Bob Evans <bobevans@google.com>
 Section: devel
 Priority: optional
 Homepage: https://pacoapp.com/
-Pre-Depends: libc6, libsqlite3-0 libglib2.0-bin
+Pre-Depends: libc6, libsqlite3-0, libglib2.0-bin
 Description: Taqo survey app
  Long description goes here.
 EOM
