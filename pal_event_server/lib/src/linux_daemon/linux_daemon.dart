@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:logging/logging.dart';
 import 'package:taqo_common/model/event.dart';
 
 import '../sqlite_database/sqlite_database.dart';
@@ -10,6 +11,8 @@ import 'loggers/cmdline_logger.dart';
 import 'dbus_notifications.dart' as dbus;
 import 'linux_alarm_manager.dart' as linux_alarm_manager;
 import 'linux_notification_manager.dart' as linux_notification_manager;
+
+final _logger = Logger('LinuxDaemon');
 
 void openSurvey(int id) {
   try {
@@ -65,7 +68,7 @@ void handleScheduleAlarm() async {
 }
 
 void start(Socket socket) async {
-  print('Starting linux daemon');
+  _logger.info('Starting linux daemon');
 
   // Monitor DBus for notification actions
   dbus.monitor();

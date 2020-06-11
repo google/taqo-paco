@@ -31,7 +31,6 @@ class PALTespServer with TespRequestHandlerMixin {
   Future _storeEvent(List events) async {
     final database = await SqliteDatabase.get();
     for (var e in events) {
-      print('storeEvent: $e');
       await database.insertEvent(e);
     }
   }
@@ -40,7 +39,6 @@ class PALTespServer with TespRequestHandlerMixin {
 
   @override
   FutureOr<TespResponse> palAddEvents(List<Event> events) async {
-    print('palAddEvents: $events');
     if (await pal_commands.isWhitelistedDataOnly()) {
       await _storeEvent(_whitelist.blackOutData(events));
     } else {
@@ -52,28 +50,24 @@ class PALTespServer with TespRequestHandlerMixin {
 
   @override
   FutureOr<TespResponse> palPause() async {
-    print('pause');
     await pal_commands.pauseDataUpload();
     return TespResponseSuccess();
   }
 
   @override
   FutureOr<TespResponse> palResume() async {
-    print('resume');
     await pal_commands.resumeDataUpload();
     return TespResponseSuccess();
   }
 
   @override
   FutureOr<TespResponse> palWhiteListDataOnly() async {
-    print('whiteListDataOnly');
     await pal_commands.setWhitelistedDataOnly();
     return TespResponseSuccess();
   }
 
   @override
   FutureOr<TespResponse> palAllData() async {
-    print('allData');
     await pal_commands.setAllDataOnly();
     return TespResponseSuccess();
   }

@@ -2,12 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:logging/logging.dart';
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
 
 import '../../service/platform_service.dart' as platform_service;
 import 'taqo_alarm.dart' as taqo_alarm;
+
+final _logger = Logger('FlutterLocalNotifications');
 
 const _ANDROID_NOTIFICATION_CHANNEL_ID = "com.taqo.survey.taqosurvey.NOTIFICATIONS";
 const _ANDROID_NOTIFICATION_CHANNEL_NAME = "Experiment Reminders";
@@ -21,7 +24,7 @@ final _notificationHandledStream = StreamController<String>();
 
 /// The callback when a notification is tapped by the user
 void _handleNotification(String payload) async {
-  print('Handle $payload');
+  _logger.info('Handle $payload');
   taqo_alarm.openSurvey(payload);
 }
 
@@ -122,7 +125,7 @@ Future<NotificationAppLaunchDetails> get launchDetails =>
 /// Show a notification now
 Future<int> showNotification(ActionSpecification actionSpec) async {
   final id = await _notify(actionSpec);
-  print('Showing notification id: $id @ ${actionSpec.time}');
+  _logger.info('Showing notification id: $id @ ${actionSpec.time}');
   return id;
 }
 
@@ -131,13 +134,13 @@ Future<int> scheduleNotification(ActionSpecification actionSpec,
     {bool cancelPending}) async {
   final id = await _notify(actionSpec, when: actionSpec.time,
       cancelPending: cancelPending);
-  print('Scheduling notification id: $id @ ${actionSpec.time}');
+  _logger.info('Scheduling notification id: $id @ ${actionSpec.time}');
   return id;
 }
 
 /// Cancel notification with [id]
 Future cancelNotification(int id) async {
-  _plugin.cancel(id).catchError((e, st) => print("Error canceling notification id $id: $e"));
+  _plugin.cancel(id).catchError((e, st) => _logger.warning("Error canceling notification id $id: $e"));
   final db = await platform_service.databaseImpl;
   return db.removeNotification(id);
 }

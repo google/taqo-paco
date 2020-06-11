@@ -1,7 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:logging/logging.dart';
+
 import 'local_file_storage.dart';
+
+final _logger = Logger('UnsecureTokenStorage');
 
 class UnsecureTokenStorage {
   static const filename = 'tokens.txt';
@@ -43,10 +47,10 @@ class UnsecureTokenStorage {
           return variables;
         }
       }
-      print("token file does not exist or is corrupted");
+      _logger.info("token file does not exist or is corrupted");
       return null;
     } catch (e) {
-      print("Error loading token: $e");
+      _logger.warning("Error loading token: $e");
       return null;
     }
   }

@@ -48,17 +48,13 @@ class SyncService {
   static List<EventSaveOutcome> _parseSyncResponse(PacoResponse response) {
     final outcomes = <EventSaveOutcome>[];
     try {
-      //print(response.body);
       final List responseOutcomes = jsonDecode(response.body);
-      //print(responseOutcomes);
       for (var json in responseOutcomes) {
-        //print(json);
         outcomes.add(EventSaveOutcome.fromJson(json));
       }
     } catch (e) {
-      print(e);
+      _logger.warning(e);
     }
-    //print(outcomes);
     return outcomes;
   }
 

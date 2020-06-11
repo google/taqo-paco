@@ -174,7 +174,7 @@ class RemoteDatabase extends BaseDatabase {
     return global.tespClient.then((tespClient) async {
       final TespResponse response = await tespClient.experimentGetPausedStatuses(experiments.toList());
       if (response is TespResponseError) {
-        logger.warning('$response');
+        _logger.warning('$response');
         return <int, bool>{};
       } else {
         return (((response as TespResponseAnswer).payload) as Map)
@@ -188,7 +188,7 @@ class RemoteDatabase extends BaseDatabase {
     await global.tespClient.then((tespClient) async {
       final TespResponse response = await tespClient.experimentSetPausedStatus(experiment, paused);
       if (response is TespResponseError) {
-        logger.warning('$response');
+        _logger.warning('$response');
       }
     });
   }

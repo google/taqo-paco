@@ -2,7 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:logging/logging.dart';
+
 import 'linux_daemon.dart';
+
+final _logger = Logger('DbusNotifications');
 
 const _objectPath = '/org/freedesktop/Notifications';
 const _dest = 'org.freedesktop.Notifications';
@@ -23,7 +27,7 @@ final _notifications = <int, int>{};
 void _listen(String event) {
   final action = _actionPattern.matchAsPrefix(event);
   if (action != null) {
-    print('action: id: ${action[1]} action: ${action[2]}');
+    _logger.info('action: id: ${action[1]} action: ${action[2]}');
     if (action.groupCount >= 2 && action[2] == 'default') {
       final notifId = int.tryParse(action[1]);
       if (notifId != null) {
@@ -37,7 +41,7 @@ void _listen(String event) {
   final closed = _closedPattern.matchAsPrefix(event);
   if (closed != null) {
     // TODO Handle?
-    print('closed: id: ${closed[1]} reason: ${closed[2]}');
+    _logger.info('closed: id: ${closed[1]} reason: ${closed[2]}');
   }
 }
 

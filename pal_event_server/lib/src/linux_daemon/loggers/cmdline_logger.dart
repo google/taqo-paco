@@ -2,12 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:logging/logging.dart';
 import 'package:path/path.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
 
 import 'pal_event_helper.dart';
 import 'loggers.dart';
+
+final _logger = Logger('CmdLineLogger');
 
 const _beginTaqo = '# Begin Taqo\n';
 const _endTaqo = '# End Taqo\n';
@@ -32,7 +35,7 @@ Future<bool> _enableCmdLineLogging() async {
     }
     await bashrc.writeAsString(_endTaqo, mode: FileMode.append);
   } on Exception catch (e) {
-    print(e);
+    _logger.warning(e);
     ret = false;
   }
 
@@ -43,7 +46,7 @@ Future<bool> _enableCmdLineLogging() async {
     await zshrc.writeAsString(_zshPreCmd, mode: FileMode.append);
     await zshrc.writeAsString(_endTaqo, mode: FileMode.append);
   } on Exception catch (e) {
-    print(e);
+    _logger.warning(e);
     ret = false;
   }
 
@@ -73,7 +76,7 @@ Future<bool> _disableCmdLineLogging() async {
       await withTaqo.delete();
       await withoutTaqo.copy(join(Platform.environment['HOME'], shFile));
     } on Exception catch (e) {
-      print(e);
+      _logger.warning(e);
       return false;
     }
     return true;
@@ -98,14 +101,14 @@ class CmdLineLogger {
 
   void start() async {
     if (_active) return;
-    print('Starting CmdLineLogger');
+    _logger.info('Starting CmdLineLogger');
     await _enableCmdLineLogging();
     _active = true;
     Timer.periodic(_sendDelay, _sendToPal);
   }
 
   void stop() async {
-    print('Stopping CmdLineLogger');
+    _logger.info('Stopping CmdLineLogger');
     await _disableCmdLineLogging();
     _active = false;
   }
@@ -124,9 +127,9 @@ class CmdLineLogger {
         }
         return events;
       }
-      print("command.log file does not exist or is corrupted");
+      _logger.info("command.log file does not exist or is corrupted");
     } catch (e) {
-      print("Error loading command.log file: $e");
+      _logger.warning("Error loading command.log file: $e");
     }
     return [];
   }

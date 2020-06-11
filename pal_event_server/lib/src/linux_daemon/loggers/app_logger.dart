@@ -2,10 +2,13 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:logging/logging.dart';
 import 'package:taqo_common/model/event.dart';
 
 import 'pal_event_helper.dart';
 import 'loggers.dart';
+
+final _logger = Logger('AppLogger');
 
 const _queryInterval = const Duration(seconds: 1);
 const _xpropCommand = 'xprop';
@@ -99,7 +102,7 @@ class AppLogger {
   }
 
   void stop() {
-    print('Stopping AppLogger');
+    _logger.info('Stopping AppLogger');
     _active = false;
     _isolate?.kill();
     _receivePort?.close();
@@ -107,7 +110,7 @@ class AppLogger {
 
   void start() async {
     if (_active) return;
-    print('Starting AppLogger');
+    _logger.info('Starting AppLogger');
     // Port for the main Isolate to receive msg from AppLogger Isolate
     _receivePort = ReceivePort();
     _isolate = await Isolate.spawn(_appLoggerIsolate, _receivePort.sendPort);

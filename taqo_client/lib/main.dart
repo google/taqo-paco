@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:taqo_common/net/google_auth.dart';
 import 'package:taqo_common/service/experiment_service_lite.dart';
 import 'package:taqo_common/service/logging_service.dart';
@@ -29,9 +30,11 @@ import 'service/experiment_service.dart';
 import 'service/platform_service.dart';
 import 'storage/flutter_file_storage.dart';
 
+final _logger = Logger('Main');
+
 void _onTimeChange() async {
   /// TODO Currently provides no info on how the time was changed
-  print('time [zone] changed, rescheduling');
+  _logger.info('time [zone] changed, rescheduling');
   final storage =
       await ESMSignalStorage.get(FlutterFileStorage(ESMSignalStorage.filename));
   storage.deleteAllSignals();
@@ -47,19 +50,14 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   LocalFileStorageFactory.initialize((fileName) => FlutterFileStorage(fileName),
       await FlutterFileStorage.getLocalStorageDir());
+  await LoggingService.initialize(logFilePrefix: 'client-',
+      outputsToStdout: kDebugMode);
   DatabaseFactory.initialize(() => databaseImpl);
   ExperimentServiceLiteFactory.initialize(ExperimentService.getInstance);
   setupLoggingMethodChannel();
   setupSyncServiceMethodChannel();
   notifySyncService();
   taqo_time_plugin.initialize(_onTimeChange);
-
-
-
-  // LoggingService.initialize() and taqo_alarm.init() should be called once and only once
-  // Calling them here ensures that they complete before the app launches
-  await LoggingService.initialize(logFilePrefix: 'client-',
-      outputsToStdout: kDebugMode);
   await taqo_alarm.init();
 
   // If there is an active notification when the app is open,

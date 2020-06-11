@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:logging/logging.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/storage/base_database.dart';
 
+final _logger = Logger('JoinedExperimentStorage');
 
 class JoinedExperimentsStorage {
 
@@ -37,7 +39,7 @@ class JoinedExperimentsStorage {
     try {
       return _db.getJoinedExperiments();
     } catch (e) {
-      print("Error loading joined experiments: $e");
+      _logger.warning("Error loading joined experiments: $e");
       return [];
     }
   }
