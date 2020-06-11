@@ -1,7 +1,10 @@
 import 'package:intl/intl.dart';
+import 'package:logging/logging.dart';
 
 import '../model/schedule.dart';
 import '../util/zoned_date_time.dart';
+
+final _logger = Logger('DataTimeUtil');
 
 const DAYS_SHORT_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" ];
 const ORDINAL_NUMBERS = ["", "1st", "2nd", "3rd", "4th", "5th" ];
@@ -36,7 +39,7 @@ DateTime parseYMDTime(String time) {
     final parse = time.split("/");
     return DateTime(int.parse(parse[0]), int.parse(parse[1]), int.parse(parse[2]));
   } catch (e) {
-    print('Unexpected error parsing date string $time: $e');
+    _logger.warning('Unexpected error parsing date string $time: $e');
     return null;
   }
 }

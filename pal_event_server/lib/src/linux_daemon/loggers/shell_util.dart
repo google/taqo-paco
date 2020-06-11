@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:logging/logging.dart';
 import 'package:path/path.dart';
+
+final _logger = Logger('ShellUtil');
 
 const _beginTaqo = '# Begin Taqo\n';
 const _endTaqo = '# End Taqo\n';
@@ -26,7 +29,7 @@ Future<bool> enableCmdLineLogging() async {
     }
     await bashrc.writeAsString(_endTaqo, mode: FileMode.append);
   } on Exception catch (e) {
-    print(e);
+    _logger.warning(e);
     ret = false;
   }
 
@@ -37,7 +40,7 @@ Future<bool> enableCmdLineLogging() async {
     await zshrc.writeAsString(_zshPreCmd, mode: FileMode.append);
     await zshrc.writeAsString(_endTaqo, mode: FileMode.append);
   } on Exception catch (e) {
-    print(e);
+    _logger.warning(e);
     ret = false;
   }
 
@@ -67,7 +70,7 @@ Future<bool> disableCmdLineLogging() async {
       await withTaqo.delete();
       await withoutTaqo.copy(join(Platform.environment['HOME'], shrc));
     } on Exception catch (e) {
-      print(e);
+      _logger.warning(e);
       return false;
     }
     return true;
