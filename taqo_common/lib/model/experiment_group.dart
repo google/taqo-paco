@@ -174,7 +174,18 @@ class ExperimentGroup {
   }
 
   bool isOver(DateTime now) {
+    if (!fixedDuration) {
+      return false;
+    }
+
+    if (endDate == null || endDate.isEmpty) {
+      return false;
+    }
+
     final end = parseYMDTime(endDate);
+    if (end == null) {
+      return false;
+    }
     return fixedDuration && end.isBefore(now);
   }
 
@@ -182,7 +193,16 @@ class ExperimentGroup {
     if (!fixedDuration) {
       return true;
     }
+
+    if (startDate == null || startDate.isEmpty) {
+      return true;
+    }
+
     final start = parseYMDTime(startDate);
+    if (start == null) {
+      return true;
+    }
+
     return now.isAtSameMomentAs(start) || now.isAfter(start);
   }
 

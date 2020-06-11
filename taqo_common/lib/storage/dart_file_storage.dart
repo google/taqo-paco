@@ -9,7 +9,7 @@ class DartFileStorage implements ILocalFileStorage {
 
   static Directory getLocalStorageDir() {
     if (Platform.isLinux) {
-      return Directory('${Platform.environment['HOME']}/.taqo');
+      return Directory('${Platform.environment['HOME']}/.local/share/taqo');
     } else if (Platform.isMacOS) {
       return Directory(
           '${Platform.environment['HOME']}/Library/Containers/com.taqo.survey.taqoClient/Data/Documents');
