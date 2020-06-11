@@ -21,6 +21,8 @@ final _actionPattern =
 final _closedPattern =
     RegExp("$_objectPath:\\s+$_notificationClosed\\s+\\(uint32\\s+(\\d+),\\s+uint32\\s+(\\d+)");
 
+const _defaultActions = <String>['default', 'Open Taqo', '', ];
+
 // Map between Taqo database notification id and libnotify id
 final _notifications = <int, int>{};
 
@@ -28,7 +30,7 @@ void _listen(String event) {
   final action = _actionPattern.matchAsPrefix(event);
   if (action != null) {
     _logger.info('action: id: ${action[1]} action: ${action[2]}');
-    if (action.groupCount >= 2 && action[2] == 'default') {
+    if (action.groupCount >= 2 && _defaultActions.contains(action[2])) {
       final notifId = int.tryParse(action[1]);
       if (notifId != null) {
         // Not super efficient, but fine for now
@@ -102,7 +104,7 @@ String _parseTimeout(int timeout) => 'int32 $timeout';
 
 Future<int> notify(int id, String appName, int replaceId, String title, String body,
     {String iconPath = '',
-    List<String> actions = const <String>['default', ''],
+    List<String> actions = _defaultActions,
     Map<String, dynamic> hints = const {'urgency': Priority.critical, },
     int timeout = 0}) async {
   final processResult = await Process.run('gdbus', ['call',
