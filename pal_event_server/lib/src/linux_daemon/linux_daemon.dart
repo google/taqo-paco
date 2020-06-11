@@ -13,8 +13,8 @@ import 'linux_notification_manager.dart' as linux_notification_manager;
 
 void openSurvey(int id) {
   // Note: this will only work if Taqo is in the user's PATH
-  // For debugging/testing, maybe create a symlink in /usr/local/bin pointing
-  // to build/linux/debug/taqo
+  // For debugging/testing, create a symlink in /usr/local/bin, e.g.
+  // sudo ln -sf /path/to/taqo_survey/taqo_client/build/linux/debug/bundle/taqo /usr/local/bin/taqo
   print('openSurvey $id');
   Process.start('taqo', []).then((Process process) {
     //stdout.addStream(process.stdout);
