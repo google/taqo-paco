@@ -1,12 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:taqo_common/net/google_auth.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../main.dart';
 import '../pages/login_page.dart';
 import '../pages/find_experiments_page.dart';
+
+final _logger = Logger('AuthProvider');
 
 class AuthProvider with ChangeNotifier {
   static final _gAuth = GoogleAuth();
@@ -30,7 +33,7 @@ class AuthProvider with ChangeNotifier {
   }
 
   void _gAuthStateListener(AuthState newAuthState) {
-    //print('AuthProvider newAuthState: $newAuthState');
+    //_logger.info('AuthProvider newAuthState: $newAuthState');
     _authState = newAuthState;
     notifyListeners();
 
@@ -44,7 +47,7 @@ class AuthProvider with ChangeNotifier {
   }
 
   void _gAuthStateError(error) {
-    print('AuthProvider error: $error');
+    _logger.warning('AuthProvider error: $error');
   }
 
   @override

@@ -6,7 +6,7 @@ import 'package:pal_event_server/src/experiment_cache.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/service/experiment_service_lite.dart';
 
-final logger = Logger('ExperimentServiceLocal');
+final _logger = Logger('ExperimentServiceLocal');
 
 class ExperimentServiceLocal implements ExperimentServiceLite {
   ExperimentCache _cache;
@@ -38,7 +38,7 @@ class ExperimentServiceLocal implements ExperimentServiceLite {
     var experiment = await _cache.getExperimentById(experimentId);
 
     if (experiment == null) {
-      logger.info(
+      _logger.info(
           'Cannot find experiment $experimentId in the cache or the database. Using the fallback value...');
       experiment = Experiment()
         ..id = experimentId

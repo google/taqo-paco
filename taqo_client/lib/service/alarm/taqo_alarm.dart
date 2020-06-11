@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:logging/logging.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
@@ -14,6 +15,8 @@ import '../platform_service.dart' as platform_service;
 import 'android_alarm_manager.dart' as android_alarm_manager;
 import 'flutter_local_notifications.dart' as flutter_local_notifications;
 import 'ios_notification_scheduler.dart' as ios_notification_scheduler;
+
+final _logger = Logger('TaqoAlarm');
 
 Future init() {
   if (Platform.isLinux) {
@@ -47,7 +50,7 @@ Future schedule({bool cancelAndReschedule=true}) async {
         tespClient.alarmSchedule();
       });
     } catch (e) {
-      print(e);
+      _logger.warning(e);
     }
   }
 }
@@ -64,7 +67,7 @@ Future cancel(int id) async {
         tespClient.notificationCancel(id);
       });
     } catch (e) {
-      print(e);
+      _logger.warning(e);
     }
   }
 }
@@ -81,7 +84,7 @@ Future cancelForExperiment(Experiment experiment) async {
         tespClient.notificationCancelByExperiment(experiment.id);
       });
     } catch (e) {
-      print(e);
+      _logger.warning(e);
     }
   }
 }
@@ -99,7 +102,7 @@ Future<void> openSurvey(String payload) async {
   final notificationHolder = await db.getNotification(id);
 
   if (notificationHolder == null) {
-    print('No holder for payload: $payload');
+    _logger.info('No holder for payload: $payload');
     return;
   }
 
@@ -120,8 +123,8 @@ Future<void> openSurvey(String payload) async {
     MyApp.navigatorKey.currentState.pushReplacementNamed(SurveyPage.routeName,
         arguments: [e, notificationHolder.experimentGroupName]);
   } on StateError catch (e, stack) {
-    print('StateError: $e');
-    print(stack);
+    _logger.warning('StateError: $e');
+    _logger.info(stack);
   }
 }
 

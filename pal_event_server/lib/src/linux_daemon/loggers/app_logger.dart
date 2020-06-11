@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:logging/logging.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/interrupt_cue.dart';
 
@@ -9,6 +10,8 @@ import '../triggers/triggers.dart';
 import 'loggers.dart';
 import 'pal_event_helper.dart';
 import 'xprop_util.dart' as xprop;
+
+final _logger = Logger('AppLogger');
 
 const _queryInterval = const Duration(seconds: 1);
 
@@ -76,7 +79,7 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
       return;
     }
 
-    print('Starting AppLogger');
+    _logger.info('Starting AppLogger');
     _receivePort = ReceivePort();
     _isolate = await Isolate.spawn(_appLoggerIsolate, _receivePort.sendPort);
     _isolate.addOnExitListener(_receivePort.sendPort, response: _isolateDiedObj);
@@ -104,7 +107,7 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
 
     if (experimentsBeingLogged.isEmpty) {
       // No more experiments -- shut down
-      print('Stopping AppLogger');
+      _logger.info('Stopping AppLogger');
       active = false;
       _isolate?.kill();
       _receivePort?.close();

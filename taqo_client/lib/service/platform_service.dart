@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:logging/logging.dart';
 import 'package:taqo_common/rpc/rpc_constants.dart';
 import 'package:taqo_common/storage/base_database.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
@@ -8,6 +9,8 @@ import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 import '../storage/flutter_file_storage.dart';
 import '../storage/local_database.dart';
 import '../storage/remote_database.dart';
+
+final _logger = Logger('PlatformService');
 
 TespFullClient _tespClient;
 Completer<TespFullClient> _completer;
@@ -33,7 +36,7 @@ Future _tespInit() async {
   _tespClient.connect().then((_) {
     completer.complete();
   }).catchError((e) {
-    print('Failed to connect to the PAL event server. Is it running?');
+    _logger.warning('Failed to connect to the PAL event server. Is it running?');
     _tespClient = null;
   });
   return completer.future;

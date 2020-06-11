@@ -16,7 +16,7 @@ import 'package:taqo_common/util/zoned_date_time.dart';
 part 'local_database.inc.dart';
 part 'local_database.workaround.dart';
 
-final logger = Logger('LocalDatabase');
+final _logger = Logger('LocalDatabase');
 
 /// Global reference of the database connection, using singleton pattern
 class LocalDatabase extends BaseDatabase {
@@ -145,7 +145,7 @@ class LocalDatabase extends BaseDatabase {
       assert(experimentFieldsMaps.length == 1); // since id is a primary key
       return Experiment.fromJson(jsonDecode(experimentFieldsMaps[0]['json']));
     } else {
-      logger.warning('Cannot find experiment with id: ${experimentId}');
+      _logger.warning('Cannot find experiment with id: ${experimentId}');
       return null;
     }
   }

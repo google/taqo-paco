@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:logging/logging.dart';
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/experiment_group.dart';
@@ -11,6 +12,8 @@ import 'package:taqo_common/util/date_time_util.dart';
 
 import 'esm_schedule_generator.dart';
 import 'fixed_schedule_generator.dart';
+
+final _logger = Logger('ActionScheduleGenerator');
 
 Future<List<ActionSpecification>> _getAllAlarmTimesForExperiment(ILocalFileStorage storageImpl,
     Experiment experiment, DateTime start, DateTime end) async {
@@ -80,12 +83,12 @@ Future<ActionSpecification> _getNextAlarmTimeForExperiment(ILocalFileStorage sto
           nextScheduleTime =
               await ESMScheduleGenerator(storageImpl, startTime, experiment, group.name, trigger.id, schedule)
                   .nextScheduleTime();
-          print('Next ESM $nextScheduleTime');
+          _logger.info('Next ESM $nextScheduleTime');
         } else {
           nextScheduleTime =
               FixedScheduleGenerator(startTime, experiment, group.name, trigger.id, schedule)
                   .nextAlarmTimeFromNow(fromNow: startTime);
-          print('Next fixed $nextScheduleTime');
+          _logger.info('Next fixed $nextScheduleTime');
         }
 
         if (nextScheduleTime != null &&
@@ -163,7 +166,7 @@ Future<ActionSpecification> getNextAlarmTime(ILocalFileStorage storageImpl,
   now ??= DateTime.now();
 
   final alarms = await getNextAlarmTimesOrdered(storageImpl, experiments, now: now);
-  print('Next alarm is ${alarms.isEmpty ? null : alarms.first}');
+  _logger.info('Next alarm is ${alarms.isEmpty ? null : alarms.first}');
   return alarms.isEmpty ? null : alarms.first;
 }
 

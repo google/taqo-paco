@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:logging/logging.dart';
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/notification_holder.dart';
 import 'package:taqo_common/service/experiment_service_lite.dart';
@@ -7,6 +8,8 @@ import 'package:taqo_common/service/experiment_service_lite.dart';
 import '../sqlite_database/sqlite_database.dart';
 import 'dbus_notifications.dart';
 import 'linux_alarm_manager.dart' show timeout;
+
+final _logger = Logger('LinuxNotificationManager');
 
 const _appName = 'Taqo';
 
@@ -55,7 +58,7 @@ Future<int> _notify(ActionSpecification actionSpec,
 /// Show a notification now
 Future<int> showNotification(ActionSpecification actionSpec) async {
   final id = await _notify(actionSpec);
-  print('Showing notification id: $id @ ${actionSpec.time}');
+  _logger.info('Showing notification id: $id @ ${actionSpec.time}');
   return id;
 }
 

@@ -4,9 +4,12 @@ import 'package:googleapis/oauth2/v2.dart';
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:googleapis_auth/src/auth_http_utils.dart';
 import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
 
 import '../storage/local_file_storage.dart';
 import '../storage/unsecure_token_storage.dart';
+
+final _logger = Logger('GoogleAuth');
 
 enum AuthState {
   authenticated,
@@ -59,7 +62,7 @@ class GoogleAuth {
         _saveCredentials(credentials);
         _authenticationStreamController.add(AuthState.authenticated);
       }).catchError((e) {
-        print("Authentication error: $e");
+        _logger.warning("Authentication error: $e");
         _authenticationStreamController.add(AuthState.notAuthenticated);
       });
     } else {

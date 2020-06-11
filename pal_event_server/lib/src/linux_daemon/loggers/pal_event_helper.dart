@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:logging/logging.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
@@ -10,6 +11,8 @@ import '../../experiment_service_local.dart';
 import '../../sqlite_database/sqlite_database.dart';
 import '../../utils.dart';
 import 'xprop_util.dart' as xprop;
+
+final _logger = Logger('PalEventHelper');
 
 typedef CreateEventFunc = Future<Event> Function(
     Experiment experiment, String groupname, Map<String, dynamic> response);
@@ -48,7 +51,7 @@ Event _createPacoEvent(Experiment experiment, String groupName) {
   try {
     group = experiment.groups.firstWhere((g) => g.name == groupName);
   } catch (e) {
-    print('Failed to get experiment group $groupName for $experiment');
+    _logger.warning('Failed to get experiment group $groupName for $experiment');
   }
 
   final event = Event.of(experiment, group);
@@ -112,7 +115,6 @@ Future<Event> createCmdUsagePacoEvent(Experiment experiment, String groupName,
 void storePacoEvent(List<Event> events) async {
   final database = await SqliteDatabase.get();
   for (var e in events) {
-    print('storeEvent: $e');
     await database.insertEvent(e);
   }
 }

@@ -4,7 +4,7 @@ import 'package:logging/logging.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/storage/joined_experiments_storage.dart';
 
-final logger = Logger('ExperimentCache');
+final _logger = Logger('ExperimentCache');
 
 class ExperimentCache {
   JoinedExperimentsStorage _storage;
@@ -53,12 +53,12 @@ class ExperimentCache {
   Future<Experiment> getExperimentById(int experimentId) async {
     var experiment = _cache[experimentId];
     if (experiment == null) {
-      logger.info(
+      _logger.info(
           'Cache miss for experiment $experimentId. Retrieving from the database...');
       experiment = await _storage.getExperimentById(experimentId);
     }
     if (experiment == null) {
-      logger.warning('Cannot find experiment $experimentId in the database...');
+      _logger.warning('Cannot find experiment $experimentId in the database...');
     } else {
       _cache[experimentId] = experiment;
     }

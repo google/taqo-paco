@@ -1,4 +1,7 @@
+import 'package:logging/logging.dart';
 import 'package:petitparser/petitparser.dart';
+
+final _logger = Logger('ConditionalSurveyParser');
 
 typedef OpFunction = bool Function(dynamic, dynamic);
 
@@ -103,11 +106,11 @@ class InputParser {
       if (result is Success) {
         return result.value;
       } else {
-        print('failure parsing $expression: ${result.message}');
+        _logger.warning('failure parsing $expression: ${result.message}');
         return false;
       }
     } catch (e) {
-      print('exception parsing $expression: $e, with env: $_env');
+      _logger.warning('exception parsing $expression: $e, with env: $_env');
       return false;
     }
   }

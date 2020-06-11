@@ -13,7 +13,7 @@ import 'package:taqo_event_server_protocol/src/tesp_codec.dart';
 import 'tesp_message.dart';
 import 'tesp_message_socket.dart';
 
-final logger = Logger('TespClient');
+final _logger = Logger('TespClient');
 
 class TespClient {
   final serverAddress;
@@ -56,7 +56,7 @@ class TespClient {
   Future<void> connect() async {
     _socket = await Socket.connect(serverAddress, port,
         timeout: connectionTimeoutMillis);
-    logger.info('Connected to a TespServer at $serverAddress:$port.');
+    _logger.info('Connected to a TespServer at $serverAddress:$port.');
     _tespSocket = TespMessageSocket(_socket,
         timeoutMillis: chunkTimeoutMillis, isAsync: true);
     _sendingBuffer = StreamController();
@@ -66,7 +66,7 @@ class TespClient {
     StreamSubscription receivingSubscription;
 
     void closeWithError(TespResponseError error) {
-      logger.info('Closing with error: ${error.errorCode} ...');
+      _logger.info('Closing with error: ${error.errorCode} ...');
       _responseTimeoutTimer?.cancel();
       _tespResponseCompleterQueue.forEach((e) => e.completer.complete(error));
       sendingSubscription?.cancel();
@@ -93,7 +93,7 @@ class TespClient {
             tespRequestWrapper.timeoutCompleter) {
           _responseTimeoutTimer =
               Timer(tespRequestWrapper.timeoutCompleter.timeout, () {
-            logger.warning('Response timeout.');
+            _logger.warning('Response timeout.');
             closeWithError(TespResponseError(
                 TespResponseError.tespClientErrorResponseTimeout));
           });
@@ -105,7 +105,7 @@ class TespClient {
     void handleResponse(TespResponse tespResponse) {
       // Unexpected response, i.e. a response without request.
       if (_tespResponseCompleterQueue.isEmpty) {
-        logger.warning(
+        _logger.warning(
             'Unexpected response: the client received a response before sending a request.');
         return;
       }
@@ -121,7 +121,7 @@ class TespClient {
           _tespResponseCompleterQueue.first.timeout != null) {
         _responseTimeoutTimer =
             Timer(_tespResponseCompleterQueue.first.timeout, () {
-          logger.warning('Response timeout.');
+          _logger.warning('Response timeout.');
           closeWithError(TespResponseError(
               TespResponseError.tespClientErrorResponseTimeout));
         });
@@ -130,20 +130,20 @@ class TespClient {
 
     void handleError(e) {
       if (e is TimeoutException) {
-        logger.warning('Timeout waiting for the next chunk of a response.');
+        _logger.warning('Timeout waiting for the next chunk of a response.');
         closeWithError(TespResponseError(
             TespResponseError.tespClientErrorChunkTimeout, '$e'));
       } else if (e is TespPayloadDecodingException) {
-        logger.warning('Response payload decoding error.');
+        _logger.warning('Response payload decoding error.');
         _responseTimeoutTimer?.cancel();
         handleResponse(TespResponseError(
             TespResponseError.tespClientErrorPayloadDecoding, '$e'));
       } else if (e is TespDecodingException || e is CastError) {
-        logger.warning('Invalid response');
+        _logger.warning('Invalid response');
         closeWithError(
             TespResponseError(TespResponseError.tespClientErrorDecoding, '$e'));
       } else {
-        logger.warning('Unknown error');
+        _logger.warning('Unknown error');
         closeWithError(
             TespResponseError(TespResponseError.tespClientErrorUnknown, '$e'));
       }
@@ -166,7 +166,7 @@ class TespClient {
         onDone: () {
           // The server closes early before sending out all the responses
           if (_tespResponseCompleterQueue.isNotEmpty) {
-            logger.warning(
+            _logger.warning(
                 'The server closes early before sending out all the responses');
             closeWithError(TespResponseError(
                 TespResponseError.tespClientErrorServerCloseEarly));
@@ -177,7 +177,7 @@ class TespClient {
 
     // Handle errors during sending
     unawaited(_tespSocket.done.catchError((e) {
-      logger.warning('Error while sending the requests.');
+      _logger.warning('Error while sending the requests.');
       closeWithError(
           TespResponseError(TespResponseError.tespClientErrorLostConnection));
     }, test: (e) => e is SocketException));

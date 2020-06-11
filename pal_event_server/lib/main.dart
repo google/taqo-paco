@@ -1,3 +1,4 @@
+import 'package:logging/logging.dart';
 import 'package:pal_event_server/src/experiment_service_local.dart';
 import 'package:pal_event_server/src/sqlite_database/sqlite_database.dart';
 import 'package:taqo_common/rpc/rpc_constants.dart';
@@ -10,17 +11,21 @@ import 'package:taqo_common/storage/local_file_storage.dart';
 import 'src/linux_daemon/linux_daemon.dart' as linux_daemon;
 import 'src/tesp_server.dart';
 
+final _logger = Logger('Main');
+
 void main() async {
-  print('Server PAL starting');
+  print('Server PAL starting...');
   LocalFileStorageFactory.initialize((fileName) => DartFileStorage(fileName),
       await DartFileStorage.getLocalStorageDir());
+  await LoggingService.initialize(logFilePrefix: 'server-',
+      outputsToStdout: true);
+  _logger.info('Logging service is ready');
   DatabaseFactory.initialize(() => SqliteDatabase.get());
   ExperimentServiceLiteFactory.initialize(ExperimentServiceLocal.getInstance);
-  await LoggingService.initialize(outputsToStdout: true);
 
   final server = PALTespServer();
   await server.serve(address: localServerHost, port: localServerPort);
-  print('Server ready');
+  _logger.info('Server ready');
 
   linux_daemon.start();
 }

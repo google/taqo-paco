@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:logging/logging.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/interrupt_cue.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
@@ -10,6 +11,7 @@ import '../triggers/triggers.dart';
 import 'loggers.dart';
 import 'pal_event_helper.dart';
 import 'shell_util.dart' as shell;
+final _logger = Logger('CmdLineLogger');
 
 class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
   static const cliLoggerName = 'cli_logger';
@@ -30,7 +32,7 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
       return;
     }
 
-    print('Starting CmdLineLogger');
+    _logger.info('Starting CmdLineLogger');
     await shell.enableCmdLineLogging();
     active = true;
     Timer.periodic(sendInterval, (Timer t) async {
@@ -65,7 +67,7 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
 
     if (experimentsBeingLogged.isEmpty) {
       // No more experiments -- shut down
-      print('Stopping CmdLineLogger');
+    _logger.info('Stopping CmdLineLogger');
       await shell.disableCmdLineLogging();
       active = false;
     }
@@ -92,9 +94,9 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
         }
         return events;
       }
-      print("No new terminal commands to log");
+      _logger.info("No new terminal commands to log");
     } catch (e) {
-      print("Error loading terminal commands file: $e");
+      _logger.warning("Error loading terminal commands file: $e");
     }
     return events;
   }

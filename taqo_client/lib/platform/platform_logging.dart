@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 
-final logger = Logger('MethodChannel.Logging');
+final _logger = Logger('MethodChannel.Logging');
 
 const _platform = const MethodChannel('com.taqo.survey.taqosurvey/logging');
 
@@ -21,5 +21,5 @@ void setupLoggingMethodChannel() {
 final StringLevelMap =
 Map.fromIterable(Level.LEVELS, key: (e) => e.name, value: (e) => e);
 void _log(String level, String message) {
-  logger.log(StringLevelMap[level], message);
+  _logger.log(StringLevelMap[level], message);
 }
