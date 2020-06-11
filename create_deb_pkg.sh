@@ -46,6 +46,7 @@ cp ${RELEASE}/taqo_daemon ${OUT}/usr/share/taqo/
 #cp ${RELEASE}/taqo ${OUT}/usr/bin/
 #cp ${RELEASE}/taqo_daemon ${OUT}/usr/bin/
 mkdir -p ${OUT}/usr/lib
+cp ${RELEASE}/*.so ${OUT}/usr/lib/
 cp ${RELEASE}/lib/* ${OUT}/usr/lib/
 
 find ${OUT}/usr/share/taqo/data -type f -exec chmod 0644 {} \;
