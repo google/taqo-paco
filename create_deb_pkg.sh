@@ -102,7 +102,7 @@ Maintainer: Bob Evans <bobevans@google.com>
 Section: devel
 Priority: optional
 Homepage: https://pacoapp.com/
-Pre-Depends: libc6, libsqlite3-dev
+Pre-Depends: libc6, libsqlite3-0 libglib2.0-bin
 Description: Taqo survey app
  Long description goes here.
 EOM
