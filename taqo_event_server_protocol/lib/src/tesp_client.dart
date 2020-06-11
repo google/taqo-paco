@@ -4,8 +4,10 @@ import 'dart:io';
 
 import 'package:logging/logging.dart';
 import 'package:pedantic/pedantic.dart';
+import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/model/notification_holder.dart';
 import 'package:taqo_event_server_protocol/src/tesp_codec.dart';
 
 import 'tesp_message.dart';
@@ -267,6 +269,9 @@ class TespFullClient extends TespEventClient {
 
   Future<TespResponse> alarmSchedule() => send(TespRequestAlarmSchedule());
 
+  Future<TespResponse> alarmAdd(ActionSpecification alarm) =>
+      send(TespRequestAlarmAdd(alarm));
+
   Future<TespResponse> alarmCancel(int alarmId) =>
       send(TespRequestAlarmCancel(alarmId));
 
@@ -275,8 +280,14 @@ class TespFullClient extends TespEventClient {
   Future<TespResponse> alarmSelectById(int alarmId) =>
       send(TespRequestAlarmSelectById(alarmId));
 
+  Future<TespResponse> alarmRemove(int alarmId) =>
+      send(TespRequestAlarmRemove(alarmId));
+
   Future<TespResponse> notificationCheckActive() =>
       send(TespRequestNotificationCheckActive());
+
+  Future<TespResponse> notificationAdd(NotificationHolder notification) =>
+      send(TespRequestNotificationAdd(notification));
 
   Future<TespResponse> notificationCancel(int notificationId) =>
       send(TespRequestNotificationCancel(notificationId));
@@ -292,6 +303,12 @@ class TespFullClient extends TespEventClient {
 
   Future<TespResponse> notificationSelectByExperiment(int experimentId) =>
       send(TespRequestNotificationSelectByExperiment(experimentId));
+
+  Future<TespResponse> notificationRemove(int notificationId) =>
+      send(TespRequestNotificationRemove(notificationId));
+
+  Future<TespResponse> notificationRemoveAll() =>
+      send(TespRequestNotificationRemoveAll());
 
   Future<TespResponse> createMissedEvent(Event event) =>
       send(TespRequestCreateMissedEvent(event));

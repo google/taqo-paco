@@ -13,7 +13,7 @@ import "package:test/test.dart";
 import '../lib/sqlite.dart';
 
 void main() {
-  final dbPath = Platform.script.resolve("test.db").path;
+  final dbPath = Directory.systemTemp.uri.resolve("test.db").path;
   test("sqlite integration test", () {
     Database d = Database(dbPath);
     d.execute("drop table if exists Cookies;");

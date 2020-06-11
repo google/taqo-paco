@@ -5,12 +5,6 @@ import os
 private let CALLBACK_HANDLE = "callback"
 private let BG_CALLBACK_HANDLE = "background_callback"
 
-private func _log(_ args: CVarArg...) {
-  if #available(macOS 10.12, *) {
-    os_log("TaqoTimePlugin: %s", args)
-  }
-}
-
 public class TaqoTimePlugin: NSObject, FlutterPlugin {
   private static let channelName = "taqo_time_plugin"
   private static let initialize = "initialize"
@@ -25,7 +19,9 @@ public class TaqoTimePlugin: NSObject, FlutterPlugin {
   }
 
   @objc private func timeChanged(notification: NSNotification) {
-    _log("timeChanged")
+    if #available(macOS 10.12, *) {
+      os_log("TaqoTimePlugin: timeChanged")
+    }
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
