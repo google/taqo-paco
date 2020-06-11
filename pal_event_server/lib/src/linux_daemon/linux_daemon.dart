@@ -69,7 +69,7 @@ void handleScheduleAlarm() async {
 }
 
 void start() async {
-    _logger.info('Starting linux daemon');
+  _logger.info('Starting linux daemon');
 
   // Monitor DBus for notification actions
   dbus.monitor();
