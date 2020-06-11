@@ -12,16 +12,17 @@ import 'linux_alarm_manager.dart' as linux_alarm_manager;
 import 'linux_notification_manager.dart' as linux_notification_manager;
 
 void openSurvey(int id) {
-  try {
-    // If the app is running, just notify it to open a survey
-    // TODO
-  } catch (e) {
-    // Else launch the app and it will automatically open the survey
-    // Note: this will only work if Taqo is in the user's PATH
-    // For debugging/testing, maybe create a symlink in /usr/local/bin pointing
-    // to build/linux/debug/taqo_client
-    Process.run('taqo_client', []);
-  }
+  Process.run('taqo_client', []);
+  // try {
+  //   // If the app is running, just notify it to open a survey
+  //   // TODO
+  // } catch (e) {
+  //   // Else launch the app and it will automatically open the survey
+  //   // Note: this will only work if Taqo is in the user's PATH
+  //   // For debugging/testing, maybe create a symlink in /usr/local/bin pointing
+  //   // to build/linux/debug/taqo_client
+  //   Process.run('taqo_client', []);
+  // }
 }
 
 void handleCreateMissedEvent(Event event) async {
@@ -54,13 +55,14 @@ void handleScheduleAlarm() async {
   // 'schedule' is called when we join, pause, un-pause, and leave experiments,
   // the experiment schedule is edited, or the time zone changes.
   // Configure app loggers appropriately here
-  if (await shouldStartLoggers()) {
+  final experimentsToLog = await getExperimentsToLog();
+  if (experimentsToLog.isNotEmpty) {
     // Found a non-paused experiment
-    AppLogger().start();
-    CmdLineLogger().start();
+    AppLogger().start(experimentsToLog);
+    CmdLineLogger().start(experimentsToLog);
   } else {
-    AppLogger().stop();
-    CmdLineLogger().stop();
+    AppLogger().stop(experimentsToLog);
+    CmdLineLogger().stop(experimentsToLog);
   }
 }
 

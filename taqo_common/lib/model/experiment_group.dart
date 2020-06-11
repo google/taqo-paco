@@ -186,7 +186,6 @@ class ExperimentGroup {
     if (end == null) {
       return false;
     }
-
     return fixedDuration && end.isBefore(now);
   }
 

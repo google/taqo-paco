@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:taqo_email_plugin/taqo_email_plugin.dart' as taqo_email_plugin;
 
 import 'package:taqo_common/model/experiment.dart';
+
 import '../providers/experiment_provider.dart';
 import '../widgets/taqo_page.dart';
 import '../widgets/taqo_widgets.dart';
@@ -140,18 +141,28 @@ class _ExperimentListItemState extends State<ExperimentListItem> {
   bool _pauseButtonDisabled = false;
 
   void _onTapExperiment(BuildContext context, Experiment experiment) {
-    if (experiment.getActiveSurveys().length == 1) {
+    const alertMsg =
+        "There are no surveys available to answer at this time, or the experiment has finished.";
+    final experimentActive = experiment.active;
+    final total = experiment.groups.length;
+
+    final activeSurveys = experiment.getActiveSurveys();
+    final numActive = activeSurveys.length;
+
+    if ((experimentActive && total == 1) || numActive == 1) {
+      final survey = numActive == 1 ? activeSurveys.first.name :
+          experiment.groups.first.name;
       Navigator.pushNamed(context, SurveyPage.routeName,
           arguments: [
-            experiment, experiment.getActiveSurveys().elementAt(0).name,
+            experiment, survey,
           ]
       );
-    } else if (experiment.getActiveSurveys().length > 1) {
+    } else if (experimentActive || numActive > 1) {
       Navigator.pushNamed(context, SurveyPickerPage.routeName,
           arguments: [experiment, ]);
     } else {
       // TODO no action for finished surveys
-      _alertLog(context, "This experiment has finished.");
+      _alertLog(context, alertMsg);
     }
   }
 
