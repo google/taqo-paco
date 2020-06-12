@@ -13,6 +13,8 @@ import 'package:taqo_common/storage/local_file_storage.dart';
 import 'package:taqo_common/util/sql_statement_building_helper.dart';
 import 'package:taqo_common/util/zoned_date_time.dart';
 
+import '../platform/platform_sync_service.dart';
+
 part 'local_database.inc.dart';
 part 'local_database.workaround.dart';
 
@@ -60,6 +62,7 @@ class LocalDatabase extends BaseDatabase {
   @override
   Future<void> insertEvent(Event event) async {
     await _insertEvent(_db, event);
+    notifySyncService();
   }
 
   @override
