@@ -10,6 +10,18 @@ if [ -z ${DART_SDK} ]; then
   exit 1
 fi
 
+PKG=taqosurvey
+VER=1.0-1
+ARCH=amd64
+DEB=${PKG}_${VER}_${ARCH}
+
+BUILD=taqo_client/build/linux
+#DEBUG=${BUILD}/debug/bundle
+RELEASE=${BUILD}/release/bundle
+OUT=${BUILD}/${DEB}
+
+./resolve_deps.sh
+
 # Build flutter app
 pushd taqo_client || exit
 ${FLUTTER_SDK}/bin/flutter clean && ${FLUTTER_SDK}/bin/flutter build linux
@@ -17,33 +29,26 @@ popd || exit
 
 # Build PAL event server / linux daemon
 ${DART_SDK}/bin/dart2native -p pal_event_server/.packages \
-  -o taqo_client/build/linux/release/taqo_daemon \
+  -o ${RELEASE}/taqo_daemon \
   pal_event_server/lib/main.dart
 
-PKG=taqosurvey
-VER=1.0-1
-ARCH=amd64
-DEB=${PKG}_${VER}_${ARCH}
-
-BUILD=taqo_client/build/linux
-#DEBUG=${BUILD}/debug
-RELEASE=${BUILD}/release
-OUT=${BUILD}/${DEB}
 
 rm -rf ${OUT}
 
+# Copy taqo binaries and files relatively positioned to taqo
 mkdir -p ${OUT}/usr/share/taqo
-cp -R ${RELEASE}/data ${OUT}/usr/share/taqo/
+cp -R ${RELEASE}/{data,lib} ${OUT}/usr/share/taqo/
+
 cp ${RELEASE}/taqo ${OUT}/usr/share/taqo/
 cp ${RELEASE}/taqo_daemon ${OUT}/usr/share/taqo/
-# Ideally the binaries would go here, but the flutter linux embedder
+
+# Ideally the binaries would go in /usr/bin, but the flutter linux embedder
 # currently expects the resources to be located in a relative path
 # (and there is no way to pass runtime args to the embedder)
-#mkdir -p ${OUT}/usr/bin
-#cp ${RELEASE}/taqo ${OUT}/usr/bin/
-#cp ${RELEASE}/taqo_daemon ${OUT}/usr/bin/
+
+# Copy shared libraries expected to be in LD_LIBRARY_PATH
 mkdir -p ${OUT}/usr/lib
-cp ${RELEASE}/lib/* ${OUT}/usr/lib/
+cp ${RELEASE}/*.so ${OUT}/usr/lib/
 
 find ${OUT}/usr/share/taqo/data -type f -exec chmod 0644 {} \;
 chmod 0755 ${OUT}/usr/share/taqo/taqo
@@ -102,7 +107,7 @@ Maintainer: Bob Evans <bobevans@google.com>
 Section: devel
 Priority: optional
 Homepage: https://pacoapp.com/
-Pre-Depends: libc6, libsqlite3-dev
+Pre-Depends: libc6, libsqlite3-0, libglib2.0-bin
 Description: Taqo survey app
  Long description goes here.
 EOM
