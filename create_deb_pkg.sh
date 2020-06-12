@@ -35,19 +35,20 @@ ${DART_SDK}/bin/dart2native -p pal_event_server/.packages \
 
 rm -rf ${OUT}
 
+# Copy taqo binaries and files relatively positioned to taqo
 mkdir -p ${OUT}/usr/share/taqo
-cp -R ${RELEASE}/data ${OUT}/usr/share/taqo/
+cp -R ${RELEASE}/{data,lib} ${OUT}/usr/share/taqo/
+
 cp ${RELEASE}/taqo ${OUT}/usr/share/taqo/
 cp ${RELEASE}/taqo_daemon ${OUT}/usr/share/taqo/
-# Ideally the binaries would go here, but the flutter linux embedder
+
+# Ideally the binaries would go in /usr/bin, but the flutter linux embedder
 # currently expects the resources to be located in a relative path
 # (and there is no way to pass runtime args to the embedder)
-#mkdir -p ${OUT}/usr/bin
-#cp ${RELEASE}/taqo ${OUT}/usr/bin/
-#cp ${RELEASE}/taqo_daemon ${OUT}/usr/bin/
+
+# Copy shared libraries expected to be in LD_LIBRARY_PATH
 mkdir -p ${OUT}/usr/lib
 cp ${RELEASE}/*.so ${OUT}/usr/lib/
-cp ${RELEASE}/lib/* ${OUT}/usr/lib/
 
 find ${OUT}/usr/share/taqo/data -type f -exec chmod 0644 {} \;
 chmod 0755 ${OUT}/usr/share/taqo/taqo
