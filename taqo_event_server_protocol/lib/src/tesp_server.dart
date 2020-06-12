@@ -16,7 +16,7 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
   FutureOr<TespResponse> palAddEvents(List<Event> events);
   FutureOr<TespResponse> palPause();
   FutureOr<TespResponse> palResume();
-  FutureOr<TespResponse> palWhiteListDataOnly();
+  FutureOr<TespResponse> palAllowlistDataOnly();
   FutureOr<TespResponse> palAllData();
 
   FutureOr<TespResponse> alarmSchedule();
@@ -57,8 +57,8 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
         return palPause();
       case TespRequestPalResume:
         return palResume();
-      case TespRequestPalWhiteListDataOnly:
-        return palWhiteListDataOnly();
+      case TespRequestPalAllowlistDataOnly:
+        return palAllowlistDataOnly();
       case TespRequestPalAllData:
         return palAllData();
       case TespRequestPing:

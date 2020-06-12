@@ -17,7 +17,7 @@ const _stringAddEvents = 'addEvents';
 const _stringPause = 'pause';
 const _stringResume = 'resume';
 const _stringAllData = 'allData';
-const _stringWhiteListDataOnly = 'whiteListDataOnly';
+const _stringAllowlistDataOnly = 'allowlistDataOnly';
 const _stringAlarmSchedule = 'alarmSchedule';
 const _stringAlarmAdd = 'addAlarm';
 const _stringAlarmCancel = 'alarmCancel';
@@ -85,11 +85,11 @@ void main() {
       await expectLater(tespStream,
           emits(equalsTespMessage(TespResponseAnswer(_stringPause))));
       expect(server.isPaused, isTrue);
-      tespSocket.add(TespRequestPalWhiteListDataOnly());
+      tespSocket.add(TespRequestPalAllowlistDataOnly());
       await expectLater(
           tespStream,
           emits(
-              equalsTespMessage(TespResponseAnswer(_stringWhiteListDataOnly))));
+              equalsTespMessage(TespResponseAnswer(_stringAllowlistDataOnly))));
       expect(server.isAllData, isFalse);
       await tespSocket.close();
       await expectLater(tespStream, emitsDone);
@@ -99,7 +99,7 @@ void main() {
       var requests = [
         createDummyTespRequestAddEvent('1'),
         createDummyTespRequestAddEvent('2'),
-        TespRequestPalWhiteListDataOnly(),
+        TespRequestPalAllowlistDataOnly(),
         createDummyTespRequestAddEvent('3'),
         TespRequestPalPause(),
         createDummyTespRequestAddEvent('4'),
@@ -135,7 +135,7 @@ void main() {
       var responses = [
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|1'),
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|2'),
-        TespResponseAnswer(_stringWhiteListDataOnly),
+        TespResponseAnswer(_stringAllowlistDataOnly),
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|3'),
         TespResponseAnswer(_stringPause),
         TespResponsePaused(),
@@ -547,7 +547,7 @@ void main() {
       var requests = [
         createDummyTespRequestAddEvent('1'),
         createDummyTespRequestAddEvent('2'),
-        TespRequestPalWhiteListDataOnly(),
+        TespRequestPalAllowlistDataOnly(),
         createDummyTespRequestAddEvent('3'),
         TespRequestPalPause(),
         createDummyTespRequestAddEvent('4'),
@@ -583,7 +583,7 @@ void main() {
       var responses = [
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|1'),
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|2'),
-        TespResponseAnswer(_stringWhiteListDataOnly),
+        TespResponseAnswer(_stringAllowlistDataOnly),
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|3'),
         TespResponseAnswer(_stringPause),
         TespResponsePaused(),
@@ -709,9 +709,9 @@ class TestingEventServer with TespRequestHandlerMixin {
   }
 
   @override
-  TespResponse palWhiteListDataOnly() {
+  TespResponse palAllowlistDataOnly() {
     isAllData = false;
-    return TespResponseAnswer(_stringWhiteListDataOnly);
+    return TespResponseAnswer(_stringAllowlistDataOnly);
   }
 
   @override

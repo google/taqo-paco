@@ -2,46 +2,46 @@ import 'url_matcher.dart';
 
 typedef TestFunc = bool Function(String, String, String, String);
 
-class WhitelistRule {
+class AllowlistRule {
   final TestFunc _test;
 
-  WhitelistRule(this._test);
+  AllowlistRule(this._test);
 
   bool matches(String appName, String appsUsedRaw, String appContent, String appUrl) =>
       _test(appName, appsUsedRaw, appContent, appUrl);
 }
 
-class Whitelist {
-  final _rules = <WhitelistRule>[
-    WhitelistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
+class Allowlist {
+  final _rules = <AllowlistRule>[
+    AllowlistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
       return appUrl != null ? matchesHost(Uri.dataFromString(appUrl), 'flutter.io') : false;
     }),
-    WhitelistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
+    AllowlistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
       return appUrl != null
           ? matchesHostAndPath(Uri.dataFromString(appUrl), 'github.com', '^/flutter*')
           : false;
     }),
-    WhitelistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
+    AllowlistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
       return appUrl != null ? matchesHost(Uri.dataFromString(appUrl), 'stackoverflow.com') : false;
     }),
-    WhitelistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
+    AllowlistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
       return appUrl != null
           ? matchesHostAndPort(Uri.dataFromString(appUrl), '127.0.0.1', 8100) &&
               matches(appContent, '^Dart VM Observatory')
           : false;
     }),
-    WhitelistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
+    AllowlistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
       return appUrl != null
           ? matchesHostAndPath(Uri.dataFromString(appUrl), 'gitter.im', '/flutter/flutter')
           : false;
     }),
-    WhitelistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
+    AllowlistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
       return appUrl != null
           ? matchesHostAndPath(
               Uri.dataFromString(appUrl), 'google.com', '^/search?.*&q=.*flutter.*')
           : false;
     }),
-    WhitelistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
+    AllowlistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
       return matches(appContent, '.*flutter.*');
     })
   ];
@@ -49,7 +49,7 @@ class Whitelist {
   List<String> _hideAllButAppName(String appName) =>
       <String>[appName, '$appName❣hidden', 'hidden', 'hidden'];
 
-  List<String> _blackOutData(String appName, String appsUsedRaw, String appContent, String appUrl) {
+  List<String> _filterData(String appName, String appsUsedRaw, String appContent, String appUrl) {
     for (var rule in _rules) {
       if (rule.matches(appName, appsUsedRaw, appContent, appUrl)) {
         return <String>[appName, appsUsedRaw, appContent, appUrl];
@@ -59,7 +59,7 @@ class Whitelist {
     return _hideAllButAppName(appName);
   }
 
-  List<Map<String, dynamic>> blackOutData(List eventJson) {
+  List<Map<String, dynamic>> filterData(List eventJson) {
     final results = <Map<String, dynamic>>[];
     for (var event in eventJson) {
       // TODO This probably shouldn't be here?
@@ -71,7 +71,7 @@ class Whitelist {
         var appContent = '';
         var appUrl = '';
 
-        final responsesWhitelisted = <Map<String, dynamic>>[];
+        final responsesAllowlisted = <Map<String, dynamic>>[];
         final responses = event['responses'];
         for (Map<String, dynamic> response in responses) {
           final responseName = response['name'];
@@ -86,18 +86,18 @@ class Whitelist {
           } else if (responseName == 'url') {
             appUrl = responseAnswer;
           } else {
-            responsesWhitelisted.add(response);
+            responsesAllowlisted.add(response);
           }
         }
 
-        final data = _blackOutData(appName, appsUsedRaw, appContent, appUrl);
+        final data = _filterData(appName, appsUsedRaw, appContent, appUrl);
 
-        responsesWhitelisted.add(<String, dynamic>{'name': 'apps_used', 'answer': data[0]});
-        responsesWhitelisted.add(<String, dynamic>{'name': 'apps_used_raw', 'answer': data[1]});
-        responsesWhitelisted.add(<String, dynamic>{'name': 'app_content', 'answer': data[2]});
-        responsesWhitelisted.add(<String, dynamic>{'name': 'url', 'answer': data[3]});
+        responsesAllowlisted.add(<String, dynamic>{'name': 'apps_used', 'answer': data[0]});
+        responsesAllowlisted.add(<String, dynamic>{'name': 'apps_used_raw', 'answer': data[1]});
+        responsesAllowlisted.add(<String, dynamic>{'name': 'app_content', 'answer': data[2]});
+        responsesAllowlisted.add(<String, dynamic>{'name': 'url', 'answer': data[3]});
 
-        event['responses'] = responsesWhitelisted;
+        event['responses'] = responsesAllowlisted;
         results.add(event);
       }
     }
