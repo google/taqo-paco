@@ -197,7 +197,7 @@ class ExperimentService implements ExperimentServiceLite{
   void stopExperiment(Experiment experiment) async {
     _pausedStatusCache.removeExperiment(experiment);
     _joined.remove(experiment.id);
-    saveJoinedExperiments();
+    await saveJoinedExperiments();
     final db = await platform_service.databaseImpl;
     db.insertEvent(_createPacoEvent(experiment, PacoEventType.EXPERIMENT_STOP));
 

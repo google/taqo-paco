@@ -40,6 +40,7 @@ class ExperimentCache {
   }
 
   void updateCacheWithJoinedExperiment(List<Experiment> experiments) {
+    _joinedExperimentIds.clear();
     for (var experiment in experiments) {
       _joinedExperimentIds.add(experiment.id);
       _cache[experiment.id] = experiment;
