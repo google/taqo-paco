@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:isolate';
+import 'dart:io';
 
 import 'package:logging/logging.dart';
 import 'package:taqo_common/model/event.dart';
@@ -9,39 +9,12 @@ import 'package:taqo_common/model/interrupt_cue.dart';
 import '../../triggers/triggers.dart';
 import '../loggers.dart';
 import '../pal_event_helper.dart';
-import 'apple_script_util.dart' as apple_script;
+import 'linux/linux_helper.dart' as linux_helper;
+import 'macos/macos_helper.dart' as macos_helper;
 
 final _logger = Logger('AppLogger');
 
-const _queryInterval = const Duration(seconds: 1);
-
-String _prevWindowName;
-
-// Isolate entry point must be a top-level function (or static?)
-// Query xprop for the active window
-void _appLoggerIsolate(SendPort sendPort) {
-  Timer.periodic(_queryInterval, (Timer _) {
-    Process.run(apple_script.command, apple_script.scriptArgs).then((result) {
-      final currWindow = result.stdout.trim();
-      final resultMap = apple_script.buildResultMap(currWindow);
-      final currWindowName = resultMap[apple_script.appNameField];
-
-      if (currWindowName != _prevWindowName) {
-        // Send APP_CLOSED
-        if (_prevWindowName != null && _prevWindowName.isNotEmpty) {
-          sendPort.send(_prevWindowName);
-        }
-
-        _prevWindowName = currWindowName;
-
-        // Send PacoEvent && APP_USAGE
-        if (resultMap != null) {
-          sendPort.send(resultMap);
-        }
-      }
-    });
-  });
-}
+const queryInterval = const Duration(seconds: 1);
 
 class AppLogger extends PacoEventLogger with EventTriggerSource {
   static const appUsageLoggerName = 'app_usage_logger';
@@ -71,9 +44,16 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
       return;
     }
 
+    var isolateFunc;
+    if (Platform.isLinux) {
+      isolateFunc = linux_helper.linuxAppLoggerIsolate;
+    } else if (Platform.isMacOS) {
+      isolateFunc = macos_helper.macOSAppLoggerIsolate;
+    }
+
     _logger.info('Starting AppLogger');
     _receivePort = ReceivePort();
-    _isolate = await Isolate.spawn(_appLoggerIsolate, _receivePort.sendPort);
+    _isolate = await Isolate.spawn(isolateFunc, _receivePort.sendPort);
     _isolate.addOnExitListener(_receivePort.sendPort, response: _isolateDiedObj);
     _receivePort.listen(_listen);
     active = true;
@@ -118,7 +98,6 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
     }
 
     if (data is Map && data.isNotEmpty) {
-      print(data);
       final pacoEvents = await createLoggerPacoEvents(data, pacoEventCreator: createAppUsagePacoEvent);
       _eventsToSend.addAll(pacoEvents);
 

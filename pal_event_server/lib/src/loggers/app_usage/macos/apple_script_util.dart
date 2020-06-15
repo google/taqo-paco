@@ -1,8 +1,7 @@
+import '../../pal_event_helper.dart';
+
 const command = 'osascript';
 
-const appNameField = 'WM_CLASS';
-const windowNameField = '_NET_WM_NAME';
-const urlNameField = '_NET_URL_NAME';
 const _xpropNameFields = [appNameField, windowNameField, urlNameField, ];
 
 final _fieldSplitRegExp = RegExp(r'❣');

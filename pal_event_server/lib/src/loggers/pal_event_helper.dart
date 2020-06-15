@@ -10,7 +10,10 @@ import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 import '../experiment_service_local.dart';
 import '../sqlite_database/sqlite_database.dart';
 import '../utils.dart';
-import 'linux/xprop_util.dart' as xprop;
+
+const appNameField = 'WM_CLASS';
+const windowNameField = '_NET_WM_NAME';
+const urlNameField = '_NET_URL_NAME';
 
 final _logger = Logger('PalEventHelper');
 
@@ -86,9 +89,9 @@ Future<Event> createAppUsagePacoEvent(Experiment experiment, String groupName,
     Map<String, dynamic> response) async {
   final event = await _createPacoEvent(experiment, groupName);
   final responses = <String, dynamic>{
-      appsUsedKey: response[xprop.appNameField],
-      _appContentKey: response[xprop.windowNameField],
-      _appsUsedRawKey: '${response[xprop.appNameField]}:${response[xprop.windowNameField]}',
+      appsUsedKey: response[appNameField],
+      _appContentKey: response[windowNameField],
+      _appsUsedRawKey: '${response[appNameField]}:${response[windowNameField]}',
   };
   event.responses.addAll(responses);
   return event;

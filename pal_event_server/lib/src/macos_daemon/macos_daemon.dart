@@ -1,8 +1,8 @@
 import 'package:logging/logging.dart';
 
 import '../loggers/loggers.dart';
-import '../loggers/macos/app_logger.dart';
-import '../loggers/macos/cmdline_logger.dart';
+import '../loggers/app_usage/app_logger.dart';
+import '../loggers/cmd_line/cmdline_logger.dart';
 
 final _logger = Logger('MacOSDaemon');
 
