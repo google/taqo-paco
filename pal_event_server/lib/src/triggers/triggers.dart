@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/paco_action.dart';
 import 'package:taqo_common/model/experiment.dart';
@@ -86,8 +88,9 @@ mixin EventTriggerSource {
                 event.dateTime.add(delay), experiment, group, interruptTrigger,
                 notificationAction, actionTriggerSpecId);
 
-            // TODO Only supports linux for now
-            linux_alarm_manager.createNotificationWithTimeout(actionSpec);
+            if (Platform.isLinux) {
+              linux_alarm_manager.createNotificationWithTimeout(actionSpec);
+            }
             break;
           case PacoAction.NOTIFICATION_ACTION_CODE:
           case PacoAction.LOG_EVENT_ACTION_CODE:
