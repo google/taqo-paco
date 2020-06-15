@@ -9,9 +9,9 @@ import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_common/util/date_time_util.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
-import '../../experiment_service_local.dart';
-import '../../utils.dart';
-import '../linux_alarm_manager.dart' as linux_alarm_manager;
+import '../experiment_service_local.dart';
+import '../linux_daemon/linux_alarm_manager.dart' as linux_alarm_manager;
+import '../utils.dart';
 
 class TriggerEvent {
   DateTime dateTime;

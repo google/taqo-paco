@@ -6,8 +6,8 @@ import 'package:taqo_common/model/experiment_group.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
-import '../../experiment_service_local.dart';
-import '../../utils.dart';
+import '../experiment_service_local.dart';
+import '../utils.dart';
 import 'pal_event_helper.dart';
 
 class ExperimentLoggerInfo {

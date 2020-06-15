@@ -7,10 +7,10 @@ import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_common/util/zoned_date_time.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
-import '../../experiment_service_local.dart';
-import '../../sqlite_database/sqlite_database.dart';
-import '../../utils.dart';
-import 'xprop_util.dart' as xprop;
+import '../experiment_service_local.dart';
+import '../sqlite_database/sqlite_database.dart';
+import '../utils.dart';
+import 'linux/xprop_util.dart' as xprop;
 
 final _logger = Logger('PalEventHelper');
 

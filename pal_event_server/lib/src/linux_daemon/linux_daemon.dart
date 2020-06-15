@@ -4,10 +4,10 @@ import 'dart:io';
 import 'package:logging/logging.dart';
 import 'package:taqo_common/model/event.dart';
 
+import '../loggers/loggers.dart';
+import '../loggers/linux/app_logger.dart';
+import '../loggers/linux/cmdline_logger.dart';
 import '../sqlite_database/sqlite_database.dart';
-import 'loggers/loggers.dart';
-import 'loggers/app_logger.dart';
-import 'loggers/cmdline_logger.dart';
 import 'dbus_notifications.dart' as dbus;
 import 'linux_alarm_manager.dart' as linux_alarm_manager;
 import 'linux_notification_manager.dart' as linux_notification_manager;

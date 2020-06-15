@@ -44,7 +44,12 @@ Future schedule({bool cancelAndReschedule=true}) async {
       await flutter_local_notifications.cancelAllNotifications();
     }
     ios_notification_scheduler.schedule();
-  } else if (Platform.isLinux) {
+  }
+
+  if (platform_service.isTaqoDesktop) {
+    // While macOS still schedules notifications via Flutter (see #226),
+    // we still need to notify the PAL event server daemon so it can
+    // handle triggers
     try {
       platform_service.tespClient.then((tespClient) {
         tespClient.alarmSchedule();

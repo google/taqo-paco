@@ -6,10 +6,10 @@ import 'package:logging/logging.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/interrupt_cue.dart';
 
-import '../triggers/triggers.dart';
-import 'loggers.dart';
-import 'pal_event_helper.dart';
-import 'xprop_util.dart' as xprop;
+import '../../triggers/triggers.dart';
+import '../loggers.dart';
+import '../pal_event_helper.dart';
+import 'apple_script_util.dart' as apple_script;
 
 final _logger = Logger('AppLogger');
 
@@ -21,31 +21,23 @@ String _prevWindowName;
 // Query xprop for the active window
 void _appLoggerIsolate(SendPort sendPort) {
   Timer.periodic(_queryInterval, (Timer _) {
-    // Gets the active window ID
-    Process.run(xprop.command, xprop.getIdArgs).then((result) {
-      // Parse the window ID
-      final windowId = xprop.parseWindowId(result.stdout);
-      if (windowId != xprop.invalidWindowId) {
-        // Gets the active window name
-        Process.run(xprop.command, xprop.getAppArgs(windowId)).then((result) {
-          final currWindow = result.stdout;
-          final resultMap = xprop.buildResultMap(currWindow);
-          final currWindowName = resultMap[xprop.appNameField];
+    Process.run(apple_script.command, apple_script.scriptArgs).then((result) {
+      final currWindow = result.stdout.trim();
+      final resultMap = apple_script.buildResultMap(currWindow);
+      final currWindowName = resultMap[apple_script.appNameField];
 
-          if (currWindowName != _prevWindowName) {
-            // Send APP_CLOSED
-            if (_prevWindowName != null && _prevWindowName.isNotEmpty) {
-              sendPort.send(_prevWindowName);
-            }
+      if (currWindowName != _prevWindowName) {
+        // Send APP_CLOSED
+        if (_prevWindowName != null && _prevWindowName.isNotEmpty) {
+          sendPort.send(_prevWindowName);
+        }
 
-            _prevWindowName = currWindowName;
+        _prevWindowName = currWindowName;
 
-            // Send PacoEvent && APP_USAGE
-            if (resultMap != null) {
-              sendPort.send(resultMap);
-            }
-          }
-        });
+        // Send PacoEvent && APP_USAGE
+        if (resultMap != null) {
+          sendPort.send(resultMap);
+        }
       }
     });
   });
@@ -126,6 +118,7 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
     }
 
     if (data is Map && data.isNotEmpty) {
+      print(data);
       final pacoEvents = await createLoggerPacoEvents(data, pacoEventCreator: createAppUsagePacoEvent);
       _eventsToSend.addAll(pacoEvents);
 

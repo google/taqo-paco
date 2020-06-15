@@ -13,6 +13,7 @@ import 'package:taqo_common/service/sync_service.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 
 import 'linux_daemon/linux_daemon.dart' as linux_daemon;
+import 'macos_daemon/macos_daemon.dart' as macos_daemon;
 import 'pal_server/pal_commands.dart' as pal_commands;
 import 'sqlite_database/sqlite_database.dart';
 import 'whitelist.dart';
@@ -79,7 +80,11 @@ class PALTespServer with TespRequestHandlerMixin {
 
   @override
   FutureOr<TespResponse> alarmSchedule() async {
-    await linux_daemon.handleScheduleAlarm();
+    if (Platform.isLinux) {
+      await linux_daemon.handleScheduleAlarm();
+    } else if (Platform.isMacOS) {
+      await macos_daemon.handleScheduleAlarm();
+    }
     return TespResponseSuccess();
   }
 
