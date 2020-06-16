@@ -15,11 +15,11 @@ import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 import 'linux_daemon/linux_daemon.dart' as linux_daemon;
 import 'pal_server/pal_commands.dart' as pal_commands;
 import 'sqlite_database/sqlite_database.dart';
-import 'whitelist.dart';
+import 'allowlist.dart';
 
 class PALTespServer with TespRequestHandlerMixin {
   TespServer _tespServer;
-  final _whitelist = Whitelist();
+  final _allowlist = Allowlist();
 
   PALTespServer() {
     _tespServer = TespServer(this);
@@ -42,8 +42,8 @@ class PALTespServer with TespRequestHandlerMixin {
 
   @override
   FutureOr<TespResponse> palAddEvents(List<Event> events) async {
-    if (await pal_commands.isWhitelistedDataOnly()) {
-      await _storeEvent(_whitelist.blackOutData(events));
+    if (await pal_commands.isAllowlistedDataOnly()) {
+      await _storeEvent(_allowlist.filterData(events));
     } else {
       await _storeEvent(events);
     }
@@ -64,8 +64,8 @@ class PALTespServer with TespRequestHandlerMixin {
   }
 
   @override
-  FutureOr<TespResponse> palWhiteListDataOnly() async {
-    await pal_commands.setWhitelistedDataOnly();
+  FutureOr<TespResponse> palAllowlistDataOnly() async {
+    await pal_commands.setAllowlistedDataOnly();
     return TespResponseSuccess();
   }
 

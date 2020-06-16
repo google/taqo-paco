@@ -48,8 +48,8 @@ class ExampleEventServer with TespRequestHandlerMixin {
   }
 
   @override
-  TespResponse palWhiteListDataOnly() {
-    print('whiteListDataOnly');
+  TespResponse palAllowlistDataOnly() {
+    print('allowlistDataOnly');
     return TespResponseSuccess();
   }
 
