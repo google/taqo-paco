@@ -1,10 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:taqo_client/service/experiment_paused_status_cache.dart';
 import 'package:taqo_common/model/experiment.dart';
 
-import '../service/alarm/taqo_alarm.dart' as taqo_alarm;
 import '../service/platform_service.dart' as platform_service;
 import '../service/experiment_service.dart';
 
@@ -13,8 +11,6 @@ class ExperimentProvider with ChangeNotifier {
 
   List<Experiment> _experiments;
   List<Experiment> get experiments => _experiments;
-
-  ExperimentPausedStatusCache _pausedStatusCache;
 
   static const _pollRate = Duration(seconds: 5);
   Timer _activeUpdateTimer;
@@ -29,7 +25,6 @@ class ExperimentProvider with ChangeNotifier {
   Future loadRunningExperiments() async {
     _service = await ExperimentService.getInstance();
     _experiments = _service.getJoinedExperiments();
-    _pausedStatusCache = await ExperimentPausedStatusCache.getInstance();
     notifyListeners();
 
     platform_service.databaseImpl.then((db) {
@@ -102,9 +97,8 @@ class ExperimentProvider with ChangeNotifier {
   }
 
   Future<void> setPausedAndNotifyListeners(Experiment e, bool value) async {
-    await _pausedStatusCache.setPaused(e, value);
+    await _service.setExperimentPausedStatus(e, value);
     notifyListeners();
-    taqo_alarm.schedule();
   }
 
   void stopExperiment(Experiment e) {
