@@ -34,8 +34,9 @@ class PALTespServer with TespRequestHandlerMixin {
   Future _storeEvent(List events) async {
     final database = await SqliteDatabase.get();
     for (var e in events) {
-      await database.insertEvent(e);
+      await database.insertEvent(e, notifySyncService: false);
     }
+    unawaited(SyncService.syncData());
   }
 
   // PAL Commands
@@ -47,7 +48,6 @@ class PALTespServer with TespRequestHandlerMixin {
     } else {
       await _storeEvent(events);
     }
-    unawaited(SyncService.syncData());
     return TespResponseSuccess();
   }
 

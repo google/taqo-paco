@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:pedantic/pedantic.dart';
 import 'package:sqlite3/sqlite.dart';
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
+import 'package:taqo_common/service/sync_service.dart';
 import 'package:taqo_common/storage/base_database.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_common/util/zoned_date_time.dart';
@@ -186,7 +188,7 @@ class SqliteDatabase implements BaseDatabase {
     _db.execute(deleteAllNotificationsCommand);
   }
 
-  Future<int> insertEvent(Event event) async {
+  Future<int> insertEvent(Event event, {bool notifySyncService = true}) async {
     event.id = await _db.execute(insertEventCommand, params: [
       event.experimentId,
       event.experimentName,
@@ -202,6 +204,9 @@ class SqliteDatabase implements BaseDatabase {
     for (var responseEntry in event.responses.entries) {
       await _db.execute(insertOutputCommand,
           params: [event.id, '${responseEntry.key}', '${responseEntry.value}']);
+    }
+    if (notifySyncService) {
+      unawaited(SyncService.syncData());
     }
     return event.id;
   }
