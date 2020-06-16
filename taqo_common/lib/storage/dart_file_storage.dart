@@ -26,7 +26,14 @@ class DartFileStorage implements ILocalFileStorage {
 
   Future<String> get localPath async => (await localStorageDir).path;
 
-  Future<File> get localFile async => File(path.join(await localPath, _localFileName));
+  Future<File> get localFile async {
+    final f = File(path.join(await localPath, _localFileName));
+    if (!(await f.exists())) {
+      await f.create();
+    }
+    await Process.run('chmod', ['0600', f.path, ]);
+    return f;
+  }
 
   DartFileStorage(this._localFileName);
 
