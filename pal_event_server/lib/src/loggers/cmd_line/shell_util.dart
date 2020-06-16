@@ -39,6 +39,11 @@ Future<bool> enableCmdLineLogging() async {
   final bashCmd = getBashPromptCmd(DartFileStorage.getLocalStorageDir().path);
 
   try {
+    // Create it in case the user doesn't have a .bashrc but may use bash anyway
+    if (!(await bashrc.exists())) {
+      await bashrc.create();
+    }
+
     await bashrc.writeAsString('$_beginTaqo\n', mode: FileMode.append);
     if (existingCommand == null) {
       await bashrc.writeAsString("export PROMPT_COMMAND='$bashCmd'\n",
@@ -57,6 +62,11 @@ Future<bool> enableCmdLineLogging() async {
   final zshCmd = getZshPreCmd(DartFileStorage.getLocalStorageDir().path);
 
   try {
+    // Create it in case the user doesn't have a .zshrc but may use zsh anyway
+    if (!(await zshrc.exists())) {
+      await zshrc.create();
+    }
+
     // TODO Could we check for an existing function definition?
     await zshrc.writeAsString('$_beginTaqo\n', mode: FileMode.append);
     await zshrc.writeAsString("precmd() { eval '${zshCmd}' }\n", mode: FileMode.append);
@@ -98,7 +108,7 @@ Future<bool> disableCmdLineLogging() async {
       await withoutTaqo.copy(path.join(Platform.environment['HOME'], shrc));
     } on Exception catch (e) {
       if (!(await withoutTaqo.exists())) {
-        _logger.warning("Failed writing $shrc; new file would have been empty");
+        _logger.warning("Not writing $shrc; file would have been empty");
       } else {
         _logger.warning(e);
       }
