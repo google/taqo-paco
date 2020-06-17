@@ -1,8 +1,8 @@
+import '../../pal_event_helper.dart';
+
 const command = 'xprop';
 const getIdArgs = ['-root', '32x', '\t\$0', '_NET_ACTIVE_WINDOW', ];
 
-const appNameField = 'WM_CLASS';
-const windowNameField = '_NET_WM_NAME';
 const _xpropNameFields = [appNameField, windowNameField, ];
 
 final _idSplitRegExp = RegExp(r'\s+');

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/paco_action.dart';
 import 'package:taqo_common/model/experiment.dart';
@@ -9,9 +11,9 @@ import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_common/util/date_time_util.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
-import '../../experiment_service_local.dart';
-import '../../utils.dart';
-import '../linux_alarm_manager.dart' as linux_alarm_manager;
+import '../experiment_service_local.dart';
+import '../linux_daemon/linux_alarm_manager.dart' as linux_alarm_manager;
+import '../utils.dart';
 
 class TriggerEvent {
   DateTime dateTime;
@@ -86,8 +88,9 @@ mixin EventTriggerSource {
                 event.dateTime.add(delay), experiment, group, interruptTrigger,
                 notificationAction, actionTriggerSpecId);
 
-            // TODO Only supports linux for now
-            linux_alarm_manager.createNotificationWithTimeout(actionSpec);
+            if (Platform.isLinux) {
+              linux_alarm_manager.createNotificationWithTimeout(actionSpec);
+            }
             break;
           case PacoAction.NOTIFICATION_ACTION_CODE:
           case PacoAction.LOG_EVENT_ACTION_CODE:

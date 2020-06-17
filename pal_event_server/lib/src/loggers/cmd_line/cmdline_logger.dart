@@ -7,10 +7,11 @@ import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/interrupt_cue.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
 
-import '../triggers/triggers.dart';
-import 'loggers.dart';
-import 'pal_event_helper.dart';
+import '../../triggers/triggers.dart';
+import '../loggers.dart';
+import '../pal_event_helper.dart';
 import 'shell_util.dart' as shell;
+
 final _logger = Logger('CmdLineLogger');
 
 class CmdLineLogger extends PacoEventLogger with EventTriggerSource {

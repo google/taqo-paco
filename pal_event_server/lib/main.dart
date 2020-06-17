@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:logging/logging.dart';
 import 'package:pal_event_server/src/experiment_service_local.dart';
 import 'package:pal_event_server/src/sqlite_database/sqlite_database.dart';
@@ -9,6 +11,7 @@ import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_common/storage/local_file_storage.dart';
 
 import 'src/linux_daemon/linux_daemon.dart' as linux_daemon;
+import 'src/macos_daemon/macos_daemon.dart' as macos_daemon;
 import 'src/tesp_server.dart';
 
 final _logger = Logger('Main');
@@ -27,5 +30,9 @@ void main() async {
   await server.serve(address: localServerHost, port: localServerPort);
   _logger.info('Server ready');
 
-  linux_daemon.start();
+  if (Platform.isLinux) {
+    linux_daemon.start();
+  } else if (Platform.isMacOS) {
+    macos_daemon.start();
+  }
 }

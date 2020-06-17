@@ -1,55 +1,20 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:isolate';
+import 'dart:io';
 
 import 'package:logging/logging.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/interrupt_cue.dart';
 
-import '../triggers/triggers.dart';
-import 'loggers.dart';
-import 'pal_event_helper.dart';
-import 'xprop_util.dart' as xprop;
+import '../../triggers/triggers.dart';
+import '../loggers.dart';
+import '../pal_event_helper.dart';
+import 'linux/linux_helper.dart' as linux_helper;
+import 'macos/macos_helper.dart' as macos_helper;
 
 final _logger = Logger('AppLogger');
 
-const _queryInterval = const Duration(seconds: 1);
-
-String _prevWindowName;
-
-// Isolate entry point must be a top-level function (or static?)
-// Query xprop for the active window
-void _appLoggerIsolate(SendPort sendPort) {
-  Timer.periodic(_queryInterval, (Timer _) {
-    // Gets the active window ID
-    Process.run(xprop.command, xprop.getIdArgs).then((result) {
-      // Parse the window ID
-      final windowId = xprop.parseWindowId(result.stdout);
-      if (windowId != xprop.invalidWindowId) {
-        // Gets the active window name
-        Process.run(xprop.command, xprop.getAppArgs(windowId)).then((result) {
-          final currWindow = result.stdout;
-          final resultMap = xprop.buildResultMap(currWindow);
-          final currWindowName = resultMap[xprop.appNameField];
-
-          if (currWindowName != _prevWindowName) {
-            // Send APP_CLOSED
-            if (_prevWindowName != null && _prevWindowName.isNotEmpty) {
-              sendPort.send(_prevWindowName);
-            }
-
-            _prevWindowName = currWindowName;
-
-            // Send PacoEvent && APP_USAGE
-            if (resultMap != null) {
-              sendPort.send(resultMap);
-            }
-          }
-        });
-      }
-    });
-  });
-}
+const queryInterval = const Duration(seconds: 1);
 
 class AppLogger extends PacoEventLogger with EventTriggerSource {
   static const appUsageLoggerName = 'app_usage_logger';
@@ -79,9 +44,16 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
       return;
     }
 
+    var isolateFunc;
+    if (Platform.isLinux) {
+      isolateFunc = linux_helper.linuxAppLoggerIsolate;
+    } else if (Platform.isMacOS) {
+      isolateFunc = macos_helper.macOSAppLoggerIsolate;
+    }
+
     _logger.info('Starting AppLogger');
     _receivePort = ReceivePort();
-    _isolate = await Isolate.spawn(_appLoggerIsolate, _receivePort.sendPort);
+    _isolate = await Isolate.spawn(isolateFunc, _receivePort.sendPort);
     _isolate.addOnExitListener(_receivePort.sendPort, response: _isolateDiedObj);
     _receivePort.listen(_listen);
     active = true;
