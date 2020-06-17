@@ -56,8 +56,10 @@ void main() async {
   ExperimentServiceLiteFactory.initialize(ExperimentService.getInstance);
   setupLoggingMethodChannel();
 
-  setupSyncServiceMethodChannel();
-  notifySyncService();
+  if (!isTaqoDesktop) {
+    setupSyncServiceMethodChannel();
+    notifySyncService();
+  }
 
   taqo_time_plugin.initialize(_onTimeChange);
   await taqo_alarm.init();
