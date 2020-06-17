@@ -7,7 +7,7 @@ public abstract class TespMessage {
     public static final int tespCodeRequestAddEvent = 0x01;
     public static final int tespCodeRequestPause = 0x02;
     public static final int tespCodeRequestResume = 0x04;
-    public static final int tespCodeRequestWhiteListDataOnly = 0x06;
+    public static final int tespCodeRequestAllowlistDataOnly = 0x06;
     public static final int tespCodeRequestAllData = 0x08;
     public static final int tespCodeRequestPing = 0x0A;
     public static final int tespCodeResponseSuccess = 0x80;
@@ -21,8 +21,8 @@ public abstract class TespMessage {
             return new TespRequestPause();
         } else if (code == tespCodeRequestResume) {
             return new TespRequestResume();
-        } else if (code == tespCodeRequestWhiteListDataOnly) {
-            return new TespRequestWhiteListDataOnly();
+        } else if (code == tespCodeRequestAllowlistDataOnly) {
+            return new TespRequestAllowlistDataOnly();
         } else if (code == tespCodeRequestAllData) {
             return new TespRequestAllData();
         } else if (code == tespCodeRequestPing) {

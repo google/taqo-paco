@@ -18,12 +18,12 @@ void resumeDataUpload() {
   _setBoolPref(pauseCommand, false);
 }
 
-void setWhitelistedDataOnly() {
-  _setBoolPref(whiteListCommand, true);
+void setAllowlistedDataOnly() {
+  _setBoolPref(allowlistCommand, true);
 }
 
 void setAllDataOnly() {
-  _setBoolPref(whiteListCommand, false);
+  _setBoolPref(allowlistCommand, false);
 }
 
 Future<bool> _getBoolPref(String pref) async {
@@ -37,8 +37,8 @@ Future<bool> isPaused() async {
   return _getBoolPref(pauseCommand);
 }
 
-Future<bool> isWhitelistedDataOnly() async {
-  return _getBoolPref(whiteListCommand);
+Future<bool> isAllowlistedDataOnly() async {
+  return _getBoolPref(allowlistCommand);
 }
 
 Future<bool> isRunning() async {

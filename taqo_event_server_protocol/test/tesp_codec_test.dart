@@ -79,7 +79,7 @@ void main() {
 
     final msgRequestPause = TespRequestPalPause();
     final msgRequestResume = TespRequestPalResume();
-    final msgRequestWhiteListDataOnly = TespRequestPalWhiteListDataOnly();
+    final msgRequestAllowlistDataOnly = TespRequestPalAllowlistDataOnly();
     final msgRequestAllData = TespRequestPalAllData();
     final msgRequestPing = TespRequestPing();
     final msgResponseSuccess = TespResponseSuccess();
@@ -129,8 +129,8 @@ void main() {
           equalsTespMessage(msgRequestPause));
       expect(tesp.decode(tesp.encode(msgRequestResume)),
           equalsTespMessage(msgRequestResume));
-      expect(tesp.decode(tesp.encode(msgRequestWhiteListDataOnly)),
-          equalsTespMessage(msgRequestWhiteListDataOnly));
+      expect(tesp.decode(tesp.encode(msgRequestAllowlistDataOnly)),
+          equalsTespMessage(msgRequestAllowlistDataOnly));
       expect(tesp.decode(tesp.encode(msgRequestAllData)),
           equalsTespMessage(msgRequestAllData));
       expect(tesp.decode(tesp.encode(msgRequestPing)),
@@ -189,7 +189,7 @@ void main() {
       final messages = <TespMessage>[
         msgRequestAddEvent, msgRequestAddEvent, msgRequestPause, //
         msgRequestAddEvent, msgRequestResume, msgRequestAddEvent, //
-        msgRequestWhiteListDataOnly, msgRequestAllData, msgResponseSuccess, //
+        msgRequestAllowlistDataOnly, msgRequestAllData, msgResponseSuccess, //
         msgResponseSuccess, msgResponseSuccess, msgResponsePaused, //
         msgResponseSuccess, msgResponseSuccess, msgResponseSuccess, //
         msgResponseInvalidRequest, msgResponseError, msgResponseAnswer, //
