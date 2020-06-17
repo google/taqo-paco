@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:logging/logging.dart';
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/experiment_group.dart';
 import 'package:taqo_common/model/interrupt_cue.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
 
@@ -16,9 +17,10 @@ final _logger = Logger('CmdLineLogger');
 
 class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
   static const cliLoggerName = 'cli_logger';
+  static const cliGroupType = GroupTypeEnum.APPUSAGE_SHELL;
   static CmdLineLogger _instance;
 
-  CmdLineLogger._() : super(cliLoggerName);
+  CmdLineLogger._() : super(cliLoggerName, cliGroupType);
 
   factory CmdLineLogger() {
     if (_instance == null) {
@@ -42,8 +44,7 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
 
       final triggerEvents = <TriggerEvent>[];
       for (final e in pacoEvents) {
-        // TODO Use a different InterruptCue?
-        triggerEvents.add(createEventTriggers(InterruptCue.APP_USAGE, e.responses[cmdRawKey]));
+        triggerEvents.add(createEventTriggers(InterruptCue.APP_USAGE_SHELL, e.responses[cmdRawKey]));
       }
       broadcastEventsForTriggers(triggerEvents);
 
@@ -85,7 +86,8 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
         for (var line in lines) {
           try {
             events.addAll(await createLoggerPacoEvents(jsonDecode(line),
-                pacoEventCreator: createCmdUsagePacoEvent));
+                pacoEventCreator: createCmdUsagePacoEvent,
+                type: groupType));
           } catch (_) {
             // TODO jsonDecode can fail with special characters in line, e.g.
             // Need to escape \ inside strings, i.e. \ -> \\

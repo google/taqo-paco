@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:logging/logging.dart';
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/experiment_group.dart';
 
 import '../loggers/loggers.dart';
 import '../loggers/app_usage/app_logger.dart';
@@ -51,21 +52,13 @@ void handleCancelAlarm(int id) {
   linux_alarm_manager.cancel(id);
 }
 
-void handleScheduleAlarm() async {
+void handleScheduleAlarm() {
   linux_alarm_manager.scheduleNextNotification();
 
   // 'schedule' is called when we join, pause, un-pause, and leave experiments,
   // the experiment schedule is edited, or the time zone changes.
   // Configure app loggers appropriately here
-  final experimentsToLog = await getExperimentsToLog();
-  if (experimentsToLog.isNotEmpty) {
-    // Found a non-paused experiment
-    AppLogger().start(experimentsToLog);
-    CmdLineLogger().start(experimentsToLog);
-  } else {
-    AppLogger().stop(experimentsToLog);
-    CmdLineLogger().stop(experimentsToLog);
-  }
+  startOrStopLoggers();
 }
 
 void start() async {

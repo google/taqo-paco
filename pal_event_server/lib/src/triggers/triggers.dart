@@ -101,54 +101,6 @@ mixin EventTriggerSource {
     }
   }
 
-  List<ExperimentGroup> _groupsListening(Experiment experiment, TriggerEvent event) {
-    final groups = <ExperimentGroup>[];
-    final pattern = RegExp(event.sourceId);
-
-    for (final group in experiment.groups) {
-      if (!group.isOver(event.dateTime) && group.backgroundListen) {
-        final groupListenId = group.backgroundListenSourceIdentifier;
-        if (pattern.hasMatch(groupListenId)) {
-          groups.add(group);
-        }
-      }
-    }
-
-    return groups;
-  }
-
-  List<ExperimentGroup> _groupsListeningForAccessibilityEvents(Experiment experiment, TriggerEvent event) {
-    final groups = <ExperimentGroup>[];
-
-    for (final group in experiment.groups) {
-      if (group.groupType == GroupTypeEnum.SYSTEM) {
-        continue;
-      }
-
-      if (!group.isOver(event.dateTime) && (group.accessibilityListen || group.groupType == GroupTypeEnum.ACCESSIBILITY)) {
-        groups.add(group);
-      }
-    }
-
-    return groups;
-  }
-
-  List<ExperimentGroup> _groupsListeningForNotificationEvents(Experiment experiment, TriggerEvent event) {
-    final groups = <ExperimentGroup>[];
-
-    for (final group in experiment.groups) {
-      if (group.groupType == GroupTypeEnum.SYSTEM) {
-        continue;
-      }
-
-      if (!group.isOver(event.dateTime) && (group.logNotificationEvents || group.groupType == GroupTypeEnum.NOTIFICATION)) {
-        groups.add(group);
-      }
-    }
-
-    return groups;
-  }
-
   List _shouldTriggerBy(Experiment experiment, TriggerEvent event) {
     final groupsToTrigger = [];
 

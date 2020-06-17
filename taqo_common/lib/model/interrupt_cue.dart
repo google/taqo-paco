@@ -35,6 +35,10 @@ class InterruptCue extends Validatable {
   static const NOTIFICATION_TRAY_SWIPE_DISMISS = 25;
   static const NOTIFICATION_TRAY_CANCELLED = 26;
   static const NOTIFICATION_CLICKED = 27;
+  static const APP_USAGE_DESKTOP = 28;
+  static const APP_CLOSED_DESKTOP = 29;
+  static const APP_USAGE_SHELL = 30;
+  static const APP_CLOSED_SHELL = 31;
 
 
 
@@ -85,7 +89,7 @@ class InterruptCue extends Validatable {
   factory InterruptCue.fromJson(Map<String, dynamic> json) => _$InterruptCueFromJson(json);
 
   Map<String, dynamic> toJson() => _$InterruptCueToJson(this);
-  
+
   void validateWith(Validator validator) {
 //    System.out.println("VALIDATING CUE");
     validator.isNotNull(cueCode, "cue code is not properly initialized");
@@ -96,5 +100,5 @@ class InterruptCue extends Validatable {
   }
 
 
-  
+
 }

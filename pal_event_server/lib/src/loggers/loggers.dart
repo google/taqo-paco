@@ -8,6 +8,8 @@ import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
 import '../experiment_service_local.dart';
 import '../utils.dart';
+import 'app_usage/app_logger.dart';
+import 'cmd_line/cmdline_logger.dart';
 import 'pal_event_helper.dart';
 
 class ExperimentLoggerInfo {
@@ -18,11 +20,12 @@ class ExperimentLoggerInfo {
 
 abstract class PacoEventLogger {
   final String loggerName;
+  final GroupTypeEnum groupType;
   final experimentsBeingLogged = <ExperimentLoggerInfo>[];
   final Duration sendInterval;
   bool active = false;
 
-  PacoEventLogger(this.loggerName, {
+  PacoEventLogger(this.loggerName, this.groupType, {
     sendIntervalMs = 10000,
   }) : sendInterval = Duration(milliseconds: sendIntervalMs);
 
@@ -144,23 +147,38 @@ abstract class PacoEventLogger {
   }
 }
 
+void startOrStopLoggers() async {
+  final typeToLogger = {
+    GroupTypeEnum.APPUSAGE_DESKTOP: AppLogger(),
+    GroupTypeEnum.APPUSAGE_SHELL: CmdLineLogger(),
+  };
+
+  for (var entry in typeToLogger.entries) {
+    final type = entry.key;
+    final logger = entry.value;
+    final experimentsToLog = await _getExperimentsToLogForType(type);
+    // Note: parameter to logger.stop() is inverted, i.e. the experiments
+    // passed are the experiments to continue logging
+    logger.stop(experimentsToLog);
+    logger.start(experimentsToLog);
+  }
+}
 /// Return a Map of Experiments and Groups that should enable logging
-Future<List<ExperimentLoggerInfo>> getExperimentsToLog() async {
+Future<List<ExperimentLoggerInfo>> _getExperimentsToLogForType(GroupTypeEnum type) async {
   final experimentService = await ExperimentServiceLocal.getInstance();
   final experiments = await experimentService.getJoinedExperiments();
 
   final experimentsToLog = <ExperimentLoggerInfo>[];
 
   for (var e in experiments) {
-    final toLog = ExperimentLoggerInfo(e);
-
     if (e.isOver() || (e.paused ?? false)) {
       continue;
     }
 
+    final toLog = ExperimentLoggerInfo(e);
+
     for (var g in e.groups) {
-      // TODO Expand this to use new group types
-      if (g.isAppUsageLoggingGroup) {
+      if (g.groupType == type) {
         toLog.groups.add(g);
       }
     }

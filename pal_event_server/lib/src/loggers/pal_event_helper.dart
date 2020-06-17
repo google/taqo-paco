@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:logging/logging.dart';
+import 'package:meta/meta.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/model/experiment_group.dart';
 import 'package:taqo_common/service/sync_service.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_common/util/zoned_date_time.dart';
@@ -22,8 +24,9 @@ final _logger = Logger('PalEventHelper');
 typedef CreateEventFunc = Future<Event> Function(
     Experiment experiment, String groupname, Map<String, dynamic> response);
 
-Future<List<Event>> createLoggerPacoEvents(Map<String, dynamic> response,
-    {CreateEventFunc pacoEventCreator}) async {
+Future<List<Event>> createLoggerPacoEvents(Map<String, dynamic> response, {
+    @required CreateEventFunc pacoEventCreator,
+    @required GroupTypeEnum type}) async {
   final events = <Event>[];
 
   final storageDir = DartFileStorage.getLocalStorageDir().path;
@@ -38,7 +41,7 @@ Future<List<Event>> createLoggerPacoEvents(Map<String, dynamic> response,
     }
 
     for (var g in e.groups) {
-      if (g.isAppUsageLoggingGroup) {
+      if (g.groupType == type) {
         events.add(await pacoEventCreator(e, g.name, response));
       }
     }

@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:logging/logging.dart';
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/experiment_group.dart';
 import 'package:taqo_common/model/interrupt_cue.dart';
 
 import '../../triggers/triggers.dart';
@@ -18,6 +19,7 @@ const queryInterval = const Duration(seconds: 1);
 
 class AppLogger extends PacoEventLogger with EventTriggerSource {
   static const appUsageLoggerName = 'app_usage_logger';
+  static const appUsageGroupType = GroupTypeEnum.APPUSAGE_DESKTOP;
   static const Object _isolateDiedObj = Object();
   static AppLogger _instance;
 
@@ -29,7 +31,7 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
   // List of Events that should be sent to PAL
   final _eventsToSend = <Event>[];
 
-  AppLogger._() : super(appUsageLoggerName);
+  AppLogger._() : super(appUsageLoggerName, appUsageGroupType);
 
   factory AppLogger() {
     if (_instance == null) {
@@ -98,16 +100,18 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
     }
 
     if (data is Map && data.isNotEmpty) {
-      final pacoEvents = await createLoggerPacoEvents(data, pacoEventCreator: createAppUsagePacoEvent);
+      final pacoEvents = await createLoggerPacoEvents(data,
+          pacoEventCreator: createAppUsagePacoEvent,
+          type: groupType);
       _eventsToSend.addAll(pacoEvents);
 
       final triggerEvents = <TriggerEvent>[];
       for (final e in pacoEvents) {
-        triggerEvents.add(createEventTriggers(InterruptCue.APP_USAGE, e.responses[appsUsedKey]));
+        triggerEvents.add(createEventTriggers(InterruptCue.APP_USAGE_DESKTOP, e.responses[appsUsedKey]));
       }
       broadcastEventsForTriggers(triggerEvents);
     } else if (data is String && data.isNotEmpty) {
-      final triggerEvent = createEventTriggers(InterruptCue.APP_CLOSED, data);
+      final triggerEvent = createEventTriggers(InterruptCue.APP_CLOSED_DESKTOP, data);
       broadcastEventsForTriggers(<TriggerEvent>[triggerEvent]);
     }
   }
