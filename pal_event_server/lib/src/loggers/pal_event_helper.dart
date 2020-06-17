@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:logging/logging.dart';
+import 'package:pedantic/pedantic.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/service/sync_service.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_common/util/zoned_date_time.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
@@ -118,6 +120,7 @@ Future<Event> createCmdUsagePacoEvent(Experiment experiment, String groupName,
 void storePacoEvent(List<Event> events) async {
   final database = await SqliteDatabase.get();
   for (var e in events) {
-    await database.insertEvent(e);
+    await database.insertEvent(e, notifySyncService: false);
   }
+  unawaited(SyncService.syncData());
 }

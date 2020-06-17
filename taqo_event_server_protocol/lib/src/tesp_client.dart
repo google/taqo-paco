@@ -262,8 +262,8 @@ class TespFullClient extends TespEventClient {
 
   Future<TespResponse> palResume() => send(TespRequestPalResume());
 
-  Future<TespResponse> palWhiteListDataOnly() =>
-      send(TespRequestPalWhiteListDataOnly());
+  Future<TespResponse> palAllowlistDataOnly() =>
+      send(TespRequestPalAllowlistDataOnly());
 
   Future<TespResponse> palAllData() => send(TespRequestPalAllData());
 

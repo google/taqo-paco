@@ -6,11 +6,11 @@ const idKey = 'id';
 const experimentIdKey = 'experimentId';
 const participantIdKey = 'participantId';
 const pauseKey = 'pause';
-const whiteListDataOnlyKey = 'responses';
+const allowlistDataOnlyKey = 'responses';
 
 // Commands
 const palCommandKey = 'palcommand';
 const pauseCommand = 'pause';
 const resumeCommand = 'resume';
-const whiteListCommand = 'whitelistedDataOnly';
+const allowlistCommand = 'allowlistedDataOnly';
 const allCommand = 'allData';

@@ -15,7 +15,7 @@ abstract class TespMessage {
   static const tespCodeRequestPalAddEvents = 0x01;
   static const tespCodeRequestPalPause = 0x02;
   static const tespCodeRequestPalResume = 0x04;
-  static const tespCodeRequestPalWhiteListDataOnly = 0x06;
+  static const tespCodeRequestPalAllowlistDataOnly = 0x06;
   static const tespCodeRequestPalAllData = 0x08;
   static const tespCodeRequestPing = 0x0A;
 
@@ -62,8 +62,8 @@ abstract class TespMessage {
         return TespRequestPalPause();
       case tespCodeRequestPalResume:
         return TespRequestPalResume();
-      case tespCodeRequestPalWhiteListDataOnly:
-        return TespRequestPalWhiteListDataOnly();
+      case tespCodeRequestPalAllowlistDataOnly:
+        return TespRequestPalAllowlistDataOnly();
       case tespCodeRequestPalAllData:
         return TespRequestPalAllData();
       case tespCodeRequestPing:
@@ -242,9 +242,9 @@ class TespRequestPalResume extends TespRequest {
   final code = TespMessage.tespCodeRequestPalResume;
 }
 
-class TespRequestPalWhiteListDataOnly extends TespRequest {
+class TespRequestPalAllowlistDataOnly extends TespRequest {
   @override
-  final code = TespMessage.tespCodeRequestPalWhiteListDataOnly;
+  final code = TespMessage.tespCodeRequestPalAllowlistDataOnly;
 }
 
 class TespRequestPalAllData extends TespRequest {
