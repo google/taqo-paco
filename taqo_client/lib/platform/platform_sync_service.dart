@@ -51,7 +51,7 @@ Future setupSyncServiceMethodChannel() async {
   // TODO Can we transition iOS to use this framework?
   if (Platform.isAndroid) {
     await Workmanager.initialize(
-        _workMangerCallbackDispatcher, isInDebugMode: true);
+        _workMangerCallbackDispatcher, isInDebugMode: false);
     return;
   }
 
