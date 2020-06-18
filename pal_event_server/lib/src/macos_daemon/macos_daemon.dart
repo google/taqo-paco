@@ -13,4 +13,7 @@ void handleScheduleAlarm() async {
 
 void start() async {
   _logger.info('Starting macos daemon');
+
+  // Schedule
+  handleScheduleAlarm();
 }

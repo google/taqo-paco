@@ -63,6 +63,7 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
     _receivePort.listen(_listen);
     active = true;
 
+    // Periodically sync events to PAL Event server
     Timer.periodic(sendInterval, (Timer t) {
       final events = List.of(_eventsToSend);
       _eventsToSend.clear();
@@ -103,10 +104,12 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
     }
 
     if (data is Map && data.isNotEmpty) {
+      // Log events
       final pacoEvents = await createLoggerPacoEvents(data, experimentsBeingLogged,
           createAppUsagePacoEvent);
       _eventsToSend.addAll(pacoEvents);
 
+      // Handle triggers
       final triggerEvents = <TriggerEvent>[];
       for (final e in pacoEvents) {
         triggerEvents.add(createEventTriggers(appStartCue, e.responses[appsUsedKey]));

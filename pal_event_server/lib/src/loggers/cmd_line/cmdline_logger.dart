@@ -34,28 +34,14 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
 
   @override
   void start(List<ExperimentLoggerInfo> toLog, List<ExperimentLoggerInfo> toTrigger) async {
-    if (active) {
+    if (active || (toLog.isEmpty && toTrigger.isEmpty)) {
       return;
     }
 
     _logger.info('Starting CmdLineLogger');
     await shell.enableCmdLineLogging();
     active = true;
-    Timer.periodic(sendInterval, (Timer t) async {
-      final pacoEvents = await _readLoggedCommands();
-      sendToPal(pacoEvents, t);
-
-      final triggerEvents = <TriggerEvent>[];
-      for (final e in pacoEvents) {
-        triggerEvents.add(createEventTriggers(cliStartCue, e.responses[cmdRawKey]));
-      }
-      broadcastEventsForTriggers(triggerEvents);
-
-      // Not active and no events means we stopped logging and flushed all prior events
-      if (pacoEvents.isEmpty && !active) {
-        t.cancel();
-      }
-    });
+    Timer.periodic(sendInterval, _timerFunc);
 
     // Create Paco Events
     super.start(toLog, toTrigger);
@@ -75,6 +61,24 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
     _logger.info('Stopping CmdLineLogger');
       await shell.disableCmdLineLogging();
       active = false;
+    }
+  }
+
+  void _timerFunc(Timer t) async {
+    // Log events
+    final pacoEvents = await _readLoggedCommands();
+    sendToPal(pacoEvents, t);
+
+    // Handle triggers
+    final triggerEvents = <TriggerEvent>[];
+    for (final e in pacoEvents) {
+      triggerEvents.add(createEventTriggers(cliStartCue, e.responses[cmdRawKey]));
+    }
+    broadcastEventsForTriggers(triggerEvents);
+
+    // Not active and no events means we stopped logging and flushed all prior events
+    if (pacoEvents.isEmpty && !active) {
+      t.cancel();
     }
   }
 
