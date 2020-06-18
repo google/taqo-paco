@@ -69,7 +69,7 @@ Future<void> _insertEvent(Database db, Event event) async {
           'experiment_version': event.experimentVersion,
           'schedule_time': event.scheduleTime?.toIso8601String(withColon: true),
           'response_time': event.responseTime?.toIso8601String(withColon: true),
-          'uploaded': event.uploaded,
+          'uploaded': event.uploaded ? 1 : 0,
           'group_name': event.groupName,
           'action_trigger_id': event.actionTriggerId,
           'action_trigger_spec_id': event.actionTriggerSpecId,
@@ -127,19 +127,25 @@ Future<int> _insertNotification(
 
 Future<void> _insertOrUpdateJoinedExperiments(
     Database db, Iterable<Experiment> experiments) async {
+  _logger.info('Save joined experiments.');
   try {
     db.transaction((txn) async {
       await txn.update('experiments', {'joined': 0},
           where: 'joined=?', whereArgs: [1]);
-      var batch = txn.batch();
+      int count;
+      String json;
       for (var experiment in experiments) {
-        batch.rawInsert(
-            'INSERT INTO experiments(id, json, joined, paused) VALUES (?, ?, 1, 0)'
-            ' ON CONFLICT(id) DO UPDATE SET json=excluded.json, joined=1, '
-            ' paused=CASE joined WHEN 0 THEN 0 ELSE paused END',
-            [experiment.id, jsonEncode(experiment)]);
+        json = jsonEncode(experiment);
+        count = await txn.rawUpdate(
+            'UPDATE experiments SET json=?, joined=1, '
+            ' paused=CASE joined WHEN 0 THEN 0 ELSE paused END'
+            ' WHERE id=?',
+            [json, experiment.id]);
+        if (count == 0) {
+          await txn.insert('experiments',
+              {'id': experiment.id, 'json': json, 'joined': 1, 'paused': 0});
+        }
       }
-      await batch.commit(noResult: true);
     });
   } catch (_) {
     rethrow;
