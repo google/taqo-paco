@@ -16,6 +16,8 @@ DatabaseDescription buildDatabaseDescription() {
       '${dbColSpec.dbTableInfo.objectName}.${snakeCaseToCamelCase(dbColSpec.name)}';
   String _zonedDateTimeTranslator(DatabaseColumnSpecification dbColSpec) =>
       '${dbColSpec.dbTableInfo.objectName}.${snakeCaseToCamelCase(dbColSpec.name)}?.toIso8601String(withColon: true)';
+  String _boolTranslator(DatabaseColumnSpecification dbColSpec) =>
+      '${dbColSpec.dbTableInfo.objectName}.${snakeCaseToCamelCase(dbColSpec.name)} ? 1 : 0';
   dbDescription.addTableSpec(
       name: 'events',
       objectName: 'event',
@@ -26,7 +28,7 @@ DatabaseDescription buildDatabaseDescription() {
         ['experiment_version', SqlLiteDatatype.INTEGER],
         ['schedule_time', SqlLiteDatatype.TEXT, _zonedDateTimeTranslator],
         ['response_time', SqlLiteDatatype.TEXT, _zonedDateTimeTranslator],
-        ['uploaded', SqlLiteDatatype.INTEGER],
+        ['uploaded', SqlLiteDatatype.INTEGER, _boolTranslator],
         ['group_name', SqlLiteDatatype.TEXT],
         ['action_trigger_id', SqlLiteDatatype.INTEGER],
         ['action_trigger_spec_id', SqlLiteDatatype.INTEGER],
@@ -207,16 +209,25 @@ Future<void> _insertOrUpdateJoinedExperiments(Database db, Iterable<Experiment> 
       where: 'joined=?',
       whereArgs: [1]
       ); 
-      var batch = txn.batch();
+      int count;
+      String json;
       for (var ${experimentsTableInfo.objectName} in experiments) {
-        batch.rawInsert(
-         'INSERT INTO experiments(id, json, joined, paused) VALUES (?, ?, 1, 0)' 
-         ' ON CONFLICT(id) DO UPDATE SET json=excluded.json, joined=1, '
-         ' paused=CASE joined WHEN 0 THEN 0 ELSE paused END',
-         [${experimentsTableInfo.objectName}.id, jsonEncode(${experimentsTableInfo.objectName})]
+        json = jsonEncode(${experimentsTableInfo.objectName});
+        count = await txn.rawUpdate(
+          'UPDATE experiments SET json=?, joined=1, '
+          ' paused=CASE joined WHEN 0 THEN 0 ELSE paused END'
+          ' WHERE id=?',
+          [json, ${experimentsTableInfo.objectName}.id]
         );
+        if (count == 0) {
+          await txn.insert('experiments', {
+                'id': ${experimentsTableInfo.objectName}.id,
+                'json':json,
+                'joined': 1,
+                'paused': 0
+              });
+        }
       }
-      await batch.commit(noResult: true);
     });
   } catch (_) {
     rethrow;
