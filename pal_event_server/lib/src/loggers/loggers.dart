@@ -1,8 +1,11 @@
 import 'dart:async';
 
+import 'package:taqo_common/model/action_trigger.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/experiment_group.dart';
+import 'package:taqo_common/model/interrupt_cue.dart';
+import 'package:taqo_common/model/interrupt_trigger.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
@@ -20,17 +23,17 @@ class ExperimentLoggerInfo {
 
 abstract class PacoEventLogger {
   final String loggerName;
-  final GroupTypeEnum groupType;
   final experimentsBeingLogged = <ExperimentLoggerInfo>[];
+  final experimentsBeingTriggered = <ExperimentLoggerInfo>[];
   final Duration sendInterval;
   bool active = false;
 
-  PacoEventLogger(this.loggerName, this.groupType, {
+  PacoEventLogger(this.loggerName, {
     sendIntervalMs = 10000,
   }) : sendInterval = Duration(milliseconds: sendIntervalMs);
 
-  bool _isCurrentlyLogging(int id, String name) {
-    for (var info in experimentsBeingLogged) {
+  static bool _isCurrentlyTracking(List<ExperimentLoggerInfo> list, int id, String name) {
+    for (var info in list) {
       if (info.experiment.id != id) {
         continue;
       }
@@ -45,18 +48,19 @@ abstract class PacoEventLogger {
     return false;
   }
 
-  void start(List<ExperimentLoggerInfo> toStartLogging) async {
+  Future<List<Event>> _start(List<ExperimentLoggerInfo> toStart,
+      List<ExperimentLoggerInfo> tracking) async {
     final events = <Event>[];
 
-    for (var info in toStartLogging) {
+    for (var info in toStart) {
       // Are we already logging some groups for this experiment?
-      final currentlyLogging =
-          experimentsBeingLogged.firstWhere((i) => i.experiment.id == info.experiment.id,
+      final currentlyTracking =
+          tracking.firstWhere((i) => i.experiment.id == info.experiment.id,
               orElse: () => null);
 
       for (var g in info.groups) {
         // Don't start logging the same group if already logging it
-        if (_isCurrentlyLogging(info.experiment.id, g.name)) {
+        if (_isCurrentlyTracking(tracking, info.experiment.id, g.name)) {
           continue;
         }
 
@@ -64,16 +68,25 @@ abstract class PacoEventLogger {
         events.add(await createLoggerStatusPacoEvent(info.experiment, g.name, loggerName, true));
 
         // If already logging the experiment, track the new group
-        if (currentlyLogging != null) {
-          currentlyLogging.groups.add(g);
+        if (currentlyTracking != null) {
+          currentlyTracking.groups.add(g);
         }
       }
 
       // If not already logging the experiment, track it
-      if (currentlyLogging == null) {
-        experimentsBeingLogged.add(info);
+      if (currentlyTracking == null) {
+        tracking.add(info);
       }
     }
+
+    return events;
+  }
+
+  void start(List<ExperimentLoggerInfo> toStartLogging,
+      List<ExperimentLoggerInfo> toStartTriggering) async {
+    final events = <Event>[];
+    events.addAll(await _start(toStartLogging, experimentsBeingLogged));
+    events.addAll(await _start(toStartTriggering, experimentsBeingTriggered));
 
     // Sync
     if (events.isNotEmpty) {
@@ -81,13 +94,13 @@ abstract class PacoEventLogger {
     }
   }
 
-  /// Note: The argument [toKeep] is a list of [ExperimentLoggerInfo] to keep, NOT stop
-  void stop(List<ExperimentLoggerInfo> toKeep) async {
+  Future<List<Event>> _stop(List<ExperimentLoggerInfo> toKeep,
+      List<ExperimentLoggerInfo> tracking) async {
     final events = <Event>[];
 
     // Find groups to stop
     final expToRemove = <int>[];
-    for (var info in experimentsBeingLogged) {
+    for (var info in tracking) {
       // Are there any groups to keep for this experiment?
       final keep = toKeep.firstWhere((i) => i.experiment.id == info.experiment.id,
           orElse: () => null);
@@ -116,7 +129,17 @@ abstract class PacoEventLogger {
       }
     }
 
-    experimentsBeingLogged.removeWhere((info) => expToRemove.contains(info.experiment.id));
+    tracking.removeWhere((info) => expToRemove.contains(info.experiment.id));
+
+    return events;
+  }
+
+  /// Note: The argument [toKeepLogging] is a list of [ExperimentLoggerInfo] to keep, NOT stop
+  void stop(List<ExperimentLoggerInfo> toKeepLogging,
+      List<ExperimentLoggerInfo> toKeepTriggering) async {
+    final events = <Event>[];
+    events.addAll(await _stop(toKeepLogging, experimentsBeingLogged));
+    events.addAll(await _stop(toKeepTriggering, experimentsBeingTriggered));
 
     // Sync
     if (events.isNotEmpty) {
@@ -149,22 +172,31 @@ abstract class PacoEventLogger {
 
 void startOrStopLoggers() async {
   final typeToLogger = {
-    GroupTypeEnum.APPUSAGE_DESKTOP: AppLogger(),
-    GroupTypeEnum.APPUSAGE_SHELL: CmdLineLogger(),
+    GroupTypeEnum.APPUSAGE_DESKTOP: {
+      'logger': AppLogger(),
+      'cueCodes': [InterruptCue.APP_USAGE_DESKTOP, InterruptCue.APP_CLOSED_DESKTOP, ],
+    },
+    GroupTypeEnum.APPUSAGE_SHELL: {
+      'logger': CmdLineLogger(),
+      'cueCodes': [InterruptCue.APP_USAGE_SHELL, InterruptCue.APP_CLOSED_SHELL, ],
+    },
   };
 
   for (var entry in typeToLogger.entries) {
-    final type = entry.key;
-    final logger = entry.value;
+    final GroupTypeEnum type = entry.key;
+    final List<int> cueCodes = entry.value['cueCodes'];
+    final PacoEventLogger logger = entry.value['logger'];
     final experimentsToLog = await _getExperimentsToLogForType(type);
-    // Note: parameter to logger.stop() is inverted, i.e. the experiments
-    // passed are the experiments to continue logging
-    logger.stop(experimentsToLog);
-    logger.start(experimentsToLog);
+    final experimentsToTrigger = await _getExperimentsToTriggerForCueCodes(cueCodes);
+    // Note: parameters to logger.stop() are inverted, i.e. the experiments
+    // passed are the experiments to continue logging/triggering
+    logger.stop(experimentsToLog, experimentsToTrigger);
+    logger.start(experimentsToLog, experimentsToTrigger);
   }
 }
+
 /// Return a Map of Experiments and Groups that should enable logging
-Future<List<ExperimentLoggerInfo>> _getExperimentsToLogForType(GroupTypeEnum type) async {
+Future<List<ExperimentLoggerInfo>> _getExperimentsToLogForType(GroupTypeEnum groupType) async {
   final experimentService = await ExperimentServiceLocal.getInstance();
   final experiments = await experimentService.getJoinedExperiments();
 
@@ -178,7 +210,8 @@ Future<List<ExperimentLoggerInfo>> _getExperimentsToLogForType(GroupTypeEnum typ
     final toLog = ExperimentLoggerInfo(e);
 
     for (var g in e.groups) {
-      if (g.groupType == type) {
+      // If the group type is the logger type
+      if (g.groupType == groupType) {
         toLog.groups.add(g);
       }
     }
@@ -189,4 +222,40 @@ Future<List<ExperimentLoggerInfo>> _getExperimentsToLogForType(GroupTypeEnum typ
   }
 
   return experimentsToLog;
+}
+
+/// Return a Map of Experiments and Groups that should enable logging
+Future<List<ExperimentLoggerInfo>> _getExperimentsToTriggerForCueCodes(List<int> cueCodes) async {
+  final experimentService = await ExperimentServiceLocal.getInstance();
+  final experiments = await experimentService.getJoinedExperiments();
+
+  final experimentsToTrigger = <ExperimentLoggerInfo>[];
+
+  for (var e in experiments) {
+    if (e.isOver() || (e.paused ?? false)) {
+      continue;
+    }
+
+    final toLog = ExperimentLoggerInfo(e);
+
+    for (var g in e.groups) {
+      // For survey groups, if we have any action triggers this logger
+      // cares about
+      for (var a in g.actionTriggers) {
+        if (a.type == ActionTrigger.INTERRUPT_TRIGGER_TYPE_SPECIFIER) {
+          InterruptTrigger t = a;
+          if (t.cues.any((c) => cueCodes.contains(c))) {
+            toLog.groups.add(g);
+            break;
+          }
+        }
+      }
+    }
+
+    if (toLog.groups.isNotEmpty) {
+      experimentsToTrigger.add(toLog);
+    }
+  }
+
+  return experimentsToTrigger;
 }

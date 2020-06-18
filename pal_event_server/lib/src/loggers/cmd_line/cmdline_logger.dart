@@ -18,9 +18,12 @@ final _logger = Logger('CmdLineLogger');
 class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
   static const cliLoggerName = 'cli_logger';
   static const cliGroupType = GroupTypeEnum.APPUSAGE_SHELL;
+  static const cliStartCue = InterruptCue.APP_USAGE_SHELL;
+  static const cliClosedCue = InterruptCue.APP_CLOSED_SHELL;
+
   static CmdLineLogger _instance;
 
-  CmdLineLogger._() : super(cliLoggerName, cliGroupType);
+  CmdLineLogger._() : super(cliLoggerName);
 
   factory CmdLineLogger() {
     if (_instance == null) {
@@ -30,7 +33,7 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
   }
 
   @override
-  void start(List<ExperimentLoggerInfo> experiments) async {
+  void start(List<ExperimentLoggerInfo> toLog, List<ExperimentLoggerInfo> toTrigger) async {
     if (active) {
       return;
     }
@@ -44,7 +47,7 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
 
       final triggerEvents = <TriggerEvent>[];
       for (final e in pacoEvents) {
-        triggerEvents.add(createEventTriggers(InterruptCue.APP_USAGE_SHELL, e.responses[cmdRawKey]));
+        triggerEvents.add(createEventTriggers(cliStartCue, e.responses[cmdRawKey]));
       }
       broadcastEventsForTriggers(triggerEvents);
 
@@ -55,17 +58,17 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
     });
 
     // Create Paco Events
-    super.start(experiments);
+    super.start(toLog, toTrigger);
   }
 
   @override
-  void stop(List<ExperimentLoggerInfo> experiments) async {
+  void stop(List<ExperimentLoggerInfo> toLog, List<ExperimentLoggerInfo> toTrigger) async {
     if (!active) {
       return;
     }
 
     // Create Paco Events
-    await super.stop(experiments);
+    await super.stop(toLog, toTrigger);
 
     if (experimentsBeingLogged.isEmpty) {
       // No more experiments -- shut down
@@ -85,9 +88,8 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
         await file.delete();
         for (var line in lines) {
           try {
-            events.addAll(await createLoggerPacoEvents(jsonDecode(line),
-                pacoEventCreator: createCmdUsagePacoEvent,
-                type: groupType));
+            events.addAll(await createLoggerPacoEvents(jsonDecode(line), experimentsBeingLogged,
+                createCmdUsagePacoEvent));
           } catch (_) {
             // TODO jsonDecode can fail with special characters in line, e.g.
             // Need to escape \ inside strings, i.e. \ -> \\

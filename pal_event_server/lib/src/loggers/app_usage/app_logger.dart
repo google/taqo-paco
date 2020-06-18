@@ -20,6 +20,9 @@ const queryInterval = const Duration(seconds: 1);
 class AppLogger extends PacoEventLogger with EventTriggerSource {
   static const appUsageLoggerName = 'app_usage_logger';
   static const appUsageGroupType = GroupTypeEnum.APPUSAGE_DESKTOP;
+  static const appStartCue = InterruptCue.APP_USAGE_DESKTOP;
+  static const appClosedCue = InterruptCue.APP_CLOSED_DESKTOP;
+
   static const Object _isolateDiedObj = Object();
   static AppLogger _instance;
 
@@ -31,7 +34,7 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
   // List of Events that should be sent to PAL
   final _eventsToSend = <Event>[];
 
-  AppLogger._() : super(appUsageLoggerName, appUsageGroupType);
+  AppLogger._() : super(appUsageLoggerName);
 
   factory AppLogger() {
     if (_instance == null) {
@@ -41,8 +44,8 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
   }
 
   @override
-  void start(List<ExperimentLoggerInfo> experiments) async {
-    if (active) {
+  void start(List<ExperimentLoggerInfo> toLog, List<ExperimentLoggerInfo> toTrigger) async {
+    if (active || (toLog.isEmpty && toTrigger.isEmpty)) {
       return;
     }
 
@@ -67,17 +70,17 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
     });
 
     // Create Paco Events
-    super.start(experiments);
+    super.start(toLog, toTrigger);
   }
 
   @override
-  void stop(List<ExperimentLoggerInfo> experiments) async {
+  void stop(List<ExperimentLoggerInfo> toLog, List<ExperimentLoggerInfo> toTrigger) async {
     if (!active) {
       return;
     }
 
     // Create Paco Events
-    await super.stop(experiments);
+    await super.stop(toLog, toTrigger);
 
     if (experimentsBeingLogged.isEmpty) {
       // No more experiments -- shut down
@@ -94,24 +97,23 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
       _isolate?.kill();
       _receivePort?.close();
       if (active) {
-        start(experimentsBeingLogged);
+        start(experimentsBeingLogged, experimentsBeingTriggered);
       }
       return;
     }
 
     if (data is Map && data.isNotEmpty) {
-      final pacoEvents = await createLoggerPacoEvents(data,
-          pacoEventCreator: createAppUsagePacoEvent,
-          type: groupType);
+      final pacoEvents = await createLoggerPacoEvents(data, experimentsBeingLogged,
+          createAppUsagePacoEvent);
       _eventsToSend.addAll(pacoEvents);
 
       final triggerEvents = <TriggerEvent>[];
       for (final e in pacoEvents) {
-        triggerEvents.add(createEventTriggers(InterruptCue.APP_USAGE_DESKTOP, e.responses[appsUsedKey]));
+        triggerEvents.add(createEventTriggers(appStartCue, e.responses[appsUsedKey]));
       }
       broadcastEventsForTriggers(triggerEvents);
     } else if (data is String && data.isNotEmpty) {
-      final triggerEvent = createEventTriggers(InterruptCue.APP_CLOSED_DESKTOP, data);
+      final triggerEvent = createEventTriggers(appClosedCue, data);
       broadcastEventsForTriggers(<TriggerEvent>[triggerEvent]);
     }
   }
