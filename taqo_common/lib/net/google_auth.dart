@@ -124,8 +124,9 @@ class GoogleAuth {
     final accessCredentials = AccessCredentials(accessToken,
         savedTokens.elementAt(0), _scopes);
 
+    var client;
     try {
-      final client = clientViaStoredCredentials(_id, accessCredentials);
+      client = clientViaStoredCredentials(_id, accessCredentials);
     } on AssertionError catch (e) {
       _logger.warning('Failed to obtain gAuth client: $e');
       return <String, String>{};
