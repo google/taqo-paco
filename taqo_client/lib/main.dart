@@ -61,7 +61,9 @@ void main() async {
     notifySyncService();
   }
 
-  taqo_time_plugin.initialize(_onTimeChange);
+  if (!Platform.isLinux) {
+    taqo_time_plugin.initialize(_onTimeChange);
+  }
   await taqo_alarm.init();
 
   // If there is an active notification when the app is open,
