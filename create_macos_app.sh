@@ -26,7 +26,18 @@ ${DART_SDK}/bin/dart2native -p pal_event_server/.packages \
 cp ${RELEASE}/taqo_daemon taqo_client/assets/taqo_daemon
 
 # zip/cp intellij to Flutter asset
-zip -r taqo_client/assets/pal_intellij_plugin.zip pal_intellij_plugin
+if [ ! -d pal_intellij_plugin/out ]; then
+  echo "Must build IntelliJ Plugin first"
+  exit 1
+fi
+
+mkdir -p /tmp/pal_intellij_plugin/classes
+cp -R pal_intellij_plugin/libs/lib /tmp/pal_intellij_plugin/
+cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/com /tmp/pal_intellij_plugin/classes/
+cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/META-INF /tmp/pal_intellij_plugin/classes/
+cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/META-INF /tmp/pal_intellij_plugin/
+
+zip -r taqo_client/assets/pal_intellij_plugin.zip /tmp/pal_intellij_plugin
 
 # Build flutter app
 pushd taqo_client || exit
