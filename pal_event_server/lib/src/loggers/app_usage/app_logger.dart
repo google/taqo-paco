@@ -83,7 +83,7 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
     // Create Paco Events
     await super.stop(toLog, toTrigger);
 
-    if (experimentsBeingLogged.isEmpty) {
+    if (experimentsBeingLogged.isEmpty && experimentsBeingTriggered.isEmpty) {
       // No more experiments -- shut down
       _logger.info('Stopping AppLogger');
       active = false;

@@ -56,9 +56,9 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
     // Create Paco Events
     await super.stop(toLog, toTrigger);
 
-    if (experimentsBeingLogged.isEmpty) {
+    if (experimentsBeingLogged.isEmpty && experimentsBeingTriggered.isEmpty) {
       // No more experiments -- shut down
-    _logger.info('Stopping CmdLineLogger');
+      _logger.info('Stopping CmdLineLogger');
       await shell.disableCmdLineLogging();
       active = false;
     }
