@@ -61,6 +61,9 @@ chmod 0644 ${OUT}/usr/lib/*
 #strip ${OUT}/usr/bin/taqo_daemon
 #strip ${OUT}/usr/lib/*
 
+# zip/cp intellij plugin to pkg
+zip -r ${OUT}/usr/share/taqo/pal_intellij_plugin.zip pal_intellij_plugin
+
 mkdir -p ${OUT}/usr/share/applications
 touch ${OUT}/usr/share/applications/taqo.desktop
 chmod 0644 ${OUT}/usr/share/applications/taqo.desktop
