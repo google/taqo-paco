@@ -39,7 +39,7 @@ class InterruptCue extends Validatable {
   static const APP_CLOSED_DESKTOP = 29;
   static const APP_USAGE_SHELL = 30;
   static const APP_CLOSED_SHELL = 31;
-
+  static const IDE_IDEA_USAGE = 32;
 
 
 

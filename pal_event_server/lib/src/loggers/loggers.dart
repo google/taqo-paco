@@ -13,6 +13,7 @@ import '../experiment_service_local.dart';
 import '../utils.dart';
 import 'app_usage/app_logger.dart';
 import 'cmd_line/cmdline_logger.dart';
+import 'intellij/intellij_logger.dart';
 import 'pal_event_helper.dart';
 
 class ExperimentLoggerInfo {
@@ -180,6 +181,10 @@ void startOrStopLoggers() async {
       'logger': CmdLineLogger(),
       'cueCodes': [InterruptCue.APP_USAGE_SHELL, InterruptCue.APP_CLOSED_SHELL, ],
     },
+    GroupTypeEnum.IDE_IDEA_USAGE: {
+      'logger': IntelliJLogger(),
+      'cueCodes': [InterruptCue.IDE_IDEA_USAGE, ],
+    }
   };
 
   for (var entry in typeToLogger.entries) {

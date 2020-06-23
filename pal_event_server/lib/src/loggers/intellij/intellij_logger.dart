@@ -14,8 +14,7 @@ final _logger = Logger('IntelliJLogger');
 class IntelliJLogger extends PacoEventLogger with EventTriggerSource {
   static const intelliJLoggerName = 'app_usage_logger';
   static const intelliJGroupType = GroupTypeEnum.IDE_IDEA_USAGE;
-  static const appStartCue = InterruptCue.APP_USAGE_DESKTOP;
-  static const appClosedCue = InterruptCue.APP_CLOSED_DESKTOP;
+  static const intelliJCue = InterruptCue.IDE_IDEA_USAGE;
 
   static IntelliJLogger _instance;
 
