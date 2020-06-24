@@ -34,6 +34,7 @@ class IntelliJLogger extends PacoEventLogger with EventTriggerSource {
     }
 
     _logger.info('Starting IntelliJLogger');
+    active = true;
 
     if (Platform.isLinux) {
       linux_helper.enableIntelliJPlugin();
