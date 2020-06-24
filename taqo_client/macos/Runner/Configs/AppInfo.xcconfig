@@ -11,4 +11,4 @@ PRODUCT_NAME = taqo_client
 PRODUCT_BUNDLE_IDENTIFIER = com.taqo.survey.taqoClient
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2019 com.taqo.survey. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2020 com.taqo.survey. All rights reserved.
