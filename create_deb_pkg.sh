@@ -61,6 +61,23 @@ chmod 0644 ${OUT}/usr/lib/*
 #strip ${OUT}/usr/bin/taqo_daemon
 #strip ${OUT}/usr/lib/*
 
+# zip/cp intellij plugin to pkg
+if [ ! -d pal_intellij_plugin/out ]; then
+  echo "Must build IntelliJ Plugin first"
+  exit 1
+fi
+
+mkdir -p /tmp/pal_intellij_plugin/classes
+cp -R pal_intellij_plugin/libs/lib /tmp/pal_intellij_plugin/
+cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/com /tmp/pal_intellij_plugin/classes/
+cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/META-INF /tmp/pal_intellij_plugin/classes/
+cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/META-INF /tmp/pal_intellij_plugin/
+
+ZIPFILE=${OUT}/usr/share/taqo/pal_intellij_plugin.zip
+pushd /tmp
+zip -r ${ZIPFILE} pal_intellij_plugin/
+popd || exit
+
 mkdir -p ${OUT}/usr/share/applications
 touch ${OUT}/usr/share/applications/taqo.desktop
 chmod 0644 ${OUT}/usr/share/applications/taqo.desktop
