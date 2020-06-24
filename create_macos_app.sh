@@ -37,7 +37,10 @@ cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/com /tmp/pal_intell
 cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/META-INF /tmp/pal_intellij_plugin/classes/
 cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/META-INF /tmp/pal_intellij_plugin/
 
-zip -r taqo_client/assets/pal_intellij_plugin.zip /tmp/pal_intellij_plugin
+ZIPFILE=$(pwd)/taqo_client/assets/pal_intellij_plugin.zip
+pushd /tmp
+zip -r ${ZIPFILE} pal_intellij_plugin/
+popd || exit
 
 # Build flutter app
 pushd taqo_client || exit

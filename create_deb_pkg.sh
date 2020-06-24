@@ -73,7 +73,10 @@ cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/com /tmp/pal_intell
 cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/META-INF /tmp/pal_intellij_plugin/classes/
 cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/META-INF /tmp/pal_intellij_plugin/
 
-zip -r ${OUT}/usr/share/taqo/pal_intellij_plugin.zip /tmp/pal_intellij_plugin
+ZIPFILE=${OUT}/usr/share/taqo/pal_intellij_plugin.zip
+pushd /tmp
+zip -r ${ZIPFILE} pal_intellij_plugin/
+popd || exit
 
 mkdir -p ${OUT}/usr/share/applications
 touch ${OUT}/usr/share/applications/taqo.desktop
