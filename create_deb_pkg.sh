@@ -48,7 +48,7 @@ cp ${RELEASE}/taqo_daemon ${OUT}/usr/share/taqo/
 
 # Copy shared libraries expected to be in LD_LIBRARY_PATH
 mkdir -p ${OUT}/usr/lib
-cp ${RELEASE}/*.so ${OUT}/usr/lib/
+cp ${RELEASE}/lib/*.so ${OUT}/usr/lib/
 
 find ${OUT}/usr/share/taqo/data -type f -exec chmod 0644 {} \;
 chmod 0755 ${OUT}/usr/share/taqo/taqo
@@ -73,7 +73,7 @@ cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/com /tmp/pal_intell
 cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/META-INF /tmp/pal_intellij_plugin/classes/
 cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/META-INF /tmp/pal_intellij_plugin/
 
-ZIPFILE=${OUT}/usr/share/taqo/pal_intellij_plugin.zip
+ZIPFILE=$(pwd)/${OUT}/usr/share/taqo/pal_intellij_plugin.zip
 pushd /tmp
 zip -r ${ZIPFILE} pal_intellij_plugin/
 popd || exit
