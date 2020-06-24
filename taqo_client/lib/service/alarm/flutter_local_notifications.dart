@@ -67,7 +67,7 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
     _ANDROID_NOTIFICATION_CHANNEL_ID,
     _ANDROID_NOTIFICATION_CHANNEL_NAME,
     _ANDROID_NOTIFICATION_CHANNEL_DESC,
-    sound: _ANDROID_SOUND,
+    sound: RawResourceAndroidNotificationSound(_ANDROID_SOUND),
   );
   final iOSDetails = IOSNotificationDetails(
       presentAlert: true,
@@ -79,11 +79,12 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
       presentBadge: true,
       presentSound: true,
       sound: 'deepbark_trial.m4a');
-  final details = NotificationDetails(androidDetails, iOSDetails, macOSDetails);
+  final details = NotificationDetails(android: androidDetails, iOS: iOSDetails, macOS: macOSDetails);
 
   if (when != null) {
-    await _plugin.schedule(
+    await _plugin.zonedSchedule(
         id, actionSpec.experiment.title, notificationHolder.message, when, details,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.wallClockTime,
         payload: "$id", androidAllowWhileIdle: true);
   } else {
     await _plugin.show(
@@ -102,13 +103,10 @@ Future init() async {
       onDidReceiveLocalNotification: (int id, String title, String body, String payload) async {
         _notificationHandledStream.add(payload);
       });
-  final initSettingsMacOS = MacOSInitializationSettings(
-      onDidReceiveLocalNotification: (int id, String title, String body, String payload) async {
-        _notificationHandledStream.add(payload);
-      });
+  final initSettingsMacOS = MacOSInitializationSettings();
 
   final initSettings = InitializationSettings(
-      initSettingsAndroid, initSettingsIOS, initSettingsMacOS);
+      android: initSettingsAndroid, iOS: initSettingsIOS, macOS: initSettingsMacOS);
   await _plugin.initialize(initSettings, onSelectNotification: (String payload) async {
     _notificationHandledStream.add(payload);
   });
