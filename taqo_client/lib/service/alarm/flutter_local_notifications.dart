@@ -12,11 +12,13 @@ import 'taqo_alarm.dart' as taqo_alarm;
 
 final _logger = Logger('FlutterLocalNotifications');
 
-const _ANDROID_NOTIFICATION_CHANNEL_ID = "com.taqo.survey.taqosurvey.NOTIFICATIONS";
-const _ANDROID_NOTIFICATION_CHANNEL_NAME = "Experiment Reminders";
-const _ANDROID_NOTIFICATION_CHANNEL_DESC = "Reminders to participate in Experiments";
-const _ANDROID_ICON = "paco256";
-const _ANDROID_SOUND = "deepbark_trial";
+const _androidSoundResource = RawResourceAndroidNotificationSound("deepbark_trial");
+const _appleSoundFile = "deepbark_trial.m4a";
+
+const _androidNotificationChannelId = "com.taqo.survey.taqosurvey.NOTIFICATIONS";
+const _androidNotificationChannelName = "Experiment Reminders";
+const _androidNotificationChannelDesc = "Reminders to participate in Experiments";
+const _androidIconResource = "paco256";
 
 final _plugin = FlutterLocalNotificationsPlugin();
 
@@ -64,26 +66,27 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
   final id = await db.insertNotification(notificationHolder);
 
   final androidDetails = AndroidNotificationDetails(
-    _ANDROID_NOTIFICATION_CHANNEL_ID,
-    _ANDROID_NOTIFICATION_CHANNEL_NAME,
-    _ANDROID_NOTIFICATION_CHANNEL_DESC,
-    sound: _ANDROID_SOUND,
+    _androidNotificationChannelId,
+    _androidNotificationChannelName,
+    _androidNotificationChannelDesc,
+    sound: _androidSoundResource,
   );
   final iOSDetails = IOSNotificationDetails(
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
-      sound: 'deepbark_trial.m4a');
+      sound: _appleSoundFile);
   final macOSDetails = MacOSNotificationDetails(
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
-      sound: 'deepbark_trial.m4a');
-  final details = NotificationDetails(androidDetails, iOSDetails, macOSDetails);
+      sound: _appleSoundFile);
+  final details = NotificationDetails(android: androidDetails, iOS: iOSDetails, macOS: macOSDetails);
 
   if (when != null) {
-    await _plugin.schedule(
+    await _plugin.zonedSchedule(
         id, actionSpec.experiment.title, notificationHolder.message, when, details,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.wallClockTime,
         payload: "$id", androidAllowWhileIdle: true);
   } else {
     await _plugin.show(
@@ -97,18 +100,15 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
 Future init() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final initSettingsAndroid = AndroidInitializationSettings(_ANDROID_ICON);
+  final initSettingsAndroid = AndroidInitializationSettings(_androidIconResource);
   final initSettingsIOS = IOSInitializationSettings(
       onDidReceiveLocalNotification: (int id, String title, String body, String payload) async {
         _notificationHandledStream.add(payload);
       });
-  final initSettingsMacOS = MacOSInitializationSettings(
-      onDidReceiveLocalNotification: (int id, String title, String body, String payload) async {
-        _notificationHandledStream.add(payload);
-      });
+  final initSettingsMacOS = MacOSInitializationSettings();
 
   final initSettings = InitializationSettings(
-      initSettingsAndroid, initSettingsIOS, initSettingsMacOS);
+      android: initSettingsAndroid, iOS: initSettingsIOS, macOS: initSettingsMacOS);
   await _plugin.initialize(initSettings, onSelectNotification: (String payload) async {
     _notificationHandledStream.add(payload);
   });

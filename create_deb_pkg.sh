@@ -48,7 +48,7 @@ cp ${RELEASE}/taqo_daemon ${OUT}/usr/share/taqo/
 
 # Copy shared libraries expected to be in LD_LIBRARY_PATH
 mkdir -p ${OUT}/usr/lib
-cp ${RELEASE}/*.so ${OUT}/usr/lib/
+cp ${RELEASE}/lib/*.so ${OUT}/usr/lib/
 
 find ${OUT}/usr/share/taqo/data -type f -exec chmod 0644 {} \;
 chmod 0755 ${OUT}/usr/share/taqo/taqo
@@ -60,6 +60,23 @@ chmod 0644 ${OUT}/usr/lib/*
 #strip ${OUT}/usr/bin/taqo
 #strip ${OUT}/usr/bin/taqo_daemon
 #strip ${OUT}/usr/lib/*
+
+# zip/cp intellij plugin to pkg
+if [ ! -d pal_intellij_plugin/out ]; then
+  echo "Must build IntelliJ Plugin first"
+  exit 1
+fi
+
+mkdir -p /tmp/pal_intellij_plugin/classes
+cp -R pal_intellij_plugin/libs/lib /tmp/pal_intellij_plugin/
+cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/com /tmp/pal_intellij_plugin/classes/
+cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/META-INF /tmp/pal_intellij_plugin/classes/
+cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/META-INF /tmp/pal_intellij_plugin/
+
+ZIPFILE=$(pwd)/${OUT}/usr/share/taqo/pal_intellij_plugin.zip
+pushd /tmp
+zip -r ${ZIPFILE} pal_intellij_plugin/
+popd || exit
 
 mkdir -p ${OUT}/usr/share/applications
 touch ${OUT}/usr/share/applications/taqo.desktop

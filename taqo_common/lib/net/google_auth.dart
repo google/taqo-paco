@@ -115,17 +115,32 @@ class GoogleAuth {
 
   Future<Map<String, String>> getUserInfo() async {
     final savedTokens = await _readTokens();
+    if (savedTokens == null || savedTokens.length < 3) {
+      return <String, String>{};
+    }
+
     final accessToken = AccessToken('Bearer', savedTokens.elementAt(1),
         DateTime.parse(savedTokens.elementAt(2)));
     final accessCredentials = AccessCredentials(accessToken,
         savedTokens.elementAt(0), _scopes);
-    final client = clientViaStoredCredentials(_id, accessCredentials);
+
+    var client;
+    try {
+      client = clientViaStoredCredentials(_id, accessCredentials);
+    } on AssertionError catch (e) {
+      _logger.warning('Failed to obtain gAuth client: $e');
+      return <String, String>{};
+    }
+
     final oauth2 = Oauth2Api(client);
     return oauth2.userinfo.get().then((userInfoPlus) {
       return {
         'name': userInfoPlus.name,
         'picture': userInfoPlus.picture,
       };
+    }).catchError((e) {
+      _logger.warning('Failed to obtain user info: $e');
+      return <String, String>{};
     });
   }
 }
