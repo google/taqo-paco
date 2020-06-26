@@ -101,7 +101,10 @@ class RemoteDatabase extends BaseDatabase {
     return global.tespClient.then((tespClient) async {
       final TespResponseAnswer response =
           await tespClient.notificationSelectById(id);
-      return NotificationHolder.fromJson(jsonDecode(response.payload));
+      if (response != null) {
+        return NotificationHolder.fromJson(jsonDecode(response.payload));
+      }
+      return null;
     });
   }
 

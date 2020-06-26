@@ -6,6 +6,7 @@ import 'package:logging/logging.dart';
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
+import 'package:timezone/timezone.dart';
 
 import '../../service/platform_service.dart' as platform_service;
 import 'taqo_alarm.dart' as taqo_alarm;
@@ -84,8 +85,10 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
   final details = NotificationDetails(android: androidDetails, iOS: iOSDetails, macOS: macOSDetails);
 
   if (when != null) {
+    // Because system time zone changes trigger re-scheduling, we can always assume local here
+    final tzWhen = TZDateTime.local(when.year, when.month, when.day, when.hour, when.minute, when.second);
     await _plugin.zonedSchedule(
-        id, actionSpec.experiment.title, notificationHolder.message, when, details,
+        id, actionSpec.experiment.title, notificationHolder.message, tzWhen, details,
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.wallClockTime,
         payload: "$id", androidAllowWhileIdle: true);
   } else {
