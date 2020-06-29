@@ -1,5 +1,6 @@
 name: pal_event_server
 dependencies:
+  archive: ^2.0.13
   http: ^0.12.0+4
   pedantic: ^1.9.0
   sembast: ^2.3.0
