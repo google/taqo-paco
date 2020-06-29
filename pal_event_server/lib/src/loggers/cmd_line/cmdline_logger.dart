@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:logging/logging.dart';
 import 'package:taqo_common/model/event.dart';
+import 'package:taqo_common/model/experiment_group.dart';
 import 'package:taqo_common/model/interrupt_cue.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
 
@@ -16,6 +17,10 @@ final _logger = Logger('CmdLineLogger');
 
 class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
   static const cliLoggerName = 'cli_logger';
+  static const cliGroupType = GroupTypeEnum.APPUSAGE_SHELL;
+  static const cliStartCue = InterruptCue.APP_USAGE_SHELL;
+  static const cliClosedCue = InterruptCue.APP_CLOSED_SHELL;
+
   static CmdLineLogger _instance;
 
   CmdLineLogger._() : super(cliLoggerName);
@@ -28,49 +33,52 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
   }
 
   @override
-  void start(List<ExperimentLoggerInfo> experiments) async {
-    if (active) {
+  void start(List<ExperimentLoggerInfo> toLog, List<ExperimentLoggerInfo> toTrigger) async {
+    if (active || (toLog.isEmpty && toTrigger.isEmpty)) {
       return;
     }
 
     _logger.info('Starting CmdLineLogger');
     await shell.enableCmdLineLogging();
     active = true;
-    Timer.periodic(sendInterval, (Timer t) async {
-      final pacoEvents = await _readLoggedCommands();
-      sendToPal(pacoEvents, t);
-
-      final triggerEvents = <TriggerEvent>[];
-      for (final e in pacoEvents) {
-        // TODO Use a different InterruptCue?
-        triggerEvents.add(createEventTriggers(InterruptCue.APP_USAGE, e.responses[cmdRawKey]));
-      }
-      broadcastEventsForTriggers(triggerEvents);
-
-      // Not active and no events means we stopped logging and flushed all prior events
-      if (pacoEvents.isEmpty && !active) {
-        t.cancel();
-      }
-    });
+    Timer.periodic(sendInterval, _timerFunc);
 
     // Create Paco Events
-    super.start(experiments);
+    super.start(toLog, toTrigger);
   }
 
   @override
-  void stop(List<ExperimentLoggerInfo> experiments) async {
+  void stop(List<ExperimentLoggerInfo> toLog, List<ExperimentLoggerInfo> toTrigger) async {
     if (!active) {
       return;
     }
 
     // Create Paco Events
-    await super.stop(experiments);
+    await super.stop(toLog, toTrigger);
 
-    if (experimentsBeingLogged.isEmpty) {
+    if (experimentsBeingLogged.isEmpty && experimentsBeingTriggered.isEmpty) {
       // No more experiments -- shut down
-    _logger.info('Stopping CmdLineLogger');
+      _logger.info('Stopping CmdLineLogger');
       await shell.disableCmdLineLogging();
       active = false;
+    }
+  }
+
+  void _timerFunc(Timer t) async {
+    // Log events
+    final pacoEvents = await _readLoggedCommands();
+    sendToPal(pacoEvents, t);
+
+    // Handle triggers
+    final triggerEvents = <TriggerEvent>[];
+    for (final e in pacoEvents) {
+      triggerEvents.add(createEventTriggers(cliStartCue, e.responses[cmdRawKey]));
+    }
+    broadcastEventsForTriggers(triggerEvents);
+
+    // Not active and no events means we stopped logging and flushed all prior events
+    if (pacoEvents.isEmpty && !active) {
+      t.cancel();
     }
   }
 
@@ -84,8 +92,8 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
         await file.delete();
         for (var line in lines) {
           try {
-            events.addAll(await createLoggerPacoEvents(jsonDecode(line),
-                pacoEventCreator: createCmdUsagePacoEvent));
+            events.addAll(await createLoggerPacoEvents(jsonDecode(line), experimentsBeingLogged,
+                createCmdUsagePacoEvent));
           } catch (_) {
             // TODO jsonDecode can fail with special characters in line, e.g.
             // Need to escape \ inside strings, i.e. \ -> \\
