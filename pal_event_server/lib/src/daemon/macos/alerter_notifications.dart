@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:logging/logging.dart';
 
-import 'macos_daemon.dart' as macos_daemon;
+import '../daemon.dart' as daemon;
 
 const _alerterBinary = '/Applications/taqo_client.app/Contents/MacOS/alerter';
 const _bundleId = '/com.taqo.survey.taqoClient';
@@ -22,7 +22,7 @@ void _listen(int id, List<int> event) {
       break;
     case 'actionClicked':
     case 'contentsClicked':
-      macos_daemon.openSurvey(id);
+      daemon.openSurvey(id);
       break;
   }
 }

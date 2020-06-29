@@ -12,8 +12,7 @@ import 'package:taqo_common/service/experiment_service_lite.dart';
 import 'package:taqo_common/service/sync_service.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 
-import 'linux_daemon/linux_daemon.dart' as linux_daemon;
-import 'macos_daemon/macos_daemon.dart' as macos_daemon;
+import 'daemon/daemon.dart' as daemon;
 import 'pal_server/pal_commands.dart' as pal_commands;
 import 'sqlite_database/sqlite_database.dart';
 import 'allowlist.dart';
@@ -80,11 +79,7 @@ class PALTespServer with TespRequestHandlerMixin {
 
   @override
   FutureOr<TespResponse> alarmSchedule() async {
-    if (Platform.isLinux) {
-      await linux_daemon.handleScheduleAlarm();
-    } else if (Platform.isMacOS) {
-      await macos_daemon.handleScheduleAlarm();
-    }
+    await daemon.handleScheduleAlarm();
     return TespResponseSuccess();
   }
 
@@ -97,11 +92,7 @@ class PALTespServer with TespRequestHandlerMixin {
 
   @override
   FutureOr<TespResponse> alarmCancel(int alarmId) async {
-    if (Platform.isLinux) {
-      await linux_daemon.handleCancelAlarm(alarmId);
-    } else if (Platform.isMacOS) {
-      await macos_daemon.handleCancelAlarm(alarmId);
-    }
+    await daemon.handleCancelAlarm(alarmId);
     return TespResponseSuccess();
   }
 
@@ -114,11 +105,7 @@ class PALTespServer with TespRequestHandlerMixin {
 
   @override
   FutureOr<TespResponse> notificationCheckActive() async {
-    if (Platform.isLinux) {
-      await linux_daemon.handleScheduleAlarm();
-    } else if (Platform.isMacOS) {
-      await macos_daemon.handleScheduleAlarm();
-    }
+    await daemon.handleScheduleAlarm();
     return TespResponseSuccess();
   }
 
@@ -132,21 +119,13 @@ class PALTespServer with TespRequestHandlerMixin {
 
   @override
   FutureOr<TespResponse> notificationCancel(int notificationId) async {
-    if (Platform.isLinux) {
-      await linux_daemon.handleCancelNotification(notificationId);
-    } else if (Platform.isMacOS) {
-      await macos_daemon.handleCancelNotification(notificationId);
-    }
+    await daemon.handleCancelNotification(notificationId);
     return TespResponseSuccess();
   }
 
   @override
   FutureOr<TespResponse> notificationCancelByExperiment(int experimentId) async {
-    if (Platform.isLinux) {
-      await linux_daemon.handleCancelExperimentNotification(experimentId);
-    } else if (Platform.isMacOS) {
-      await macos_daemon.handleCancelExperimentNotification(experimentId);
-    }
+    await daemon.handleCancelExperimentNotification(experimentId);
     return TespResponseSuccess();
   }
 
@@ -166,11 +145,7 @@ class PALTespServer with TespRequestHandlerMixin {
 
   @override
   FutureOr<TespResponse> createMissedEvent(Event event) async {
-    if (Platform.isLinux) {
-      await linux_daemon.handleCreateMissedEvent(event);
-    } else if (Platform.isMacOS) {
-      await macos_daemon.handleCreateMissedEvent(event);
-    }
+    await daemon.handleCreateMissedEvent(event);
     return TespResponseSuccess();
   }
 
