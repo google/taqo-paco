@@ -33,8 +33,7 @@ void cancel(int id) {
   }
 
   _notifications.remove(id);
-
-  // TODO
+  Process.run(_alerterBinary, ['-remove', '$id',]);
 }
 
 Future<int> notify(int id, String title, String body,
