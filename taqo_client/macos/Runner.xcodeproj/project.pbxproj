@@ -29,6 +29,9 @@
 		33D1A10422148B71006C7A3E /* FlutterMacOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 33D1A10322148B71006C7A3E /* FlutterMacOS.framework */; };
 		33D1A10522148B93006C7A3E /* FlutterMacOS.framework in Bundle Framework */ = {isa = PBXBuildFile; fileRef = 33D1A10322148B71006C7A3E /* FlutterMacOS.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		630B1A657994358960C31EDF /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B46DEA055892DFD7E89F54F /* Pods_Runner.framework */; };
+		C368E83324AA4C1C00A99358 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C368E82E24AA4C1C00A99358 /* main.m */; };
+		C368E83424AA4C1C00A99358 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C368E82F24AA4C1C00A99358 /* AppDelegate.m */; };
+		C368E83724AA4DF600A99358 /* alerter in CopyFiles */ = {isa = PBXBuildFile; fileRef = C368E82624AA4BC300A99358 /* alerter */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		C398031F24A3AB760015501A /* deepbark_trial.m4a in Resources */ = {isa = PBXBuildFile; fileRef = C398031E24A3AB760015501A /* deepbark_trial.m4a */; };
 		D73912F022F37F9E000D13A0 /* App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D73912EF22F37F9E000D13A0 /* App.framework */; };
 		D73912F222F3801D000D13A0 /* App.framework in Bundle Framework */ = {isa = PBXBuildFile; fileRef = D73912EF22F37F9E000D13A0 /* App.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -41,6 +44,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 33CC111A2044C6BA0003C045;
 			remoteInfo = FLX;
+		};
+		C368E83824AA4E3C00A99358 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 33CC10E52044A3C60003C045 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C368E82524AA4BC300A99358;
+			remoteInfo = alerter;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -55,6 +65,25 @@
 				33D1A10522148B93006C7A3E /* FlutterMacOS.framework in Bundle Framework */,
 			);
 			name = "Bundle Framework";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C368E82424AA4BC300A99358 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = "";
+			dstSubfolderSpec = 6;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C368E83624AA4DEA00A99358 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 6;
+			files = (
+				C368E83724AA4DF600A99358 /* alerter in CopyFiles */,
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -81,6 +110,12 @@
 		42272C26B671385D1A9176E7 /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		C368E82624AA4BC300A99358 /* alerter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = alerter; sourceTree = BUILT_PRODUCTS_DIR; };
+		C368E82E24AA4C1C00A99358 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		C368E82F24AA4C1C00A99358 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		C368E83024AA4C1C00A99358 /* Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Prefix.pch; sourceTree = "<group>"; };
+		C368E83124AA4C1C00A99358 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C368E83224AA4C1C00A99358 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		C398031E24A3AB760015501A /* deepbark_trial.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; name = deepbark_trial.m4a; path = ../../ios/Runner/deepbark_trial.m4a; sourceTree = "<group>"; };
 		D73912EF22F37F9E000D13A0 /* App.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = App.framework; path = Flutter/ephemeral/App.framework; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -93,6 +128,13 @@
 				D73912F022F37F9E000D13A0 /* App.framework in Frameworks */,
 				33D1A10422148B71006C7A3E /* FlutterMacOS.framework in Frameworks */,
 				630B1A657994358960C31EDF /* Pods_Runner.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C368E82324AA4BC300A99358 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -115,6 +157,7 @@
 			children = (
 				33FAB671232836740065AC1E /* Runner */,
 				33CEB47122A05771004F2AC0 /* Flutter */,
+				C368E82724AA4BC300A99358 /* alerter */,
 				33CC10EE2044A3C60003C045 /* Products */,
 				D73912EC22F37F3D000D13A0 /* Frameworks */,
 				3ECE5D8D877188522911ADD1 /* Pods */,
@@ -125,6 +168,7 @@
 			isa = PBXGroup;
 			children = (
 				33CC10ED2044A3C60003C045 /* taqo_client.app */,
+				C368E82624AA4BC300A99358 /* alerter */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -174,8 +218,19 @@
 				21A62AA98D323E8564073B6A /* Pods-Runner.release.xcconfig */,
 				276CD9D84F62FF13459C48B9 /* Pods-Runner.profile.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		C368E82724AA4BC300A99358 /* alerter */ = {
+			isa = PBXGroup;
+			children = (
+				C368E83224AA4C1C00A99358 /* AppDelegate.h */,
+				C368E82F24AA4C1C00A99358 /* AppDelegate.m */,
+				C368E83124AA4C1C00A99358 /* Info.plist */,
+				C368E82E24AA4C1C00A99358 /* main.m */,
+				C368E83024AA4C1C00A99358 /* Prefix.pch */,
+			);
+			path = alerter;
 			sourceTree = "<group>";
 		};
 		D73912EC22F37F3D000D13A0 /* Frameworks */ = {
@@ -200,16 +255,35 @@
 				33CC110E2044A8840003C045 /* Bundle Framework */,
 				3399D490228B24CF009A79C7 /* ShellScript */,
 				46693CF45747D7CDB275D469 /* [CP] Embed Pods Frameworks */,
+				C368E83624AA4DEA00A99358 /* CopyFiles */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				C368E83924AA4E3C00A99358 /* PBXTargetDependency */,
 				33CC11202044C79F0003C045 /* PBXTargetDependency */,
 			);
 			name = Runner;
 			productName = Runner;
 			productReference = 33CC10ED2044A3C60003C045 /* taqo_client.app */;
 			productType = "com.apple.product-type.application";
+		};
+		C368E82524AA4BC300A99358 /* alerter */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C368E82D24AA4BC300A99358 /* Build configuration list for PBXNativeTarget "alerter" */;
+			buildPhases = (
+				C368E82224AA4BC300A99358 /* Sources */,
+				C368E82324AA4BC300A99358 /* Frameworks */,
+				C368E82424AA4BC300A99358 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = alerter;
+			productName = alerter;
+			productReference = C368E82624AA4BC300A99358 /* alerter */;
+			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
 
@@ -235,6 +309,9 @@
 						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Manual;
 					};
+					C368E82524AA4BC300A99358 = {
+						CreatedOnToolsVersion = 11.3.1;
+					};
 				};
 			};
 			buildConfigurationList = 33CC10E82044A3C60003C045 /* Build configuration list for PBXProject "Runner" */;
@@ -252,6 +329,7 @@
 			targets = (
 				33CC10EC2044A3C60003C045 /* Runner */,
 				33CC111A2044C6BA0003C045 /* Flutter Assemble */,
+				C368E82524AA4BC300A99358 /* alerter */,
 			);
 		};
 /* End PBXProject section */
@@ -357,6 +435,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C368E82224AA4BC300A99358 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C368E83424AA4C1C00A99358 /* AppDelegate.m in Sources */,
+				C368E83324AA4C1C00A99358 /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -364,6 +451,11 @@
 			isa = PBXTargetDependency;
 			target = 33CC111A2044C6BA0003C045 /* Flutter Assemble */;
 			targetProxy = 33CC111F2044C79F0003C045 /* PBXContainerItemProxy */;
+		};
+		C368E83924AA4E3C00A99358 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C368E82524AA4BC300A99358 /* alerter */;
+			targetProxy = C368E83824AA4E3C00A99358 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -619,6 +711,61 @@
 			};
 			name = Release;
 		};
+		C368E82A24AA4BC300A99358 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		C368E82B24AA4BC300A99358 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		C368E82C24AA4BC300A99358 /* Profile */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Profile;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -648,6 +795,16 @@
 				33CC111C2044C6BA0003C045 /* Debug */,
 				33CC111D2044C6BA0003C045 /* Release */,
 				338D0CEB231458BD00FA5F75 /* Profile */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C368E82D24AA4BC300A99358 /* Build configuration list for PBXNativeTarget "alerter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C368E82A24AA4BC300A99358 /* Debug */,
+				C368E82B24AA4BC300A99358 /* Release */,
+				C368E82C24AA4BC300A99358 /* Profile */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
