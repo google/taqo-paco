@@ -13,6 +13,7 @@ import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
 import '../experiment_service_local.dart';
 import '../linux_daemon/linux_alarm_manager.dart' as linux_alarm_manager;
+import '../macos_daemon/macos_alarm_manager.dart' as macos_alarm_manager;
 import '../utils.dart';
 
 class TriggerEvent {
@@ -90,6 +91,8 @@ mixin EventTriggerSource {
 
             if (Platform.isLinux) {
               linux_alarm_manager.createNotificationWithTimeout(actionSpec);
+            } else if (Platform.isMacOS) {
+              macos_alarm_manager.createNotificationWithTimeout(actionSpec);
             }
             break;
           case PacoAction.NOTIFICATION_ACTION_CODE:
