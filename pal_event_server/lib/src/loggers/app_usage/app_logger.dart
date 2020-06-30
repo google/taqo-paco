@@ -106,7 +106,7 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
     if (data is Map && data.isNotEmpty) {
       // Log events
       final pacoEvents = await createLoggerPacoEvents(data, experimentsBeingLogged,
-          createAppUsagePacoEvent);
+          createAppUsagePacoEvent, appUsageGroupType);
       _eventsToSend.addAll(pacoEvents);
 
       // Handle triggers

@@ -93,7 +93,7 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
         for (var line in lines) {
           try {
             events.addAll(await createLoggerPacoEvents(jsonDecode(line), experimentsBeingLogged,
-                createCmdUsagePacoEvent));
+                createCmdUsagePacoEvent, cliGroupType));
           } catch (_) {
             // TODO jsonDecode can fail with special characters in line, e.g.
             // Need to escape \ inside strings, i.e. \ -> \\
