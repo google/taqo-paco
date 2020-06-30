@@ -4,6 +4,7 @@ import 'package:logging/logging.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/model/experiment_group.dart';
 import 'package:taqo_common/service/sync_service.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_common/util/zoned_date_time.dart';
@@ -23,7 +24,8 @@ typedef CreateEventFunc = Future<Event> Function(
     Experiment experiment, String groupname, Map<String, dynamic> response);
 
 Future<List<Event>> createLoggerPacoEvents(Map<String, dynamic> response,
-    List<ExperimentLoggerInfo> info, CreateEventFunc pacoEventCreator) async {
+    List<ExperimentLoggerInfo> info, CreateEventFunc pacoEventCreator,
+    GroupTypeEnum groupType) async {
   final events = <Event>[];
 
   final storageDir = DartFileStorage.getLocalStorageDir().path;
@@ -37,7 +39,9 @@ Future<List<Event>> createLoggerPacoEvents(Map<String, dynamic> response,
     }
 
     for (var g in e.groups) {
-      events.add(await pacoEventCreator(e, g.name, response));
+      if (g.groupType == groupType) {
+        events.add(await pacoEventCreator(e, g.name, response));
+      }
     }
   }
 

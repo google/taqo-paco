@@ -23,7 +23,7 @@ RETURN_VAL=$?;echo "{\"pid\":$$,\"cmd_raw\":\"$(history 1 | sed "s/^[ ]*[0-9]*[ 
 
 String getZshPreCmd(String dirPath) {
   const preCmd = r'''
-RETURN_VAL=$?;echo "{\"pid\":$$,\"cmd_raw\":$(history | tail -1 | sed "s/^[ ]*[0-9]*[ ]*//"),\"cmd_ret\":$RETURN_VAL}"''';
+RETURN_VAL=$?;echo "{\"pid\":$$,\"cmd_raw\":\"$(history | tail -1 | sed "s/^[ ]*[0-9]*[ ]*//")\",\"cmd_ret\":$RETURN_VAL}"''';
 
   final filePath = path.join(dirPath, _logfileName).replaceAll(r" ", r"\ ");
   return '${preCmd} >> ${filePath}';
