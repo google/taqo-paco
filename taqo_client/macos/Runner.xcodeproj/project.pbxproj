@@ -29,6 +29,12 @@
 		33D1A10422148B71006C7A3E /* FlutterMacOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 33D1A10322148B71006C7A3E /* FlutterMacOS.framework */; };
 		33D1A10522148B93006C7A3E /* FlutterMacOS.framework in Bundle Framework */ = {isa = PBXBuildFile; fileRef = 33D1A10322148B71006C7A3E /* FlutterMacOS.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		630B1A657994358960C31EDF /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B46DEA055892DFD7E89F54F /* Pods_Runner.framework */; };
+		C38218F724ABF53D00891B3C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C38218F624ABF53D00891B3C /* AppDelegate.swift */; };
+		C38218F924ABF53E00891B3C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C38218F824ABF53E00891B3C /* Assets.xcassets */; };
+		C38218FC24ABF53E00891B3C /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = C38218FA24ABF53E00891B3C /* MainMenu.xib */; };
+		C382190524ABF61900891B3C /* TaqoLauncher.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = C38218F424ABF53D00891B3C /* TaqoLauncher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C382190724ABF63300891B3C /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C382190624ABF63300891B3C /* ServiceManagement.framework */; };
+		C382190A24ABF72400891B3C /* taqo_daemon in CopyFiles */ = {isa = PBXBuildFile; fileRef = C382190824ABF71B00891B3C /* taqo_daemon */; };
 		C398031F24A3AB760015501A /* deepbark_trial.m4a in Resources */ = {isa = PBXBuildFile; fileRef = C398031E24A3AB760015501A /* deepbark_trial.m4a */; };
 		D73912F022F37F9E000D13A0 /* App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D73912EF22F37F9E000D13A0 /* App.framework */; };
 		D73912F222F3801D000D13A0 /* App.framework in Bundle Framework */ = {isa = PBXBuildFile; fileRef = D73912EF22F37F9E000D13A0 /* App.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -57,6 +63,26 @@
 			name = "Bundle Framework";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C382190324ABF5A000891B3C /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 6;
+			files = (
+				C382190A24ABF72400891B3C /* taqo_daemon in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C382190424ABF60F00891B3C /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Contents/Library/LoginItems;
+			dstSubfolderSpec = 1;
+			files = (
+				C382190524ABF61900891B3C /* TaqoLauncher.app in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -81,6 +107,14 @@
 		42272C26B671385D1A9176E7 /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		C38218F424ABF53D00891B3C /* TaqoLauncher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TaqoLauncher.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C38218F624ABF53D00891B3C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		C38218F824ABF53E00891B3C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		C38218FB24ABF53E00891B3C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C38218FD24ABF53E00891B3C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C38218FE24ABF53E00891B3C /* TaqoLauncher.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TaqoLauncher.entitlements; sourceTree = "<group>"; };
+		C382190624ABF63300891B3C /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
+		C382190824ABF71B00891B3C /* taqo_daemon */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = taqo_daemon; sourceTree = "<group>"; };
 		C398031E24A3AB760015501A /* deepbark_trial.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; name = deepbark_trial.m4a; path = ../../ios/Runner/deepbark_trial.m4a; sourceTree = "<group>"; };
 		D73912EF22F37F9E000D13A0 /* App.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = App.framework; path = Flutter/ephemeral/App.framework; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -91,8 +125,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				D73912F022F37F9E000D13A0 /* App.framework in Frameworks */,
+				C382190724ABF63300891B3C /* ServiceManagement.framework in Frameworks */,
 				33D1A10422148B71006C7A3E /* FlutterMacOS.framework in Frameworks */,
 				630B1A657994358960C31EDF /* Pods_Runner.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C38218F124ABF53D00891B3C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -115,6 +157,7 @@
 			children = (
 				33FAB671232836740065AC1E /* Runner */,
 				33CEB47122A05771004F2AC0 /* Flutter */,
+				C38218F524ABF53D00891B3C /* TaqoLauncher */,
 				33CC10EE2044A3C60003C045 /* Products */,
 				D73912EC22F37F3D000D13A0 /* Frameworks */,
 				3ECE5D8D877188522911ADD1 /* Pods */,
@@ -125,6 +168,7 @@
 			isa = PBXGroup;
 			children = (
 				33CC10ED2044A3C60003C045 /* taqo_client.app */,
+				C38218F424ABF53D00891B3C /* TaqoLauncher.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -174,13 +218,26 @@
 				21A62AA98D323E8564073B6A /* Pods-Runner.release.xcconfig */,
 				276CD9D84F62FF13459C48B9 /* Pods-Runner.profile.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		C38218F524ABF53D00891B3C /* TaqoLauncher */ = {
+			isa = PBXGroup;
+			children = (
+				C382190824ABF71B00891B3C /* taqo_daemon */,
+				C38218F624ABF53D00891B3C /* AppDelegate.swift */,
+				C38218F824ABF53E00891B3C /* Assets.xcassets */,
+				C38218FA24ABF53E00891B3C /* MainMenu.xib */,
+				C38218FD24ABF53E00891B3C /* Info.plist */,
+				C38218FE24ABF53E00891B3C /* TaqoLauncher.entitlements */,
+			);
+			path = TaqoLauncher;
 			sourceTree = "<group>";
 		};
 		D73912EC22F37F3D000D13A0 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				C382190624ABF63300891B3C /* ServiceManagement.framework */,
 				3B46DEA055892DFD7E89F54F /* Pods_Runner.framework */,
 			);
 			name = Frameworks;
@@ -200,6 +257,7 @@
 				33CC110E2044A8840003C045 /* Bundle Framework */,
 				3399D490228B24CF009A79C7 /* ShellScript */,
 				46693CF45747D7CDB275D469 /* [CP] Embed Pods Frameworks */,
+				C382190424ABF60F00891B3C /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -211,13 +269,31 @@
 			productReference = 33CC10ED2044A3C60003C045 /* taqo_client.app */;
 			productType = "com.apple.product-type.application";
 		};
+		C38218F324ABF53D00891B3C /* TaqoLauncher */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C382190224ABF53E00891B3C /* Build configuration list for PBXNativeTarget "TaqoLauncher" */;
+			buildPhases = (
+				C38218F024ABF53D00891B3C /* Sources */,
+				C38218F124ABF53D00891B3C /* Frameworks */,
+				C38218F224ABF53D00891B3C /* Resources */,
+				C382190324ABF5A000891B3C /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TaqoLauncher;
+			productName = TaqoLauncher;
+			productReference = C38218F424ABF53D00891B3C /* TaqoLauncher.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		33CC10E52044A3C60003C045 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0920;
+				LastSwiftUpdateCheck = 1130;
 				LastUpgradeCheck = 0930;
 				ORGANIZATIONNAME = "The Flutter Authors";
 				TargetAttributes = {
@@ -234,6 +310,9 @@
 					33CC111A2044C6BA0003C045 = {
 						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Manual;
+					};
+					C38218F324ABF53D00891B3C = {
+						CreatedOnToolsVersion = 11.3.1;
 					};
 				};
 			};
@@ -252,6 +331,7 @@
 			targets = (
 				33CC10EC2044A3C60003C045 /* Runner */,
 				33CC111A2044C6BA0003C045 /* Flutter Assemble */,
+				C38218F324ABF53D00891B3C /* TaqoLauncher */,
 			);
 		};
 /* End PBXProject section */
@@ -264,6 +344,15 @@
 				33CC10F32044A3C60003C045 /* Assets.xcassets in Resources */,
 				33CC10F62044A3C60003C045 /* MainMenu.xib in Resources */,
 				C398031F24A3AB760015501A /* deepbark_trial.m4a in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C38218F224ABF53D00891B3C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C38218F924ABF53E00891B3C /* Assets.xcassets in Resources */,
+				C38218FC24ABF53E00891B3C /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -357,6 +446,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C38218F024ABF53D00891B3C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C38218F724ABF53D00891B3C /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -375,6 +472,14 @@
 			);
 			name = MainMenu.xib;
 			path = Runner;
+			sourceTree = "<group>";
+		};
+		C38218FA24ABF53E00891B3C /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C38218FB24ABF53E00891B3C /* Base */,
+			);
+			name = MainMenu.xib;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -619,6 +724,103 @@
 			};
 			name = Release;
 		};
+		C38218FF24ABF53E00891B3C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = TaqoLauncher/TaqoLauncher.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_FILE = TaqoLauncher/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				OTHER_LDFLAGS = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.taqo.survey.TaqoLauncher;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		C382190024ABF53E00891B3C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = TaqoLauncher/TaqoLauncher.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_FILE = TaqoLauncher/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_FAST_MATH = YES;
+				OTHER_LDFLAGS = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.taqo.survey.TaqoLauncher;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		C382190124ABF53E00891B3C /* Profile */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = TaqoLauncher/TaqoLauncher.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_FILE = TaqoLauncher/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_FAST_MATH = YES;
+				OTHER_LDFLAGS = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.taqo.survey.TaqoLauncher;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Profile;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -648,6 +850,16 @@
 				33CC111C2044C6BA0003C045 /* Debug */,
 				33CC111D2044C6BA0003C045 /* Release */,
 				338D0CEB231458BD00FA5F75 /* Profile */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C382190224ABF53E00891B3C /* Build configuration list for PBXNativeTarget "TaqoLauncher" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C38218FF24ABF53E00891B3C /* Debug */,
+				C382190024ABF53E00891B3C /* Release */,
+				C382190124ABF53E00891B3C /* Profile */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
