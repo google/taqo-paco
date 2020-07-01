@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:logging/logging.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
@@ -14,9 +15,9 @@ import 'package:taqo_common/util/date_time_util.dart';
 
 import '../experiment_service_local.dart';
 import '../sqlite_database/sqlite_database.dart';
-import 'linux_notification_manager.dart' as linux_notification_manager;
+import 'notification_manager.dart' as notification_manager;
 
-final _logger = Logger('LinuxAlarmManager');
+final _logger = Logger('DaemonAlarmManager');
 
 const _sharedPrefsLastAlarmKey = 'lastScheduledAlarm';
 
@@ -43,7 +44,7 @@ void _notify(int alarmId) async {
     var i = 0;
     for (var a in allAlarms) {
       _logger.info('[${i++}] Showing ${a.time}');
-      linux_notification_manager.showNotification(a);
+      notification_manager.showNotification(a);
     }
 
     // Store last shown notification time
@@ -186,7 +187,8 @@ Future<void> cancelAll() async {
 void timeout(int id) async {
   final storage = await SqliteDatabase.get();
   _createMissedEvent(await storage.getNotification(id));
-  linux_notification_manager.cancelNotification(id);
+
+  notification_manager.cancelNotification(id);
 }
 
 void _createMissedEvent(NotificationHolder notification) async {

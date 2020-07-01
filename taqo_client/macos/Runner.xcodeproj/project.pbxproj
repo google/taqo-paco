@@ -51,6 +51,13 @@
 			remoteGlobalIDString = 33CC111A2044C6BA0003C045;
 			remoteInfo = FLX;
 		};
+		C368E83824AA4E3C00A99358 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 33CC10E52044A3C60003C045 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C368E82524AA4BC300A99358;
+			remoteInfo = alerter;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -318,6 +325,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				C368E83924AA4E3C00A99358 /* PBXTargetDependency */,
 				33CC11202044C79F0003C045 /* PBXTargetDependency */,
 			);
 			name = Runner;
@@ -547,6 +555,11 @@
 			isa = PBXTargetDependency;
 			target = 33CC111A2044C6BA0003C045 /* Flutter Assemble */;
 			targetProxy = 33CC111F2044C79F0003C045 /* PBXContainerItemProxy */;
+		};
+		C368E83924AA4E3C00A99358 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C368E82524AA4BC300A99358 /* alerter */;
+			targetProxy = C368E83824AA4E3C00A99358 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

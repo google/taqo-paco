@@ -12,8 +12,7 @@ import 'package:taqo_common/service/experiment_service_lite.dart';
 import 'package:taqo_common/service/sync_service.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 
-import 'linux_daemon/linux_daemon.dart' as linux_daemon;
-import 'macos_daemon/macos_daemon.dart' as macos_daemon;
+import 'daemon/daemon.dart' as daemon;
 import 'pal_server/pal_commands.dart' as pal_commands;
 import 'sqlite_database/sqlite_database.dart';
 import 'allowlist.dart';
@@ -80,102 +79,73 @@ class PALTespServer with TespRequestHandlerMixin {
 
   @override
   FutureOr<TespResponse> alarmSchedule() async {
-    if (Platform.isLinux) {
-      await linux_daemon.handleScheduleAlarm();
-    } else if (Platform.isMacOS) {
-      await macos_daemon.handleScheduleAlarm();
-    }
+    await daemon.handleScheduleAlarm();
     return TespResponseSuccess();
   }
 
   @override
   FutureOr<TespResponse> alarmAdd(ActionSpecification actionSpecification) async {
-    // On Linux, alarms and notifications are handled entirely in the
-    // linux_daemon. On MacOS (for now), taqo_client handles it
-    if (Platform.isMacOS) {
-      final database = await SqliteDatabase.get();
-      final id = await database.insertAlarm(actionSpecification);
-      return TespResponseAnswer(id);
-    }
+    // On Linux and MacOS, alarms and notifications are handled entirely
+    // in the daemon
     return TespResponseError('Unsupported platform for alarmAdd: ${Platform.operatingSystem}');
   }
 
   @override
   FutureOr<TespResponse> alarmCancel(int alarmId) async {
-    await linux_daemon.handleCancelAlarm(alarmId);
+    await daemon.handleCancelAlarm(alarmId);
     return TespResponseSuccess();
   }
 
   @override
   FutureOr<TespResponse> alarmRemove(int alarmId) async {
-    // On Linux, alarms and notifications are handled entirely in the
-    // linux_daemon. On MacOS (for now), taqo_client handles it
-    if (Platform.isMacOS) {
-      final database = await SqliteDatabase.get();
-      await database.removeAlarm(alarmId);
-      return TespResponseSuccess();
-    }
-    return TespResponseError('Unsupported platform for alarmAdd: ${Platform.operatingSystem}');
+    // On Linux and MacOS, alarms and notifications are handled entirely
+    // in the daemon
+    return TespResponseError('Unsupported platform for alarmRemove: ${Platform.operatingSystem}');
   }
 
   @override
   FutureOr<TespResponse> notificationCheckActive() async {
-    await linux_daemon.handleScheduleAlarm();
+    await daemon.handleScheduleAlarm();
     return TespResponseSuccess();
   }
 
   @override
   FutureOr<TespResponse> notificationAdd(NotificationHolder notification) async {
-    // On Linux, alarms and notifications are handled entirely in the
-    // linux_daemon. On MacOS (for now), taqo_client handles it
-    if (Platform.isMacOS) {
-      final database = await SqliteDatabase.get();
-      final id = await database.insertNotification(notification);
-      return TespResponseAnswer(id);
-    }
+    // On Linux and MacOS, alarms and notifications are handled entirely
+    // in the daemon
     return TespResponseError('Unsupported platform for notificationAdd: '
         '${Platform.operatingSystem}');
   }
 
   @override
   FutureOr<TespResponse> notificationCancel(int notificationId) async {
-    await linux_daemon.handleCancelNotification(notificationId);
+    await daemon.handleCancelNotification(notificationId);
     return TespResponseSuccess();
   }
 
   @override
   FutureOr<TespResponse> notificationCancelByExperiment(int experimentId) async {
-    await linux_daemon.handleCancelExperimentNotification(experimentId);
+    await daemon.handleCancelExperimentNotification(experimentId);
     return TespResponseSuccess();
   }
 
   @override
   FutureOr<TespResponse> notificationRemove(int notificationId) async {
-    // On Linux, alarms and notifications are handled entirely in the
-    // linux_daemon. On MacOS (for now), taqo_client handles it
-    if (Platform.isMacOS) {
-      final database = await SqliteDatabase.get();
-      await database.removeNotification(notificationId);
-      return TespResponseSuccess();
-    }
-    return TespResponseError('Unsupported platform for alarmAdd: ${Platform.operatingSystem}');
+    // On Linux and MacOS, alarms and notifications are handled entirely
+    // in the daemon
+    return TespResponseError('Unsupported platform for notificationRemove: ${Platform.operatingSystem}');
   }
 
   @override
   FutureOr<TespResponse> notificationRemoveAll() async {
-    // On Linux, alarms and notifications are handled entirely in the
-    // linux_daemon. On MacOS (for now), taqo_client handles it
-    if (Platform.isMacOS) {
-      final database = await SqliteDatabase.get();
-      await database.removeAllNotifications();
-      return TespResponseSuccess();
-    }
-    return TespResponseError('Unsupported platform for alarmAdd: ${Platform.operatingSystem}');
+    // On Linux and MacOS, alarms and notifications are handled entirely
+    // in the daemon
+    return TespResponseError('Unsupported platform for notificationRemoveAll: ${Platform.operatingSystem}');
   }
 
   @override
   FutureOr<TespResponse> createMissedEvent(Event event) async {
-    await linux_daemon.handleCreateMissedEvent(event);
+    await daemon.handleCreateMissedEvent(event);
     return TespResponseSuccess();
   }
 

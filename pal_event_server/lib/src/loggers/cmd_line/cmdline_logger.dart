@@ -82,6 +82,31 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
     }
   }
 
+  String _escapeRawCmd(String line) {
+    // [line]s look like this: {"pid":70372,"cmd_raw":"vim ~/.zshrc","cmd_ret":0}
+    const startTok = r'"cmd_raw":"';
+    const endTok = r'","cmd_ret"';
+    final start = line.indexOf(startTok) + startTok.length;
+    final end = line.indexOf(endTok);
+    final cmdRaw = line.substring(start, end);
+    final charCodes = cmdRaw.codeUnits;
+    final sb = StringBuffer();
+    for (final c in charCodes) {
+      // http://www.asciitable.com/
+      if (c < 0x20) {
+        sb.write(r'\u' + c.toRadixString(16).padLeft(4, '0'));
+      } else if (c == 0x22) {
+        sb.write(r'\"');
+      } else if (c == 0x5c) {
+        sb.write(r'\\');
+      } else {
+        sb.write(String.fromCharCode(c));
+      }
+    }
+
+    return line.substring(0, start) + sb.toString() + line.substring(end);
+  }
+
   Future<List<Event>> _readLoggedCommands() async {
     final events = <Event>[];
     try {
@@ -90,15 +115,13 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
         final lines = await file.readAsLines();
         // TODO race condition here
         await file.delete();
-        for (var line in lines) {
+        for (var rawLine in lines) {
+          final line = _escapeRawCmd(rawLine);
           try {
             events.addAll(await createLoggerPacoEvents(jsonDecode(line), experimentsBeingLogged,
                 createCmdUsagePacoEvent, cliGroupType));
-          } catch (_) {
-            // TODO jsonDecode can fail with special characters in line, e.g.
-            // Need to escape \ inside strings, i.e. \ -> \\
-            // Need to escape " inside strings, i.e. " -> \"
-            // Anything less than U+0020
+          } catch (e) {
+            _logger.warning('Error parsing command line: $rawLine: $e');
           }
         }
         return events;
