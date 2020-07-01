@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:taqo_common/net/google_auth.dart';
 import 'package:taqo_common/service/experiment_service_lite.dart';
@@ -48,6 +49,17 @@ void main() async {
   }
 
   WidgetsFlutterBinding.ensureInitialized();
+
+  // On macOS only (for now), check if taqo_daemon is running.
+  // If not, start it using native plugin channel
+  if (Platform.isMacOS) {
+    final tespConnected = await isTespConnected();
+    if (!tespConnected) {
+      final channel = MethodChannel("com.taqo.survey");
+      await channel.invokeMethod("startTespServer");
+    }
+  }
+
   LocalFileStorageFactory.initialize((fileName) => FlutterFileStorage(fileName),
       await FlutterFileStorage.getLocalStorageDir());
   await LoggingService.initialize(logFilePrefix: 'client-',

@@ -30,6 +30,15 @@ Future<TespFullClient> get tespClient async {
   return _completer.future;
 }
 
+Future<bool> isTespConnected() async {
+  if (_tespClient == null) return false;
+
+  return _tespClient.ping().then((TespResponse r) {
+    if (r is TespResponseError) return false;
+    return true;
+  });
+}
+
 Future<bool> _tryConnect(TespFullClient client) {
   return client.connect().then((_) {
     return true;

@@ -10,6 +10,7 @@ import path_provider_macos
 import sqflite
 import url_launcher_macos
 import taqo_email_plugin
+import macos_launch_daemon
 import taqo_time_plugin
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
@@ -18,5 +19,6 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   SqflitePlugin.register(with: registry.registrar(forPlugin: "SqflitePlugin"))
   UrlLauncherPlugin.register(with: registry.registrar(forPlugin: "UrlLauncherPlugin"))
   TaqoEmailPlugin.register(with: registry.registrar(forPlugin: "TaqoEmailPlugin"))
+  MacosLaunchDaemonPlugin.register(with: registry.registrar(forPlugin: "MacosLaunchDaemonPlugin"))
   TaqoTimePlugin.register(with: registry.registrar(forPlugin: "TaqoTimePlugin"))
 }
