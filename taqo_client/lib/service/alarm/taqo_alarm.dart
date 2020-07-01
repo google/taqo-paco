@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:logging/logging.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
@@ -15,8 +16,10 @@ import 'android_alarm_manager.dart' as android_alarm_manager;
 import 'flutter_local_notifications.dart' as flutter_local_notifications;
 import 'ios_notification_scheduler.dart' as ios_notification_scheduler;
 
+final _logger = Logger('TaqoAlarm');
+
 Future init() {
-  if (Platform.isLinux) {
+  if (platform_service.isTaqoDesktop) {
     return schedule(cancelAndReschedule: false);
   } else {
     return flutter_local_notifications.init().then((_) =>
@@ -36,18 +39,23 @@ Future schedule({bool cancelAndReschedule=true}) async {
   // TODO the calculate() API currently doesn't support using plugins
   if (Platform.isAndroid) {
     android_alarm_manager.scheduleNextNotification();
-  } else if (Platform.isIOS || Platform.isMacOS) {
+  } else if (Platform.isIOS) {
     if (cancelAndReschedule) {
       await flutter_local_notifications.cancelAllNotifications();
     }
     ios_notification_scheduler.schedule();
-  } else if (Platform.isLinux) {
+  }
+
+  if (platform_service.isTaqoDesktop) {
+    // While macOS still schedules notifications via Flutter (see #226),
+    // we still need to notify the PAL event server daemon so it can
+    // handle triggers
     try {
       platform_service.tespClient.then((tespClient) {
         tespClient.alarmSchedule();
       });
     } catch (e) {
-      print(e);
+      _logger.warning(e);
     }
   }
 }
@@ -55,16 +63,16 @@ Future schedule({bool cancelAndReschedule=true}) async {
 Future cancel(int id) async {
   if (Platform.isAndroid) {
     flutter_local_notifications.cancelNotification(id);
-  } else if (Platform.isIOS || Platform.isMacOS) {
+  } else if (Platform.isIOS) {
     await flutter_local_notifications.cancelNotification(id);
     await schedule(cancelAndReschedule: false);
-  } else if (Platform.isLinux) {
+  } else if (platform_service.isTaqoDesktop) {
     try {
       platform_service.tespClient.then((tespClient) {
         tespClient.notificationCancel(id);
       });
     } catch (e) {
-      print(e);
+      _logger.warning(e);
     }
   }
 }
@@ -72,16 +80,16 @@ Future cancel(int id) async {
 Future cancelForExperiment(Experiment experiment) async {
   if (Platform.isAndroid) {
     flutter_local_notifications.cancelForExperiment(experiment);
-  } else if (Platform.isIOS || Platform.isMacOS) {
+  } else if (Platform.isIOS) {
     await flutter_local_notifications.cancelForExperiment(experiment);
     await schedule(cancelAndReschedule: false);
-  } else if (Platform.isLinux) {
+  } else if (platform_service.isTaqoDesktop) {
     try {
       platform_service.tespClient.then((tespClient) {
         tespClient.notificationCancelByExperiment(experiment.id);
       });
     } catch (e) {
-      print(e);
+      _logger.warning(e);
     }
   }
 }
@@ -99,7 +107,7 @@ Future<void> openSurvey(String payload) async {
   final notificationHolder = await db.getNotification(id);
 
   if (notificationHolder == null) {
-    print('No holder for payload: $payload');
+    _logger.info('No holder for payload: $payload');
     return;
   }
 
@@ -120,8 +128,8 @@ Future<void> openSurvey(String payload) async {
     MyApp.navigatorKey.currentState.pushReplacementNamed(SurveyPage.routeName,
         arguments: [e, notificationHolder.experimentGroupName]);
   } on StateError catch (e, stack) {
-    print('StateError: $e');
-    print(stack);
+    _logger.warning('StateError: $e');
+    _logger.info(stack);
   }
 }
 

@@ -2,7 +2,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:logging/logging.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+final _logger = Logger('TaqoEmailPlugin');
 
 const _channelName = "taqo_email_plugin";
 const _sendEmailMethod = "send_email";
@@ -33,9 +36,9 @@ Future<void> sendEmail(String to, String experimentTitle) async {
             _subjectArg: subject,
           }
       );
-      print("Success sending email: $res");
+      _logger.info("Success sending email: $res");
     } on Exception catch (e) {
-      print("Failed sending email: $e");
+      _logger.warning("Failed sending email: $e");
     }
   }
 }

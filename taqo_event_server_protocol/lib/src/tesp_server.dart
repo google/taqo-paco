@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/model/notification_holder.dart';
 
 import 'tesp_message_socket.dart';
 import 'tesp_message.dart';
@@ -14,20 +16,25 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
   FutureOr<TespResponse> palAddEvents(List<Event> events);
   FutureOr<TespResponse> palPause();
   FutureOr<TespResponse> palResume();
-  FutureOr<TespResponse> palWhiteListDataOnly();
+  FutureOr<TespResponse> palAllowlistDataOnly();
   FutureOr<TespResponse> palAllData();
 
   FutureOr<TespResponse> alarmSchedule();
+  FutureOr<TespResponse> alarmAdd(ActionSpecification alarm);
   FutureOr<TespResponse> alarmCancel(int alarmId);
   FutureOr<TespResponse> alarmSelectAll();
   FutureOr<TespResponse> alarmSelectById(int alarmId);
+  FutureOr<TespResponse> alarmRemove(int alarmId);
 
   FutureOr<TespResponse> notificationCheckActive();
+  FutureOr<TespResponse> notificationAdd(NotificationHolder notification);
   FutureOr<TespResponse> notificationCancel(int notificationId);
   FutureOr<TespResponse> notificationCancelByExperiment(int experimentId);
   FutureOr<TespResponse> notificationSelectAll();
   FutureOr<TespResponse> notificationSelectById(int notificationId);
   FutureOr<TespResponse> notificationSelectByExperiment(int experimentId);
+  FutureOr<TespResponse> notificationRemove(int notificationId);
+  FutureOr<TespResponse> notificationRemoveAll();
 
   FutureOr<TespResponse> createMissedEvent(Event event);
 
@@ -50,14 +57,16 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
         return palPause();
       case TespRequestPalResume:
         return palResume();
-      case TespRequestPalWhiteListDataOnly:
-        return palWhiteListDataOnly();
+      case TespRequestPalAllowlistDataOnly:
+        return palAllowlistDataOnly();
       case TespRequestPalAllData:
         return palAllData();
       case TespRequestPing:
         return ping();
       case TespRequestAlarmSchedule:
         return alarmSchedule();
+      case TespRequestAlarmAdd:
+        return alarmAdd((tespRequest as TespRequestAlarmAdd).alarm);
       case TespRequestAlarmCancel:
         return alarmCancel((tespRequest as TespRequestAlarmCancel).alarmId);
       case TespRequestAlarmSelectAll:
@@ -65,8 +74,12 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
       case TespRequestAlarmSelectById:
         return alarmSelectById(
             (tespRequest as TespRequestAlarmSelectById).alarmId);
+      case TespRequestAlarmRemove:
+        return alarmRemove((tespRequest as TespRequestAlarmRemove).alarmId);
       case TespRequestNotificationCheckActive:
         return notificationCheckActive();
+      case TespRequestNotificationAdd:
+        return notificationAdd((tespRequest as TespRequestNotificationAdd).notification);
       case TespRequestNotificationCancel:
         return notificationCancel(
             (tespRequest as TespRequestNotificationCancel).notificationId);
@@ -83,6 +96,10 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
         return notificationSelectByExperiment(
             (tespRequest as TespRequestNotificationSelectByExperiment)
                 .experimentId);
+      case TespRequestNotificationRemove:
+        return notificationRemove((tespRequest as TespRequestNotificationRemove).notificationId);
+      case TespRequestNotificationRemoveAll:
+        return notificationRemoveAll();
       case TespRequestCreateMissedEvent:
         return createMissedEvent(
             (tespRequest as TespRequestCreateMissedEvent).event);

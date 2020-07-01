@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:logging/logging.dart';
 import 'package:taqo_client/service/experiment_paused_status_cache.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
@@ -12,6 +13,8 @@ import 'package:taqo_common/util/zoned_date_time.dart';
 
 import '../service/platform_service.dart' as platform_service;
 import 'alarm/taqo_alarm.dart' as taqo_alarm;
+
+final _logger = Logger('ExperimentService');
 
 class ExperimentService implements ExperimentServiceLite{
   final PacoApi _pacoApi;
@@ -63,8 +66,8 @@ class ExperimentService implements ExperimentServiceLite{
           try {
             experimentJsonList = jsonDecode(experimentJson);
           } catch (e) {
-            print('Error decoding Experiments response: $e');
-            print ('Response was: "$experimentJson"');
+            _logger.warning('Error decoding Experiments response: $e');
+            _logger.info ('Response was: "$experimentJson"');
             return <Experiment>[];
           }
           final experiments = <Experiment>[];
@@ -73,7 +76,7 @@ class ExperimentService implements ExperimentServiceLite{
             try {
               experiment = _makeExperimentFromJson(experimentJson);
             } catch (e) {
-              print('Error parsing experiment ${experimentJson['id']}: $e');
+              _logger.warning('Error parsing experiment ${experimentJson['id']}: $e');
               continue;
             }
             // Don't show Experiments already joined
@@ -96,8 +99,8 @@ class ExperimentService implements ExperimentServiceLite{
             var experimentJsonObj = jsonDecode(experimentJson).elementAt(0);
             return _makeExperimentFromJson(experimentJsonObj);
           } catch (e) {
-            print('Error decoding Experiments response: $e');
-            print ('Response was: "$experimentJson"');
+            _logger.warning('Error decoding Experiments response: $e');
+            _logger.info ('Response was: "$experimentJson"');
             return null;
           }
         });
@@ -114,8 +117,8 @@ class ExperimentService implements ExperimentServiceLite{
             var experimentJsonObj = jsonDecode(experimentJson).elementAt(0);
             return _makeExperimentFromJson(experimentJsonObj);
           } catch (e) {
-            print('Error decoding Experiments response: $e');
-            print ('Response was: "$experimentJson"');
+            _logger.warning('Error decoding Experiments response: $e');
+            _logger.info ('Response was: "$experimentJson"');
             return null;
           }
         });
@@ -135,8 +138,8 @@ class ExperimentService implements ExperimentServiceLite{
           try {
             experimentJsonList = jsonDecode(experimentJson);
           } catch (e) {
-            print('Error decoding Experiments response: $e');
-            print ('Response was: "$experimentJson"');
+            _logger.warning('Error decoding Experiments response: $e');
+            _logger.info ('Response was: "$experimentJson"');
             return <Experiment>[];
           }
           final experiments = <Experiment>[];
@@ -169,6 +172,12 @@ class ExperimentService implements ExperimentServiceLite{
       case PacoEventType.EXPERIMENT_STOP:
         event.responses["joined"] = "false";
         break;
+      case PacoEventType.EXPERIMENT_PAUSE:
+        event.responses["paused"] = "true";
+        break;
+      case PacoEventType.EXPERIMENT_RESUME:
+        event.responses["paused"] = "false";
+        break;
       case PacoEventType.SCHEDULE_EDIT:
       default:
         // Nothing for now
@@ -190,10 +199,17 @@ class ExperimentService implements ExperimentServiceLite{
 
   bool isJoined(Experiment experiment) => _joined.containsKey(experiment.id);
 
+  Future<void> setExperimentPausedStatus(Experiment experiment, bool paused) async {
+    await _pausedStatusCache.setPaused(experiment, paused);
+    final db = await platform_service.databaseImpl;
+    db.insertEvent(_createPacoEvent(experiment, paused ? PacoEventType.EXPERIMENT_PAUSE : PacoEventType.EXPERIMENT_RESUME));
+    taqo_alarm.schedule();
+  }
+
   void stopExperiment(Experiment experiment) async {
     _pausedStatusCache.removeExperiment(experiment);
     _joined.remove(experiment.id);
-    saveJoinedExperiments();
+    await saveJoinedExperiments();
     final db = await platform_service.databaseImpl;
     db.insertEvent(_createPacoEvent(experiment, PacoEventType.EXPERIMENT_STOP));
 
@@ -251,6 +267,7 @@ class ExperimentService implements ExperimentServiceLite{
 
 enum PacoEventType {
   EXPERIMENT_JOIN, SCHEDULE_EDIT, EXPERIMENT_STOP,
+  EXPERIMENT_PAUSE, EXPERIMENT_RESUME
 }
 
 class InvitationResponse extends PacoResponse {

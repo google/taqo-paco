@@ -16,13 +16,17 @@ class LoggingService {
   static String _logFileName;
   static File _logFile;
   static IOSink __logSink;
-  static final Glob _logGlob = Glob('*.log');
+  static Glob _logGlob;
   static bool _outputsToStdout;
+  static String _logFilePrefix = '';
 
   // This init() function must be called before any logging activity and after
   // LocalFileStorageFactory is initialized
-  static Future<void> initialize({bool outputsToStdout = true}) async {
+  static Future<void> initialize({String logFilePrefix = '',
+    bool outputsToStdout = true}) async {
     _outputsToStdout = outputsToStdout;
+    _logFilePrefix = logFilePrefix;
+    _logGlob = Glob('${_logFilePrefix}*.log');
     if (!LocalFileStorageFactory.isInitialized) {
       throw StateError("LoggingService must be initialized after LocalFileStorageFactory.");
     }
@@ -38,7 +42,7 @@ class LoggingService {
 
   // log file name format is yyyy-MM-dd.log
   static String _getCurrentLogFileName() =>
-      '${DateTime.now().toUtc().toIso8601String().substring(0, _ISO8601_INDEX_DAY)}.log';
+      '$_logFilePrefix${DateTime.now().toUtc().toIso8601String().substring(0, _ISO8601_INDEX_DAY)}.log';
   static IOSink get _logSink {
     var logFileName = _getCurrentLogFileName();
     if (logFileName != _logFileName) {

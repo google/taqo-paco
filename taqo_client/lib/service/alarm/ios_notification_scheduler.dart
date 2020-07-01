@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:logging/logging.dart';
 import 'package:taqo_common/model/notification_holder.dart';
 import 'package:taqo_common/scheduling/action_schedule_generator.dart';
 import 'package:taqo_common/storage/esm_signal_storage.dart';
@@ -9,6 +10,8 @@ import '../../storage/flutter_file_storage.dart';
 import '../experiment_service.dart';
 import 'flutter_local_notifications.dart' as flutter_local_notifications;
 import 'taqo_alarm.dart' as taqo_alarm;
+
+final _logger = Logger('IosNotificationScheduler');
 
 const _maxNotifications = 64;
 
@@ -29,7 +32,7 @@ Future<int> _clearExpiredNotifications() async {
 
 Future schedule() async {
   final count = _maxNotifications - (await _clearExpiredNotifications());
-  print('Scheduling $count notification(s)');
+  _logger.info('Scheduling $count notification(s)');
 
   // Find last already scheduled and start scheduling from there
   final db = await platform_service.databaseImpl;

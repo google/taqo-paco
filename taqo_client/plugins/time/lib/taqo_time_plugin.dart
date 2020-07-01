@@ -4,6 +4,9 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:logging/logging.dart';
+
+final _logger = Logger('TaqoTimePlugin');
 
 const _channel = MethodChannel('taqo_time_plugin');
 const _backgroundName = 'com.taqo.survey/taqo_time_plugin_background';
@@ -32,7 +35,7 @@ void _timeChangedCallbackDispatcher() {
     final closure = PluginUtilities.getCallbackFromHandle(handle);
 
     if (closure == null) {
-      print('Fatal: could not find callback');
+      _logger.severe('Fatal: could not find callback');
       exit(-1);
     }
 

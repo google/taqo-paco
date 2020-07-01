@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:logging/logging.dart';
 
@@ -12,7 +13,7 @@ import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 
 import '../service/platform_service.dart' as global;
 
-final logger = Logger('RemoteDatabase');
+final _logger = Logger('RemoteDatabase');
 
 /// Desktop clients use the PAL event server for all database functions over IPC
 class RemoteDatabase extends BaseDatabase {
@@ -41,19 +42,23 @@ class RemoteDatabase extends BaseDatabase {
 
   @override
   Future<void> insertEvent(Event event) {
-    global.tespClient.then((tespClient) async {
+    return global.tespClient.then((tespClient) async {
       tespClient.palAddEventJson(event.toJson());
     });
   }
 
   @override
   Future<int> insertAlarm(ActionSpecification actionSpecification) {
-    // no-op on desktop
+    // On Linux and MacOS, alarms and notifications are handled entirely
+    // in the daemon
+    return Future.value(-1);
   }
 
   @override
   Future<int> insertNotification(NotificationHolder notificationHolder) {
-    // no-op on desktop
+    // On Linux and MacOS, alarms and notifications are handled entirely
+    // in the daemon
+    return Future.value(-1);
   }
 
   @override
@@ -82,7 +87,10 @@ class RemoteDatabase extends BaseDatabase {
     return global.tespClient.then((tespClient) async {
       final TespResponseAnswer response =
           await tespClient.notificationSelectById(id);
-      return NotificationHolder.fromJson(jsonDecode(response.payload));
+      if (response != null) {
+        return NotificationHolder.fromJson(jsonDecode(response.payload));
+      }
+      return null;
     });
   }
 
@@ -109,17 +117,23 @@ class RemoteDatabase extends BaseDatabase {
 
   @override
   Future<void> removeAlarm(int id) {
-    // no-op on desktop
+    // On Linux and MacOS, alarms and notifications are handled entirely
+    // in the daemon
+    return Future.value();
   }
 
   @override
   Future<void> removeNotification(int id) {
-    // no-op on desktop
+    // On Linux and MacOS, alarms and notifications are handled entirely
+    // in the daemon
+    return Future.value();
   }
 
   @override
   Future<void> removeAllNotifications() {
-    // no-op on desktop
+    // On Linux and MacOS, alarms and notifications are handled entirely
+    // in the daemon
+    return Future.value();
   }
 
   @override
@@ -137,7 +151,7 @@ class RemoteDatabase extends BaseDatabase {
     await global.tespClient.then((tespClient) async {
       final TespResponse response = await tespClient.experimentSaveJoined(experiments);
       if (response is TespResponseError) {
-        logger.warning('$response');
+        _logger.warning('$response');
       }
     });
   }
@@ -147,7 +161,7 @@ class RemoteDatabase extends BaseDatabase {
     return global.tespClient.then((tespClient) async {
       final TespResponse response = await tespClient.experimentSelectById(experimentId);
       if (response is TespResponseError) {
-        logger.warning('$response');
+        _logger.warning('$response');
         return null;
       } else {
         return Experiment.fromJson(((response as TespResponseAnswer).payload));
@@ -160,7 +174,7 @@ class RemoteDatabase extends BaseDatabase {
     return global.tespClient.then((tespClient) async {
       final TespResponse response = await tespClient.experimentSelectJoined();
       if (response is TespResponseError) {
-        logger.warning('$response');
+        _logger.warning('$response');
         return <Experiment>[];
       } else {
         return (((response as TespResponseAnswer).payload) as List)
@@ -174,7 +188,7 @@ class RemoteDatabase extends BaseDatabase {
     return global.tespClient.then((tespClient) async {
       final TespResponse response = await tespClient.experimentGetPausedStatuses(experiments.toList());
       if (response is TespResponseError) {
-        logger.warning('$response');
+        _logger.warning('$response');
         return <int, bool>{};
       } else {
         return (((response as TespResponseAnswer).payload) as Map)
@@ -188,7 +202,7 @@ class RemoteDatabase extends BaseDatabase {
     await global.tespClient.then((tespClient) async {
       final TespResponse response = await tespClient.experimentSetPausedStatus(experiment, paused);
       if (response is TespResponseError) {
-        logger.warning('$response');
+        _logger.warning('$response');
       }
     });
   }

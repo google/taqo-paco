@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
 
 import 'action_trigger.dart';
 import 'experiment.dart';
@@ -19,9 +20,12 @@ class ActionSpecification implements Comparable<ActionSpecification> {
   PacoNotificationAction action;
   int actionTriggerSpecId;
 
+  @visibleForTesting
+  ActionSpecification.empty();
+
   ActionSpecification(this.time, this.experiment, this.experimentGroup, this.actionTrigger,
       this.action, this.actionTriggerSpecId) {
-    if (action?.timeout == null) {
+    if (action != null && action.timeout == null) {
       action.timeout = 59;
     }
     timeUTC = time.toUtc();

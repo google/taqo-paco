@@ -9,7 +9,7 @@ import 'package:taqo_common/net/paco_api.dart';
 import 'package:taqo_common/service/experiment_service_lite.dart';
 import 'package:taqo_common/storage/base_database.dart';
 
-final logger = Logger('SyncService');
+final _logger = Logger('SyncService');
 
 class SyncEvent {}
 
@@ -48,17 +48,13 @@ class SyncService {
   static List<EventSaveOutcome> _parseSyncResponse(PacoResponse response) {
     final outcomes = <EventSaveOutcome>[];
     try {
-      //print(response.body);
       final List responseOutcomes = jsonDecode(response.body);
-      //print(responseOutcomes);
       for (var json in responseOutcomes) {
-        //print(json);
         outcomes.add(EventSaveOutcome.fromJson(json));
       }
     } catch (e) {
-      print(e);
+      _logger.warning(e);
     }
-    //print(outcomes);
     return outcomes;
   }
 
@@ -69,7 +65,7 @@ class SyncService {
       if (outcomes[i].status) {
         uploaded.add(allEvents[i]);
       } else {
-        logger.warning('Event failed to upload: ${outcomes[i].errorMessage}'
+        _logger.warning('Event failed to upload: ${outcomes[i].errorMessage}'
             'Event was: ${allEvents[i].toString()}');
       }
     }
@@ -77,7 +73,7 @@ class SyncService {
   }
 
   static Future<bool> __syncData() async {
-    logger.info("Start syncing data...");
+    _logger.info("Start syncing data...");
     final db = await DatabaseFactory.makeDatabaseOrFuture();
     final events = await db.getUnuploadedEvents();
     final pacoApi = PacoApi();
@@ -93,22 +89,22 @@ class SyncService {
         if (outcomes.length == events.length) {
           final eventList = events.toList();
           final uploadedEvents = _getUploadedEvents(eventList, outcomes);
-          logger.info('Uploaded ${uploadedEvents.length} $eventType.');
+          _logger.info('Uploaded ${uploadedEvents.length} $eventType.');
           await db
               .markEventsAsUploaded(_getUploadedEvents(eventList, outcomes));
         } else {
-          logger.warning(
+          _logger.warning(
               'Event upload result length differs from number of $eventType uploaded');
         }
-        logger.info('Syncing $eventType complete.');
+        _logger.info('Syncing $eventType complete.');
         return true;
       } else if (response.isFailure) {
-        logger.warning('Could not complete upload of $eventType'
+        _logger.warning('Could not complete upload of $eventType'
             'because of the following error: '
             '${response.body}\n');
         return false;
       } else {
-        logger.warning('Could not complete upload of $eventType'
+        _logger.warning('Could not complete upload of $eventType'
             'The server returns the following response: '
             '${response.statusCode} ${response.statusMsg}\n${response.body}\n');
         return false;
@@ -131,7 +127,7 @@ class SyncService {
           privateEvents.add(event);
         }
       }
-      logger.info(
+      _logger.info(
           'Found ${publicEvents.length} public events and ${privateEvents.length} private events to upload.');
 
       FutureOr<bool> resultPublicFuture = publicEvents.length > 0
@@ -145,7 +141,7 @@ class SyncService {
           : true;
       return (await resultPrivateFuture) && (await resultPublicFuture);
     } else {
-      logger.info('There is no unsynced data.');
+      _logger.info('There is no unsynced data.');
       return true;
     }
   }

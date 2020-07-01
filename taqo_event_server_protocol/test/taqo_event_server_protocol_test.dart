@@ -3,9 +3,10 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
-import 'package:taqo_event_server_protocol/src/tesp_codec.dart';
+import 'package:taqo_common/model/notification_holder.dart';
 import 'package:taqo_event_server_protocol/src/tesp_message_socket.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 import 'package:test/test.dart';
@@ -16,17 +17,22 @@ const _stringAddEvents = 'addEvents';
 const _stringPause = 'pause';
 const _stringResume = 'resume';
 const _stringAllData = 'allData';
-const _stringWhiteListDataOnly = 'whiteListDataOnly';
+const _stringAllowlistDataOnly = 'allowlistDataOnly';
 const _stringAlarmSchedule = 'alarmSchedule';
+const _stringAlarmAdd = 'addAlarm';
 const _stringAlarmCancel = 'alarmCancel';
 const _stringAlarmSelectAll = 'alarmSelectAll';
 const _stringAlarmSelectById = 'alarmSelectById';
+const _stringAlarmRemove = 'alarmRemove';
 const _stringNotificationCheckActive = 'notificationCheckActive';
+const _stringNotificationAdd = 'addNotification';
 const _stringNotificationCancel = 'notificationCancel';
 const _stringNotificationCancelByExperiment = 'notificationCancelByExperiment';
 const _stringNotificationSelectAll = 'notificationSelectAll';
 const _stringNotificationSelectById = 'notificationSelectById';
 const _stringNotificationSelectByExperiment = 'notificationSelectByExperiment';
+const _stringNotificationRemove = 'notificationRemove';
+const _stringNotificationRemoveAll = 'notificationRemoveAll';
 const _stringCreateMissedEvent = 'createMissedEvent';
 const _stringExperimentSaveJoined = 'experimentSaveJoined';
 const _stringExperimentSelectJoined = 'experimentSelectJoined';
@@ -79,11 +85,11 @@ void main() {
       await expectLater(tespStream,
           emits(equalsTespMessage(TespResponseAnswer(_stringPause))));
       expect(server.isPaused, isTrue);
-      tespSocket.add(TespRequestPalWhiteListDataOnly());
+      tespSocket.add(TespRequestPalAllowlistDataOnly());
       await expectLater(
           tespStream,
           emits(
-              equalsTespMessage(TespResponseAnswer(_stringWhiteListDataOnly))));
+              equalsTespMessage(TespResponseAnswer(_stringAllowlistDataOnly))));
       expect(server.isAllData, isFalse);
       await tespSocket.close();
       await expectLater(tespStream, emitsDone);
@@ -93,7 +99,7 @@ void main() {
       var requests = [
         createDummyTespRequestAddEvent('1'),
         createDummyTespRequestAddEvent('2'),
-        TespRequestPalWhiteListDataOnly(),
+        TespRequestPalAllowlistDataOnly(),
         createDummyTespRequestAddEvent('3'),
         TespRequestPalPause(),
         createDummyTespRequestAddEvent('4'),
@@ -103,15 +109,22 @@ void main() {
         TespRequestPalAllData(),
         createDummyTespRequestAddEvent('7'),
         TespRequestAlarmSchedule(),
+        createDummyTespRequestAddAlarm(DateTime(2000, 1, 2, 3, 4, 5)),
+        createDummyTespRequestAddAlarm(DateTime(2020, 3, 14, 15, 9, 26)),
         TespRequestAlarmCancel(8),
         TespRequestAlarmSelectAll(),
         TespRequestAlarmSelectById(9),
+        TespRequestAlarmRemove(18),
         TespRequestNotificationCheckActive(),
+        createDummyTespRequestAddNotification(19),
+        createDummyTespRequestAddNotification(20),
         TespRequestNotificationCancel(10),
         TespRequestNotificationCancelByExperiment(11),
         TespRequestNotificationSelectAll(),
         TespRequestNotificationSelectById(12),
         TespRequestNotificationSelectByExperiment(13),
+        TespRequestNotificationRemove(21),
+        TespRequestNotificationRemoveAll(),
         TespRequestCreateMissedEvent(Event()..experimentName = '14'),
         TespRequestExperimentSaveJoined([Experiment()..title='15', Experiment()..title='16']),
         TespRequestExperimentSelectJoined(),
@@ -122,7 +135,7 @@ void main() {
       var responses = [
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|1'),
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|2'),
-        TespResponseAnswer(_stringWhiteListDataOnly),
+        TespResponseAnswer(_stringAllowlistDataOnly),
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|3'),
         TespResponseAnswer(_stringPause),
         TespResponsePaused(),
@@ -132,15 +145,22 @@ void main() {
         TespResponseAnswer(_stringAllData),
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|7'),
         TespResponseAnswer('${_stringAlarmSchedule}'),
+        TespResponseAnswer('${_stringAlarmAdd}: 2000-01-02 03:04:05.000'),
+        TespResponseAnswer('${_stringAlarmAdd}: 2020-03-14 15:09:26.000'),
         TespResponseAnswer('${_stringAlarmCancel}: 8'),
         TespResponseAnswer('${_stringAlarmSelectAll}'),
         TespResponseAnswer('${_stringAlarmSelectById}: 9'),
+        TespResponseAnswer('${_stringAlarmRemove}: 18'),
         TespResponseAnswer('${_stringNotificationCheckActive}'),
+        TespResponseAnswer('${_stringNotificationAdd}: 19'),
+        TespResponseAnswer('${_stringNotificationAdd}: 20'),
         TespResponseAnswer('${_stringNotificationCancel}: 10'),
         TespResponseAnswer('${_stringNotificationCancelByExperiment}: 11'),
         TespResponseAnswer('${_stringNotificationSelectAll}'),
         TespResponseAnswer('${_stringNotificationSelectById}: 12'),
         TespResponseAnswer('${_stringNotificationSelectByExperiment}: 13'),
+        TespResponseAnswer('${_stringNotificationRemove}: 21'),
+        TespResponseAnswer(_stringNotificationRemoveAll),
         TespResponseAnswer('${_stringCreateMissedEvent}: 14'),
         TespResponseAnswer('${_stringExperimentSaveJoined}: 15|16'),
         TespResponseAnswer(_stringExperimentSelectJoined),
@@ -527,7 +547,7 @@ void main() {
       var requests = [
         createDummyTespRequestAddEvent('1'),
         createDummyTespRequestAddEvent('2'),
-        TespRequestPalWhiteListDataOnly(),
+        TespRequestPalAllowlistDataOnly(),
         createDummyTespRequestAddEvent('3'),
         TespRequestPalPause(),
         createDummyTespRequestAddEvent('4'),
@@ -537,15 +557,22 @@ void main() {
         TespRequestPalAllData(),
         createDummyTespRequestAddEvent('7'),
         TespRequestAlarmSchedule(),
+        createDummyTespRequestAddAlarm(DateTime(2000, 1, 2, 3, 4, 5)),
+        createDummyTespRequestAddAlarm(DateTime(2020, 3, 14, 15, 9, 26)),
         TespRequestAlarmCancel(8),
         TespRequestAlarmSelectAll(),
         TespRequestAlarmSelectById(9),
+        TespRequestAlarmRemove(18),
         TespRequestNotificationCheckActive(),
+        createDummyTespRequestAddNotification(19),
+        createDummyTespRequestAddNotification(20),
         TespRequestNotificationCancel(10),
         TespRequestNotificationCancelByExperiment(11),
         TespRequestNotificationSelectAll(),
         TespRequestNotificationSelectById(12),
         TespRequestNotificationSelectByExperiment(13),
+        TespRequestNotificationRemove(21),
+        TespRequestNotificationRemoveAll(),
         TespRequestCreateMissedEvent(Event()..experimentName = '14'),
         TespRequestExperimentSaveJoined([Experiment()..title='15', Experiment()..title='16']),
         TespRequestExperimentSelectJoined(),
@@ -556,7 +583,7 @@ void main() {
       var responses = [
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|1'),
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|2'),
-        TespResponseAnswer(_stringWhiteListDataOnly),
+        TespResponseAnswer(_stringAllowlistDataOnly),
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|3'),
         TespResponseAnswer(_stringPause),
         TespResponsePaused(),
@@ -566,15 +593,22 @@ void main() {
         TespResponseAnswer(_stringAllData),
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|7'),
         TespResponseAnswer('${_stringAlarmSchedule}'),
+        TespResponseAnswer('${_stringAlarmAdd}: 2000-01-02 03:04:05.000'),
+        TespResponseAnswer('${_stringAlarmAdd}: 2020-03-14 15:09:26.000'),
         TespResponseAnswer('${_stringAlarmCancel}: 8'),
         TespResponseAnswer('${_stringAlarmSelectAll}'),
         TespResponseAnswer('${_stringAlarmSelectById}: 9'),
+        TespResponseAnswer('${_stringAlarmRemove}: 18'),
         TespResponseAnswer('${_stringNotificationCheckActive}'),
+        TespResponseAnswer('${_stringNotificationAdd}: 19'),
+        TespResponseAnswer('${_stringNotificationAdd}: 20'),
         TespResponseAnswer('${_stringNotificationCancel}: 10'),
         TespResponseAnswer('${_stringNotificationCancelByExperiment}: 11'),
         TespResponseAnswer('${_stringNotificationSelectAll}'),
         TespResponseAnswer('${_stringNotificationSelectById}: 12'),
         TespResponseAnswer('${_stringNotificationSelectByExperiment}: 13'),
+        TespResponseAnswer('${_stringNotificationRemove}: 21'),
+        TespResponseAnswer(_stringNotificationRemoveAll),
         TespResponseAnswer('${_stringCreateMissedEvent}: 14'),
         TespResponseAnswer('${_stringExperimentSaveJoined}: 15|16'),
         TespResponseAnswer(_stringExperimentSelectJoined),
@@ -612,6 +646,18 @@ TespRequestPalAddEvents createDummyTespRequestAddEvent(String string) {
     Event()..experimentName = _stringDummy,
     Event()..experimentName = string
   ]);
+}
+
+TespRequestAlarmAdd createDummyTespRequestAddAlarm(DateTime time) {
+  return TespRequestAlarmAdd(
+    ActionSpecification.empty()..time = time
+  );
+}
+
+TespRequestNotificationAdd createDummyTespRequestAddNotification(int id) {
+  return TespRequestNotificationAdd(
+    NotificationHolder.empty()..id = id
+  );
 }
 
 class TestingEventServer with TespRequestHandlerMixin {
@@ -663,14 +709,26 @@ class TestingEventServer with TespRequestHandlerMixin {
   }
 
   @override
-  TespResponse palWhiteListDataOnly() {
+  TespResponse palAllowlistDataOnly() {
     isAllData = false;
-    return TespResponseAnswer(_stringWhiteListDataOnly);
+    return TespResponseAnswer(_stringAllowlistDataOnly);
   }
 
   @override
   Future<TespResponse> alarmCancel(int alarmId) {
     return Future.value(TespResponseAnswer('$_stringAlarmCancel: $alarmId'));
+  }
+
+  @override
+  Future<TespResponse> alarmAdd(ActionSpecification alarm) async {
+    await Future.delayed(Duration(milliseconds: 200));
+    return TespResponseAnswer(
+        '${_stringAlarmAdd}: ${alarm.time}');
+  }
+
+  @override
+  Future<TespResponse> alarmRemove(int alarmId) {
+    return Future.value(TespResponseAnswer('$_stringAlarmRemove: $alarmId'));
   }
 
   @override
@@ -696,6 +754,13 @@ class TestingEventServer with TespRequestHandlerMixin {
   }
 
   @override
+  Future<TespResponse> notificationAdd(NotificationHolder notification) async {
+    await Future.delayed(Duration(milliseconds: 200));
+    return TespResponseAnswer(
+        '${_stringNotificationAdd}: ${notification.id}');
+  }
+
+ @override
   Future<TespResponse> notificationCancel(int notificationId) {
     return Future.value(
         TespResponseAnswer('$_stringNotificationCancel: $notificationId'));
@@ -727,6 +792,17 @@ class TestingEventServer with TespRequestHandlerMixin {
   Future<TespResponse> notificationSelectById(int notificationId) {
     return Future.value(
         TespResponseAnswer('$_stringNotificationSelectById: $notificationId'));
+  }
+
+ @override
+  Future<TespResponse> notificationRemove(int notificationId) {
+    return Future.value(
+        TespResponseAnswer('$_stringNotificationRemove: $notificationId'));
+  }
+
+ @override
+  Future<TespResponse> notificationRemoveAll() {
+    return Future.value(TespResponseAnswer('$_stringNotificationRemoveAll'));
   }
 
   @override

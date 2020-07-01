@@ -1,5 +1,5 @@
 #include "window_configuration.h"
 
-const char *kFlutterWindowTitle = "taqo_client";
-const unsigned int kFlutterWindowWidth = 1280;
-const unsigned int kFlutterWindowHeight = 720;
+const char *kFlutterWindowTitle = "Taqo";
+const unsigned int kFlutterWindowWidth = 1024;
+const unsigned int kFlutterWindowHeight = 768;

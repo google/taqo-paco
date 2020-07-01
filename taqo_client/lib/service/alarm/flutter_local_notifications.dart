@@ -2,18 +2,25 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:logging/logging.dart';
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 import '../../service/platform_service.dart' as platform_service;
 import 'taqo_alarm.dart' as taqo_alarm;
 
-const _ANDROID_NOTIFICATION_CHANNEL_ID = "com.taqo.survey.taqosurvey.NOTIFICATIONS";
-const _ANDROID_NOTIFICATION_CHANNEL_NAME = "Experiment Reminders";
-const _ANDROID_NOTIFICATION_CHANNEL_DESC = "Reminders to participate in Experiments";
-const _ANDROID_ICON = "paco256";
-const _ANDROID_SOUND = "deepbark_trial";
+final _logger = Logger('FlutterLocalNotifications');
+
+const _androidSoundResource = RawResourceAndroidNotificationSound("deepbark_trial");
+const _appleSoundFile = "deepbark_trial.m4a";
+
+const _androidNotificationChannelId = "com.taqo.survey.taqosurvey.NOTIFICATIONS";
+const _androidNotificationChannelName = "Experiment Reminders";
+const _androidNotificationChannelDesc = "Reminders to participate in Experiments";
+const _androidIconResource = "paco256";
 
 final _plugin = FlutterLocalNotificationsPlugin();
 
@@ -21,7 +28,7 @@ final _notificationHandledStream = StreamController<String>();
 
 /// The callback when a notification is tapped by the user
 void _handleNotification(String payload) async {
-  print('Handle $payload');
+  _logger.info('Handle $payload');
   taqo_alarm.openSurvey(payload);
 }
 
@@ -61,26 +68,29 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
   final id = await db.insertNotification(notificationHolder);
 
   final androidDetails = AndroidNotificationDetails(
-    _ANDROID_NOTIFICATION_CHANNEL_ID,
-    _ANDROID_NOTIFICATION_CHANNEL_NAME,
-    _ANDROID_NOTIFICATION_CHANNEL_DESC,
-    sound: _ANDROID_SOUND,
+    _androidNotificationChannelId,
+    _androidNotificationChannelName,
+    _androidNotificationChannelDesc,
+    sound: _androidSoundResource,
   );
   final iOSDetails = IOSNotificationDetails(
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
-      sound: 'deepbark_trial.m4a');
+      sound: _appleSoundFile);
   final macOSDetails = MacOSNotificationDetails(
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
-      sound: 'deepbark_trial.m4a');
-  final details = NotificationDetails(androidDetails, iOSDetails, macOSDetails);
+      sound: _appleSoundFile);
+  final details = NotificationDetails(android: androidDetails, iOS: iOSDetails, macOS: macOSDetails);
 
   if (when != null) {
-    await _plugin.schedule(
-        id, actionSpec.experiment.title, notificationHolder.message, when, details,
+    // Because system time zone changes trigger re-scheduling, we can always assume local here
+    final tzWhen = tz.TZDateTime.local(when.year, when.month, when.day, when.hour, when.minute, when.second);
+    await _plugin.zonedSchedule(
+        id, actionSpec.experiment.title, notificationHolder.message, tzWhen, details,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.wallClockTime,
         payload: "$id", androidAllowWhileIdle: true);
   } else {
     await _plugin.show(
@@ -94,18 +104,17 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
 Future init() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final initSettingsAndroid = AndroidInitializationSettings(_ANDROID_ICON);
+  tz.initializeTimeZones();
+
+  final initSettingsAndroid = AndroidInitializationSettings(_androidIconResource);
   final initSettingsIOS = IOSInitializationSettings(
       onDidReceiveLocalNotification: (int id, String title, String body, String payload) async {
         _notificationHandledStream.add(payload);
       });
-  final initSettingsMacOS = MacOSInitializationSettings(
-      onDidReceiveLocalNotification: (int id, String title, String body, String payload) async {
-        _notificationHandledStream.add(payload);
-      });
+  final initSettingsMacOS = MacOSInitializationSettings();
 
   final initSettings = InitializationSettings(
-      initSettingsAndroid, initSettingsIOS, initSettingsMacOS);
+      android: initSettingsAndroid, iOS: initSettingsIOS, macOS: initSettingsMacOS);
   await _plugin.initialize(initSettings, onSelectNotification: (String payload) async {
     _notificationHandledStream.add(payload);
   });
@@ -122,7 +131,7 @@ Future<NotificationAppLaunchDetails> get launchDetails =>
 /// Show a notification now
 Future<int> showNotification(ActionSpecification actionSpec) async {
   final id = await _notify(actionSpec);
-  print('Showing notification id: $id @ ${actionSpec.time}');
+  _logger.info('Showing notification id: $id @ ${actionSpec.time}');
   return id;
 }
 
@@ -131,13 +140,13 @@ Future<int> scheduleNotification(ActionSpecification actionSpec,
     {bool cancelPending}) async {
   final id = await _notify(actionSpec, when: actionSpec.time,
       cancelPending: cancelPending);
-  print('Scheduling notification id: $id @ ${actionSpec.time}');
+  _logger.info('Scheduling notification id: $id @ ${actionSpec.time}');
   return id;
 }
 
 /// Cancel notification with [id]
 Future cancelNotification(int id) async {
-  _plugin.cancel(id).catchError((e, st) => print("Error canceling notification id $id: $e"));
+  _plugin.cancel(id).catchError((e, st) => _logger.warning("Error canceling notification id $id: $e"));
   final db = await platform_service.databaseImpl;
   return db.removeNotification(id);
 }

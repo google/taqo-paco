@@ -174,14 +174,35 @@ class ExperimentGroup {
   }
 
   bool isOver(DateTime now) {
-    return fixedDuration && DateFormat.yMd().parse(endDate).isBefore(now);
+    if (!fixedDuration) {
+      return false;
+    }
+
+    if (endDate == null || endDate.isEmpty) {
+      return false;
+    }
+
+    final end = parseYMDTime(endDate);
+    if (end == null) {
+      return false;
+    }
+    return fixedDuration && end.isBefore(now);
   }
 
   bool isStarted(DateTime now) {
     if (!fixedDuration) {
       return true;
     }
+
+    if (startDate == null || startDate.isEmpty) {
+      return true;
+    }
+
     final start = parseYMDTime(startDate);
+    if (start == null) {
+      return true;
+    }
+
     return now.isAtSameMomentAs(start) || now.isAfter(start);
   }
 
@@ -191,8 +212,6 @@ class ExperimentGroup {
     }
     return now.isBefore(parseYMDTime(startDate)) ? false : !isOver(now);
   }
-
-  bool get isAppUsageLoggingGroup => groupType == GroupTypeEnum.APPUSAGE_ANDROID;
 
   DateTime toMidnight(startDateCandidate) {
     return DateTime(startDateCandidate.year, startDateCandidate.month, startDateCandidate.day);

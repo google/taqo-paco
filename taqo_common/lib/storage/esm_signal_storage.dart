@@ -2,9 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 
 import 'local_file_storage.dart';
+
+final _logger = Logger('EsmSignalStorage');
 
 class ESMSignalStorage {
   static const filename = "esm_signals.json";
@@ -56,7 +59,7 @@ class ESMSignalStorage {
       }), mode: FileMode.append);
       await file.writeAsString('\n', mode: FileMode.append, flush: true);
     } catch (e) {
-      print("Error storing esm signal: $e");
+      _logger.warning("Error storing esm signal: $e");
     }
   }
 
@@ -81,10 +84,10 @@ class ESMSignalStorage {
           }
         }
       } else {
-        print("esm signal file does not exist or is corrupted");
+        _logger.info("esm signal file does not exist or is corrupted");
       }
     } catch (e) {
-      print("Error reading esm signal: $e");
+      _logger.warning("Error reading esm signal: $e");
     }
     return signals;
   }
@@ -101,7 +104,7 @@ class ESMSignalStorage {
         } catch (_) {}
       }
     } catch (e) {
-      print("Error reading esm signals: $e");
+      _logger.warning("Error reading esm signals: $e");
     }
     return signals;
   }
@@ -113,7 +116,7 @@ class ESMSignalStorage {
         return file.delete();
       }
     } catch (e) {
-      print("Error reading esm signals: $e");
+      _logger.warning("Error reading esm signals: $e");
     }
   }
 
@@ -129,7 +132,7 @@ class ESMSignalStorage {
         await file.writeAsString('\n', mode: FileMode.append, flush: true);
       }
     } catch (e) {
-      print("Error storing esm signal: $e");
+      _logger.warning("Error storing esm signal: $e");
     }
   }
 
@@ -152,7 +155,7 @@ class ESMSignalStorage {
         await file.writeAsString('\n', mode: FileMode.append, flush: true);
       }
     } catch (e) {
-      print("Error storing esm signal: $e");
+      _logger.warning("Error storing esm signal: $e");
     }
   }
 

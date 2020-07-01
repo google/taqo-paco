@@ -1,6 +1,7 @@
 import 'dart:isolate';
 
 import 'package:android_alarm_manager/android_alarm_manager.dart';
+import 'package:logging/logging.dart';
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/scheduling/action_schedule_generator.dart';
 import 'package:taqo_common/storage/esm_signal_storage.dart';
@@ -12,6 +13,8 @@ import '../../storage/flutter_file_storage.dart';
 import '../experiment_service.dart';
 import 'flutter_local_notifications.dart' as flutter_local_notifications;
 import 'taqo_alarm.dart' as taqo_alarm;
+
+final _logger = Logger('AndroidAlarmManager');
 
 const SHARED_PREFS_LAST_ALARM_TIME = 'lastScheduledAlarm';
 
@@ -35,13 +38,13 @@ Future<bool> _scheduleNotification(ActionSpecification actionSpec) async {
   final alarms = await db.getAllAlarms();
   for (var as in alarms.values) {
     if (as == actionSpec) {
-      print('Notification for $actionSpec already scheduled');
+      _logger.info('Notification for $actionSpec already scheduled');
       return false;
     }
   }
 
   final alarmId = await _schedule(actionSpec, actionSpec.time, _notifyCallback);
-  print('_scheduleNotification: alarmId: $alarmId when: ${actionSpec.time}'
+  _logger.info('_scheduleNotification: alarmId: $alarmId when: ${actionSpec.time}'
       ' isolate: ${Isolate.current.hashCode}');
   return alarmId >= 0;
 }
@@ -49,14 +52,14 @@ Future<bool> _scheduleNotification(ActionSpecification actionSpec) async {
 void _scheduleTimeout(ActionSpecification actionSpec) async {
   final timeout = actionSpec.action.timeout;
   final alarmId = await _schedule(actionSpec, actionSpec.time.add(Duration(minutes: timeout)), _expireCallback);
-  print('_scheduleTimeout: alarmId: $alarmId'
+  _logger.info('_scheduleTimeout: alarmId: $alarmId'
       ' when: ${actionSpec.time.add(Duration(minutes: timeout))}'
       ' isolate: ${Isolate.current.hashCode}');
 }
 
 void _notifyCallback(int alarmId) async {
   // This is running in a different (background) Isolate
-  print('notify: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
+  _logger.info('notify: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
   DateTime start;
   Duration duration;
   final db = await platform_service.databaseImpl;
@@ -71,17 +74,17 @@ void _notifyCallback(int alarmId) async {
     final experiments = service.getJoinedExperiments();
     final allAlarms = await getAllAlarmsWithinRange(FlutterFileStorage(ESMSignalStorage.filename),
         experiments, start: start, duration: duration);
-    print('Showing ${allAlarms.length} alarms from: $start to: ${start.add(duration)}');
+    _logger.info('Showing ${allAlarms.length} alarms from: $start to: ${start.add(duration)}');
     var i = 0;
     for (var a in allAlarms) {
-      print('[${i++}] Showing ${a.time}');
+      _logger.info('[${i++}] Showing ${a.time}');
       flutter_local_notifications.showNotification(a);
     }
 
     // Store last shown notification time
     final storageDir = (await FlutterFileStorage.getLocalStorageDir()).path;
     final sharedPreferences = TaqoSharedPrefs(storageDir);
-    print('Storing ${start.add(duration)}');
+    _logger.info('Storing ${start.add(duration)}');
     sharedPreferences.setString(SHARED_PREFS_LAST_ALARM_TIME, start.add(duration).toIso8601String());
   }
 
@@ -89,13 +92,13 @@ void _notifyCallback(int alarmId) async {
   cancel(alarmId);
   // schedule the next one
   final from = start?.add(duration)?.add(Duration(seconds: 1));
-  print('scheduleNext from $from');
+  _logger.info('scheduleNext from $from');
   _scheduleNextNotification(from: from);
 }
 
 void _expireCallback(int alarmId) async {
   // This is running in a different (background) Isolate
-  print('expire: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
+  _logger.info('expire: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
   // Cancel notification
   final db = await platform_service.databaseImpl;
   final toCancel = await db.getAlarm(alarmId);
@@ -118,7 +121,7 @@ void _scheduleNextNotification({DateTime from}) async {
   final storageDir = (await FlutterFileStorage.getLocalStorageDir()).path;
   final sharedPreferences = TaqoSharedPrefs(storageDir);
   final dt = await sharedPreferences.getString(SHARED_PREFS_LAST_ALARM_TIME);
-  print('loaded $dt');
+  _logger.info('loaded $dt');
   if (dt != null) {
     lastSchedule = DateTime.parse(dt).add(Duration(seconds: 1));
   }
@@ -126,7 +129,7 @@ void _scheduleNextNotification({DateTime from}) async {
   // To avoid scheduling an alarm that was already shown by the logic in _notifyCallback
   from ??= DateTime.now();
   from = getLater(from, lastSchedule);
-  print('_scheduleNextNotification from: $from');
+  _logger.info('_scheduleNextNotification from: $from');
 
   final service = await ExperimentService.getInstance();
   final experiments = service.getJoinedExperiments();

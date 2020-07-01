@@ -2,7 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'linux_daemon.dart';
+import 'package:logging/logging.dart';
+
+import '../daemon.dart' as daemon;
+
+final _logger = Logger('DbusNotifications');
 
 const _objectPath = '/org/freedesktop/Notifications';
 const _dest = 'org.freedesktop.Notifications';
@@ -17,19 +21,21 @@ final _actionPattern =
 final _closedPattern =
     RegExp("$_objectPath:\\s+$_notificationClosed\\s+\\(uint32\\s+(\\d+),\\s+uint32\\s+(\\d+)");
 
+const _defaultActions = <String>['default', 'Open Taqo', '', ];
+
 // Map between Taqo database notification id and libnotify id
 final _notifications = <int, int>{};
 
 void _listen(String event) {
   final action = _actionPattern.matchAsPrefix(event);
   if (action != null) {
-    print('action: id: ${action[1]} action: ${action[2]}');
-    if (action.groupCount >= 2 && action[2] == 'default') {
+    _logger.info('action: id: ${action[1]} action: ${action[2]}');
+    if (action.groupCount >= 2 && _defaultActions.contains(action[2])) {
       final notifId = int.tryParse(action[1]);
       if (notifId != null) {
         // Not super efficient, but fine for now
         final id = _notifications.keys.firstWhere((k) => _notifications[k] == notifId);
-        openSurvey(id);
+        daemon.openSurvey(id);
       }
     }
   }
@@ -37,7 +43,7 @@ void _listen(String event) {
   final closed = _closedPattern.matchAsPrefix(event);
   if (closed != null) {
     // TODO Handle?
-    print('closed: id: ${closed[1]} reason: ${closed[2]}');
+    _logger.info('closed: id: ${closed[1]} reason: ${closed[2]}');
   }
 }
 
@@ -45,7 +51,7 @@ void cancel(int id) {
   final notifId = _notifications[id];
   if (notifId == null) return;
   _notifications.remove(id);
-  
+
   Process.run('gdbus', ['call',
     '--session',
     '--dest', _dest,
@@ -98,7 +104,7 @@ String _parseTimeout(int timeout) => 'int32 $timeout';
 
 Future<int> notify(int id, String appName, int replaceId, String title, String body,
     {String iconPath = '',
-    List<String> actions = const <String>['default', ''],
+    List<String> actions = _defaultActions,
     Map<String, dynamic> hints = const {'urgency': Priority.critical, },
     int timeout = 0}) async {
   final processResult = await Process.run('gdbus', ['call',

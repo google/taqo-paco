@@ -1,22 +1,25 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:pal_event_server/src/experiment_cache.dart';
 import 'package:pedantic/pedantic.dart';
+import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/model/notification_holder.dart';
 import 'package:taqo_common/service/experiment_service_lite.dart';
 import 'package:taqo_common/service/sync_service.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 
-import 'linux_daemon/linux_daemon.dart' as linux_daemon;
+import 'daemon/daemon.dart' as daemon;
 import 'pal_server/pal_commands.dart' as pal_commands;
 import 'sqlite_database/sqlite_database.dart';
-import 'whitelist.dart';
+import 'allowlist.dart';
 
 class PALTespServer with TespRequestHandlerMixin {
   TespServer _tespServer;
-  final _whitelist = Whitelist();
+  final _allowlist = Allowlist();
 
   PALTespServer() {
     _tespServer = TespServer(this);
@@ -31,49 +34,43 @@ class PALTespServer with TespRequestHandlerMixin {
   Future _storeEvent(List events) async {
     final database = await SqliteDatabase.get();
     for (var e in events) {
-      print('storeEvent: $e');
-      await database.insertEvent(e);
+      await database.insertEvent(e, notifySyncService: false);
     }
+    unawaited(SyncService.syncData());
   }
 
   // PAL Commands
 
   @override
   FutureOr<TespResponse> palAddEvents(List<Event> events) async {
-    print('palAddEvents: $events');
-    if (await pal_commands.isWhitelistedDataOnly()) {
-      await _storeEvent(_whitelist.blackOutData(events));
+    if (await pal_commands.isAllowlistedDataOnly()) {
+      await _storeEvent(_allowlist.filterData(events));
     } else {
       await _storeEvent(events);
     }
-    unawaited(SyncService.syncData());
     return TespResponseSuccess();
   }
 
   @override
   FutureOr<TespResponse> palPause() async {
-    print('pause');
     await pal_commands.pauseDataUpload();
     return TespResponseSuccess();
   }
 
   @override
   FutureOr<TespResponse> palResume() async {
-    print('resume');
     await pal_commands.resumeDataUpload();
     return TespResponseSuccess();
   }
 
   @override
-  FutureOr<TespResponse> palWhiteListDataOnly() async {
-    print('whiteListDataOnly');
-    await pal_commands.setWhitelistedDataOnly();
+  FutureOr<TespResponse> palAllowlistDataOnly() async {
+    await pal_commands.setAllowlistedDataOnly();
     return TespResponseSuccess();
   }
 
   @override
   FutureOr<TespResponse> palAllData() async {
-    print('allData');
     await pal_commands.setAllDataOnly();
     return TespResponseSuccess();
   }
@@ -82,37 +79,73 @@ class PALTespServer with TespRequestHandlerMixin {
 
   @override
   FutureOr<TespResponse> alarmSchedule() async {
-    await linux_daemon.handleScheduleAlarm();
+    await daemon.handleScheduleAlarm();
     return TespResponseSuccess();
+  }
+
+  @override
+  FutureOr<TespResponse> alarmAdd(ActionSpecification actionSpecification) async {
+    // On Linux and MacOS, alarms and notifications are handled entirely
+    // in the daemon
+    return TespResponseError('Unsupported platform for alarmAdd: ${Platform.operatingSystem}');
   }
 
   @override
   FutureOr<TespResponse> alarmCancel(int alarmId) async {
-    await linux_daemon.handleCancelAlarm(alarmId);
+    await daemon.handleCancelAlarm(alarmId);
     return TespResponseSuccess();
+  }
+
+  @override
+  FutureOr<TespResponse> alarmRemove(int alarmId) async {
+    // On Linux and MacOS, alarms and notifications are handled entirely
+    // in the daemon
+    return TespResponseError('Unsupported platform for alarmRemove: ${Platform.operatingSystem}');
   }
 
   @override
   FutureOr<TespResponse> notificationCheckActive() async {
-    await linux_daemon.handleScheduleAlarm();
+    await daemon.handleScheduleAlarm();
     return TespResponseSuccess();
   }
 
   @override
+  FutureOr<TespResponse> notificationAdd(NotificationHolder notification) async {
+    // On Linux and MacOS, alarms and notifications are handled entirely
+    // in the daemon
+    return TespResponseError('Unsupported platform for notificationAdd: '
+        '${Platform.operatingSystem}');
+  }
+
+  @override
   FutureOr<TespResponse> notificationCancel(int notificationId) async {
-    await linux_daemon.handleCancelNotification(notificationId);
+    await daemon.handleCancelNotification(notificationId);
     return TespResponseSuccess();
   }
 
   @override
   FutureOr<TespResponse> notificationCancelByExperiment(int experimentId) async {
-    await linux_daemon.handleCancelExperimentNotification(experimentId);
+    await daemon.handleCancelExperimentNotification(experimentId);
     return TespResponseSuccess();
   }
 
   @override
+  FutureOr<TespResponse> notificationRemove(int notificationId) async {
+    // On Linux and MacOS, alarms and notifications are handled entirely
+    // in the daemon
+    return TespResponseError('Unsupported platform for notificationRemove: ${Platform.operatingSystem}');
+  }
+
+  @override
+  FutureOr<TespResponse> notificationRemoveAll() async {
+    // On Linux and MacOS, alarms and notifications are handled entirely
+    // in the daemon
+    return TespResponseError('Unsupported platform for notificationRemoveAll: ${Platform.operatingSystem}');
+  }
+
+  @override
   FutureOr<TespResponse> createMissedEvent(Event event) async {
-    await linux_daemon.handleCreateMissedEvent(event);
+    await daemon.handleCreateMissedEvent(event);
     return TespResponseSuccess();
   }
 

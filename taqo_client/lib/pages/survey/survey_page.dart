@@ -446,7 +446,6 @@ class _SurveyPageState extends State<SurveyPage> {
     var savedOK = validateResponses();
     // TODO Validate answers and store locally.
     await db.insertEvent(_event);
-    notifySyncService();
     // If should be uploaded alert sync service
     if (savedOK) {
       if (_experimentGroup.feedback.type == taqo_feedback.Feedback.FEEDBACK_TYPE_STATIC_MESSAGE) {

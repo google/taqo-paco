@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:logging/logging.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
 import 'package:taqo_common/model/action_specification.dart';
@@ -13,19 +15,22 @@ import 'package:taqo_common/util/date_time_util.dart';
 
 import '../experiment_service_local.dart';
 import '../sqlite_database/sqlite_database.dart';
-import 'linux_notification_manager.dart' as linux_notification_manager;
+import 'notification_manager.dart' as notification_manager;
+
+final _logger = Logger('DaemonAlarmManager');
 
 const _sharedPrefsLastAlarmKey = 'lastScheduledAlarm';
 
 final _alarms = <int, ActionSpecification>{};
 
 void _notify(int alarmId) async {
-  print('notify: alarmId: $alarmId');
+  _logger.info('notify: alarmId: $alarmId');
   DateTime start;
   Duration duration;
   final database = await SqliteDatabase.get();
   final actionSpec = await database.getAlarm(alarmId);
   if (actionSpec != null) {
+    final allAlarms = Set.from([actionSpec]);
     // To handle simultaneous alarms as well as possible delay in alarm callbacks,
     // show all notifications from the originally schedule alarm time until
     // 30 seconds after the current time
@@ -33,19 +38,19 @@ void _notify(int alarmId) async {
     duration = DateTime.now().add(Duration(seconds: 30)).difference(start);
     final experimentService = await ExperimentServiceLocal.getInstance();
     final experiments = await experimentService.getJoinedExperiments();
-    final allAlarms = await getAllAlarmsWithinRange(DartFileStorage(ESMSignalStorage.filename),
-        experiments, start: start, duration: duration);
-    print('Showing ${allAlarms.length} alarms from: $start to: ${start.add(duration)}');
+    allAlarms.addAll(await getAllAlarmsWithinRange(DartFileStorage(ESMSignalStorage.filename),
+        experiments, start: start, duration: duration));
+    _logger.info('Showing ${allAlarms.length} alarms from: $start to: ${start.add(duration)}');
     var i = 0;
     for (var a in allAlarms) {
-      print('[${i++}] Showing ${a.time}');
-      linux_notification_manager.showNotification(a);
+      _logger.info('[${i++}] Showing ${a.time}');
+      notification_manager.showNotification(a);
     }
 
     // Store last shown notification time
     final storageDir = DartFileStorage.getLocalStorageDir().path;
     final sharedPreferences = TaqoSharedPrefs(storageDir);
-    print('Storing ${start.add(duration)}');
+    _logger.info('Storing ${start.add(duration)}');
     sharedPreferences.setString(_sharedPrefsLastAlarmKey, start.add(duration).toIso8601String());
   }
 
@@ -53,12 +58,12 @@ void _notify(int alarmId) async {
   cancel(alarmId);
   // schedule the next one
   final from = start?.add(duration)?.add(Duration(seconds: 1));
-  print('scheduleNext from $from');
+  _logger.info('scheduleNext from $from');
   _scheduleNextNotification(from: from);
 }
 
 void _expire(int alarmId) async {
-  print('expire: alarmId: $alarmId');
+  _logger.info('expire: alarmId: $alarmId');
   // Cancel notification
   final database = await SqliteDatabase.get();
   final toCancel = await database.getAlarm(alarmId);
@@ -78,9 +83,6 @@ void _expire(int alarmId) async {
 
 /// Schedule an alarm for [actionSpec] at [when] to run [callback]
 Future<int> _schedule(ActionSpecification actionSpec, DateTime when, String what) async {
-  final duration = when.difference(DateTime.now());
-  if (duration.inMilliseconds < 0) return -1;
-
   final database = await SqliteDatabase.get();
   final alarmId = await database.insertAlarm(actionSpec);
 
@@ -105,20 +107,20 @@ Future<bool> _scheduleNotification(ActionSpecification actionSpec) async {
   // Don't show a notification that's already pending
   for (var as in _alarms.values) {
     if (as == actionSpec) {
-      print('Notification for $actionSpec already scheduled');
+      _logger.info('Notification for $actionSpec already scheduled');
       return false;
     }
   }
 
   final alarmId = await _schedule(actionSpec, actionSpec.time, notifyMethod);
-  print('_scheduleNotification: alarmId: $alarmId when: ${actionSpec.time}');
+  _logger.info('_scheduleNotification: alarmId: $alarmId when: ${actionSpec.time}');
   return alarmId >= 0;
 }
 
 void _scheduleTimeout(ActionSpecification actionSpec) async {
   final timeout = actionSpec.action.timeout;
   final alarmId = await _schedule(actionSpec, actionSpec.time.add(Duration(minutes: timeout)), expireMethod);
-  print('_scheduleTimeout: alarmId: $alarmId'
+  _logger.info('_scheduleTimeout: alarmId: $alarmId'
       ' when: ${actionSpec.time.add(Duration(minutes: timeout))}');
 }
 
@@ -127,7 +129,7 @@ void _scheduleNextNotification({DateTime from}) async {
   final storageDir = DartFileStorage.getLocalStorageDir().path;
   final sharedPreferences = TaqoSharedPrefs(storageDir);
   final dt = await sharedPreferences.getString(_sharedPrefsLastAlarmKey);
-  //print('lastScheduledAlarm: $dt');
+  //_logger.info('lastScheduledAlarm: $dt');
   if (dt != null) {
     lastSchedule = DateTime.parse(dt).add(Duration(seconds: 1));
   }
@@ -135,20 +137,24 @@ void _scheduleNextNotification({DateTime from}) async {
   // To avoid scheduling an alarm that was already shown by the logic in _notifyCallback
   from ??= DateTime.now();
   from = getLater(from, lastSchedule);
-  print('_scheduleNextNotification from: $from');
+  _logger.info('_scheduleNextNotification from: $from');
 
   final experimentService = await ExperimentServiceLocal.getInstance();
   final experiments = await experimentService.getJoinedExperiments();
   getNextAlarmTime(DartFileStorage(ESMSignalStorage.filename), experiments, now: from)
       .then((actionSpec) async {
     if (actionSpec != null) {
-      // Schedule a notification
-      _scheduleNotification(actionSpec).then((scheduled) {
-        if (scheduled) {
-          // Schedule a timeout
-          _scheduleTimeout(actionSpec);
-        }
-      });
+      createNotificationWithTimeout(actionSpec);
+    }
+  });
+}
+
+void createNotificationWithTimeout(ActionSpecification actionSpec) {
+  // Schedule a notification
+  _scheduleNotification(actionSpec).then((scheduled) {
+    if (scheduled) {
+      // Schedule a timeout
+      _scheduleTimeout(actionSpec);
     }
   });
 }
@@ -181,12 +187,13 @@ Future<void> cancelAll() async {
 void timeout(int id) async {
   final storage = await SqliteDatabase.get();
   _createMissedEvent(await storage.getNotification(id));
-  linux_notification_manager.cancelNotification(id);
+
+  notification_manager.cancelNotification(id);
 }
 
 void _createMissedEvent(NotificationHolder notification) async {
   if (notification == null) return;
-  print('_createMissedEvent: ${notification.id}');
+  _logger.info('_createMissedEvent: ${notification.id}');
   // TODO In Taqo, we query the server for the Experiments here... is that necessary?
   final experimentService = await ExperimentServiceLocal.getInstance();
   final experiments = await experimentService.getJoinedExperiments();

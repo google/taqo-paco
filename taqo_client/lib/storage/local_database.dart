@@ -13,10 +13,12 @@ import 'package:taqo_common/storage/local_file_storage.dart';
 import 'package:taqo_common/util/sql_statement_building_helper.dart';
 import 'package:taqo_common/util/zoned_date_time.dart';
 
+import '../platform/platform_sync_service.dart';
+
 part 'local_database.inc.dart';
 part 'local_database.workaround.dart';
 
-final logger = Logger('LocalDatabase');
+final _logger = Logger('LocalDatabase');
 
 /// Global reference of the database connection, using singleton pattern
 class LocalDatabase extends BaseDatabase {
@@ -60,6 +62,7 @@ class LocalDatabase extends BaseDatabase {
   @override
   Future<void> insertEvent(Event event) async {
     await _insertEvent(_db, event);
+    notifySyncService();
   }
 
   @override
@@ -145,7 +148,7 @@ class LocalDatabase extends BaseDatabase {
       assert(experimentFieldsMaps.length == 1); // since id is a primary key
       return Experiment.fromJson(jsonDecode(experimentFieldsMaps[0]['json']));
     } else {
-      logger.warning('Cannot find experiment with id: ${experimentId}');
+      _logger.warning('Cannot find experiment with id: ${experimentId}');
       return null;
     }
   }

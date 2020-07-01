@@ -1,12 +1,17 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:logging/logging.dart';
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/notification_holder.dart';
 import 'package:taqo_common/service/experiment_service_lite.dart';
 
 import '../sqlite_database/sqlite_database.dart';
-import 'dbus_notifications.dart';
-import 'linux_alarm_manager.dart' show timeout;
+import 'alarm_manager.dart' show timeout;
+import 'linux/dbus_notifications.dart' as linux_notifications;
+import 'macos/alerter_notifications.dart' as macos_notifications;
+
+final _logger = Logger('LinuxNotificationManager');
 
 const _appName = 'Taqo';
 
@@ -47,21 +52,32 @@ Future<int> _notify(ActionSpecification actionSpec,
 
   final database = await SqliteDatabase.get();
   final id = await database.insertNotification(notificationHolder);
-  await notify(
-      id, _appName, 0, actionSpec.experiment.title, notificationHolder.message);
+
+  if (Platform.isLinux) {
+    await linux_notifications.notify(
+        id, _appName, 0, actionSpec.experiment.title, notificationHolder.message);
+  } else if (Platform.isMacOS) {
+    await macos_notifications.notify(id, actionSpec.experiment.title, notificationHolder.message);
+  }
+
   return id;
 }
 
 /// Show a notification now
 Future<int> showNotification(ActionSpecification actionSpec) async {
   final id = await _notify(actionSpec);
-  print('Showing notification id: $id @ ${actionSpec.time}');
+  _logger.info('Showing notification id: $id @ ${actionSpec.time}');
   return id;
 }
 
 /// Cancel notification with [id]
 Future cancelNotification(int id) async {
-  cancel(id);
+  if (Platform.isLinux) {
+    linux_notifications.cancel(id);
+  } else if (Platform.isMacOS) {
+    macos_notifications.cancel(id);
+  }
+
   final database = await SqliteDatabase.get();
   return database.removeNotification(id);
 }

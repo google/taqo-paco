@@ -71,6 +71,16 @@ void main() {
           ZonedDateTime.fromIso8601String(stringDateTimeTZColon)
               .toIso8601String(withColon: true),
           equals(stringDateTimeTZColon));
+      const stringDateTimeNoUs = '2019-11-11T12:34:56.789-0930';
+      const stringDateTimeTZColonNoUS = '2019-11-11T12:34:56.789-09:30';
+      expect(
+          ZonedDateTime.fromIso8601String(stringDateTimeNoUs)
+              .toIso8601String(withColon: false),
+          equals(stringDateTimeNoUs));
+      expect(
+          ZonedDateTime.fromIso8601String(stringDateTimeTZColonNoUS)
+              .toIso8601String(withColon: true),
+          equals(stringDateTimeTZColonNoUS));
     });
   });
 

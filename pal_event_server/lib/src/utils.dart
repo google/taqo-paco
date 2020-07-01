@@ -1,0 +1,1 @@
+const sharedPrefsExperimentPauseKey = "paused";
