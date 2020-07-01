@@ -65,7 +65,7 @@ Event _createPacoEvent(Experiment experiment, String groupName) {
 
   event.responses = <String, dynamic>{
       _responseName: _participantId,
-      _responseAnswer: 'TODO:participantId',
+      _responseAnswer: '${experiment.participantId}',
   };
 
   return event;

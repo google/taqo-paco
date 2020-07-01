@@ -31,6 +31,7 @@ class Experiment extends ExperimentCore {
 
   @JsonKey(defaultValue: false)
   bool anonymousPublic;
+  int participantId;
   List<Visualization> visualizations;
 
   Experiment();

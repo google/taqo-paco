@@ -11,7 +11,6 @@ import 'package:taqo_common/storage/joined_experiments_storage.dart';
 import 'package:taqo_common/util/schedule_printer.dart' as schedule_printer;
 import 'package:taqo_common/util/zoned_date_time.dart';
 
-import '../net/invitation_response.dart';
 import '../service/platform_service.dart' as platform_service;
 import 'alarm/taqo_alarm.dart' as taqo_alarm;
 
@@ -238,26 +237,20 @@ class ExperimentService implements ExperimentServiceLite{
     return _pacoApi.checkInvitationWithSavedCredentials(code)
         .then((response) {
           if (!response.isSuccess) {
-            return null;
+            return InvitationResponse.fromPaco(response);
           }
+
           final jsonResponse = response.body;
           var decodedResponse = jsonDecode(jsonResponse);
-          var errorMessage;
-          var participantId;
-          var experimentId;
 
           if (jsonResponse.startsWith('[')) {
-            decodedResponse = decodedResponse.elementAt(0);
-            errorMessage = decodedResponse["errorMessage"];
+            return InvitationResponse.fromPaco(
+                PacoResponse(PacoResponse.failure, decodedResponse["errorMessage"]));
           } else {
-            participantId = decodedResponse["participantId"];
-            experimentId = decodedResponse["experimentId"];
+            return InvitationResponse.fromPaco(response,
+                participantId: decodedResponse["participantId"],
+                experimentId: decodedResponse["experimentId"]);
           }
-
-          return InvitationResponse(
-              errorMessage: errorMessage,
-              participantId: participantId,
-              experimentId: experimentId);
         });
   }
 
@@ -275,4 +268,12 @@ class ExperimentService implements ExperimentServiceLite{
 enum PacoEventType {
   EXPERIMENT_JOIN, SCHEDULE_EDIT, EXPERIMENT_STOP,
   EXPERIMENT_PAUSE, EXPERIMENT_RESUME
+}
+
+class InvitationResponse extends PacoResponse {
+  final participantId;
+  final experimentId;
+
+  InvitationResponse.fromPaco(PacoResponse pacoResponse, {this.participantId, this.experimentId}) :
+      super(pacoResponse.statusCode, pacoResponse.statusMsg);
 }
