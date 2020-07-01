@@ -39,7 +39,6 @@ class _InvitationEntryPageState extends State<InvitationEntryPage> {
         child: ListView(
           padding: EdgeInsets.all(4.0),
           children: <Widget>[
-            const Text(_preambleText),
             buildPreambleTextWidget(),
             Divider(
               height: 16.0,
