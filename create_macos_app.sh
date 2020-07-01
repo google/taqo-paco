@@ -44,9 +44,9 @@ popd || exit
 
 # Build flutter app
 pushd taqo_client || exit
-${FLUTTER_SDK}/bin/flutter clean && ${FLUTTER_SDK}/bin/flutter -v build macos
+${FLUTTER_SDK}/bin/flutter build macos
 popd || exit
 
 # rm assets after build
-rm taqo_client/assets/taqo_daemon
+rm taqo_client/macos/TaqoLauncher/taqo_daemon
 rm taqo_client/assets/pal_intellij_plugin.zip
