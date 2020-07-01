@@ -49,29 +49,15 @@ class RemoteDatabase extends BaseDatabase {
 
   @override
   Future<int> insertAlarm(ActionSpecification actionSpecification) {
-    // On Linux, alarms and notifications are handled entirely in the
-    // linux_daemon. On MacOS (for now), taqo_client handles it
-    if (Platform.isMacOS) {
-      return global.tespClient.then((tespClient) async {
-        final TespResponseAnswer response =
-            await tespClient.alarmAdd(actionSpecification);
-        return response.payload;
-      });
-    }
+    // On Linux and MacOS, alarms and notifications are handled entirely
+    // in the daemon
     return Future.value(-1);
   }
 
   @override
   Future<int> insertNotification(NotificationHolder notificationHolder) {
-    // On Linux, alarms and notifications are handled entirely in the
-    // linux_daemon. On MacOS (for now), taqo_client handles it
-    if (Platform.isMacOS) {
-      return global.tespClient.then((tespClient) async {
-        final TespResponseAnswer response =
-            await tespClient.notificationAdd(notificationHolder);
-        return response.payload;
-      });
-    }
+    // On Linux and MacOS, alarms and notifications are handled entirely
+    // in the daemon
     return Future.value(-1);
   }
 
@@ -131,37 +117,22 @@ class RemoteDatabase extends BaseDatabase {
 
   @override
   Future<void> removeAlarm(int id) {
-    // On Linux, alarms and notifications are handled entirely in the
-    // linux_daemon. On MacOS (for now), taqo_client handles it
-    if (Platform.isMacOS) {
-      return global.tespClient.then((tespClient) {
-        return tespClient.alarmRemove(id);
-      });
-    }
+    // On Linux and MacOS, alarms and notifications are handled entirely
+    // in the daemon
     return Future.value();
   }
 
   @override
   Future<void> removeNotification(int id) {
-    // On Linux, alarms and notifications are handled entirely in the
-    // linux_daemon. On MacOS (for now), taqo_client handles it
-    if (Platform.isMacOS) {
-      return global.tespClient.then((tespClient) {
-        return tespClient.notificationRemove(id);
-      });
-    }
+    // On Linux and MacOS, alarms and notifications are handled entirely
+    // in the daemon
     return Future.value();
   }
 
   @override
   Future<void> removeAllNotifications() {
-    // On Linux, alarms and notifications are handled entirely in the
-    // linux_daemon. On MacOS (for now), taqo_client handles it
-    if (Platform.isMacOS) {
-      return global.tespClient.then((tespClient) {
-        return tespClient.notificationRemoveAll();
-      });
-    }
+    // On Linux and MacOS, alarms and notifications are handled entirely
+    // in the daemon
     return Future.value();
   }
 

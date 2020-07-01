@@ -19,7 +19,7 @@ import 'ios_notification_scheduler.dart' as ios_notification_scheduler;
 final _logger = Logger('TaqoAlarm');
 
 Future init() {
-  if (Platform.isLinux) {
+  if (platform_service.isTaqoDesktop) {
     return schedule(cancelAndReschedule: false);
   } else {
     return flutter_local_notifications.init().then((_) =>
@@ -39,7 +39,7 @@ Future schedule({bool cancelAndReschedule=true}) async {
   // TODO the calculate() API currently doesn't support using plugins
   if (Platform.isAndroid) {
     android_alarm_manager.scheduleNextNotification();
-  } else if (Platform.isIOS || Platform.isMacOS) {
+  } else if (Platform.isIOS) {
     if (cancelAndReschedule) {
       await flutter_local_notifications.cancelAllNotifications();
     }
@@ -63,10 +63,10 @@ Future schedule({bool cancelAndReschedule=true}) async {
 Future cancel(int id) async {
   if (Platform.isAndroid) {
     flutter_local_notifications.cancelNotification(id);
-  } else if (Platform.isIOS || Platform.isMacOS) {
+  } else if (Platform.isIOS) {
     await flutter_local_notifications.cancelNotification(id);
     await schedule(cancelAndReschedule: false);
-  } else if (Platform.isLinux) {
+  } else if (platform_service.isTaqoDesktop) {
     try {
       platform_service.tespClient.then((tespClient) {
         tespClient.notificationCancel(id);
@@ -80,10 +80,10 @@ Future cancel(int id) async {
 Future cancelForExperiment(Experiment experiment) async {
   if (Platform.isAndroid) {
     flutter_local_notifications.cancelForExperiment(experiment);
-  } else if (Platform.isIOS || Platform.isMacOS) {
+  } else if (Platform.isIOS) {
     await flutter_local_notifications.cancelForExperiment(experiment);
     await schedule(cancelAndReschedule: false);
-  } else if (Platform.isLinux) {
+  } else if (platform_service.isTaqoDesktop) {
     try {
       platform_service.tespClient.then((tespClient) {
         tespClient.notificationCancelByExperiment(experiment.id);

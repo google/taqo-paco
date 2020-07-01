@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:logging/logging.dart';
 
-import 'linux_daemon.dart' as linux_daemon;
+import '../daemon.dart' as daemon;
 
 final _logger = Logger('DbusNotifications');
 
@@ -35,7 +35,7 @@ void _listen(String event) {
       if (notifId != null) {
         // Not super efficient, but fine for now
         final id = _notifications.keys.firstWhere((k) => _notifications[k] == notifId);
-        linux_daemon.openSurvey(id);
+        daemon.openSurvey(id);
       }
     }
   }
