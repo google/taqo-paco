@@ -30,16 +30,27 @@ Future<TespFullClient> get tespClient async {
   return _completer.future;
 }
 
-Future _tespInit() async {
-  final completer = Completer();
-  _tespClient = TespFullClient(localServerHost, localServerPort);
-  _tespClient.connect().then((_) {
-    completer.complete();
+Future<bool> _tryConnect(TespFullClient client) {
+  return client.connect().then((_) {
+    return true;
   }).catchError((e) {
     _logger.warning('Failed to connect to the PAL event server. Is it running?');
-    _tespClient = null;
+    return false;
   });
-  return completer.future;
+}
+
+Future _tespInit({int maxRetry = 3}) async {
+  _tespClient = TespFullClient(localServerHost, localServerPort);
+  final isConnected = await _tryConnect(_tespClient);
+  if (!isConnected) {
+    _tespClient = null;
+    if (maxRetry > 0) {
+      await Future.delayed(Duration(seconds: 2));
+      return _tespInit(maxRetry: maxRetry - 1);
+    } else {
+      throw Exception("Failed to connect to PAL event server.");
+    }
+  }
 }
 
 /// Desktop platforms use RPC for sqlite and sync service
