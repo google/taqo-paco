@@ -35,6 +35,9 @@
 		C382190524ABF61900891B3C /* TaqoLauncher.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = C38218F424ABF53D00891B3C /* TaqoLauncher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C382190724ABF63300891B3C /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C382190624ABF63300891B3C /* ServiceManagement.framework */; };
 		C382190A24ABF72400891B3C /* taqo_daemon in CopyFiles */ = {isa = PBXBuildFile; fileRef = C382190824ABF71B00891B3C /* taqo_daemon */; };
+		C382192024AD1D4700891B3C /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C382191C24AD1D4700891B3C /* AppDelegate.m */; };
+		C382192124AD1D4700891B3C /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C382191D24AD1D4700891B3C /* main.m */; };
+		C382192324AD1D5C00891B3C /* alerter in CopyFiles */ = {isa = PBXBuildFile; fileRef = C382191024AD1D1500891B3C /* alerter */; };
 		C398031F24A3AB760015501A /* deepbark_trial.m4a in Resources */ = {isa = PBXBuildFile; fileRef = C398031E24A3AB760015501A /* deepbark_trial.m4a */; };
 		D73912F022F37F9E000D13A0 /* App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D73912EF22F37F9E000D13A0 /* App.framework */; };
 		D73912F222F3801D000D13A0 /* App.framework in Bundle Framework */ = {isa = PBXBuildFile; fileRef = D73912EF22F37F9E000D13A0 /* App.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -83,6 +86,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C382190E24AD1D1500891B3C /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		C382192224AD1D5200891B3C /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 6;
+			files = (
+				C382192324AD1D5C00891B3C /* alerter in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -115,6 +137,15 @@
 		C38218FE24ABF53E00891B3C /* TaqoLauncher.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TaqoLauncher.entitlements; sourceTree = "<group>"; };
 		C382190624ABF63300891B3C /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
 		C382190824ABF71B00891B3C /* taqo_daemon */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = taqo_daemon; sourceTree = "<group>"; };
+		C382191024AD1D1500891B3C /* alerter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = alerter; sourceTree = BUILT_PRODUCTS_DIR; };
+		C382191824AD1D4700891B3C /* Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Prefix.pch; sourceTree = "<group>"; };
+		C382191924AD1D4700891B3C /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		C382191A24AD1D4700891B3C /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C382191B24AD1D4700891B3C /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		C382191C24AD1D4700891B3C /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		C382191D24AD1D4700891B3C /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		C382191E24AD1D4700891B3C /* CODE_OF_CONDUCT.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = CODE_OF_CONDUCT.md; sourceTree = "<group>"; };
+		C382191F24AD1D4700891B3C /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		C398031E24A3AB760015501A /* deepbark_trial.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; name = deepbark_trial.m4a; path = ../../ios/Runner/deepbark_trial.m4a; sourceTree = "<group>"; };
 		D73912EF22F37F9E000D13A0 /* App.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = App.framework; path = Flutter/ephemeral/App.framework; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -132,6 +163,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		C38218F124ABF53D00891B3C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C382190D24AD1D1500891B3C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -158,6 +196,7 @@
 				33FAB671232836740065AC1E /* Runner */,
 				33CEB47122A05771004F2AC0 /* Flutter */,
 				C38218F524ABF53D00891B3C /* TaqoLauncher */,
+				C382191124AD1D1500891B3C /* alerter */,
 				33CC10EE2044A3C60003C045 /* Products */,
 				D73912EC22F37F3D000D13A0 /* Frameworks */,
 				3ECE5D8D877188522911ADD1 /* Pods */,
@@ -169,6 +208,7 @@
 			children = (
 				33CC10ED2044A3C60003C045 /* taqo_client.app */,
 				C38218F424ABF53D00891B3C /* TaqoLauncher.app */,
+				C382191024AD1D1500891B3C /* alerter */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -234,6 +274,21 @@
 			path = TaqoLauncher;
 			sourceTree = "<group>";
 		};
+		C382191124AD1D1500891B3C /* alerter */ = {
+			isa = PBXGroup;
+			children = (
+				C382191B24AD1D4700891B3C /* AppDelegate.h */,
+				C382191C24AD1D4700891B3C /* AppDelegate.m */,
+				C382191E24AD1D4700891B3C /* CODE_OF_CONDUCT.md */,
+				C382191A24AD1D4700891B3C /* Info.plist */,
+				C382191924AD1D4700891B3C /* LICENSE */,
+				C382191D24AD1D4700891B3C /* main.m */,
+				C382191824AD1D4700891B3C /* Prefix.pch */,
+				C382191F24AD1D4700891B3C /* README.md */,
+			);
+			path = alerter;
+			sourceTree = "<group>";
+		};
 		D73912EC22F37F3D000D13A0 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -258,6 +313,7 @@
 				3399D490228B24CF009A79C7 /* ShellScript */,
 				46693CF45747D7CDB275D469 /* [CP] Embed Pods Frameworks */,
 				C382190424ABF60F00891B3C /* CopyFiles */,
+				C382192224AD1D5200891B3C /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -287,6 +343,23 @@
 			productReference = C38218F424ABF53D00891B3C /* TaqoLauncher.app */;
 			productType = "com.apple.product-type.application";
 		};
+		C382190F24AD1D1500891B3C /* alerter */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C382191724AD1D1500891B3C /* Build configuration list for PBXNativeTarget "alerter" */;
+			buildPhases = (
+				C382190C24AD1D1500891B3C /* Sources */,
+				C382190D24AD1D1500891B3C /* Frameworks */,
+				C382190E24AD1D1500891B3C /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = alerter;
+			productName = alerter;
+			productReference = C382191024AD1D1500891B3C /* alerter */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -314,6 +387,9 @@
 					C38218F324ABF53D00891B3C = {
 						CreatedOnToolsVersion = 11.3.1;
 					};
+					C382190F24AD1D1500891B3C = {
+						CreatedOnToolsVersion = 11.3.1;
+					};
 				};
 			};
 			buildConfigurationList = 33CC10E82044A3C60003C045 /* Build configuration list for PBXProject "Runner" */;
@@ -332,6 +408,7 @@
 				33CC10EC2044A3C60003C045 /* Runner */,
 				33CC111A2044C6BA0003C045 /* Flutter Assemble */,
 				C38218F324ABF53D00891B3C /* TaqoLauncher */,
+				C382190F24AD1D1500891B3C /* alerter */,
 			);
 		};
 /* End PBXProject section */
@@ -451,6 +528,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				C38218F724ABF53D00891B3C /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C382190C24AD1D1500891B3C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C382192124AD1D4700891B3C /* main.m in Sources */,
+				C382192024AD1D4700891B3C /* AppDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -821,6 +907,61 @@
 			};
 			name = Profile;
 		};
+		C382191424AD1D1500891B3C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		C382191524AD1D1500891B3C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		C382191624AD1D1500891B3C /* Profile */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Profile;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -860,6 +1001,16 @@
 				C38218FF24ABF53E00891B3C /* Debug */,
 				C382190024ABF53E00891B3C /* Release */,
 				C382190124ABF53E00891B3C /* Profile */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C382191724AD1D1500891B3C /* Build configuration list for PBXNativeTarget "alerter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C382191424AD1D1500891B3C /* Debug */,
+				C382191524AD1D1500891B3C /* Release */,
+				C382191624AD1D1500891B3C /* Profile */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
