@@ -36,6 +36,9 @@ dependencies:
   path_provider_macos: '>=0.0.4 <2.0.0'
   path_provider_linux: '>=0.0.1 <2.0.0'
 
+  macos_launch_daemon:
+    path: plugins/macos_launch_daemon
+
   taqo_common:
     path: ../taqo_common
   taqo_email_plugin:

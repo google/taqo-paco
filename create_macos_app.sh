@@ -23,7 +23,7 @@ ${DART_SDK}/bin/dart2native -p pal_event_server/.packages \
   pal_event_server/lib/main.dart
 
 # cp daemon to Flutter asset
-cp ${RELEASE}/taqo_daemon taqo_client/assets/taqo_daemon
+cp ${RELEASE}/taqo_daemon taqo_client/macos/TaqoLauncher/taqo_daemon
 
 # zip/cp intellij to Flutter asset
 if [ ! -d pal_intellij_plugin/out ]; then
@@ -44,9 +44,9 @@ popd || exit
 
 # Build flutter app
 pushd taqo_client || exit
-${FLUTTER_SDK}/bin/flutter clean && ${FLUTTER_SDK}/bin/flutter build macos
+${FLUTTER_SDK}/bin/flutter build macos
 popd || exit
 
 # rm assets after build
-rm taqo_client/assets/taqo_daemon
+rm taqo_client/macos/TaqoLauncher/taqo_daemon
 rm taqo_client/assets/pal_intellij_plugin.zip
