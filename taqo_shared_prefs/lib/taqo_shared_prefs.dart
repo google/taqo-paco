@@ -23,7 +23,12 @@ class TaqoSharedPrefs {
     }
 
     final contents = await dbFile.readAsString();
-    _sharedPrefMap.addAll(jsonDecode(contents));
+    try {
+      var jsonDecode2 = jsonDecode(contents);
+      _sharedPrefMap.addAll(jsonDecode2);
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future _writePrefs() async {
