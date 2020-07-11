@@ -177,7 +177,12 @@ mixin EventTriggerSource {
         || cueCode == InterruptCue.ACCESSIBILITY_EVENT_VIEW_CLICKED
         || cueCode == InterruptCue.NOTIFICATION_CREATED
         || cueCode == InterruptCue.NOTIFICATION_TRAY_SWIPE_DISMISS
-        || cueCode == InterruptCue.NOTIFICATION_CLICKED;
+        || cueCode == InterruptCue.NOTIFICATION_CLICKED
+        || cueCode == InterruptCue.APP_USAGE_DESKTOP
+        || cueCode == InterruptCue.APP_CLOSED_DESKTOP
+        || cueCode == InterruptCue.APP_USAGE_SHELL
+        || cueCode == InterruptCue.APP_CLOSED_SHELL
+        || cueCode == InterruptCue.IDE_IDEA_USAGE;
   }
 
   bool _isExperimentEventTrigger(InterruptCue interruptCue) {

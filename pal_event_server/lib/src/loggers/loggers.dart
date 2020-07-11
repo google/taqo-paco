@@ -249,7 +249,7 @@ Future<List<ExperimentLoggerInfo>> _getExperimentsToTriggerForCueCodes(List<int>
       for (var a in g.actionTriggers) {
         if (a.type == ActionTrigger.INTERRUPT_TRIGGER_TYPE_SPECIFIER) {
           InterruptTrigger t = a;
-          if (t.cues.any((c) => cueCodes.contains(c))) {
+          if (t.cues.any((c) => cueCodes.contains(c.cueCode))) {
             toLog.groups.add(g);
             break;
           }

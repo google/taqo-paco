@@ -111,9 +111,8 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
 
       // Handle triggers
       final triggerEvents = <TriggerEvent>[];
-      for (final e in pacoEvents) {
-        triggerEvents.add(createEventTriggers(appStartCue, e.responses[appsUsedKey]));
-      }
+      triggerEvents.add(createEventTriggers(appStartCue, data["WM_CLASS"]));
+
       broadcastEventsForTriggers(triggerEvents);
     } else if (data is String && data.isNotEmpty) {
       final triggerEvent = createEventTriggers(appClosedCue, data);
