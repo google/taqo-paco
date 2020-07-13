@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart';
+import 'package:logging/logging.dart';
+
+final _logger = Logger('TaqoSharedPrefs');
 
 class TaqoSharedPrefs {
   static const _sharedPrefDbFile = 'taqo_shared_prefs.db';
@@ -24,10 +27,10 @@ class TaqoSharedPrefs {
 
     final contents = await dbFile.readAsString();
     try {
-      var jsonDecode2 = jsonDecode(contents);
-      _sharedPrefMap.addAll(jsonDecode2);
+      var jsonDecoded = jsonDecode(contents);
+      _sharedPrefMap.addAll(jsonDecoded);
     } catch (e) {
-      print(e);
+      _logger.warning(e);
     }
   }
 
