@@ -2,7 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:logging/logging.dart';
 import 'package:path/path.dart';
+
+final _logger = Logger('TaqoSharedPrefs');
 
 class TaqoSharedPrefs {
   static const _sharedPrefDbFile = 'taqo_shared_prefs.db';
@@ -23,7 +26,12 @@ class TaqoSharedPrefs {
     }
 
     final contents = await dbFile.readAsString();
-    _sharedPrefMap.addAll(jsonDecode(contents));
+    try {
+      var jsonDecoded = jsonDecode(contents);
+      _sharedPrefMap.addAll(jsonDecoded);
+    } catch (e) {
+      _logger.warning(e);
+    }
   }
 
   Future _writePrefs() async {

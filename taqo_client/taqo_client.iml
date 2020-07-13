@@ -198,6 +198,12 @@
       <excludeFolder url="file://$MODULE_DIR$/plugins/flutter/url_launcher_linux/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/plugins/flutter/url_launcher_linux/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/plugins/flutter/url_launcher_linux/build" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/macos_launch_daemon/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/macos_launch_daemon/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/macos_launch_daemon/build" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/macos_launch_daemon/example/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/macos_launch_daemon/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/plugins/macos_launch_daemon/example/build" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
