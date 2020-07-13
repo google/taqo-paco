@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:path/path.dart';
 import 'package:logging/logging.dart';
+import 'package:path/path.dart';
 
 final _logger = Logger('TaqoSharedPrefs');
 
