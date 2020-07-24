@@ -10,20 +10,11 @@ import java.io.IOException;
 
 public class PacoEventUtil {
 
-  public static PacoEvent createEvent(ExperimentDAO experiment, String experimentGroup, Long actionTriggerId,
-                                      Long actionId, Long actionTriggerSpecId, Long scheduledTime) {
+  public static final String SENSOR_GROUP_NAME = "**IntelliJLoggerProcess";
+    
+  public static PacoEvent createEvent() {
     PacoEvent event = new PacoEvent();
-    event.setExperimentId(experiment.getId());
-    event.setExperimentName(experiment.getTitle());
-    if (scheduledTime != null && scheduledTime != 0L) {
-      event.setScheduledTime(new DateTime(scheduledTime));
-    }
-    event.setExperimentVersion(experiment.getVersion());
-    event.setExperimentGroupName(experimentGroup);
-    event.setActionId(actionId);
-    event.setActionTriggerId(actionTriggerId);
-    event.setActionTriggerSpecId(actionTriggerSpecId);
-
+    event.setExperimentGroupName(SENSOR_GROUP_NAME);
     event.setResponseTime(new DateTime());
     return event;
   }
@@ -43,3 +34,4 @@ public class PacoEventUtil {
       return null;
     }
 }
+

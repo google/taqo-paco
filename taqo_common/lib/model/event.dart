@@ -74,13 +74,21 @@ class Event {
           : Map.fromIterable(listOfMap,
               key: (item) => item['name'], value: (item) => item['answer']);
 
-  static ZonedDateTime _zonedDateTimeFromString(String string) =>
-      string == null ? null : ZonedDateTime.fromString(string);
+  static ZonedDateTime _zonedDateTimeFromString(String string) => 
+    string == null ? null : ZonedDateTime.fromString(string);
+  
+      
   static String _zonedDateTimeToString(ZonedDateTime zonedDateTime) =>
       zonedDateTime?.toString();
 
   @override
   String toString() {
     return '$experimentName - $groupName: ${responses.toString()}';
+  }
+
+  Event copy() {
+    // TODO if speed is needed, do direct assignment of fields
+    // This is very rarely used so it is low priority
+    return Event.fromJson(toJson());
   }
 }

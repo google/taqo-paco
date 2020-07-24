@@ -14,11 +14,13 @@ import java.io.IOException;
 public class CustomDateTimeSerializer extends JsonSerializer<DateTime> {
 
   private static final DateTimeFormatter dtFormatter = ISODateTimeFormat.dateTime();
-  private static final DateTimeFormatter zoneFormatter = DateTimeFormat.forPattern("ZZ");
+  private static final DateTimeFormatter zoneFormatter = DateTimeFormat.forPattern("Z");
+  DateTimeFormatter df = DateTimeFormat.forPattern("yyyy/MM/dd HH:mm:ssZ");
+   
 
   @Override
   public void serialize(DateTime value, JsonGenerator gen, SerializerProvider arg2)
           throws IOException, JsonProcessingException {
-    gen.writeString(dtFormatter.print(value) + zoneFormatter.withZone(value.getZone()).print(0));
+    gen.writeString(df.print(value));
   }
 }

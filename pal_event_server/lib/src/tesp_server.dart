@@ -3,10 +3,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:pal_event_server/src/experiment_cache.dart';
+import 'package:pal_event_server/src/loggers/loggers.dart' as loggers;
+
 import 'package:pedantic/pedantic.dart';
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/model/experiment_group.dart';
 import 'package:taqo_common/model/notification_holder.dart';
 import 'package:taqo_common/service/experiment_service_lite.dart';
 import 'package:taqo_common/service/sync_service.dart';
@@ -39,10 +42,43 @@ class PALTespServer with TespRequestHandlerMixin {
     unawaited(SyncService.syncData());
   }
 
+  void rewriteIntelliJLoggerEvents(List<Event> events) async {
+    List<Event> eventsNeedingExperimentInfo = [];
+    await events.forEach((event) async {
+      if (event.groupName == "**IntelliJLoggerProcess") {
+        eventsNeedingExperimentInfo.add(event);
+      }
+      if (eventsNeedingExperimentInfo.isNotEmpty) {
+        var experimentInfos = await loggers.getExperimentsToLogForType(
+            GroupTypeEnum.IDE_IDEA_USAGE);
+        eventsNeedingExperimentInfo.forEach((event) {
+          if (experimentInfos.isEmpty) {
+             // throw away uninteresting event
+            events.remove(event);
+          } else {
+            bool first = true;
+            experimentInfos.forEach((experimentInfo) {
+              if (first) {
+                event.experimentId = experimentInfo.experiment.id;
+                event.experimentName = experimentInfo.experiment.title;
+                event.experimentVersion = experimentInfo.experiment.version;
+                event.groupName = experimentInfo.groups.first.name;
+                first = false;
+              } else {
+                var dupevent = event.copy();
+                events.add(dupevent);
+              }
+            });
+          }
+        });
+      }
+    });
+  }
   // PAL Commands
 
   @override
   FutureOr<TespResponse> palAddEvents(List<Event> events) async {
+    await rewriteIntelliJLoggerEvents(events);
     if (await pal_commands.isAllowlistedDataOnly()) {
       await _storeEvent(_allowlist.filterData(events));
     } else {

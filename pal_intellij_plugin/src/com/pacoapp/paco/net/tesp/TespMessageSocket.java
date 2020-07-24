@@ -33,16 +33,46 @@ public class TespMessageSocket<R extends TespMessage, S extends TespMessage> {
     }
 
     public void add(S message) throws IOException {
-        socketOutputStream.write(tespCodec.encode(message));
-        socketOutputStream.flush();
+      socketOutputStream.write(tespCodec.encode(message));
+      socketOutputStream.flush();
+
+
+        // byte[] encodedMessage = tespCodec.encode(message);
+        // System.out.println("encodedmessage size: " + encodedMessage.length);
+        // try {
+        //     Socket socket2 = new Socket("127.0.0.1", 31415);
+        //     OutputStream outputStream = socket2.getOutputStream();
+        //     outputStream.write(encodedMessage);
+        //     outputStream.flush();
+        //     outputStream.close();
+        //     socket2.close();
+        //     System.out.println("Done writing to socket");
+        // } catch (IOException e) {
+        //     log.info("Caught exception in add(message): " +e.getMessage());
+        //     e.printStackTrace();
+        //     throw e;
+        // }
+//
+//        byte[] buf = new byte[1024];
+//        int cnt=0;
+//        int tmp = 0;
+//        while (( tmp = socketInputStream.read(buf)) > 0) {
+//            cnt += tmp;
+//        }
+//        System.out.println("received back bytes: " + cnt);
     }
 
     public void close() {
+        log.info("Closing socket");
         try {
             socketOutputStream.flush();
             socket.close();
         } catch (IOException e) {
             log.warning("Exception closing TespMessageSocket socket: " + e.getMessage());
         }
+    }
+
+    public boolean isBroken() {
+        return !socket.isConnected();
     }
 }

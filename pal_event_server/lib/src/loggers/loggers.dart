@@ -191,7 +191,7 @@ void startOrStopLoggers() async {
     final GroupTypeEnum type = entry.key;
     final List<int> cueCodes = entry.value['cueCodes'];
     final PacoEventLogger logger = entry.value['logger'];
-    final experimentsToLog = await _getExperimentsToLogForType(type);
+    final experimentsToLog = await getExperimentsToLogForType(type);
     final experimentsToTrigger = await _getExperimentsToTriggerForCueCodes(cueCodes);
     // Note: parameters to logger.stop() are inverted, i.e. the experiments
     // passed are the experiments to continue logging/triggering
@@ -201,7 +201,7 @@ void startOrStopLoggers() async {
 }
 
 /// Return a Map of Experiments and Groups that should enable logging
-Future<List<ExperimentLoggerInfo>> _getExperimentsToLogForType(GroupTypeEnum groupType) async {
+Future<List<ExperimentLoggerInfo>> getExperimentsToLogForType(GroupTypeEnum groupType) async {
   final experimentService = await ExperimentServiceLocal.getInstance();
   final experiments = await experimentService.getJoinedExperiments();
 

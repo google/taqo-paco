@@ -9,6 +9,7 @@ import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.history.core.LabelImpl;
 import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ex.AnActionListener;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
@@ -43,10 +44,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.*;
 import java.util.logging.Logger;
 
 public class PacoApplicationComponent implements ApplicationComponent {
@@ -63,7 +61,7 @@ public class PacoApplicationComponent implements ApplicationComponent {
 
   public static String lastFile = null;
   public static BigDecimal lastTime = new BigDecimal(0);
-  public static final BigDecimal FREQUENCY = new BigDecimal(2 * 60); // max secs between events for continuous coding
+  public static final BigDecimal FREQUENCY = new BigDecimal(2l * 60); // max secs between events for continuous coding
   private MyFileEditorManagerListener fileEditorListener;
   private ExternalSystemTaskNotificationListener palTaskListener;
   private TespClient tespClient;
@@ -90,13 +88,12 @@ public class PacoApplicationComponent implements ApplicationComponent {
   public void initComponent() {
     userPreferences = new UserPreferences();
     initTcpClient();
-    appendPacoEvent(PacoIntellijEventTypes.EventType.IDE_STARTED, Maps.newHashMap());
     setupEventListeners();
     setupQueueProcessor();
+    appendPacoEvent(PacoIntellijEventTypes.EventType.IDE_STARTED, Maps.newHashMap());
   }
 
   private void initTcpClient() {
-    log.info("Initializing PacoApplicationComponent");
     try {
       tespClient = new TespClient("127.0.0.1", 31415);
     } catch (IOException e) {
@@ -118,26 +115,14 @@ public class PacoApplicationComponent implements ApplicationComponent {
       scheduledFuture.cancel(true);
     } catch (Exception e) {
     }
-    // TODO maybe run this synchronously so that we wait until it finishes. The event does not get sent right now.
     appendPacoEvent(PacoIntellijEventTypes.EventType.IDE_STOPPED, null);
     processPacoEventQueue();
   }
 
   public static void appendPacoEvent(final PacoIntellijEventTypes.EventType type, final Map<String, String> data) {
-//    if (data == null) {
-////      throw new IllegalArgumentException("Cannot create event with no data");
-////    }
-
     ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
       public void run() {
-        ExperimentDAO experiment = getExperiment();
-        String experimentGroup = experiment.getGroupByName("DevLog").getName(); // TODO pull this from the experiment definition
-        Long actionTriggerId = null;
-        Long actionId = null;
-        Long actionTriggerSpecId = null;
-        Long scheduledTime = null;
-        PacoEvent event = PacoEventUtil.createEvent(experiment, experimentGroup, actionTriggerId, actionId,
-                actionTriggerSpecId, scheduledTime);
+        PacoEvent event = PacoEventUtil.createEvent();
         List<Output> outputs = Lists.newArrayList();
         outputs.add(new Output("type", type.toString()));
         outputs.add(new Output("apps_used", getIdeVersion()));
@@ -150,7 +135,6 @@ public class PacoApplicationComponent implements ApplicationComponent {
             outputs.add(new Output(name, value));
           }
           event.setWhat(outputs);
-          log.info(PacoEventUtil.jsonify(event.getWhat()));
         }
         pacoEventsQueue.add(event);
       }
@@ -164,7 +148,6 @@ public class PacoApplicationComponent implements ApplicationComponent {
             return "Unknown";
           }
         } catch (ClassNotFoundException e) {
-          e.printStackTrace();
           return "Unknown";
         }
       }
@@ -198,7 +181,8 @@ public class PacoApplicationComponent implements ApplicationComponent {
   }
 
   private void setupEventListeners() {
-    ApplicationManager.getApplication().invokeLater(new Runnable() {
+    ApplicationManager.getApplication().executeOnPooledThread(
+            new Runnable() {
       public void run() {
         MessageBus bus = ApplicationManager.getApplication().getMessageBus();
         connection = bus.connect();
@@ -281,8 +265,9 @@ public class PacoApplicationComponent implements ApplicationComponent {
 
     while (true) {
       PacoEvent pacoEvent = pacoEventsQueue.poll();
-      if (pacoEvent == null)
+      if (pacoEvent == null) {
         break;
+      }
       pacoEvents.add(pacoEvent);
     }
     if (!pacoEvents.isEmpty()) {
@@ -293,11 +278,18 @@ public class PacoApplicationComponent implements ApplicationComponent {
 
   private void sendPacoEvent(ArrayList<PacoEvent> pacoEvents) {
     String jsonEvents = PacoEventUtil.jsonify(pacoEvents);
-    log.info("Paco Event to be sent:\n" + jsonEvents);
+    //    log.info("Paco Event to be sent:\n" + jsonEvents);
 
     final TespRequestAddEvent event = TespRequestAddEvent.withPayload(jsonEvents);
 
     try {
+      if (tespClient == null) {
+        initTcpClient();
+      }
+      if (tespClient == null) {
+        log.severe("cannot connect to PAL Event Server");
+        return;
+      }
       tespClient.send(event);
     } catch (IOException e) {
       log.warning("Got exception sending pacoEvents to tcpClient: " + e.getMessage());
@@ -413,7 +405,6 @@ public class PacoApplicationComponent implements ApplicationComponent {
 
 
   public void store(Project project, LabelImpl label) {
-    System.out.println("Storing label: " + label.toString());
     projectLabel.put(project, label);
   }
 
