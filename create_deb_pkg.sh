@@ -75,7 +75,7 @@ cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/META-INF /tmp/pal_i
 
 ZIPFILE=$(pwd)/${OUT}/usr/share/taqo/pal_intellij_plugin.zip
 pushd /tmp
-zip -r ${ZIPFILE} pal_intellij_plugin/
+zip -r ${ZIPFILE} /tmp/pal_intellij_plugin/
 popd || exit
 
 mkdir -p ${OUT}/usr/share/applications
