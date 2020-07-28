@@ -6,7 +6,7 @@ import '../../pal_event_helper.dart';
 import '../app_logger.dart';
 import 'xprop_util.dart' as xprop;
 
-String _prevWindowName;
+String _prevAppAndWindowName;
 
 // Isolate entry point must be a top-level function (or static?)
 // Query xprop for the active window
@@ -21,15 +21,15 @@ void linuxAppLoggerIsolate(SendPort sendPort) {
         Process.run(xprop.command, xprop.getAppArgs(windowId)).then((result) {
           final currWindow = result.stdout;
           final resultMap = xprop.buildResultMap(currWindow);
-          final currWindowName = resultMap[appNameField];
+          final currAppAndWindowName = resultMap[appNameField] = resultMap[windowNameField];
 
-          if (currWindowName != _prevWindowName) {
+          if (currAppAndWindowName != _prevAppAndWindowName) {
             // Send APP_CLOSED
-            if (_prevWindowName != null && _prevWindowName.isNotEmpty) {
-              sendPort.send(_prevWindowName);
+            if (_prevAppAndWindowName != null && _prevAppAndWindowName.isNotEmpty) {
+              sendPort.send(_prevAppAndWindowName);
             }
 
-            _prevWindowName = currWindowName;
+            _prevAppAndWindowName = currAppAndWindowName;
 
             // Send PacoEvent && APP_USAGE
             if (resultMap != null) {

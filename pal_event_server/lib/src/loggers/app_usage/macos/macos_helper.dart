@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:html';
 import 'dart:io';
 import 'dart:isolate';
 
@@ -6,7 +7,7 @@ import '../../pal_event_helper.dart';
 import '../app_logger.dart';
 import 'apple_script_util.dart' as apple_script;
 
-String _prevWindowName;
+String _prevAppAndWindowName;
 
 // Isolate entry point must be a top-level function (or static?)
 // Run Apple Script for the active window
@@ -15,15 +16,15 @@ void macOSAppLoggerIsolate(SendPort sendPort) {
     Process.run(apple_script.command, apple_script.scriptArgs).then((result) {
       final currWindow = result.stdout.trim();
       final resultMap = apple_script.buildResultMap(currWindow);
-      final currWindowName = resultMap[appNameField];
+      final currAppAndWindowName = resultMap[appNameField] + resultMap[windowNameField];
 
-      if (currWindowName != _prevWindowName) {
+      if (currAppAndWindowName != _prevAppAndWindowName) {
         // Send APP_CLOSED
-        if (_prevWindowName != null && _prevWindowName.isNotEmpty) {
-          sendPort.send(_prevWindowName);
+        if (_prevAppAndWindowName != null && _prevAppAndWindowName.isNotEmpty) {
+          sendPort.send(_prevAppAndWindowName);
         }
 
-        _prevWindowName = currWindowName;
+        _prevAppAndWindowName = currAppAndWindowName;
 
         // Send PacoEvent && APP_USAGE
         if (resultMap != null) {
