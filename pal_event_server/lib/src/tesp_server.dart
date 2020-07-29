@@ -42,37 +42,49 @@ class PALTespServer with TespRequestHandlerMixin {
     unawaited(SyncService.syncData());
   }
 
+  /**
+   * If there are any events generated from the IDE logger,
+   * find each experiment that is interested in these events
+   * and record a copy of the vent for that experiment with
+   * the experiment fields properly recorded.
+   *
+   */
   void rewriteIntelliJLoggerEvents(List<Event> events) async {
     List<Event> eventsNeedingExperimentInfo = [];
     await events.forEach((event) async {
       if (event.groupName == "**IntelliJLoggerProcess") {
         eventsNeedingExperimentInfo.add(event);
       }
-      if (eventsNeedingExperimentInfo.isNotEmpty) {
-        var experimentInfos = await loggers.getExperimentsToLogForType(
-            GroupTypeEnum.IDE_IDEA_USAGE);
-        eventsNeedingExperimentInfo.forEach((event) {
-          if (experimentInfos.isEmpty) {
-             // throw away uninteresting event
-            events.remove(event);
+    });
+    if (eventsNeedingExperimentInfo.isEmpty) {
+      return;
+    }
+    var experimentInfos = await loggers.getExperimentsToLogForType(GroupTypeEnum.IDE_IDEA_USAGE);
+    if (experimentInfos == null || experimentInfos.isEmpty) {
+      // no experiments listening to IDE events
+      return;
+    }
+
+    eventsNeedingExperimentInfo.forEach((event) {
+        bool firstPassOnEvent = true;
+        experimentInfos.forEach((experimentInfo) {
+          if (firstPassOnEvent) {
+            populateExperimentInfoOnEvent(event, experimentInfo);
+            firstPassOnEvent = false;
           } else {
-            bool first = true;
-            experimentInfos.forEach((experimentInfo) {
-              if (first) {
-                event.experimentId = experimentInfo.experiment.id;
-                event.experimentName = experimentInfo.experiment.title;
-                event.experimentVersion = experimentInfo.experiment.version;
-                event.groupName = experimentInfo.groups.first.name;
-                first = false;
-              } else {
-                var dupevent = event.copy();
-                events.add(dupevent);
-              }
-            });
+            var dupevent = event.copy();
+            populateExperimentInfoOnEvent(dupevent, experimentInfo);
+            events.add(dupevent);
           }
         });
-      }
     });
+  }
+
+  void populateExperimentInfoOnEvent(Event event, loggers.ExperimentLoggerInfo experimentInfo) {
+    event.experimentId = experimentInfo.experiment.id;
+    event.experimentName = experimentInfo.experiment.title;
+    event.experimentVersion = experimentInfo.experiment.version;
+    event.groupName = experimentInfo.groups.first.name;
   }
   // PAL Commands
 
