@@ -126,7 +126,7 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
         }
         return events;
       }
-      _logger.info("No new terminal commands to log");
+      //_logger.info("No new terminal commands to log");
     } catch (e) {
       _logger.warning("Error loading terminal commands file: $e");
     }
