@@ -49,28 +49,28 @@ class PALTespServer with TespRequestHandlerMixin {
    * the experiment fields properly recorded.
    *
    */
-  void rewriteIntelliJLoggerEvents(List<Event> events) async {
-    List<Event> eventsNeedingExperimentInfo = [];
-    await events.forEach((event) async {
-      if (event.groupName == "**IntelliJLoggerProcess") {
-        eventsNeedingExperimentInfo.add(event);
-      }
-    });
-    if (eventsNeedingExperimentInfo.isEmpty) {
+  void createEventsPerExperimentOrDeleteIntelliJLoggerEvents(List<Event> events) async {
+    List<Event> ideaLoggerEvents = await events.where((event) =>
+      event.groupName == "**IntelliJLoggerProcess");
+    if (ideaLoggerEvents.isEmpty) {
       return;
     }
-    var experimentInfos = await loggers.getExperimentsToLogForType(GroupTypeEnum.IDE_IDEA_USAGE);
-    if (experimentInfos == null || experimentInfos.isEmpty) {
-      // no experiments listening to IDE events
+    var experimentsWithIdeaLogging = await loggers.getExperimentsToLogForType(GroupTypeEnum.IDE_IDEA_USAGE);
+    if (experimentsWithIdeaLogging == null || experimentsWithIdeaLogging.isEmpty) {
+      deleteAllIdeaLoggerEvents(events, ideaLoggerEvents);
       return;
     }
 
+    createEventForEachExperiment(ideaLoggerEvents, experimentsWithIdeaLogging, events);
+  }
+
+  void createEventForEachExperiment(List<Event> eventsNeedingExperimentInfo, List<loggers.ExperimentLoggerInfo> experimentInfos, List<Event> events) {
     eventsNeedingExperimentInfo.forEach((event) {
-        bool firstPassOnEvent = true;
+        bool firstExperimentNeedingEvent = true;
         experimentInfos.forEach((experimentInfo) {
-          if (firstPassOnEvent) {
+          if (firstExperimentNeedingEvent) {
             populateExperimentInfoOnEvent(event, experimentInfo);
-            firstPassOnEvent = false;
+            firstExperimentNeedingEvent = false;
           } else {
             var dupevent = event.copy();
             populateExperimentInfoOnEvent(dupevent, experimentInfo);
@@ -78,6 +78,10 @@ class PALTespServer with TespRequestHandlerMixin {
           }
         });
     });
+  }
+
+  void deleteAllIdeaLoggerEvents(List<Event> events, List<Event> eventsNeedingExperimentInfo) {
+    events.removeWhere((event) => eventsNeedingExperimentInfo.indexOf(event) != -1);
   }
 
   void populateExperimentInfoOnEvent(Event event, loggers.ExperimentLoggerInfo experimentInfo) {
@@ -90,7 +94,7 @@ class PALTespServer with TespRequestHandlerMixin {
 
   @override
   FutureOr<TespResponse> palAddEvents(List<Event> events) async {
-    await rewriteIntelliJLoggerEvents(events);
+    await createEventsPerExperimentOrDeleteIntelliJLoggerEvents(events);
     if (await pal_commands.isAllowlistedDataOnly()) {
       await _storeEvent(_allowlist.filterData(events));
     } else {
