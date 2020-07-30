@@ -64,24 +64,26 @@ class PALTespServer with TespRequestHandlerMixin {
     createEventForEachExperiment(ideaLoggerEvents, experimentsWithIdeaLogging, events);
   }
 
-  void createEventForEachExperiment(List<Event> eventsNeedingExperimentInfo, List<loggers.ExperimentLoggerInfo> experimentInfos, List<Event> events) {
-    eventsNeedingExperimentInfo.forEach((event) {
+  void createEventForEachExperiment(List<Event> ideaLoggerEvents,
+      List<loggers.ExperimentLoggerInfo> experimentsWithIdeaLogging,
+      List<Event> events) {
+    ideaLoggerEvents.forEach((event) {
         bool firstExperimentNeedingEvent = true;
-        experimentInfos.forEach((experimentInfo) {
+        experimentsWithIdeaLogging.forEach((experiment) {
           if (firstExperimentNeedingEvent) {
-            populateExperimentInfoOnEvent(event, experimentInfo);
+            populateExperimentInfoOnEvent(event, experiment);
             firstExperimentNeedingEvent = false;
           } else {
             var dupevent = event.copy();
-            populateExperimentInfoOnEvent(dupevent, experimentInfo);
+            populateExperimentInfoOnEvent(dupevent, experiment);
             events.add(dupevent);
           }
         });
     });
   }
 
-  void deleteAllIdeaLoggerEvents(List<Event> events, List<Event> eventsNeedingExperimentInfo) {
-    events.removeWhere((event) => eventsNeedingExperimentInfo.indexOf(event) != -1);
+  void deleteAllIdeaLoggerEvents(List<Event> events, List<Event> ideaLoggerEvents) {
+    events.removeWhere((event) => ideaLoggerEvents.indexOf(event) != -1);
   }
 
   void populateExperimentInfoOnEvent(Event event, loggers.ExperimentLoggerInfo experimentInfo) {
