@@ -50,13 +50,25 @@ class PALTespServer with TespRequestHandlerMixin {
    *
    */
   void createEventsPerExperimentOrDeleteIntelliJLoggerEvents(List<Event> events) async {
-    List<Event> ideaLoggerEvents = await events.where((event) =>
-      event.groupName == "**IntelliJLoggerProcess");
+// the where call is async but there seems no way to add the async keyword
+// so it fails.
+//    List<Event> ideaLoggerEvents = await events.where((event) =>
+//      event.groupName == "**IntelliJLoggerProcess");
+
+// This version works.
+    List<Event> ideaLoggerEvents = [];
+    events.forEach((event) {
+        if (event.groupName == "**IntelliJLoggerProcess") {
+          ideaLoggerEvents.add(event);
+        }});
+
     if (ideaLoggerEvents.isEmpty) {
+      //print("no logger events. Keeping all");
       return;
     }
     var experimentsWithIdeaLogging = await loggers.getExperimentsToLogForType(GroupTypeEnum.IDE_IDEA_USAGE);
     if (experimentsWithIdeaLogging == null || experimentsWithIdeaLogging.isEmpty) {
+      //print("deleting all logger events");
       deleteAllIdeaLoggerEvents(events, ideaLoggerEvents);
       return;
     }
@@ -67,6 +79,7 @@ class PALTespServer with TespRequestHandlerMixin {
   void createEventForEachExperiment(List<Event> ideaLoggerEvents,
       List<loggers.ExperimentLoggerInfo> experimentsWithIdeaLogging,
       List<Event> events) {
+    //print("creating events for each experiment");
     ideaLoggerEvents.forEach((event) {
         bool firstExperimentNeedingEvent = true;
         experimentsWithIdeaLogging.forEach((experiment) {
@@ -80,6 +93,7 @@ class PALTespServer with TespRequestHandlerMixin {
           }
         });
     });
+    //print("done with creating Events");
   }
 
   void deleteAllIdeaLoggerEvents(List<Event> events, List<Event> ideaLoggerEvents) {
