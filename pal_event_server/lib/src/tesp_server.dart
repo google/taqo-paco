@@ -50,7 +50,7 @@ class PALTespServer with TespRequestHandlerMixin {
     *
     */
    void createEventsPerExperimentOrDeleteIdeaLoggerEvents(List<Event> events) async {
-    List<Event> ideaLoggerEvents = await getIdeaLoggerEvents(events);
+    List<Event> ideaLoggerEvents = getIdeaLoggerEvents(events);
     if (ideaLoggerEvents.isEmpty) {
       return;
     }
@@ -62,8 +62,8 @@ class PALTespServer with TespRequestHandlerMixin {
     createEventForEachExperiment(ideaLoggerEvents, experimentsWithIdeaLogging, events);
   }
 
-  Future<List<Event>> getIdeaLoggerEvents(List<Event> events) async {
-    return await events.where((event) =>
+  List<Event> getIdeaLoggerEvents(List<Event> events)  {
+    return events.where((event) =>
       event.groupName == "**IntelliJLoggerProcess").toList();
   }
 
