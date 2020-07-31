@@ -46,40 +46,30 @@ class PALTespServer with TespRequestHandlerMixin {
    * If there are any events generated from the IDE logger,
    * find each experiment that is interested in these events
    * and record a copy of the vent for that experiment with
-   * the experiment fields properly recorded.
-   *
-   */
-  void createEventsPerExperimentOrDeleteIntelliJLoggerEvents(List<Event> events) async {
-// the where call is async but there seems no way to add the async keyword
-// so it fails.
-//    List<Event> ideaLoggerEvents = await events.where((event) =>
-//      event.groupName == "**IntelliJLoggerProcess");
-
-// This version works.
-    List<Event> ideaLoggerEvents = [];
-    events.forEach((event) {
-        if (event.groupName == "**IntelliJLoggerProcess") {
-          ideaLoggerEvents.add(event);
-        }});
-
+    * the experiment fields properly recorded.
+    *
+    */
+   void createEventsPerExperimentOrDeleteIdeaLoggerEvents(List<Event> events) async {
+    List<Event> ideaLoggerEvents = await getIdeaLoggerEvents(events);
     if (ideaLoggerEvents.isEmpty) {
-      //print("no logger events. Keeping all");
       return;
     }
     var experimentsWithIdeaLogging = await loggers.getExperimentsToLogForType(GroupTypeEnum.IDE_IDEA_USAGE);
-    if (experimentsWithIdeaLogging == null || experimentsWithIdeaLogging.isEmpty) {
-      //print("deleting all logger events");
-      deleteAllIdeaLoggerEvents(events, ideaLoggerEvents);
+    if (experimentsWithIdeaLogging.isEmpty) {
+      deleteAllIdeaLoggerEvents(events);
       return;
     }
-
     createEventForEachExperiment(ideaLoggerEvents, experimentsWithIdeaLogging, events);
+  }
+
+  Future<List<Event>> getIdeaLoggerEvents(List<Event> events) async {
+    return await events.where((event) =>
+      event.groupName == "**IntelliJLoggerProcess").toList();
   }
 
   void createEventForEachExperiment(List<Event> ideaLoggerEvents,
       List<loggers.ExperimentLoggerInfo> experimentsWithIdeaLogging,
       List<Event> events) {
-    //print("creating events for each experiment");
     ideaLoggerEvents.forEach((event) {
         bool firstExperimentNeedingEvent = true;
         experimentsWithIdeaLogging.forEach((experiment) {
@@ -96,8 +86,8 @@ class PALTespServer with TespRequestHandlerMixin {
     //print("done with creating Events");
   }
 
-  void deleteAllIdeaLoggerEvents(List<Event> events, List<Event> ideaLoggerEvents) {
-    events.removeWhere((event) => ideaLoggerEvents.indexOf(event) != -1);
+  void deleteAllIdeaLoggerEvents(List<Event> events) {
+    events.removeWhere((event) => event.groupName == "**IntelliJLoggerProcess");
   }
 
   void populateExperimentInfoOnEvent(Event event, loggers.ExperimentLoggerInfo experimentInfo) {
@@ -110,7 +100,7 @@ class PALTespServer with TespRequestHandlerMixin {
 
   @override
   FutureOr<TespResponse> palAddEvents(List<Event> events) async {
-    await createEventsPerExperimentOrDeleteIntelliJLoggerEvents(events);
+    await createEventsPerExperimentOrDeleteIdeaLoggerEvents(events);
     if (await pal_commands.isAllowlistedDataOnly()) {
       await _storeEvent(_allowlist.filterData(events));
     } else {
