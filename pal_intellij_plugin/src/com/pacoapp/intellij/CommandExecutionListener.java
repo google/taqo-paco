@@ -97,36 +97,42 @@ public class CommandExecutionListener implements AnActionListener {
       LabelImpl storedLabel = pacoApplicationComponent.getLabel(project);
       DirectoryHistoryDialogModel myModel = new DirectoryHistoryDialogModel(project, gateway, facade, projectBaseDir.findChild("lib"));
       List<FilePatch> patchesLib = Lists.newArrayList();
-      int index = LocalHistoryUtilSubclass.findRevisionIndexToRevert(myModel, storedLabel);
-      System.out.println("index value for label, "+ storedLabel.toString() + ",= " + index);
-      if (index >= 1) {
-        myModel.clearRevisions();
-        myModel.selectRevisions(-1, index);
-        patchesLib.addAll(IdeaTextPatchBuilder.buildPatch(project, myModel.getChanges(), projectBaseDir + "/lib", false));
-      }
+      if (myModel == null || storedLabel == null) {
+        log.severe("There is either no model or no label for doing scheduleRevisionsUpdate. myModel: "
+                + (myModel != null)
+                + ", label: " + (storedLabel != null));
+      } else {
+        int index = LocalHistoryUtilSubclass.findRevisionIndexToRevert(myModel, storedLabel);
+        System.out.println("index value for label, " + storedLabel.toString() + ",= " + index);
+        if (index >= 1) {
+          myModel.clearRevisions();
+          myModel.selectRevisions(-1, index);
+          patchesLib.addAll(IdeaTextPatchBuilder.buildPatch(project, myModel.getChanges(), projectBaseDir + "/lib", false));
+        }
 
-      myModel = new DirectoryHistoryDialogModel(project, gateway, facade, projectBaseDir.findChild("test"));
-      index = LocalHistoryUtilSubclass.findRevisionIndexToRevert(myModel, storedLabel);
-      System.out.println("index value for label, "+ storedLabel.toString() + ",= " + index);
-      if (index >= 1) {
-        myModel.clearRevisions();
-        myModel.selectRevisions(-1, index);
-        List<FilePatch> patchesTest = IdeaTextPatchBuilder.buildPatch(project, myModel.getChanges(), projectBaseDir + "/test", false);
-        patchesLib.addAll(patchesTest);
-      }
-      if (patchesLib.size() > 0) {
-        String basePath = projectBaseDir.getPath();
-        String patchFilePath = new File(Files.createTempDir(), "patch" + getDateTimeString()).getAbsolutePath();
-        System.out.println("patch location: " + patchFilePath);
+        myModel = new DirectoryHistoryDialogModel(project, gateway, facade, projectBaseDir.findChild("test"));
+        index = LocalHistoryUtilSubclass.findRevisionIndexToRevert(myModel, storedLabel);
+        System.out.println("index value for label, " + storedLabel.toString() + ",= " + index);
+        if (index >= 1) {
+          myModel.clearRevisions();
+          myModel.selectRevisions(-1, index); // set to 0, maybe, there is some weirdness in selecting revisions. Labels make revisions too.
+          List<FilePatch> patchesTest = IdeaTextPatchBuilder.buildPatch(project, myModel.getChanges(), projectBaseDir + "/test", false);
+          patchesLib.addAll(patchesTest);
+        }
+        if (patchesLib.size() > 0) {
+          String basePath = projectBaseDir.getPath();
+          String patchFilePath = new File(Files.createTempDir(), "patch" + getDateTimeString() + ".patch").getAbsolutePath();
+          System.out.println("patch location: " + patchFilePath);
 
-        PatchWriter.writePatches(project, patchFilePath, basePath, patchesLib, (CommitContext) null, Charset.defaultCharset());
-        String patchBufferEncoded = "textdiff===" + base64EncodeFileContents(patchFilePath);
-        Map<String, String> data = Maps.newHashMap();
-        data.put("diff_file", patchFilePath);
-        data.put("project", project.getName());
-        data.put("project_dir", project.getBasePath());
-        data.put("diff", patchBufferEncoded);
-        PacoApplicationComponent.appendPacoEvent(PacoIntellijEventTypes.EventType.DIFF, data);
+          PatchWriter.writePatches(project, patchFilePath, basePath, patchesLib, (CommitContext) null, Charset.defaultCharset());
+          String patchBufferEncoded = "textdiff===" + base64EncodeFileContents(patchFilePath);
+          Map<String, String> data = Maps.newHashMap();
+          data.put("diff_file", patchFilePath);
+          data.put("project", project.getName());
+          data.put("project_dir", project.getBasePath());
+          data.put("diff", patchBufferEncoded);
+          PacoApplicationComponent.appendPacoEvent(PacoIntellijEventTypes.EventType.DIFF, data);
+        }
       }
     } catch (VcsException e) {
       e.printStackTrace();
