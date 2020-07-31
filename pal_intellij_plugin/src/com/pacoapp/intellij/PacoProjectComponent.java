@@ -151,8 +151,23 @@ public class PacoProjectComponent implements ProjectComponent {
     }
     Map<String, String> data = Maps.newHashMap();
     data.put("snapshot_file", zipFile.getAbsolutePath());
+    if (zipFile.length() <= 1000000 /* 1mb max*/) {
+      String base64EncodedZipFile = Base64.getEncoder().encodeToString(getBytesOfZip(zipFile));
+      if (base64EncodedZipFile != null) {
+        data.put("base_snapshot_contents", "zipfile===" + base64EncodedZipFile);
+      }
+    }
     pacoAppComponent.appendPacoEvent(PacoIntellijEventTypes.EventType.PROJECT_SNAPSHOT, data);
     project.save(); // TODO - do I need to do this?
+  }
+
+  private byte[] getBytesOfZip(File zipFile) {
+    try {
+      return java.nio.file.Files.readAllBytes(zipFile.toPath());
+    } catch (IOException e) {
+      e.printStackTrace();
+      return null;
+    }
   }
 
   private File createZipFile(String moduleName, File localStorage) {
