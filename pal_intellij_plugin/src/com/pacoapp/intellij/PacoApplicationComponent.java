@@ -143,7 +143,12 @@ public class PacoApplicationComponent implements ApplicationComponent {
         try {
           Class settings = this.getClass().getClassLoader().loadClass("io.flutter.settings.FlutterSettings");
           if (settings != null) {
-            return String.valueOf(FlutterSettings.getInstance().isReloadOnSave());
+            FlutterSettings flutterSettings = FlutterSettings.getInstance();
+            if (flutterSettings != null) {
+              return String.valueOf(flutterSettings.isReloadOnSave());
+            } else {
+              return "unknown";
+            }
           } else {
             return "Unknown";
           }
