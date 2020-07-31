@@ -394,11 +394,7 @@ public class PacoApplicationComponent implements ApplicationComponent {
 
     for (RunConfiguration runConfiguration : projectRunManager.getAllConfigurationsList()) {
       List<BeforeRunTask> beforeRunTasksForConfiguration = projectRunManager.getBeforeRunTasks(runConfiguration);
-      for (BeforeRunTask task : beforeRunTasksForConfiguration) {
-        if (beforeRunTaskProvider.getId().equals(task.getProviderId())) {
-          beforeRunTasksForConfiguration.remove(task);
-        }
-      }
+      beforeRunTasksForConfiguration.removeIf(task -> beforeRunTaskProvider.getId().equals(task.getProviderId()));
       projectRunManager.setBeforeRunTasks(runConfiguration, beforeRunTasksForConfiguration, true);
     }
   }
