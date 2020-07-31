@@ -3,10 +3,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:pal_event_server/src/experiment_cache.dart';
+import 'package:pal_event_server/src/loggers/loggers.dart' as loggers;
+
 import 'package:pedantic/pedantic.dart';
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
+import 'package:taqo_common/model/experiment_group.dart';
 import 'package:taqo_common/model/notification_holder.dart';
 import 'package:taqo_common/service/experiment_service_lite.dart';
 import 'package:taqo_common/service/sync_service.dart';
@@ -39,10 +42,65 @@ class PALTespServer with TespRequestHandlerMixin {
     unawaited(SyncService.syncData());
   }
 
+  /**
+   * If there are any events generated from the IDE logger,
+   * find each experiment that is interested in these events
+   * and record a copy of the vent for that experiment with
+    * the experiment fields properly recorded.
+    *
+    */
+   void createEventsPerExperimentOrDeleteIdeaLoggerEvents(List<Event> events) async {
+    List<Event> ideaLoggerEvents = getIdeaLoggerEvents(events);
+    if (ideaLoggerEvents.isEmpty) {
+      return;
+    }
+    var experimentsWithIdeaLogging = await loggers.getExperimentsToLogForType(GroupTypeEnum.IDE_IDEA_USAGE);
+    if (experimentsWithIdeaLogging.isEmpty) {
+      deleteAllIdeaLoggerEvents(events);
+      return;
+    }
+    createEventForEachExperiment(ideaLoggerEvents, experimentsWithIdeaLogging, events);
+  }
+
+  List<Event> getIdeaLoggerEvents(List<Event> events)  {
+    return events.where((event) =>
+      event.groupName == "**IntelliJLoggerProcess").toList();
+  }
+
+  void createEventForEachExperiment(List<Event> ideaLoggerEvents,
+      List<loggers.ExperimentLoggerInfo> experimentsWithIdeaLogging,
+      List<Event> events) {
+    ideaLoggerEvents.forEach((event) {
+        bool firstExperimentNeedingEvent = true;
+        experimentsWithIdeaLogging.forEach((experiment) {
+          if (firstExperimentNeedingEvent) {
+            populateExperimentInfoOnEvent(event, experiment);
+            firstExperimentNeedingEvent = false;
+          } else {
+            var dupevent = event.copy();
+            populateExperimentInfoOnEvent(dupevent, experiment);
+            events.add(dupevent);
+          }
+        });
+    });
+    //print("done with creating Events");
+  }
+
+  void deleteAllIdeaLoggerEvents(List<Event> events) {
+    events.removeWhere((event) => event.groupName == "**IntelliJLoggerProcess");
+  }
+
+  void populateExperimentInfoOnEvent(Event event, loggers.ExperimentLoggerInfo experimentInfo) {
+    event.experimentId = experimentInfo.experiment.id;
+    event.experimentName = experimentInfo.experiment.title;
+    event.experimentVersion = experimentInfo.experiment.version;
+    event.groupName = experimentInfo.groups.first.name;
+  }
   // PAL Commands
 
   @override
   FutureOr<TespResponse> palAddEvents(List<Event> events) async {
+    await createEventsPerExperimentOrDeleteIdeaLoggerEvents(events);
     if (await pal_commands.isAllowlistedDataOnly()) {
       await _storeEvent(_allowlist.filterData(events));
     } else {

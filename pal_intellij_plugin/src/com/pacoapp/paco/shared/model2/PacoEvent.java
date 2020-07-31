@@ -33,6 +33,7 @@ public class PacoEvent implements Serializable, EventInterface {
 
   @JsonSerialize(using=CustomDateTimeSerializer.class)
   private DateTime responseTime;
+  @JsonSerialize(using=CustomDateTimeSerializer.class)
   private DateTime scheduledTime;
   private String[] blobs;
   private Integer experimentVersion;

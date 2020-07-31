@@ -37,17 +37,16 @@ public class TespClient {
     }
 
     public void connect() throws IOException {
-        socket = new Socket();
+	socket = new Socket();
         socket.connect(new InetSocketAddress(serverAddress, port), connectionTimeoutMs);
         tespSocket = new TespMessageSocket<>(socket);
     }
 
     // TODO Handle a response
     public /*TespResponse*/ void send(TespRequest request) throws IOException {
-        if (tespSocket == null) {
+        if (tespSocket == null || tespSocket.isBroken()) {
             connect();
         }
-
         tespSocket.add(request);
     }
 

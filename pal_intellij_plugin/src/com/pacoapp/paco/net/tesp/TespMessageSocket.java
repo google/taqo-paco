@@ -33,16 +33,21 @@ public class TespMessageSocket<R extends TespMessage, S extends TespMessage> {
     }
 
     public void add(S message) throws IOException {
-        socketOutputStream.write(tespCodec.encode(message));
-        socketOutputStream.flush();
+      socketOutputStream.write(tespCodec.encode(message));
+      socketOutputStream.flush();
     }
 
     public void close() {
+        log.info("Closing socket");
         try {
             socketOutputStream.flush();
             socket.close();
         } catch (IOException e) {
             log.warning("Exception closing TespMessageSocket socket: " + e.getMessage());
         }
+    }
+
+    public boolean isBroken() {
+        return !socket.isConnected();
     }
 }
