@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(runner LANGUAGES CXX)
 
 set(BINARY_NAME "taqo")
+set(APPLICATION_ID "com.taqo.survey.taqo_client")
 
 cmake_policy(SET CMP0063 NEW)
 
@@ -32,11 +33,12 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
 
+add_definitions(-DAPPLICATION_ID="${APPLICATION_ID}")
+
 # Application build
 add_executable(${BINARY_NAME}
   "main.cc"
   "my_application.cc"
-  "window_configuration.cc"
   "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
 )
 apply_standard_settings(${BINARY_NAME})
