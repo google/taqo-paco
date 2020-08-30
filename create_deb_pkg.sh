@@ -45,15 +45,9 @@ cp ${RELEASE}/taqo_daemon ${OUT}/usr/share/taqo/
 # Ideally the binaries would go in /usr/bin, but the flutter linux embedder
 # currently expects the resources to be located in a relative path
 # (and there is no way to pass runtime args to the embedder)
-
-# Copy shared libraries expected to be in LD_LIBRARY_PATH
-mkdir -p ${OUT}/usr/lib
-cp ${RELEASE}/lib/{libflutter_linux_gtk,liburl_launcher_fde_plugin}.so ${OUT}/usr/lib/
-
 find ${OUT}/usr/share/taqo/data -type f -exec chmod 0644 {} \;
 chmod 0755 ${OUT}/usr/share/taqo/taqo
 chmod 0755 ${OUT}/usr/share/taqo/taqo_daemon
-chmod 0644 ${OUT}/usr/lib/*
 chmod 0644 ${OUT}/usr/share/taqo/lib/*
 
 # dpkg-deb complains about non-stripped binaries, but stripping
