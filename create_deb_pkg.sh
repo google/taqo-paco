@@ -45,15 +45,10 @@ cp ${RELEASE}/taqo_daemon ${OUT}/usr/share/taqo/
 # Ideally the binaries would go in /usr/bin, but the flutter linux embedder
 # currently expects the resources to be located in a relative path
 # (and there is no way to pass runtime args to the embedder)
-
-# Copy shared libraries expected to be in LD_LIBRARY_PATH
-mkdir -p ${OUT}/usr/lib
-cp ${RELEASE}/lib/*.so ${OUT}/usr/lib/
-
 find ${OUT}/usr/share/taqo/data -type f -exec chmod 0644 {} \;
 chmod 0755 ${OUT}/usr/share/taqo/taqo
 chmod 0755 ${OUT}/usr/share/taqo/taqo_daemon
-chmod 0644 ${OUT}/usr/lib/*
+chmod 0644 ${OUT}/usr/share/taqo/lib/*
 
 # dpkg-deb complains about non-stripped binaries, but stripping
 # breaks them
@@ -76,6 +71,7 @@ cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/META-INF /tmp/pal_i
 ZIPFILE=$(pwd)/${OUT}/usr/share/taqo/pal_intellij_plugin.zip
 pushd /tmp
 zip -r ${ZIPFILE} pal_intellij_plugin/
+chmod 0644 ${ZIPFILE}
 popd || exit
 
 mkdir -p ${OUT}/usr/share/applications
@@ -124,7 +120,7 @@ Maintainer: Bob Evans <bobevans@google.com>
 Section: devel
 Priority: optional
 Homepage: https://pacoapp.com/
-Pre-Depends: libc6, libsqlite3-0, libglib2.0-bin
+Depends: libc6, libsqlite3-dev, libglib2.0-bin
 Description: Taqo survey app
  Long description goes here.
 EOM

@@ -1,26 +1,26 @@
 #!/bin/bash
 
 pushd taqo_client
-flutter pub get
+$FLUTTER_SDK/bin/flutter pub get
 popd
 
 pushd taqo_common
-pub get
+$DART_SDK/bin/pub get
 popd
 
 pushd taqo_event_server_protocol
-pub get
+$DART_SDK/bin/pub get
 popd
 
 pushd taqo_shared_prefs
-pub get
+$DART_SDK/bin/pub get
 popd
 
 pushd sqlite_ffi
-pub get
+$DART_SDK/bin/pub get
 popd
 
 pushd pal_event_server
-pub get
+$DART_SDK/bin/pub get
 popd
 
