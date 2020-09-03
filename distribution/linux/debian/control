@@ -1,0 +1,14 @@
+Source: taqosurvey
+Section: devel
+Priority: optional
+Maintainer: Bob Evans <bobevans@google.com>
+Build-Depends: jq (>= 1.6)
+Standards-Version: 4.5.0
+Homepage: https://pacoapp.com/
+
+Package: taqosurvey
+Architecture: amd64
+Depends: libsqlite3-dev, libglib2.0-bin, ${shlibs:Depends}, ${misc:Depends}
+Description: Taqo for Linux
+ Taqo provides onboarding, notifications, surveys, and sensor data
+ collection for UX/DX research.

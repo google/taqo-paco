@@ -1,0 +1,4 @@
+usr/lib/taqo/taqo usr/bin/taqo
+usr/lib/taqo/taqo_daemon usr/bin/taqo_daemon
+usr/share/applications/taqo_daemon.desktop etc/xdg/autostart/taqo_daemon.desktop
+
