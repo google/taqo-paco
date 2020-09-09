@@ -1,8 +1,8 @@
 [Desktop Entry]
 Name=Taqo Daemon
 Comment=Taqo user study survey app
-Exec=taqo_daemon
-Terminal=true
+Exec=taqo_daemon start
+Terminal=false
 Type=Application
 Icon=/usr/lib/taqo/data/flutter_assets/assets/paco256.png
 Categories=GNOME;GTK;Utility;TextEditor;

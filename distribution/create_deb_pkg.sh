@@ -11,7 +11,7 @@ rsync -a --delete --exclude=/distribution --exclude=.git --exclude=.idea --exclu
 rsync -a --delete "${DISTRIBUTION_DIR}/linux/debian" "${BUILD_DIR}"
 DATE=$(date -R) envsubst < "${LINUX_DIR}/debian-changelog.tpl" > "${BUILD_DIR}/debian/changelog"
 cp "${LINUX_DIR}/build.sh" "${BUILD_DIR}/"
-cp "${LINUX_DIR}"/{taqo,taqo_daemon}.desktop "${BUILD_DIR}/"
+cp "${LINUX_DIR}"/{taqo,taqo_daemon}{,.desktop} "${BUILD_DIR}/"
 
 cd "${BUILD_DIR}" || exit
 dpkg-buildpackage -B -us -uc
