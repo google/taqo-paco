@@ -1,0 +1,3 @@
+# Without the following, dpkg-shlibdeps will use libgcc-s1 instead of
+# libgcc1, causing compatibility issues with Debian 10.
+libgcc_s	1	libgcc1

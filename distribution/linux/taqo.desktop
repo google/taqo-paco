@@ -1,0 +1,16 @@
+[Desktop Entry]
+Name=Taqo Survey
+Comment=Taqo user study survey app
+Exec=taqo
+Terminal=false
+Type=Application
+#StartupNotify=true
+Icon=/usr/lib/taqo/data/flutter_assets/assets/paco256.png
+Categories=GNOME;GTK;Utility;TextEditor;
+#Actions=new-window
+Keywords=Taqo;taqo;survey
+#DBusActivatable=true
+
+#[Desktop Action new-window]
+#Name=New Window
+#Exec=gedit --new-window

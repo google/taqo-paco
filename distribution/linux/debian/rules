@@ -1,0 +1,35 @@
+#!/usr/bin/make -f
+# See debhelper(7) (uncomment to enable)
+# output every command that modifies files on the build system.
+#export DH_VERBOSE = 1
+
+
+# see FEATURE AREAS in dpkg-buildflags(1)
+#export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+# see ENVIRONMENT in dpkg-buildflags(1)
+# package maintainers to append CFLAGS
+#export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
+# package maintainers to append LDFLAGS
+#export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
+
+OUT_DIR := taqo_client/build/linux/release/bundle
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	./resolve_deps.sh
+
+override_dh_auto_build:
+	./build.sh
+
+override_dh_strip:
+	dh_strip --exclude=taqo_daemon
+
+override_dh_auto_install:
+	mkdir -p debian/tmp/out
+	cp -R $(OUT_DIR) debian/tmp/out/taqo
+	cp {taqo,taqo_daemon}.desktop debian/tmp/out
+	dh_install
+	dh_link

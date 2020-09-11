@@ -4,7 +4,7 @@ import 'package:archive/archive.dart';
 import 'package:archive/archive_io.dart';
 import 'package:path/path.dart' as path;
 
-const intelliJAssetPath = '/usr/share/taqo/pal_intellij_plugin.zip';
+const intelliJAssetPath = '/usr/lib/taqo/pal_intellij_plugin.zip';
 final intelliJPaths = [
   RegExp(r'\.?AndroidStudio\d+\.\d+'),
   RegExp(r'\.?IdeaIC\d{4}\.\d+'),
