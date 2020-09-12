@@ -1,6 +1,6 @@
 # taqo_survey
 
-A tool for rendering surveys.
+A *research* tool for rendering surveys.
 
 The main app is in the `taqo_client` subdirectory, which contains a Flutter project. More information can be found in `taqo_client/README.md`.
 
