@@ -1,6 +1,8 @@
 # taqo_survey
 
-A *research* tool for rendering surveys.
+A *research* tool for behavioral research. It is the next version of Paco.
+
+It has been completely rewritten to be more modular and more easily runnable and maintainable across both mobile and desktop platforms.
 
 The main app is in the `taqo_client` subdirectory, which contains a Flutter project. More information can be found in `taqo_client/README.md`.
 
