@@ -25,11 +25,12 @@ override_dh_auto_build:
 	./build.sh
 
 override_dh_strip:
-	dh_strip --exclude=taqo_daemon
+	dh_strip --exclude=taqo_server
 
 override_dh_auto_install:
 	mkdir -p debian/tmp/out
 	cp -R $(OUT_DIR) debian/tmp/out/taqo
-	cp {taqo,taqo_daemon}.desktop debian/tmp/out
+	mkdir -p debian/tmp/out/files
+	cp {taqo,taqo_daemon}{,.desktop} debian/tmp/out/files
 	dh_install
 	dh_link

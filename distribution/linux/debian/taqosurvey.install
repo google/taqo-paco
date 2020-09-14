@@ -1,3 +1,5 @@
 debian/tmp/out/taqo usr/lib
-debian/tmp/out/taqo.desktop usr/share/applications
-debian/tmp/out/taqo_daemon.desktop usr/share/applications
+debian/tmp/out/files/taqo usr/bin
+debian/tmp/out/files/taqo_daemon usr/bin
+debian/tmp/out/files/taqo.desktop usr/share/applications
+debian/tmp/out/files/taqo_daemon.desktop usr/share/applications

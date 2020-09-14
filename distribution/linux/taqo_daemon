@@ -1,0 +1,41 @@
+#!/bin/bash
+
+TAQO_SERVER=/usr/lib/taqo/taqo_server
+
+do_start() {
+  /sbin/start-stop-daemon -b -x "${TAQO_SERVER}" -u "${USER}" -S
+}
+
+do_stop() {
+  /sbin/start-stop-daemon -x "${TAQO_SERVER}" -u "${USER}" -K
+}
+
+do_status() {
+  if /sbin/start-stop-daemon -x "${TAQO_SERVER}" -u "${USER}" -T; then
+    echo Taqo server is running.
+  else
+    echo Taqo server is not running.
+  fi
+}
+
+case "$1" in
+  start)
+    do_start
+    ;;
+  stop)
+    do_stop
+    ;;
+  status)
+    do_status
+    ;;
+  restart|reload|condrestart)
+    do_stop
+    do_start
+    ;;
+  *)
+    echo $"Usage: $0 {start|stop|restart|reload|status}"
+    exit 1
+esac
+
+exit 0
+

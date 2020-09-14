@@ -1,0 +1,5 @@
+#!/bin/bash
+
+/usr/bin/taqo_daemon start
+/usr/lib/taqo/taqo
+
