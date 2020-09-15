@@ -19,7 +19,7 @@ set -e
 
 case "$1" in
   remove|upgrade|deconfigure)
-    /sbin/start-stop-daemon -x /usr/lib/taqo/taqo_server -K
+    /sbin/start-stop-daemon -x /usr/lib/taqo/taqo_server -o -K
     ;;
 
   failed-upgrade)
