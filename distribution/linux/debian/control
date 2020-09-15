@@ -2,7 +2,7 @@ Source: taqosurvey
 Section: devel
 Priority: optional
 Maintainer: Bob Evans <bobevans@google.com>
-Build-Depends: jq (>= 1.6)
+Build-Depends: jq, chrpath
 Standards-Version: 4.5.0
 Homepage: https://pacoapp.com/
 
