@@ -47,8 +47,10 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
   }
 
   Widget build(BuildContext context) {
-    final ScheduleDetailArguments args = ModalRoute.of(context).settings.arguments;
-    return WillPopScope(onWillPop: _onWillPop,
+    final ScheduleDetailArguments args =
+        ModalRoute.of(context).settings.arguments;
+    return WillPopScope(
+        onWillPop: _onWillPop,
         child: Scaffold(
           appBar: AppBar(
             title: const Text("Schedule Details"),
@@ -61,11 +63,11 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
               children: _buildScheduleDetail(context, args),
             ),
           ),
-        )
-    );
+        ));
   }
 
-  List<Widget> _buildScheduleDetail(BuildContext context, ScheduleDetailArguments args) {
+  List<Widget> _buildScheduleDetail(
+      BuildContext context, ScheduleDetailArguments args) {
     switch (args.schedule.scheduleType) {
       case Schedule.DAILY:
       case Schedule.WEEKDAY:
@@ -81,26 +83,34 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
   }
 
   Widget _buildTitleWidget(String when, String title) {
-    return Text("$when scheduled time for $title", style: TextStyle(fontSize: 24),);
+    return Text(
+      "$when scheduled time for $title",
+      style: TextStyle(fontSize: 24),
+    );
   }
 
   Widget _buildTimeWidget(String label, int msFromMidnight, SetTimeFunction set,
       {double labelWidth = 72}) {
-    final time = TimeOfDay.fromDateTime(DateTime(0).add(Duration(milliseconds: msFromMidnight)));
+    final time = TimeOfDay.fromDateTime(
+        DateTime(0).add(Duration(milliseconds: msFromMidnight)));
     return Row(children: <Widget>[
       SizedBox(width: labelWidth, child: Text("$label: ")),
-      TaqoRoundButton(onPressed: () async {
-        final newTime = await showTimePicker(context: context, initialTime: time);
-        final newMsFromMidnight = 3600000 * newTime.hour + 60000 * newTime.minute;
-        if (newTime != null) {
-          _setStateAndMarkChanged(() => set(newMsFromMidnight));
-        }
-      },
-        child: Text(getHourOffsetAsTimeString(msFromMidnight))),
+      TaqoRoundButton(
+          onPressed: () async {
+            final newTime =
+                await showTimePicker(context: context, initialTime: time);
+            final newMsFromMidnight =
+                3600000 * newTime.hour + 60000 * newTime.minute;
+            if (newTime != null) {
+              _setStateAndMarkChanged(() => set(newMsFromMidnight));
+            }
+          },
+          child: Text(getHourOffsetAsTimeString(msFromMidnight))),
     ]);
   }
 
-  List<Widget> _buildDailyScheduleDetail(BuildContext context, ScheduleDetailArguments args) {
+  List<Widget> _buildDailyScheduleDetail(
+      BuildContext context, ScheduleDetailArguments args) {
     final Experiment experiment = args.experiment;
     final Schedule schedule = args.schedule;
     List<Widget> widgets = [_buildTitleWidget("Daily", experiment.title)];
@@ -112,7 +122,8 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
     return widgets;
   }
 
-  List<Widget> _buildWeeklyScheduleDetail(BuildContext context, ScheduleDetailArguments args) {
+  List<Widget> _buildWeeklyScheduleDetail(
+      BuildContext context, ScheduleDetailArguments args) {
     final Experiment experiment = args.experiment;
     final Schedule schedule = args.schedule;
     List<Widget> widgets = [_buildTitleWidget("Weekly", experiment.title)];
@@ -123,42 +134,49 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
     return widgets;
   }
 
-  List<Widget> _buildMonthlyScheduleDetail(BuildContext context, ScheduleDetailArguments args) {
+  List<Widget> _buildMonthlyScheduleDetail(
+      BuildContext context, ScheduleDetailArguments args) {
     final Experiment experiment = args.experiment;
     final Schedule schedule = args.schedule;
     List<Widget> widgets = [_buildTitleWidget("Monthly", experiment.title)];
 
     widgets.add(Wrap(spacing: 8.0, runSpacing: 4.0, children: <Widget>[
-      RadioListTile(title: const Text('By day of month'),
-        groupValue: schedule.byDayOfMonth,
-        value: true,
-        onChanged: (bool newValue) =>
-            _setStateAndMarkChanged(() => schedule.byDayOfMonth = newValue)
-      ),
-      RadioListTile(title: const Text('By week of month'),
-        groupValue: schedule.byDayOfMonth,
-        value: false,
-        onChanged: (bool newValue) => _setStateAndMarkChanged(() => schedule.byDayOfMonth = newValue)
-      ),
+      RadioListTile(
+          title: const Text('By day of month'),
+          groupValue: schedule.byDayOfMonth,
+          value: true,
+          onChanged: (bool newValue) =>
+              _setStateAndMarkChanged(() => schedule.byDayOfMonth = newValue)),
+      RadioListTile(
+          title: const Text('By week of month'),
+          groupValue: schedule.byDayOfMonth,
+          value: false,
+          onChanged: (bool newValue) =>
+              _setStateAndMarkChanged(() => schedule.byDayOfMonth = newValue)),
     ]));
 
     if (schedule.byDayOfMonth) {
       widgets.add(Row(children: <Widget>[
         const Text("Day of month: "),
-        DropdownButton(value: schedule.dayOfMonth,
-          items: List.generate(31, (i) => i + 1).map((int j) =>
-              DropdownMenuItem(value: j, child: Text("$j"))).toList(),
-          onChanged: (int newValue) => _setStateAndMarkChanged(() => schedule.dayOfMonth = newValue)
-        )
+        DropdownButton(
+            value: schedule.dayOfMonth,
+            items: List.generate(31, (i) => i + 1)
+                .map((int j) => DropdownMenuItem(value: j, child: Text("$j")))
+                .toList(),
+            onChanged: (int newValue) =>
+                _setStateAndMarkChanged(() => schedule.dayOfMonth = newValue))
       ]));
     } else {
       widgets.add(Row(children: <Widget>[
         const Text("Week of month: "),
-        DropdownButton(value: ORDINAL_NUMBERS[schedule.nthOfMonth],
-          items: List.generate(ORDINAL_NUMBERS.length - 1, (i) => i + 1).map((int j) =>
-              DropdownMenuItem(value: ORDINAL_NUMBERS[j], child: Text(ORDINAL_NUMBERS[j]))).toList(),
-          onChanged: (String newValue) =>
-              _setStateAndMarkChanged(() => schedule.nthOfMonth = ORDINAL_NUMBERS.indexOf(newValue)),
+        DropdownButton(
+          value: ORDINAL_NUMBERS[schedule.nthOfMonth],
+          items: List.generate(ORDINAL_NUMBERS.length - 1, (i) => i + 1)
+              .map((int j) => DropdownMenuItem(
+                  value: ORDINAL_NUMBERS[j], child: Text(ORDINAL_NUMBERS[j])))
+              .toList(),
+          onChanged: (String newValue) => _setStateAndMarkChanged(
+              () => schedule.nthOfMonth = ORDINAL_NUMBERS.indexOf(newValue)),
         ),
       ]));
       widgets += _buildDaysOfWeekRow(schedule);
@@ -169,7 +187,8 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
     return widgets;
   }
 
-  List<Widget> _buildESMScheduleDetail(BuildContext context, ScheduleDetailArguments args) {
+  List<Widget> _buildESMScheduleDetail(
+      BuildContext context, ScheduleDetailArguments args) {
     final Experiment experiment = args.experiment;
     final Schedule schedule = args.schedule;
     List<Widget> widgets = [_buildTitleWidget("Randomly", experiment.title)];
@@ -178,39 +197,44 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
     var min = (schedule.esmFrequency - 1) * schedule.minimumBuffer;
     final hours = min ~/ 60;
     min %= 60;
-    final errMsg = Text("Start time must be before end time and total time must be at least"
+    final errMsg = Text(
+        "Start time must be before end time and total time must be at least"
         "${hours > 0 ? " $hours hours and" : ""} $min minutes long");
 
     widgets.add(Text("Suggested signaling schedule"));
-    widgets.add(Builder(builder: (context) =>
-        _buildTimeWidget("Start hour", schedule.esmStartHour, (int newStartTime) {
-          if (schedule.validateESMSchedule(startHour: newStartTime)) {
-            schedule.esmStartHour = newStartTime;
-          } else {
-            Scaffold.of(context).showSnackBar(SnackBar(content: errMsg));
-          }
-        })
-    ));
-    widgets.add(Builder(builder: (context) =>
-        _buildTimeWidget("End hour", schedule.esmEndHour, (int newEndTime) {
-          if (schedule.validateESMSchedule(endHour: newEndTime)) {
-            schedule.esmEndHour = newEndTime;
-          } else {
-            Scaffold.of(context).showSnackBar(SnackBar(content: errMsg));
-          }
-        })
-    ));
+    widgets.add(Builder(
+        builder: (context) => _buildTimeWidget(
+                "Start hour", schedule.esmStartHour, (int newStartTime) {
+              if (schedule.validateESMSchedule(startHour: newStartTime)) {
+                schedule.esmStartHour = newStartTime;
+              } else {
+                Scaffold.of(context).showSnackBar(SnackBar(content: errMsg));
+              }
+            })));
+    widgets.add(Builder(
+        builder: (context) =>
+            _buildTimeWidget("End hour", schedule.esmEndHour, (int newEndTime) {
+              if (schedule.validateESMSchedule(endHour: newEndTime)) {
+                schedule.esmEndHour = newEndTime;
+              } else {
+                Scaffold.of(context).showSnackBar(SnackBar(content: errMsg));
+              }
+            })));
     return widgets;
   }
 
-  List<Widget> _buildRepeatRow(Experiment experiment, Schedule schedule, String when, int num) {
+  List<Widget> _buildRepeatRow(
+      Experiment experiment, Schedule schedule, String when, int num) {
     return <Widget>[
       Row(children: <Widget>[
         const Text("Repeat every "),
-        DropdownButton(value: schedule.repeatRate,
-          items: List.generate(num, (i) => i + 1).map((int j) =>
-              DropdownMenuItem(value: j, child: Text("$j"))).toList(),
-          onChanged: (int newValue) => _setStateAndMarkChanged(() => schedule.repeatRate = newValue),
+        DropdownButton(
+          value: schedule.repeatRate,
+          items: List.generate(num, (i) => i + 1)
+              .map((int j) => DropdownMenuItem(value: j, child: Text("$j")))
+              .toList(),
+          onChanged: (int newValue) =>
+              _setStateAndMarkChanged(() => schedule.repeatRate = newValue),
         ),
         Text(" $when"),
       ]),
@@ -222,11 +246,11 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
     var i = 0;
     for (var day = 1; day < 1 << 7; day <<= 1) {
       children.add(Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
-        Checkbox(value: schedule.weekDaysScheduled & day != 0,
-            onChanged: (bool newValue) => _setStateAndMarkChanged(() =>
-              newValue ?
-              schedule.weekDaysScheduled |= day :
-              schedule.weekDaysScheduled &= ~day)),
+        Checkbox(
+            value: schedule.weekDaysScheduled & day != 0,
+            onChanged: (bool newValue) => _setStateAndMarkChanged(() => newValue
+                ? schedule.weekDaysScheduled |= day
+                : schedule.weekDaysScheduled &= ~day)),
         Text(DAYS_SHORT_NAMES[i])
       ]));
       i += 1;
@@ -236,8 +260,13 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
     ];
   }
 
-  List<Widget> _buildSignalTimeList(BuildContext context, List<SignalTime> signalTimes) {
-    final children = <Widget>[Divider(height: 8,)];
+  List<Widget> _buildSignalTimeList(
+      BuildContext context, List<SignalTime> signalTimes) {
+    final children = <Widget>[
+      Divider(
+        height: 8,
+      )
+    ];
     for (var i = 0; i < signalTimes.length; i++) {
       final time = signalTimes[i];
       String label = "Time $i";
@@ -245,7 +274,7 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
         label = time.label;
       }
       children.add(_buildTimeWidget(label, time.fixedTimeMillisFromMidnight,
-              (int ms) => time.fixedTimeMillisFromMidnight = ms));
+          (int ms) => time.fixedTimeMillisFromMidnight = ms));
     }
     return children;
   }

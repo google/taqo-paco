@@ -54,7 +54,7 @@ void _timeChangedCallbackDispatcher() {
   bgChannel.invokeMethod<void>(_initialized);
 }
 
-typedef CallbackHandle _GetCallbackHandle(Function callback);
+typedef _GetCallbackHandle = CallbackHandle Function(Function callback);
 // Callback used to get the handle for a callback. It's [PluginUtilities.getCallbackHandle]
 // by default. A lambda that gets the handle for the given [callback].
 _GetCallbackHandle _getCallbackHandle =
@@ -72,7 +72,8 @@ Future<bool> initialize(Function callback) async {
     return false;
   }
   return await _channel.invokeMethod<bool>(
-      _initialize, [bgHandle.toRawHandle(), handle.toRawHandle()]) ?? false;
+          _initialize, [bgHandle.toRawHandle(), handle.toRawHandle()]) ??
+      false;
 }
 
 /// Cancels callbacks

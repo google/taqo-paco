@@ -9,8 +9,8 @@ class FixedScheduleGenerator {
   final int triggerId;
   final Schedule schedule;
 
-  FixedScheduleGenerator(this.startTime, this.experiment, this.groupName, this.triggerId,
-      this.schedule);
+  FixedScheduleGenerator(this.startTime, this.experiment, this.groupName,
+      this.triggerId, this.schedule);
 
   List<DateTime> allAlarmTimesFromUntil(DateTime from, DateTime until) {
     if (schedule.signalTimes == null || schedule.signalTimes.isEmpty) {
@@ -65,22 +65,25 @@ class FixedScheduleGenerator {
     return null;
   }
 
-  DateTime get _scheduleBeginDay =>
-      getDateWithoutTime(DateTime.fromMillisecondsSinceEpoch(schedule.beginDate));
+  DateTime get _scheduleBeginDay => getDateWithoutTime(
+      DateTime.fromMillisecondsSinceEpoch(schedule.beginDate));
 
   DateTime _getNextTimeOnDay(DateTime day, DateTime fromNow) {
     // TODO (mike) investigate SignalTime.type (offset)
     if (day.isAfter(fromNow)) {
       // Return first time on day
       if (schedule.signalTimes.isNotEmpty) {
-        return day.add(Duration(milliseconds: schedule.signalTimes.first.fixedTimeMillisFromMidnight));
+        return day.add(Duration(
+            milliseconds:
+                schedule.signalTimes.first.fixedTimeMillisFromMidnight));
       }
       return null;
     } else {
       // Return first time on day after fromNow
       final nowTimeOnDay = mixDateWithTime(day, fromNow);
       for (var time in schedule.signalTimes) {
-        final dt = day.add(Duration(milliseconds: time.fixedTimeMillisFromMidnight));
+        final dt =
+            day.add(Duration(milliseconds: time.fixedTimeMillisFromMidnight));
         if (dt.isAtSameMomentAs(nowTimeOnDay) || dt.isAfter(nowTimeOnDay)) {
           return dt;
         }
@@ -94,7 +97,8 @@ class FixedScheduleGenerator {
     if (schedule.repeatRate == 1) {
       return fromDay;
     }
-    final offsetToNextDay = fromDay.difference(_scheduleBeginDay).inDays % schedule.repeatRate;
+    final offsetToNextDay =
+        fromDay.difference(_scheduleBeginDay).inDays % schedule.repeatRate;
     if (offsetToNextDay == 0) {
       return fromDay;
     }
@@ -107,7 +111,8 @@ class FixedScheduleGenerator {
     if (time != null) {
       return time;
     }
-    return _getNextTimeOnDay(_getNextDailyScheduleDay(day.add(Duration(days: 1))), fromNow);
+    return _getNextTimeOnDay(
+        _getNextDailyScheduleDay(day.add(Duration(days: 1))), fromNow);
   }
 
   DateTime _scheduleWeekday(DateTime fromNow) {
@@ -117,7 +122,8 @@ class FixedScheduleGenerator {
       return time;
     }
     return _getNextTimeOnDay(
-        skipOverWeekend(_getNextDailyScheduleDay(day.add(Duration(days: 1)))), fromNow);
+        skipOverWeekend(_getNextDailyScheduleDay(day.add(Duration(days: 1)))),
+        fromNow);
   }
 
   DateTime _getNextWeeklyScheduleDay(DateTime fromNow) {
@@ -143,7 +149,8 @@ class FixedScheduleGenerator {
 
     // Find the next schedule weekday of nextScheduleWeek
     for (var day in daysOfWeek) {
-      final candidate = mixDateWithTime(nextScheduleWeek, fromNow, day: nextScheduleWeek.day + day);
+      final candidate = mixDateWithTime(nextScheduleWeek, fromNow,
+          day: nextScheduleWeek.day + day);
       if (candidate.isAfter(fromNow) || candidate.isAtSameMomentAs(fromNow)) {
         return getDateWithoutTime(candidate);
       }
@@ -151,8 +158,10 @@ class FixedScheduleGenerator {
 
     // If we didn't find one, [fromNow] was already past the last schedule day/time of the week
     // Therefore we should return the first schedule day of the next schedule week
-    nextScheduleWeek = nextScheduleWeek.add(Duration(days: 7 * schedule.repeatRate));
-    return mixDateWithTime(nextScheduleWeek, null, day: nextScheduleWeek.day + daysOfWeek.first);
+    nextScheduleWeek =
+        nextScheduleWeek.add(Duration(days: 7 * schedule.repeatRate));
+    return mixDateWithTime(nextScheduleWeek, null,
+        day: nextScheduleWeek.day + daysOfWeek.first);
   }
 
   DateTime _scheduleWeekly(DateTime fromNow) {
@@ -167,14 +176,16 @@ class FixedScheduleGenerator {
 
     if (schedule.byDayOfMonth) {
       DateTime nextMonth = cloneDateTime(today, day: 1);
-      final check = setDayOfMonth(mixDateWithTime(today, fromNow), schedule.dayOfMonth);
+      final check =
+          setDayOfMonth(mixDateWithTime(today, fromNow), schedule.dayOfMonth);
       if (check.isBefore(fromNow)) {
         nextMonth = addMonths(nextMonth, 1);
       }
 
       if (schedule.repeatRate == 1) {
         // Either this month or next month if schedule.dayOfMonth has already past this month
-        final candidate = setDayOfMonth(mixDateWithTime(nextMonth, fromNow), schedule.dayOfMonth);
+        final candidate = setDayOfMonth(
+            mixDateWithTime(nextMonth, fromNow), schedule.dayOfMonth);
         if (candidate.isAfter(fromNow) || candidate.isAtSameMomentAs(fromNow)) {
           return getDateWithoutTime(candidate);
         }
@@ -202,7 +213,8 @@ class FixedScheduleGenerator {
       final monthsBetween = today.month - _scheduleBeginDay.month;
       final offsetToNextMonth = monthsBetween % schedule.repeatRate;
       if (offsetToNextMonth > 0) {
-        nextMonth = addMonths(nextMonth, schedule.repeatRate - offsetToNextMonth);
+        nextMonth =
+            addMonths(nextMonth, schedule.repeatRate - offsetToNextMonth);
       }
 
       DateTime doIt(DateTime candidateNextMonth) {
@@ -217,29 +229,37 @@ class FixedScheduleGenerator {
         if (candidateNextMonth.day + offsetToDay > lastDayOfMonth) {
           offsetToDay = lastDayOfMonth - candidateNextMonth.day;
         }
-        candidateNextMonth = candidateNextMonth.add(Duration(days: offsetToDay));
+        candidateNextMonth =
+            candidateNextMonth.add(Duration(days: offsetToDay));
 
         if (candidateNextMonth.day > lastDayOfMonth - DateTime.daysPerWeek) {
           // Make sure at least one of every daysOfWeek exists in the current month starting from
           // candidateNextMonth.day
-          final lastWeekdayOfMonth = cloneDateTime(candidateNextMonth, day: lastDayOfMonth).weekday;
+          final lastWeekdayOfMonth =
+              cloneDateTime(candidateNextMonth, day: lastDayOfMonth).weekday;
           // Relies on daysOfWeek being sorted
           if (daysOfWeek.last > lastWeekdayOfMonth) {
-            final sub = (DateTime.daysPerWeek + candidateNextMonth.weekday) - daysOfWeek.last;
-            candidateNextMonth = candidateNextMonth.subtract(Duration(days: sub));
+            final sub = (DateTime.daysPerWeek + candidateNextMonth.weekday) -
+                daysOfWeek.last;
+            candidateNextMonth =
+                candidateNextMonth.subtract(Duration(days: sub));
           } else if (daysOfWeek.first < lastWeekdayOfMonth) {
             final sub = candidateNextMonth.weekday - daysOfWeek.first;
-            candidateNextMonth = candidateNextMonth.subtract(Duration(days: sub));
+            candidateNextMonth =
+                candidateNextMonth.subtract(Duration(days: sub));
           }
         }
 
         // At this point every dayOfWeek will exist in current month starting from candidateNextMonth
         var start = daysOfWeek.indexOf(candidateNextMonth.weekday);
-        for (var i = start; i < start+daysOfWeek.length; i++) {
-          var add = daysOfWeek[i % daysOfWeek.length] - candidateNextMonth.weekday;
+        for (var i = start; i < start + daysOfWeek.length; i++) {
+          var add =
+              daysOfWeek[i % daysOfWeek.length] - candidateNextMonth.weekday;
           add = add < 0 ? DateTime.daysPerWeek + add : add;
-          final candidate = mixDateWithTime(candidateNextMonth, fromNow, day: candidateNextMonth.day + add);
-          if (candidate.isAfter(fromNow) || candidate.isAtSameMomentAs(fromNow)) {
+          final candidate = mixDateWithTime(candidateNextMonth, fromNow,
+              day: candidateNextMonth.day + add);
+          if (candidate.isAfter(fromNow) ||
+              candidate.isAtSameMomentAs(fromNow)) {
             return getDateWithoutTime(candidate);
           }
         }

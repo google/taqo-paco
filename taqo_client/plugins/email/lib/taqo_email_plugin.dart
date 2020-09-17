@@ -12,9 +12,12 @@ const _sendEmailMethod = "send_email";
 const _toArg = "to";
 const _subjectArg = "subject";
 
-const MethodChannel _channel = const MethodChannel(_channelName);
+const MethodChannel _channel = MethodChannel(_channelName);
 
-const gmailTemplate = ["https://mail.google.com/mail/?view=cm&fs=1&to=", "&su=", ];
+const gmailTemplate = [
+  "https://mail.google.com/mail/?view=cm&fs=1&to=",
+  "&su=",
+];
 
 String getEmailSubjectForExperiment(String experimentTitle) =>
     'Participant email: $experimentTitle';
@@ -29,13 +32,10 @@ Future<void> sendEmail(String to, String experimentTitle) async {
     }
   } else {
     try {
-      final res = await _channel.invokeMethod(
-          _sendEmailMethod,
-          {
-            _toArg: to,
-            _subjectArg: subject,
-          }
-      );
+      final res = await _channel.invokeMethod(_sendEmailMethod, {
+        _toArg: to,
+        _subjectArg: subject,
+      });
       _logger.info("Success sending email: $res");
     } on Exception catch (e) {
       _logger.warning("Failed sending email: $e");

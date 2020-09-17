@@ -19,8 +19,9 @@ class ESMScheduleGenerator {
   final ILocalFileStorage _storageImpl;
   final Completer _lock;
 
-  ESMScheduleGenerator(this._storageImpl, this.startTime, this.experiment, this.groupName,
-      this.triggerId, this.schedule) : _lock = Completer() {
+  ESMScheduleGenerator(this._storageImpl, this.startTime, this.experiment,
+      this.groupName, this.triggerId, this.schedule)
+      : _lock = Completer() {
     _generate();
   }
 
@@ -42,8 +43,8 @@ class ESMScheduleGenerator {
     if (signals != null) {
       return signals;
     }
-    return storage.getSignals(
-        _getNextPeriodStart(periodStart), experiment.id, groupName, triggerId, schedule.id);
+    return storage.getSignals(_getNextPeriodStart(periodStart), experiment.id,
+        groupName, triggerId, schedule.id);
   }
 
   /// Generate ESM Schedules for the next two periods
@@ -80,7 +81,8 @@ class ESMScheduleGenerator {
     var periodStart = getDateWithoutTime(base);
     if (schedule.esmPeriodInDays == Schedule.ESM_PERIOD_WEEK) {
       // We use Sunday for the first day of the week
-      periodStart = periodStart.subtract(Duration(days: periodStart.weekday % 7));
+      periodStart =
+          periodStart.subtract(Duration(days: periodStart.weekday % 7));
     } else if (schedule.esmPeriodInDays == Schedule.ESM_PERIOD_MONTH) {
       periodStart = periodStart.subtract(Duration(days: periodStart.day - 1));
     }
@@ -95,8 +97,8 @@ class ESMScheduleGenerator {
   /// Retrieve the next scheduled alarm time for [periodStart] from storage
   Future<DateTime> _lookupNextESMScheduleTime(DateTime periodStart) async {
     final storage = await ESMSignalStorage.get(_storageImpl);
-    final signals = await storage
-        .getSignals(periodStart, experiment.id, groupName, triggerId, schedule.id);
+    final signals = await storage.getSignals(
+        periodStart, experiment.id, groupName, triggerId, schedule.id);
 
     if (signals.isEmpty) {
       return null;
@@ -114,14 +116,15 @@ class ESMScheduleGenerator {
 
   /// Checks if ESM schedule for [periodStart] exists in storage and generates/stores it, if
   /// necessary
-  Future<void> _ensureESMScheduleGeneratedForPeriod(DateTime periodStart) async {
+  Future<void> _ensureESMScheduleGeneratedForPeriod(
+      DateTime periodStart) async {
     if (experiment.isOver(periodStart)) {
       return;
     }
 
     final storage = await ESMSignalStorage.get(_storageImpl);
-    final signals = await storage
-        .getSignals(periodStart, experiment.id, groupName, triggerId, schedule.id);
+    final signals = await storage.getSignals(
+        periodStart, experiment.id, groupName, triggerId, schedule.id);
 
     if (signals.isNotEmpty) {
       // Signals are already generated -> done
@@ -131,8 +134,8 @@ class ESMScheduleGenerator {
 
     final signalTimes = _generateESMTimesForSchedule(periodStart);
     for (var signal in signalTimes) {
-      await storage
-          .storeSignal(periodStart, experiment.id, signal, groupName, triggerId, schedule.id);
+      await storage.storeSignal(periodStart, experiment.id, signal, groupName,
+          triggerId, schedule.id);
     }
   }
 
@@ -167,7 +170,8 @@ class ESMScheduleGenerator {
     final candidateBaseDt = getDateWithoutTime(periodStart)
         .add(Duration(hours: schedule.esmStartHour ~/ 3600000));
 
-    final minutesPerDay = ((schedule.esmEndHour - schedule.esmStartHour) ~/ 1000) ~/ 60;
+    final minutesPerDay =
+        ((schedule.esmEndHour - schedule.esmStartHour) ~/ 1000) ~/ 60;
     final minutesPerPeriod = schedulableDays * minutesPerDay;
     final minutesPerBlock = max(minutesPerPeriod ~/ schedule.esmFrequency, 1);
     final minBuffer = schedule.minimumBuffer;
@@ -179,7 +183,8 @@ class ESMScheduleGenerator {
 
       for (var i = 0; i < _maxRandomAttempts; i++) {
         candidateDt = cloneDateTime(candidateBaseDt);
-        var candidate = (signal * minutesPerBlock) + rand.nextInt(minutesPerBlock);
+        var candidate =
+            (signal * minutesPerBlock) + rand.nextInt(minutesPerBlock);
         while (candidate > minutesPerDay) {
           candidateDt = candidateDt.add(Duration(days: 1));
           if (!schedule.esmWeekends) {

@@ -23,8 +23,10 @@ final _logger = Logger('PalEventHelper');
 typedef CreateEventFunc = Future<Event> Function(
     Experiment experiment, String groupname, Map<String, dynamic> response);
 
-Future<List<Event>> createLoggerPacoEvents(Map<String, dynamic> response,
-    List<ExperimentLoggerInfo> info, CreateEventFunc pacoEventCreator,
+Future<List<Event>> createLoggerPacoEvents(
+    Map<String, dynamic> response,
+    List<ExperimentLoggerInfo> info,
+    CreateEventFunc pacoEventCreator,
     GroupTypeEnum groupType) async {
   final events = <Event>[];
 
@@ -33,7 +35,8 @@ Future<List<Event>> createLoggerPacoEvents(Map<String, dynamic> response,
 
   for (var info in info) {
     final e = info.experiment;
-    final paused = await sharedPrefs.getBool("${sharedPrefsExperimentPauseKey}_${e.id}");
+    final paused =
+        await sharedPrefs.getBool("${sharedPrefsExperimentPauseKey}_${e.id}");
     if (e.isOver() || (paused ?? false)) {
       continue;
     }
@@ -57,15 +60,16 @@ Event _createPacoEvent(Experiment experiment, String groupName) {
   try {
     group = experiment.groups.firstWhere((g) => g.name == groupName);
   } catch (e) {
-    _logger.warning('Failed to get experiment group $groupName for $experiment');
+    _logger
+        .warning('Failed to get experiment group $groupName for $experiment');
   }
 
   final event = Event.of(experiment, group);
   event.responseTime = ZonedDateTime.now();
 
   event.responses = <String, dynamic>{
-      _responseName: _participantId,
-      _responseAnswer: '${experiment.participantId}',
+    _responseName: _participantId,
+    _responseAnswer: '${experiment.participantId}',
   };
 
   return event;
@@ -74,8 +78,8 @@ Event _createPacoEvent(Experiment experiment, String groupName) {
 const _loggerStarted = 'started';
 const _loggerStopped = 'stopped';
 
-Future<Event> createLoggerStatusPacoEvent(Experiment experiment, String groupName,
-    String loggerName, bool status) async {
+Future<Event> createLoggerStatusPacoEvent(Experiment experiment,
+    String groupName, String loggerName, bool status) async {
   final event = await _createPacoEvent(experiment, groupName);
   final responses = <String, dynamic>{
     loggerName: status ? _loggerStarted : _loggerStopped,
@@ -92,9 +96,9 @@ Future<Event> createAppUsagePacoEvent(Experiment experiment, String groupName,
     Map<String, dynamic> response) async {
   final event = await _createPacoEvent(experiment, groupName);
   final responses = <String, dynamic>{
-      appsUsedKey: response[appNameField],
-      _appContentKey: response[windowNameField],
-      _appsUsedRawKey: '${response[appNameField]}:${response[windowNameField]}',
+    appsUsedKey: response[appNameField],
+    _appContentKey: response[windowNameField],
+    _appsUsedRawKey: '${response[appNameField]}:${response[windowNameField]}',
   };
   event.responses.addAll(responses);
   return event;
@@ -109,10 +113,10 @@ Future<Event> createCmdUsagePacoEvent(Experiment experiment, String groupName,
     Map<String, dynamic> response) async {
   final event = await _createPacoEvent(experiment, groupName);
   final responses = <String, String>{
-      //_uidKey: response[_uidKey],
-      _pidKey: '${response[_pidKey]}',
-      _cmdRetKey: '${response[_cmdRetKey]}',
-      cmdRawKey: response[cmdRawKey].trim(),
+    //_uidKey: response[_uidKey],
+    _pidKey: '${response[_pidKey]}',
+    _cmdRetKey: '${response[_cmdRetKey]}',
+    cmdRawKey: response[cmdRawKey].trim(),
   };
   event.responses.addAll(responses);
   return event;

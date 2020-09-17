@@ -5,7 +5,8 @@ class MultiListOutput {
   MultiListOutput(List<String> listChoices)
       : this.allParameters(listChoices, {});
 
-  MultiListOutput.allParameters(List<String> listChoices, Map<String, bool> answers) {
+  MultiListOutput.allParameters(
+      List<String> listChoices, Map<String, bool> answers) {
     this.answers = answers;
     this.listChoices = listChoices;
     listChoices.forEach((choice) {

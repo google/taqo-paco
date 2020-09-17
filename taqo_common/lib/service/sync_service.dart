@@ -115,8 +115,8 @@ class SyncService {
     if (events.length > 0) {
       final publicEvents = <Event>[];
       final privateEvents = <Event>[];
-      final experimentServiceLite =
-          await ExperimentServiceLiteFactory.makeExperimentServiceLiteOrFuture();
+      final experimentServiceLite = await ExperimentServiceLiteFactory
+          .makeExperimentServiceLiteOrFuture();
 
       for (var event in events) {
         final experiment =

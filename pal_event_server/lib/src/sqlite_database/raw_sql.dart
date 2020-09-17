@@ -115,24 +115,30 @@ const selectAllAlarmsCommand = 'select * from alarms';
 
 const deleteAlarmByIdCommand = 'delete from alarms where _id = ?;';
 
-const selectNotificationByIdCommand = 'select * from notifications where _id = ?';
+const selectNotificationByIdCommand =
+    'select * from notifications where _id = ?';
 
-const selectNotificationByExperimentCommand = 'select * from notifications where experiment_id = ?';
+const selectNotificationByExperimentCommand =
+    'select * from notifications where experiment_id = ?';
 
 const selectAllNotificationsCommand = 'select * from notifications';
 
-const deleteNotificationByIdCommand = 'delete from notifications where _id = ?;';
+const deleteNotificationByIdCommand =
+    'delete from notifications where _id = ?;';
 
 const deleteAllNotificationsCommand = 'delete from notifications;';
 
-const selectUnuploadedEventsCommand = 'select * from events where uploaded = 0;';
+const selectUnuploadedEventsCommand =
+    'select * from events where uploaded = 0;';
 
-const selectOutputsCommand = 'select text, answer from outputs where event_id=?;';
+const selectOutputsCommand =
+    'select text, answer from outputs where event_id=?;';
 
 String buildMarkEventAsUploadedCommand(int eventCount) =>
     'update events set uploaded = 1 where _id in (${buildQuestionMarksJoinedByComma(eventCount)});';
 
-const quitAllExperimentsCommand = 'update experiments set joined = 0 where joined = 1;';
+const quitAllExperimentsCommand =
+    'update experiments set joined = 0 where joined = 1;';
 
 const insertOrUpdateJoinedExperimentsCommand = '''
 insert into experiments(id, json, joined, paused) values (?, ?, 1, 0)
@@ -140,11 +146,13 @@ insert into experiments(id, json, joined, paused) values (?, ?, 1, 0)
   paused=case joined when 0 then 0 else paused end;
 ''';
 
-const selectExperimentByIdCommand = 'select json from experiments where id = ?;';
-const selectJoindExperimentsCommand = 'select json from experiments where joined = 1;';
+const selectExperimentByIdCommand =
+    'select json from experiments where id = ?;';
+const selectJoindExperimentsCommand =
+    'select json from experiments where joined = 1;';
 
-String buildQueryExperimentPausedStatusCommand (int experimentCount) =>
+String buildQueryExperimentPausedStatusCommand(int experimentCount) =>
     'select id, paused from experiments where id in (${buildQuestionMarksJoinedByComma(experimentCount)});';
 
-const updateExperimentPausedStatusCommand = 'update experiments set paused = ? where id = ?;';
-
+const updateExperimentPausedStatusCommand =
+    'update experiments set paused = ? where id = ?;';

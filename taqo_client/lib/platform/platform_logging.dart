@@ -3,7 +3,7 @@ import 'package:logging/logging.dart';
 
 final _logger = Logger('MethodChannel.Logging');
 
-const _platform = const MethodChannel('com.taqo.survey.taqosurvey/logging');
+const _platform = MethodChannel('com.taqo.survey.taqosurvey/logging');
 
 void setupLoggingMethodChannel() {
   _platform.setMethodCallHandler((MethodCall call) async {
@@ -18,8 +18,8 @@ void setupLoggingMethodChannel() {
   });
 }
 
-final StringLevelMap =
-Map.fromIterable(Level.LEVELS, key: (e) => e.name, value: (e) => e);
+final stringLevelMap =
+    Map.fromIterable(Level.LEVELS, key: (e) => e.name, value: (e) => e);
 void _log(String level, String message) {
-  _logger.log(StringLevelMap[level], message);
+  _logger.log(stringLevelMap[level], message);
 }

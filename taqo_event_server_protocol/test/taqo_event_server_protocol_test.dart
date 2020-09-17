@@ -126,11 +126,16 @@ void main() {
         TespRequestNotificationRemove(21),
         TespRequestNotificationRemoveAll(),
         TespRequestCreateMissedEvent(Event()..experimentName = '14'),
-        TespRequestExperimentSaveJoined([Experiment()..title='15', Experiment()..title='16']),
+        TespRequestExperimentSaveJoined(
+            [Experiment()..title = '15', Experiment()..title = '16']),
         TespRequestExperimentSelectJoined(),
         TespRequestExperimentSelectById(17),
-        TespRequestExperimentGetPausedStatuses([Experiment()..id=18, Experiment()..id=19, Experiment()..id=20]),
-        TespRequestExperimentSetPausedStatus(Experiment()..id=21, true),
+        TespRequestExperimentGetPausedStatuses([
+          Experiment()..id = 18,
+          Experiment()..id = 19,
+          Experiment()..id = 20
+        ]),
+        TespRequestExperimentSetPausedStatus(Experiment()..id = 21, true),
       ];
       var responses = [
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|1'),
@@ -186,8 +191,6 @@ void main() {
       // Target payload size in bytes
       final targetSize = 256 * 1024 * 1024;
       final repeatingTimes = targetSize ~/ largePayloadEncoded.length;
-      final realPayloadEncodedSize =
-          largePayloadEncoded.length * repeatingTimes;
       final realPayload = utf8.decode(largePayloadEncoded) * repeatingTimes;
       final largeRequest = createDummyTespRequestAddEvent(realPayload);
       tespSocket.add(largeRequest);
@@ -574,11 +577,16 @@ void main() {
         TespRequestNotificationRemove(21),
         TespRequestNotificationRemoveAll(),
         TespRequestCreateMissedEvent(Event()..experimentName = '14'),
-        TespRequestExperimentSaveJoined([Experiment()..title='15', Experiment()..title='16']),
+        TespRequestExperimentSaveJoined(
+            [Experiment()..title = '15', Experiment()..title = '16']),
         TespRequestExperimentSelectJoined(),
         TespRequestExperimentSelectById(17),
-        TespRequestExperimentGetPausedStatuses([Experiment()..id=18, Experiment()..id=19, Experiment()..id=20]),
-        TespRequestExperimentSetPausedStatus(Experiment()..id=21, true),
+        TespRequestExperimentGetPausedStatuses([
+          Experiment()..id = 18,
+          Experiment()..id = 19,
+          Experiment()..id = 20
+        ]),
+        TespRequestExperimentSetPausedStatus(Experiment()..id = 21, true),
       ];
       var responses = [
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|1'),
@@ -628,8 +636,6 @@ void main() {
       // Target payload size in bytes
       final targetSize = 256 * 1024 * 1024;
       final repeatingTimes = targetSize ~/ largePayloadEncoded.length;
-      final realPayloadEncodedSize =
-          largePayloadEncoded.length * repeatingTimes;
       final realPayload = utf8.decode(largePayloadEncoded) * repeatingTimes;
       final largeRequest = createDummyTespRequestAddEvent(realPayload);
       expect(
@@ -649,15 +655,11 @@ TespRequestPalAddEvents createDummyTespRequestAddEvent(String string) {
 }
 
 TespRequestAlarmAdd createDummyTespRequestAddAlarm(DateTime time) {
-  return TespRequestAlarmAdd(
-    ActionSpecification.empty()..time = time
-  );
+  return TespRequestAlarmAdd(ActionSpecification.empty()..time = time);
 }
 
 TespRequestNotificationAdd createDummyTespRequestAddNotification(int id) {
-  return TespRequestNotificationAdd(
-    NotificationHolder.empty()..id = id
-  );
+  return TespRequestNotificationAdd(NotificationHolder.empty()..id = id);
 }
 
 class TestingEventServer with TespRequestHandlerMixin {
@@ -722,8 +724,7 @@ class TestingEventServer with TespRequestHandlerMixin {
   @override
   Future<TespResponse> alarmAdd(ActionSpecification alarm) async {
     await Future.delayed(Duration(milliseconds: 200));
-    return TespResponseAnswer(
-        '${_stringAlarmAdd}: ${alarm.time}');
+    return TespResponseAnswer('${_stringAlarmAdd}: ${alarm.time}');
   }
 
   @override
@@ -756,11 +757,10 @@ class TestingEventServer with TespRequestHandlerMixin {
   @override
   Future<TespResponse> notificationAdd(NotificationHolder notification) async {
     await Future.delayed(Duration(milliseconds: 200));
-    return TespResponseAnswer(
-        '${_stringNotificationAdd}: ${notification.id}');
+    return TespResponseAnswer('${_stringNotificationAdd}: ${notification.id}');
   }
 
- @override
+  @override
   Future<TespResponse> notificationCancel(int notificationId) {
     return Future.value(
         TespResponseAnswer('$_stringNotificationCancel: $notificationId'));
@@ -794,19 +794,20 @@ class TestingEventServer with TespRequestHandlerMixin {
         TespResponseAnswer('$_stringNotificationSelectById: $notificationId'));
   }
 
- @override
+  @override
   Future<TespResponse> notificationRemove(int notificationId) {
     return Future.value(
         TespResponseAnswer('$_stringNotificationRemove: $notificationId'));
   }
 
- @override
+  @override
   Future<TespResponse> notificationRemoveAll() {
     return Future.value(TespResponseAnswer('$_stringNotificationRemoveAll'));
   }
 
   @override
-  Future<TespResponse> experimentSaveJoined(List<Experiment> experiments) async {
+  Future<TespResponse> experimentSaveJoined(
+      List<Experiment> experiments) async {
     await Future.delayed(Duration(milliseconds: 100));
     return TespResponseAnswer(
         '${_stringExperimentSaveJoined}: ${experiments.map((e) => e.title).join('|')}');
@@ -815,23 +816,25 @@ class TestingEventServer with TespRequestHandlerMixin {
   @override
   FutureOr<TespResponse> experimentSelectById(int experimentId) {
     return Future.value(
-      TespResponseAnswer('$_stringExperimentSelectById: $experimentId'));
+        TespResponseAnswer('$_stringExperimentSelectById: $experimentId'));
   }
 
   @override
   FutureOr<TespResponse> experimentSelectJoined() {
-    return Future.value(
-      TespResponseAnswer('$_stringExperimentSelectJoined'));
+    return Future.value(TespResponseAnswer('$_stringExperimentSelectJoined'));
   }
 
   @override
   Future<TespResponse> experimentGetPausedStatuses(List<int> experimentIds) {
-    return Future.value(TespResponseAnswer('${_stringExperimentGetPausedStatuses}: ${experimentIds.join('|')}'));
+    return Future.value(TespResponseAnswer(
+        '${_stringExperimentGetPausedStatuses}: ${experimentIds.join('|')}'));
   }
 
   @override
-  Future<TespResponse> experimentSetPausedStatus(int experimentId, bool paused) {
-    return Future.value(TespResponseAnswer('${_stringExperimentSetPausedStatus}: $experimentId $paused'));
+  Future<TespResponse> experimentSetPausedStatus(
+      int experimentId, bool paused) {
+    return Future.value(TespResponseAnswer(
+        '${_stringExperimentSetPausedStatus}: $experimentId $paused'));
   }
 }
 

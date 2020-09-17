@@ -1,5 +1,4 @@
 abstract class Validator {
-
   static const MANDATORY = 1;
   static const OPTIONAL = 2;
 
@@ -11,7 +10,8 @@ abstract class Validator {
 
   bool isValidEmail(String address, String errorMessage);
 
-  bool isValidCollectionOfEmailAddresses(List<String> collection, String errorMessage);
+  bool isValidCollectionOfEmailAddresses(
+      List<String> collection, String errorMessage);
 
   bool isNotNullCollection(List actionTriggers, String errorMessage);
 
@@ -27,8 +27,6 @@ abstract class Validator {
 
   bool isNotNullAndNonEmptyArray(List<String> arr, String errorMessage);
 
-  bool isValidConditionalExpression(String conditionExpression, String errorMessage);
-
-  }
-
-
+  bool isValidConditionalExpression(
+      String conditionExpression, String errorMessage);
+}

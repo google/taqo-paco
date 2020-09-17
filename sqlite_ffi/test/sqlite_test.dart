@@ -126,11 +126,11 @@ void main() {
       ;""");
     Result r = d.query("select * from Cookies;");
     Result r2 = d2.query("select * from Cookies;");
-    r.iterator..moveNext();
-    r2.iterator..moveNext();
-    r.iterator..moveNext();
+    r.iterator.moveNext();
+    r2.iterator.moveNext();
+    r.iterator.moveNext();
     Result r3 = d2.query("select * from Cookies;");
-    r3.iterator..moveNext();
+    r3.iterator.moveNext();
     expect(2, r.iterator.current.readColumn("id"));
     expect(1, r2.iterator.current.readColumn("id"));
     expect(1, r3.iterator.current.readColumn("id"));

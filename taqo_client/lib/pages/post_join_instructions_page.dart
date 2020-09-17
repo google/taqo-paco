@@ -10,7 +10,8 @@ class PostJoinInstructionsPage extends StatefulWidget {
   PostJoinInstructionsPage({Key key}) : super(key: key);
 
   @override
-  _PostJoinInstructionsPageState createState() => _PostJoinInstructionsPageState();
+  _PostJoinInstructionsPageState createState() =>
+      _PostJoinInstructionsPageState();
 }
 
 class _PostJoinInstructionsPageState extends State<PostJoinInstructionsPage> {
@@ -32,10 +33,8 @@ class _PostJoinInstructionsPageState extends State<PostJoinInstructionsPage> {
         ),
         floatingActionButton: FloatingActionButton(
             child: Icon(Icons.done),
-            onPressed: () => Navigator.pushNamedAndRemoveUntil(
-                context, RunningExperimentsPage.routeName, (Route route) => false)
-        )
-    );
+            onPressed: () => Navigator.pushNamedAndRemoveUntil(context,
+                RunningExperimentsPage.routeName, (Route route) => false)));
   }
 
   Widget _buildInstructionsColumn(Experiment experiment) {
@@ -43,12 +42,16 @@ class _PostJoinInstructionsPageState extends State<PostJoinInstructionsPage> {
         ? experiment.postInstallInstructions
         : "No further instructions provided";
 
-    return SingleChildScrollView(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text("Post Join Instructions", style: TextStyle(fontWeight: FontWeight.bold)),
-        Divider(height: 16.0, color: Colors.black),
-        Html(data: data,),
-      ]
-    ));
+    return SingleChildScrollView(
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+          Text("Post Join Instructions",
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          Divider(height: 16.0, color: Colors.black),
+          Html(
+            data: data,
+          ),
+        ]));
   }
 }

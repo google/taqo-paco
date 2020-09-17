@@ -6,7 +6,8 @@ abstract class ExperimentServiceLite {
   FutureOr<Experiment> getExperimentById(int experimentId);
 }
 
-typedef ExperimentServiceLiteFactoryFunction = FutureOr<ExperimentServiceLite> Function();
+typedef ExperimentServiceLiteFactoryFunction = FutureOr<ExperimentServiceLite>
+    Function();
 
 class ExperimentServiceLiteFactory {
   static ExperimentServiceLiteFactoryFunction _factory;

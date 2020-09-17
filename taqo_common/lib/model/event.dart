@@ -64,9 +64,9 @@ class Event {
 
   static List<Map<String, dynamic>> _responsesToListOfMap(
           Map<String, dynamic> responses) =>
-       responses.entries
-              .map((entry) => {'name': entry.key, 'answer': entry.value})
-              .toList();
+      responses.entries
+          .map((entry) => {'name': entry.key, 'answer': entry.value})
+          .toList();
 
   static Map<String, dynamic> _responsesFromListOfMap(List listOfMap) =>
       listOfMap == null
@@ -74,10 +74,9 @@ class Event {
           : Map.fromIterable(listOfMap,
               key: (item) => item['name'], value: (item) => item['answer']);
 
-  static ZonedDateTime _zonedDateTimeFromString(String string) => 
-    string == null ? null : ZonedDateTime.fromString(string);
-  
-      
+  static ZonedDateTime _zonedDateTimeFromString(String string) =>
+      string == null ? null : ZonedDateTime.fromString(string);
+
   static String _zonedDateTimeToString(ZonedDateTime zonedDateTime) =>
       zonedDateTime?.toString();
 

@@ -13,8 +13,8 @@ import 'validator.dart';
 part 'interrupt_trigger.g.dart';
 
 @JsonSerializable()
-class InterruptTrigger extends ActionTrigger implements Validatable,  MinimumBufferable  {
-
+class InterruptTrigger extends ActionTrigger
+    implements Validatable, MinimumBufferable {
   List<InterruptCue> cues;
   int minimumBuffer = 0;
   bool timeWindow = false;
@@ -22,13 +22,13 @@ class InterruptTrigger extends ActionTrigger implements Validatable,  MinimumBuf
   int endTimeMillis = 0;
   bool weekends = true;
 
-
   InterruptTrigger() {
     this.type = ActionTrigger.INTERRUPT_TRIGGER_TYPE_SPECIFIER;
     cues = [];
   }
 
-  factory InterruptTrigger.fromJson(Map<String, dynamic> json) => _$InterruptTriggerFromJson(json);
+  factory InterruptTrigger.fromJson(Map<String, dynamic> json) =>
+      _$InterruptTriggerFromJson(json);
 
   Map<String, dynamic> toJson() => _$InterruptTriggerToJson(this);
 
@@ -52,12 +52,13 @@ class InterruptTrigger extends ActionTrigger implements Validatable,  MinimumBuf
   void validateWith(Validator validator) {
     super.validateWith(validator);
 //    System.out.println("VALIDATING INTERRUPT");
-    validator.isNotNull(minimumBuffer, "minimumBuffer is not properly initialized");
-    validator.isNotNullAndNonEmptyCollection(cues, "InterruptTrigger needs at least one cue");
+    validator.isNotNull(
+        minimumBuffer, "minimumBuffer is not properly initialized");
+    validator.isNotNullAndNonEmptyCollection(
+        cues, "InterruptTrigger needs at least one cue");
 
     for (InterruptCue cue in cues) {
       cue.validateWith(validator);
     }
   }
-
 }

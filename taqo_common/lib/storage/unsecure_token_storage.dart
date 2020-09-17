@@ -55,9 +55,10 @@ class UnsecureTokenStorage {
     }
   }
 
-  Future<File> saveTokens(String refreshToken, String accessToken, DateTime expiry) async =>
-      (await _storageImpl.localFile)
-          .writeAsString("$refreshToken\n$accessToken\n${expiry.toIso8601String()}");
+  Future<File> saveTokens(
+          String refreshToken, String accessToken, DateTime expiry) async =>
+      (await _storageImpl.localFile).writeAsString(
+          "$refreshToken\n$accessToken\n${expiry.toIso8601String()}");
 
   Future clear() => _storageImpl.clear();
 }

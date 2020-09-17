@@ -20,7 +20,8 @@ class LocalFileStorageFactory {
   static Directory get localStorageDirectory => _localStorageDirectory;
   static bool get isInitialized => _isInitialized;
 
-  static void initialize(LocalFileStorageFactoryFunction factory, Directory localStorageDirectory) {
+  static void initialize(LocalFileStorageFactoryFunction factory,
+      Directory localStorageDirectory) {
     _factory = factory;
     _localStorageDirectory = localStorageDirectory;
     _isInitialized = true;

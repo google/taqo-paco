@@ -32,8 +32,8 @@ Taqo/Paco is a behavior research platform.
 To get started, please either login with a Google account or enter an invitation code if you have one.""");
   }
 
-  Widget buildButtonWidget(BuildContext context, VoidCallback onPressed,
-      Widget child) {
+  Widget buildButtonWidget(
+      BuildContext context, VoidCallback onPressed, Widget child) {
     return Container(
       padding: EdgeInsets.only(
         left: 64,
@@ -49,30 +49,34 @@ To get started, please either login with a Google account or enter an invitation
     );
   }
 
-  Widget buildLoginButtonWidget(BuildContext context,
-      AuthProvider authProvider, bool isAuthenticated) {
+  Widget buildLoginButtonWidget(
+      BuildContext context, AuthProvider authProvider, bool isAuthenticated) {
     return buildButtonWidget(
       context,
-      isAuthenticated ? null : () {
-        authProvider.signIn();
-      },
+      isAuthenticated
+          ? null
+          : () {
+              authProvider.signIn();
+            },
       const Text('Login with Google Id'),
     );
   }
 
-  Widget buildLogoutButtonWidget(BuildContext context,
-      AuthProvider authProvider, bool isAuthenticated) {
+  Widget buildLogoutButtonWidget(
+      BuildContext context, AuthProvider authProvider, bool isAuthenticated) {
     return buildButtonWidget(
       context,
-      isAuthenticated ? () {
-        authProvider.signOut();
-      } : null,
+      isAuthenticated
+          ? () {
+              authProvider.signOut();
+            }
+          : null,
       const Text('Logout'),
     );
   }
 
-  Widget buildInvitationButtonWidget(BuildContext context,
-      bool isAuthenticated) {
+  Widget buildInvitationButtonWidget(
+      BuildContext context, bool isAuthenticated) {
     return buildButtonWidget(
       context,
       () {
@@ -98,10 +102,10 @@ To get started, please either login with a Google account or enter an invitation
               height: 32.0,
               color: Colors.black,
             ),
-            buildLoginButtonWidget(context, authProvider,
-                authProvider.isAuthenticated),
-            buildLogoutButtonWidget(context, authProvider,
-                authProvider.isAuthenticated),
+            buildLoginButtonWidget(
+                context, authProvider, authProvider.isAuthenticated),
+            buildLogoutButtonWidget(
+                context, authProvider, authProvider.isAuthenticated),
             buildInvitationButtonWidget(context, authProvider.isAuthenticated),
           ],
         ),

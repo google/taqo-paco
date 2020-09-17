@@ -49,7 +49,8 @@ Future<bool> enableCmdLineLogging() async {
       await bashrc.writeAsString("export PROMPT_COMMAND='$bashCmd'\n",
           mode: FileMode.append);
     } else {
-      await bashrc.writeAsString("export PROMPT_COMMAND='${existingCommand.trim()};$bashCmd'\n",
+      await bashrc.writeAsString(
+          "export PROMPT_COMMAND='${existingCommand.trim()};$bashCmd'\n",
           mode: FileMode.append);
     }
     await bashrc.writeAsString('$_endTaqo\n', mode: FileMode.append);
@@ -69,7 +70,8 @@ Future<bool> enableCmdLineLogging() async {
 
     // TODO Could we check for an existing function definition?
     await zshrc.writeAsString('$_beginTaqo\n', mode: FileMode.append);
-    await zshrc.writeAsString("precmd() { eval '${zshCmd}' }\n", mode: FileMode.append);
+    await zshrc.writeAsString("precmd() { eval '${zshCmd}' }\n",
+        mode: FileMode.append);
     await zshrc.writeAsString('$_endTaqo\n', mode: FileMode.append);
   } on Exception catch (e) {
     _logger.warning(e);

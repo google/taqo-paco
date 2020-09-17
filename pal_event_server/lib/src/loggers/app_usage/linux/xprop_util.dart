@@ -1,9 +1,17 @@
 import '../../pal_event_helper.dart';
 
 const command = 'xprop';
-const getIdArgs = ['-root', '32x', '\t\$0', '_NET_ACTIVE_WINDOW', ];
+const getIdArgs = [
+  '-root',
+  '32x',
+  '\t\$0',
+  '_NET_ACTIVE_WINDOW',
+];
 
-const _xpropNameFields = [appNameField, windowNameField, ];
+const _xpropNameFields = [
+  appNameField,
+  windowNameField,
+];
 
 final _idSplitRegExp = RegExp(r'\s+');
 final _fieldSplitRegExp = RegExp(r'\s+=\s+|\n');
@@ -12,7 +20,11 @@ final _appSplitRegExp = RegExp(r',\s*');
 const invalidWindowId = -1;
 
 List<String> getAppArgs(int windowId) {
-  return ['-id', '$windowId', ] + _xpropNameFields;
+  return [
+        '-id',
+        '$windowId',
+      ] +
+      _xpropNameFields;
 }
 
 int parseWindowId(dynamic result) {

@@ -16,7 +16,7 @@ class RunningExperimentsPage extends StatefulWidget {
   static const routeName = 'running_experiments';
   final bool timeout;
 
-  RunningExperimentsPage({this.timeout=false, Key key}) : super(key: key);
+  RunningExperimentsPage({this.timeout = false, Key key}) : super(key: key);
 
   @override
   _RunningExperimentsPageState createState() => _RunningExperimentsPageState();
@@ -42,16 +42,15 @@ class _RunningExperimentsPageState extends State<RunningExperimentsPage> {
   }
 
   void _showTimeout() {
-    _scaffoldKey.currentState.showSnackBar(
-        SnackBar(
-          content: Text(
-            _timeoutMsg,
-            style: TextStyle(
-              fontSize: 24,
-            ),
-          ),
-          duration: Duration(seconds: 10),)
-    );
+    _scaffoldKey.currentState.showSnackBar(SnackBar(
+      content: Text(
+        _timeoutMsg,
+        style: TextStyle(
+          fontSize: 24,
+        ),
+      ),
+      duration: Duration(seconds: 10),
+    ));
   }
 
   @override
@@ -111,8 +110,7 @@ class ExperimentList extends StatelessWidget {
       return Center(
         child: _loadingWidget,
       );
-    }
-    else if (provider.experiments.isEmpty) {
+    } else if (provider.experiments.isEmpty) {
       // No experiments joined
       return Center(
         child: const Text(_joinMsg),
@@ -123,7 +121,10 @@ class ExperimentList extends StatelessWidget {
     for (var e in provider.experiments) {
       listItems.add(ExperimentListItem(provider, e));
     }
-    return ListView(children: listItems, shrinkWrap: true,);
+    return ListView(
+      children: listItems,
+      shrinkWrap: true,
+    );
   }
 }
 
@@ -150,16 +151,17 @@ class _ExperimentListItemState extends State<ExperimentListItem> {
     final numActive = activeSurveys.length;
 
     if ((experimentActive && total == 1) || numActive == 1) {
-      final survey = numActive == 1 ? activeSurveys.first.name :
-          experiment.groups.first.name;
-      Navigator.pushNamed(context, SurveyPage.routeName,
-          arguments: [
-            experiment, survey,
-          ]
-      );
+      final survey = numActive == 1
+          ? activeSurveys.first.name
+          : experiment.groups.first.name;
+      Navigator.pushNamed(context, SurveyPage.routeName, arguments: [
+        experiment,
+        survey,
+      ]);
     } else if (experimentActive || numActive > 1) {
-      Navigator.pushNamed(context, SurveyPickerPage.routeName,
-          arguments: [experiment, ]);
+      Navigator.pushNamed(context, SurveyPickerPage.routeName, arguments: [
+        experiment,
+      ]);
     } else {
       // TODO no action for finished surveys
       _alertLog(context, alertMsg);
@@ -171,49 +173,47 @@ class _ExperimentListItemState extends State<ExperimentListItem> {
     return TaqoCard(
       child: Row(
         children: <Widget>[
-          if (widget.experiment.active) Padding(
-            padding: EdgeInsets.only(right: 8),
-            child: Icon(
-              Icons.notifications_active, color: Colors.redAccent),
-          ),
-
+          if (widget.experiment.active)
+            Padding(
+              padding: EdgeInsets.only(right: 8),
+              child: Icon(Icons.notifications_active, color: Colors.redAccent),
+            ),
           Expanded(
               child: InkWell(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(widget.experiment.title, textScaleFactor: 1.5),
-                    if (widget.experiment.organization != null &&
-                        widget.experiment.organization.isNotEmpty)
-                      Text(widget.experiment.organization),
-                    Text(widget.experiment.contactEmail != null
-                        ? widget.experiment.contactEmail
-                        : widget.experiment.creator),
-                  ],
-                ),
-                onTap: () => _onTapExperiment(context, widget.experiment),
-              )
-          ),
-
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(widget.experiment.title, textScaleFactor: 1.5),
+                if (widget.experiment.organization != null &&
+                    widget.experiment.organization.isNotEmpty)
+                  Text(widget.experiment.organization),
+                Text(widget.experiment.contactEmail != null
+                    ? widget.experiment.contactEmail
+                    : widget.experiment.creator),
+              ],
+            ),
+            onTap: () => _onTapExperiment(context, widget.experiment),
+          )),
           IconButton(
-              icon: Icon(widget.experiment.paused ? Icons.play_arrow : Icons.pause),
-              onPressed: _pauseButtonDisabled ? null : () async {
-                setState(() => _pauseButtonDisabled = true);
-                await widget.provider.setPausedAndNotifyListeners(widget.experiment, !widget.experiment.paused);
-                setState(() => _pauseButtonDisabled = false);
-              }
-          ),
+              icon: Icon(
+                  widget.experiment.paused ? Icons.play_arrow : Icons.pause),
+              onPressed: _pauseButtonDisabled
+                  ? null
+                  : () async {
+                      setState(() => _pauseButtonDisabled = true);
+                      await widget.provider.setPausedAndNotifyListeners(
+                          widget.experiment, !widget.experiment.paused);
+                      setState(() => _pauseButtonDisabled = false);
+                    }),
           IconButton(
               icon: Icon(Icons.edit),
-              onPressed: () => editExperiment(context, widget.experiment)
-          ),
+              onPressed: () => editExperiment(context, widget.experiment)),
           IconButton(
               icon: Icon(Icons.email),
-              onPressed: () => emailExperiment(context, widget.experiment)
-          ),
+              onPressed: () => emailExperiment(context, widget.experiment)),
           IconButton(
-              icon: Icon(Icons.close),
-              onPressed: () => stopExperiment(context),
+            icon: Icon(Icons.close),
+            onPressed: () => stopExperiment(context),
           ),
         ],
       ),
@@ -221,8 +221,8 @@ class _ExperimentListItemState extends State<ExperimentListItem> {
   }
 
   void editExperiment(BuildContext context, Experiment experiment) {
-    Navigator.pushNamed(
-        context, ScheduleOverviewPage.routeName, arguments: ScheduleOverviewArguments(experiment));
+    Navigator.pushNamed(context, ScheduleOverviewPage.routeName,
+        arguments: ScheduleOverviewArguments(experiment));
   }
 
   Future<void> _alertLog(context, msg) async {
@@ -241,34 +241,35 @@ class _ExperimentListItemState extends State<ExperimentListItem> {
           ),
           actions: <Widget>[
             FlatButton(
-              child: Text('Dismiss'),
-              onPressed: () => Navigator.of(context).pop()
-            ),
+                child: Text('Dismiss'),
+                onPressed: () => Navigator.of(context).pop()),
           ],
         );
       },
     );
   }
 
-  Future<ConfirmAction> _confirmEmailDialog(BuildContext context, String to,
-      String experimentTitle) async {
-    final subject = taqo_email_plugin.getEmailSubjectForExperiment(experimentTitle);
+  Future<ConfirmAction> _confirmEmailDialog(
+      BuildContext context, String to, String experimentTitle) async {
+    final subject =
+        taqo_email_plugin.getEmailSubjectForExperiment(experimentTitle);
     return showDialog<ConfirmAction>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Email the Experiment researcher?'),
-          content: Text('If you have a question regarding this experiment, please contact $to with the subject "$subject"'),
+          content: Text(
+              'If you have a question regarding this experiment, please contact $to with the subject "$subject"'),
           actions: <Widget>[
             FlatButton(
                 child: const Text('Open my email'),
-                onPressed: () => Navigator.of(context).pop(ConfirmAction.ACCEPT)
-            ),
+                onPressed: () =>
+                    Navigator.of(context).pop(ConfirmAction.ACCEPT)),
             FlatButton(
                 child: const Text("I'll do it myself"),
-                onPressed: () => Navigator.of(context).pop(ConfirmAction.CANCEL)
-            ),
+                onPressed: () =>
+                    Navigator.of(context).pop(ConfirmAction.CANCEL)),
           ],
         );
       },
@@ -277,12 +278,15 @@ class _ExperimentListItemState extends State<ExperimentListItem> {
 
   void emailExperiment(BuildContext context, Experiment experiment) async {
     bool validateEmail(String email) {
-      return RegExp(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$').hasMatch(email);
+      return RegExp(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
+          .hasMatch(email);
     }
 
     var to = experiment.creator;
     final contactEmail = experiment.contactEmail;
-    if (contactEmail != null && contactEmail.isNotEmpty && validateEmail(contactEmail)) {
+    if (contactEmail != null &&
+        contactEmail.isNotEmpty &&
+        validateEmail(contactEmail)) {
       to = contactEmail;
     }
 
@@ -307,16 +311,17 @@ class _ExperimentListItemState extends State<ExperimentListItem> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Stop Experiment'),
-          content: const Text('Do you want to stop participating in this experiment?'),
+          content: const Text(
+              'Do you want to stop participating in this experiment?'),
           actions: <Widget>[
             FlatButton(
-              child: const Text('No'),
-              onPressed: () => Navigator.of(context).pop(ConfirmAction.CANCEL)
-            ),
+                child: const Text('No'),
+                onPressed: () =>
+                    Navigator.of(context).pop(ConfirmAction.CANCEL)),
             FlatButton(
-              child: const Text('Yes'),
-              onPressed: () => Navigator.of(context).pop(ConfirmAction.ACCEPT)
-            )
+                child: const Text('Yes'),
+                onPressed: () =>
+                    Navigator.of(context).pop(ConfirmAction.ACCEPT))
           ],
         );
       },

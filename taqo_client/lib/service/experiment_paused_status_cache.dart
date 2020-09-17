@@ -35,16 +35,16 @@ class ExperimentPausedStatusCache {
     await _storage.savePausedStatus(experiment, paused);
   }
 
-  bool restorePaused(Experiment experiment) {
+  void restorePaused(Experiment experiment) {
     experiment.paused = _cache[experiment.id] ?? false;
   }
 
-  Future<void> loadPausedStatusForExperiments(Iterable<Experiment> experiments) async {
+  Future<void> loadPausedStatusForExperiments(
+      Iterable<Experiment> experiments) async {
     _cache = await _storage.loadPausedStatuses(experiments);
   }
 
   void removeExperiment(Experiment experiment) {
     _cache.remove(experiment.id);
   }
-
 }

@@ -89,8 +89,8 @@ class _TaqoAppDrawerWidget extends StatelessWidget {
               size: _listIconSize,
             ),
             title: const Text('My Experiments'),
-            onTap: () =>
-                MyApp.navigatorKey.currentState.pushNamed(RunningExperimentsPage.routeName),
+            onTap: () => MyApp.navigatorKey.currentState
+                .pushNamed(RunningExperimentsPage.routeName),
             enabled: authProvider.isAuthenticated,
           ),
           ListTile(
@@ -99,8 +99,8 @@ class _TaqoAppDrawerWidget extends StatelessWidget {
               size: _listIconSize,
             ),
             title: const Text('Find New Experiments'),
-            onTap: () =>
-                MyApp.navigatorKey.currentState.pushNamed(FindExperimentsPage.routeName),
+            onTap: () => MyApp.navigatorKey.currentState
+                .pushNamed(FindExperimentsPage.routeName),
             enabled: authProvider.isAuthenticated,
           ),
           Padding(

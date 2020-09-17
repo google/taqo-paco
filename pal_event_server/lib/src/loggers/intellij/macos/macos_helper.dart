@@ -4,7 +4,8 @@ import 'package:archive/archive.dart';
 import 'package:archive/archive_io.dart';
 import 'package:path/path.dart' as path;
 
-const intelliJAssetPath = '/Applications/taqo_client.app/Contents/Frameworks/App.framework/Resources/flutter_assets/assets/pal_intellij_plugin.zip';
+const intelliJAssetPath =
+    '/Applications/taqo_client.app/Contents/Frameworks/App.framework/Resources/flutter_assets/assets/pal_intellij_plugin.zip';
 
 void extractIntelliJPlugin(String directory) async {
   final zipFile = await File(intelliJAssetPath).readAsBytes();
@@ -26,7 +27,8 @@ void extractIntelliJPlugin(String directory) async {
 
 void enableAndroidStudio() async {
   final idePath = RegExp(r'AndroidStudio\d+\.\d+');
-  final homeDir = Directory(path.join(Platform.environment['HOME'], 'Library', 'Application Support'));
+  final homeDir = Directory(path.join(
+      Platform.environment['HOME'], 'Library', 'Application Support'));
 
   await for (var dir in homeDir.list()) {
     final baseDir = path.basename(dir.path);
@@ -39,7 +41,8 @@ void enableAndroidStudio() async {
 
 void enableIntelliJ() async {
   final idePath = RegExp(r'IdeaIC\d{4}\.\d+');
-  final jetbrainsDir = Directory(path.join(Platform.environment['HOME'], 'Library', 'Application Support', 'JetBrains'));
+  final jetbrainsDir = Directory(path.join(Platform.environment['HOME'],
+      'Library', 'Application Support', 'JetBrains'));
 
   if (!(await jetbrainsDir.exists())) {
     return;
@@ -61,7 +64,8 @@ void enableIntelliJPlugin() async {
 
 void disableAndroidStudio() async {
   final idePath = RegExp(r'AndroidStudio\d+\.\d+');
-  final homeDir = Directory(path.join(Platform.environment['HOME'], 'Library', 'Application Support'));
+  final homeDir = Directory(path.join(
+      Platform.environment['HOME'], 'Library', 'Application Support'));
 
   await for (var dir in homeDir.list()) {
     final baseDir = path.basename(dir.path);
@@ -77,13 +81,15 @@ void disableAndroidStudio() async {
 
 void disableIntelliJ() async {
   final idePath = RegExp(r'IdeaIC\d{4}\.\d+');
-  final jetbrainsDir = Directory(path.join(Platform.environment['HOME'], 'Library', 'Application Support', 'JetBrains'));
+  final jetbrainsDir = Directory(path.join(Platform.environment['HOME'],
+      'Library', 'Application Support', 'JetBrains'));
 
   await for (var dir in jetbrainsDir.list()) {
     final baseDir = path.basename(dir.path);
 
     if (idePath.hasMatch(baseDir)) {
-      final d = Directory(path.join(dir.path, 'plugins', 'pal_intellij_plugin'));
+      final d =
+          Directory(path.join(dir.path, 'plugins', 'pal_intellij_plugin'));
       if (await d.exists()) {
         await d.delete(recursive: true);
       }

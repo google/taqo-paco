@@ -7,26 +7,25 @@ import "package:test/test.dart";
 
 void main() {
   test("generate json for ExperimentCore", () {
-
-    String jsonString = "{"+
-        "\"title\": \"Everything Demo New\","+
-        " \"description\": \"\","+
-        "\"creator\": \"user1@example.com\","+
-        "  \"contactEmail\": \"user1@example.com\","+
-        "  \"id\": 1"+ "}";
+    String jsonString = "{" +
+        "\"title\": \"Everything Demo New\"," +
+        " \"description\": \"\"," +
+        "\"creator\": \"user1@example.com\"," +
+        "  \"contactEmail\": \"user1@example.com\"," +
+        "  \"id\": 1" +
+        "}";
 
     Map experimentMap = jsonDecode(jsonString);
     var experiment = ExperimentCore.fromJson(experimentMap);
     expect(experiment.title, equals("Everything Demo New"));
   });
 
-
   test("generate json for Experiment (subclass of ExperimentCore", () {
-    String jsonString = "{"+
-        "\"title\": \"Everything Demo New\","+
-        " \"description\": \"\","+
-        "\"creator\": \"user1@example.com\","+
-        "  \"contactEmail\": \"user1@example.com\","+
+    String jsonString = "{" +
+        "\"title\": \"Everything Demo New\"," +
+        " \"description\": \"\"," +
+        "\"creator\": \"user1@example.com\"," +
+        "  \"contactEmail\": \"user1@example.com\"," +
         "  \"id\": 1," +
         " \"published\":true " +
         "}";
@@ -38,12 +37,11 @@ void main() {
   });
 
   test("generate json for List of Experiments", () {
-
-    String jsonString = "[{"+
-        "\"title\": \"Everything Demo New\","+
-        " \"description\": \"\","+
-        "\"creator\": \"user1@example.com\","+
-        "  \"contactEmail\": \"user1@example.com\","+
+    String jsonString = "[{" +
+        "\"title\": \"Everything Demo New\"," +
+        " \"description\": \"\"," +
+        "\"creator\": \"user1@example.com\"," +
+        "  \"contactEmail\": \"user1@example.com\"," +
         "  \"id\": 1," +
         " \"published\":true " +
         "}]";
@@ -80,12 +78,15 @@ void main() {
     }
     ]
     ''';
-    
+
     List visualizationList = jsonDecode(jsonString);
     var visualization = Visualization.fromJson(visualizationList.elementAt(0));
     expect(visualization.title, equals("Foods Eaten"));
-    expect(visualization.modifyDate.dateTime, equals(DateTime.fromMillisecondsSinceEpoch(1517875586000)));
-    expect(visualization.startDatetime.dateTime, equals(DateTime.fromMillisecondsSinceEpoch(1517788800000)));
-    expect(visualization.endDatetime.dateTime, equals(DateTime.fromMillisecondsSinceEpoch(1517875200000)));
+    expect(visualization.modifyDate.dateTime,
+        equals(DateTime.fromMillisecondsSinceEpoch(1517875586000)));
+    expect(visualization.startDatetime.dateTime,
+        equals(DateTime.fromMillisecondsSinceEpoch(1517788800000)));
+    expect(visualization.endDatetime.dateTime,
+        equals(DateTime.fromMillisecondsSinceEpoch(1517875200000)));
   });
 }

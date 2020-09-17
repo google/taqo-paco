@@ -20,7 +20,8 @@ class FlutterFileStorage implements ILocalFileStorage {
 
   Future<String> get localPath async => (await localStorageDir).path;
 
-  Future<File> get localFile async => File(path.join(await localPath, _localFileName));
+  Future<File> get localFile async =>
+      File(path.join(await localPath, _localFileName));
 
   FlutterFileStorage(this._localFileName);
 

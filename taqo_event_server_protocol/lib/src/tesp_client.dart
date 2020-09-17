@@ -138,7 +138,7 @@ class TespClient {
         _responseTimeoutTimer?.cancel();
         handleResponse(TespResponseError(
             TespResponseError.tespClientErrorPayloadDecoding, '$e'));
-      } else if (e is TespDecodingException || e is CastError) {
+      } else if (e is TespDecodingException || e is TypeError) {
         _logger.warning('Invalid response');
         closeWithError(
             TespResponseError(TespResponseError.tespClientErrorDecoding, '$e'));
@@ -333,10 +333,10 @@ class TespFullClient extends TespEventClient {
       send(TespRequestExperimentSelectById(experimentId));
 
   Future<TespResponse> experimentGetPausedStatuses(
-      List<Experiment> experiments) =>
+          List<Experiment> experiments) =>
       send(TespRequestExperimentGetPausedStatuses(experiments));
 
   Future<TespResponse> experimentSetPausedStatus(
-      Experiment experiment, bool paused) =>
+          Experiment experiment, bool paused) =>
       send(TespRequestExperimentSetPausedStatus(experiment, paused));
 }

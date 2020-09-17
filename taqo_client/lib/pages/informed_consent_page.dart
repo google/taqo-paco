@@ -18,7 +18,6 @@ class InformedConsentPage extends StatefulWidget {
 }
 
 class _InformedConsentPageState extends State<InformedConsentPage> {
-
   @override
   Widget build(BuildContext context) {
     Experiment experiment = ModalRoute.of(context).settings.arguments;
@@ -44,63 +43,71 @@ class _InformedConsentPageState extends State<InformedConsentPage> {
                 height: 16.0,
                 color: Colors.black,
               ),
-              Row(mainAxisAlignment: MainAxisAlignment.end,
-                  children: <Widget>[TaqoRoundButton(
-                    child: const Text("Edit schedule", style: TextStyle(color: Colors.white),),
-                    onPressed: experiment.userCanEditAtLeastOneSchedule() ? () {
-                      Navigator.pushNamed(
-                          context, ScheduleOverviewPage.routeName,
-                          arguments: ScheduleOverviewArguments(experiment, fromConsentPage: true));
-                    } : null,)
-                  ]),
+              Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
+                TaqoRoundButton(
+                  child: const Text(
+                    "Edit schedule",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  onPressed: experiment.userCanEditAtLeastOneSchedule()
+                      ? () {
+                          Navigator.pushNamed(
+                              context, ScheduleOverviewPage.routeName,
+                              arguments: ScheduleOverviewArguments(experiment,
+                                  fromConsentPage: true));
+                        }
+                      : null,
+                )
+              ]),
             ],
           ),
         ),
         persistentFooterButtons: <Widget>[
           TaqoRoundButton(
-            child: Text("Agree", style: TextStyle(color: Colors.white)),
-            onPressed: () async {
-              final service = await ExperimentService.getInstance();
-              service.joinExperiment(experiment);
-              Navigator.popAndPushNamed(context, PostJoinInstructionsPage.routeName, arguments: experiment);
-            }
-          ),
+              child: Text("Agree", style: TextStyle(color: Colors.white)),
+              onPressed: () async {
+                final service = await ExperimentService.getInstance();
+                service.joinExperiment(experiment);
+                Navigator.popAndPushNamed(
+                    context, PostJoinInstructionsPage.routeName,
+                    arguments: experiment);
+              }),
           TaqoRoundButton(
               child: Text("Cancel", style: TextStyle(color: Colors.white)),
               onPressed: () {
                 // TODO should this be a pop? Probably
                 Navigator.pop(context, experiment);
-              }
-            ),
-        ]
-    );
+              }),
+        ]);
   }
 
   Widget buildPreambleRow(experiment) {
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-      Text(
-        "Attention",
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
-      Text("Please review the data that will be collected by this experiment and read the following information carefully before deciding to join this experiment. It describes how the researcher will handle and share your data."),
-    ]);
+          Text(
+            "Attention",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Text(
+              "Please review the data that will be collected by this experiment and read the following information carefully before deciding to join this experiment. It describes how the researcher will handle and share your data."),
+        ]);
   }
 
   Widget buildInformedConsentRow(experiment) {
-    var data = experiment.informedConsentForm != null ?
-        "<div>${experiment.informedConsentForm}</div>" :
-        "No statement provided";
+    var data = experiment.informedConsentForm != null
+        ? "<div>${experiment.informedConsentForm}</div>"
+        : "No statement provided";
 
-    return SingleChildScrollView(child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text("Informed Consent Statement from the Experiment Creator",
-            style: TextStyle(fontWeight: FontWeight.bold),),
+    return SingleChildScrollView(
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+          Text(
+            "Informed Consent Statement from the Experiment Creator",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           Html(data: data),
-        ]
-      )
-    );
+        ]));
   }
 }

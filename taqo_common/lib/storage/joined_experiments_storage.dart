@@ -7,7 +7,6 @@ import 'package:taqo_common/storage/base_database.dart';
 final _logger = Logger('JoinedExperimentStorage');
 
 class JoinedExperimentsStorage {
-
   static Completer<JoinedExperimentsStorage> _completer;
   static JoinedExperimentsStorage _instance;
 
@@ -34,7 +33,7 @@ class JoinedExperimentsStorage {
   Future _initialize() async {
     _db = await DatabaseFactory.makeDatabaseOrFuture();
   }
-  
+
   Future<List<Experiment>> readJoinedExperiments() async {
     try {
       return _db.getJoinedExperiments();
@@ -56,8 +55,8 @@ class JoinedExperimentsStorage {
     await _db.setExperimentPausedStatus(experiment, paused);
   }
 
-  Future<Map<int, bool>> loadPausedStatuses(Iterable<Experiment> experiments) async {
+  Future<Map<int, bool>> loadPausedStatuses(
+      Iterable<Experiment> experiments) async {
     return await _db.getExperimentsPausedStatus(experiments);
   }
-
 }

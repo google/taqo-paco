@@ -36,7 +36,8 @@ class SocketSink extends StreamSink<String> {
   }
 
   @override
-  Future addStream(Stream<String> stream) => _socket.addStream(Utf8Codec().encoder.bind(stream));
+  Future addStream(Stream<String> stream) =>
+      _socket.addStream(Utf8Codec().encoder.bind(stream));
 
   @override
   Future close() => _socket.close();

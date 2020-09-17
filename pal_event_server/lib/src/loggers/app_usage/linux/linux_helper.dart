@@ -21,11 +21,13 @@ void linuxAppLoggerIsolate(SendPort sendPort) {
         Process.run(xprop.command, xprop.getAppArgs(windowId)).then((result) {
           final currWindow = result.stdout;
           final resultMap = xprop.buildResultMap(currWindow);
-          final currAppAndWindowName = resultMap[appNameField] + resultMap[windowNameField];
+          final currAppAndWindowName =
+              resultMap[appNameField] + resultMap[windowNameField];
 
           if (currAppAndWindowName != _prevAppAndWindowName) {
             // Send APP_CLOSED
-            if (_prevAppAndWindowName != null && _prevAppAndWindowName.isNotEmpty) {
+            if (_prevAppAndWindowName != null &&
+                _prevAppAndWindowName.isNotEmpty) {
               sendPort.send(_prevAppAndWindowName);
             }
 

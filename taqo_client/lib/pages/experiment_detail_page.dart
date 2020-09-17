@@ -49,12 +49,10 @@ class _ExperimentDetailPageState extends State<ExperimentDetailPage> {
         floatingActionButton: FloatingActionButton(
             child: Icon(Icons.shop),
             onPressed: () {
-                    Navigator.pushNamed(context, InformedConsentPage.routeName,
-                        arguments: experiment);
-                  }
-                ));
-
-    }
+              Navigator.pushNamed(context, InformedConsentPage.routeName,
+                  arguments: experiment);
+            }));
+  }
 
   Widget buildCreatorRow(experiment) {
     return Row(children: <Widget>[
@@ -64,7 +62,9 @@ class _ExperimentDetailPageState extends State<ExperimentDetailPage> {
       ),
       Text(experiment.organization != null
           ? experiment.organization
-          : experiment.contactEmail != null ? experiment.contactEmail : experiment.creator),
+          : experiment.contactEmail != null
+              ? experiment.contactEmail
+              : experiment.creator),
     ]);
   }
 

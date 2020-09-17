@@ -15,7 +15,8 @@ void macOSAppLoggerIsolate(SendPort sendPort) {
     Process.run(apple_script.command, apple_script.scriptArgs).then((result) {
       final currWindow = result.stdout.trim();
       final resultMap = apple_script.buildResultMap(currWindow);
-      final currAppAndWindowName = resultMap[appNameField] + resultMap[windowNameField];
+      final currAppAndWindowName =
+          resultMap[appNameField] + resultMap[windowNameField];
 
       if (currAppAndWindowName != _prevAppAndWindowName) {
         // Send APP_CLOSED

@@ -15,7 +15,7 @@ import 'macos/macos_helper.dart' as macos_helper;
 
 final _logger = Logger('AppLogger');
 
-const queryInterval = const Duration(seconds: 1);
+const queryInterval = Duration(seconds: 1);
 
 class AppLogger extends PacoEventLogger with EventTriggerSource {
   static const appUsageLoggerName = 'app_usage_logger';
@@ -44,7 +44,8 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
   }
 
   @override
-  void start(List<ExperimentLoggerInfo> toLog, List<ExperimentLoggerInfo> toTrigger) async {
+  void start(List<ExperimentLoggerInfo> toLog,
+      List<ExperimentLoggerInfo> toTrigger) async {
     if (active || (toLog.isEmpty && toTrigger.isEmpty)) {
       return;
     }
@@ -59,7 +60,8 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
     _logger.info('Starting AppLogger');
     _receivePort = ReceivePort();
     _isolate = await Isolate.spawn(isolateFunc, _receivePort.sendPort);
-    _isolate.addOnExitListener(_receivePort.sendPort, response: _isolateDiedObj);
+    _isolate.addOnExitListener(_receivePort.sendPort,
+        response: _isolateDiedObj);
     _receivePort.listen(_listen);
     active = true;
 
@@ -75,7 +77,8 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
   }
 
   @override
-  void stop(List<ExperimentLoggerInfo> toLog, List<ExperimentLoggerInfo> toTrigger) async {
+  void stop(List<ExperimentLoggerInfo> toLog,
+      List<ExperimentLoggerInfo> toTrigger) async {
     if (!active) {
       return;
     }
@@ -105,8 +108,8 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
 
     if (data is Map && data.isNotEmpty) {
       // Log events
-      final pacoEvents = await createLoggerPacoEvents(data, experimentsBeingLogged,
-          createAppUsagePacoEvent, appUsageGroupType);
+      final pacoEvents = await createLoggerPacoEvents(data,
+          experimentsBeingLogged, createAppUsagePacoEvent, appUsageGroupType);
       _eventsToSend.addAll(pacoEvents);
 
       // Handle triggers

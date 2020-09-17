@@ -104,15 +104,19 @@ abstract class TespMessage {
       case tespCodeRequestCreateMissedEvent:
         return TespRequestCreateMissedEvent.withEncodedPayload(encodedPayload);
       case tespCodeRequestExperimentSaveJoined:
-        return TespRequestExperimentSaveJoined.withEncodedPayload(encodedPayload);
+        return TespRequestExperimentSaveJoined.withEncodedPayload(
+            encodedPayload);
       case tespCodeRequestExperimentSelectJoined:
         return TespRequestExperimentSelectJoined();
       case tespCodeRequestExperimentSelectById:
-        return TespRequestExperimentSelectById.withEncodedPayload(encodedPayload);
+        return TespRequestExperimentSelectById.withEncodedPayload(
+            encodedPayload);
       case tespCodeRequestExperimentGetPausedStatuses:
-        return TespRequestExperimentGetPausedStatuses.withEncodedPayload(encodedPayload);
+        return TespRequestExperimentGetPausedStatuses.withEncodedPayload(
+            encodedPayload);
       case tespCodeRequestExperimentSetPausedStatus:
-        return TespRequestExperimentSetPausedStatus.withEncodedPayload(encodedPayload);
+        return TespRequestExperimentSetPausedStatus.withEncodedPayload(
+            encodedPayload);
       case tespCodeResponseSuccess:
         return TespResponseSuccess();
       case tespCodeResponseError:
@@ -536,7 +540,6 @@ class TespRequestExperimentSetPausedStatus extends TespRequest
     }
   }
 }
-
 
 class TespResponseSuccess extends TespResponse {
   @override

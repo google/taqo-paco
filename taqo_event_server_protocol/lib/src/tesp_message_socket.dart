@@ -71,7 +71,7 @@ class TespMessageSocket<R extends TespMessage, S extends TespMessage>
           onTimeout: (eventSink) {
         if (!isSocketDone) {
           eventSink
-              .addError(TimeoutException("No stream event", timeoutMillis));
+              .addError(TimeoutException('No stream event', timeoutMillis));
         }
       }).listen((event) => outputController.add(event),
           onError: (e, st) => outputController.addError(e, st),

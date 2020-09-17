@@ -25,7 +25,8 @@ void openSurvey(int id) {
     });
   } else if (Platform.isMacOS) {
     // Note: this will only work if Taqo is installed in /Applications
-    Process.start('open', ['/Applications/taqo_client.app']).then((Process process) {
+    Process.start('open', ['/Applications/taqo_client.app'])
+        .then((Process process) {
       //stdout.addStream(process.stdout);
       //stderr.addStream(process.stderr);
     });
@@ -39,8 +40,8 @@ void handleCreateMissedEvent(Event event) async {
 
 Future<bool> handleCheckActiveNotification() async {
   final database = await SqliteDatabase.get();
-  final activeNotifications = (await database.getAllNotifications())
-      .where((n) => n.isActive);
+  final activeNotifications =
+      (await database.getAllNotifications()).where((n) => n.isActive);
   return activeNotifications.isNotEmpty;
 }
 

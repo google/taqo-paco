@@ -54,10 +54,11 @@ Future<int> _notify(ActionSpecification actionSpec,
   final id = await database.insertNotification(notificationHolder);
 
   if (Platform.isLinux) {
-    await linux_notifications.notify(
-        id, _appName, 0, actionSpec.experiment.title, notificationHolder.message);
+    await linux_notifications.notify(id, _appName, 0,
+        actionSpec.experiment.title, notificationHolder.message);
   } else if (Platform.isMacOS) {
-    await macos_notifications.notify(id, actionSpec.experiment.title, notificationHolder.message);
+    await macos_notifications.notify(
+        id, actionSpec.experiment.title, notificationHolder.message);
   }
 
   return id;

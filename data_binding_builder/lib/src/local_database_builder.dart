@@ -76,7 +76,8 @@ DatabaseDescription buildDatabaseDescription() {
   dbDescription.addTableSpec(
       name: 'alarms',
       objectName: 'actionSpecification',
-      defaultFromObjectTranslator: (dbColSpec) => 'jsonEncode(${dbColSpec.dbTableInfo.objectName})',
+      defaultFromObjectTranslator: (dbColSpec) =>
+          'jsonEncode(${dbColSpec.dbTableInfo.objectName})',
       specContent: [
         ['json', SqlLiteDatatype.TEXT],
       ]);
@@ -87,7 +88,11 @@ DatabaseDescription buildDatabaseDescription() {
       prependIdColumnOverride: false,
       specContent: [
         ['id', SqlLiteDatatype.INTEGER, null, 'PRIMARY KEY'],
-        ['json', SqlLiteDatatype.TEXT, (dbColSpec) => 'jsonEncode(${dbColSpec.dbTableInfo.objectName})'],
+        [
+          'json',
+          SqlLiteDatatype.TEXT,
+          (dbColSpec) => 'jsonEncode(${dbColSpec.dbTableInfo.objectName})'
+        ],
         ['joined', SqlLiteDatatype.INTEGER, (dbColSpec) => '1'],
         ['paused', SqlLiteDatatype.INTEGER, (dbColSpec) => '0'],
       ]);
@@ -105,7 +110,7 @@ String buildSqlCreateTable(
 CREATE TABLE $tableName (
 ${dbTableInfo.prependIdColumn ? "_id INTEGER PRIMARY KEY AUTOINCREMENT,\n" : ""}'''
       '''
-${dbColumnSpecs.map((dbColumn) => "${dbColumn.name} ${dbColumn.typeAsString} ${dbColumn.constraints??''}".trimRight()).join(', \n')}
+${dbColumnSpecs.map((dbColumn) => "${dbColumn.name} ${dbColumn.typeAsString} ${dbColumn.constraints ?? ''}".trimRight()).join(', \n')}
   );
   ''';
 }
@@ -137,7 +142,7 @@ class LocalDatabaseBuilder implements Builder {
   @override
   Map<String, List<String>> get buildExtensions {
     return const {
-      r'$lib$': const ['storage/$outputFilename'],
+      r'$lib$': ['storage/$outputFilename'],
     };
   }
 

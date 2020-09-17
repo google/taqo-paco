@@ -68,7 +68,8 @@ void disableIntelliJPlugin() async {
       for (var idePath in intelliJPaths) {
         if (idePath.hasMatch(baseDir)) {
           // Older versions of IntelliJ
-          var d = Directory(path.join(dir.path, 'config', 'plugins', 'pal_intellij_plugin'));
+          var d = Directory(
+              path.join(dir.path, 'config', 'plugins', 'pal_intellij_plugin'));
           if (await d.exists()) {
             await d.delete(recursive: true);
           }

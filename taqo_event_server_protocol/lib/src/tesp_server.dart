@@ -42,7 +42,8 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
   FutureOr<TespResponse> experimentSelectJoined();
   FutureOr<TespResponse> experimentSelectById(int experimentId);
   FutureOr<TespResponse> experimentGetPausedStatuses(List<int> experimentIds);
-  FutureOr<TespResponse> experimentSetPausedStatus(int experimentId, bool paused);
+  FutureOr<TespResponse> experimentSetPausedStatus(
+      int experimentId, bool paused);
 
   TespResponse ping() {
     return TespResponseSuccess();
@@ -79,7 +80,8 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
       case TespRequestNotificationCheckActive:
         return notificationCheckActive();
       case TespRequestNotificationAdd:
-        return notificationAdd((tespRequest as TespRequestNotificationAdd).notification);
+        return notificationAdd(
+            (tespRequest as TespRequestNotificationAdd).notification);
       case TespRequestNotificationCancel:
         return notificationCancel(
             (tespRequest as TespRequestNotificationCancel).notificationId);
@@ -97,7 +99,8 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
             (tespRequest as TespRequestNotificationSelectByExperiment)
                 .experimentId);
       case TespRequestNotificationRemove:
-        return notificationRemove((tespRequest as TespRequestNotificationRemove).notificationId);
+        return notificationRemove(
+            (tespRequest as TespRequestNotificationRemove).notificationId);
       case TespRequestNotificationRemoveAll:
         return notificationRemoveAll();
       case TespRequestCreateMissedEvent:
@@ -113,7 +116,8 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
             (tespRequest as TespRequestExperimentSelectById).experimentId);
       case TespRequestExperimentGetPausedStatuses:
         return experimentGetPausedStatuses(
-            (tespRequest as TespRequestExperimentGetPausedStatuses).experimentIds);
+            (tespRequest as TespRequestExperimentGetPausedStatuses)
+                .experimentIds);
       case TespRequestExperimentSetPausedStatus:
         return experimentSetPausedStatus(
             (tespRequest as TespRequestExperimentSetPausedStatus).experimentId,
@@ -172,7 +176,7 @@ class TespServer {
         }
       }, onError: (e) {
         tespSocket?.add(TespResponseInvalidRequest.withPayload(e.toString()));
-        if (!(e is CastError)) {
+        if (!(e is TypeError)) {
           subscription.cancel();
           tespSocket?.close();
         }

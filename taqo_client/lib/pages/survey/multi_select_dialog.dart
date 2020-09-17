@@ -4,7 +4,6 @@ import 'package:taqo_common/model/input2.dart';
 import 'multi_list_output.dart';
 
 class MultiSelectListDialog extends StatefulWidget {
-
   final MultiListOutput multiListOutput;
 
   var input;
@@ -12,7 +11,8 @@ class MultiSelectListDialog extends StatefulWidget {
   var event;
 
   @override
-  _MultiSelectListDialogState createState() => new _MultiSelectListDialogState(multiListOutput, input, event);
+  _MultiSelectListDialogState createState() =>
+      _MultiSelectListDialogState(multiListOutput, input, event);
 
   MultiSelectListDialog({this.multiListOutput, this.input, this.event});
 }
@@ -32,15 +32,17 @@ class _MultiSelectListDialogState extends State<MultiSelectListDialog> {
       content: SingleChildScrollView(
         child: Column(
           children: input.listChoices.map<Widget>((String value) {
-
             return CheckboxListTile(
               title: Text(value),
-              value: multiListOutput.answers[value] != null ? multiListOutput.answers[value] : false,
+              value: multiListOutput.answers[value] != null
+                  ? multiListOutput.answers[value]
+                  : false,
               controlAffinity: ListTileControlAffinity.leading,
               onChanged: (newState) {
                 setState(() {
                   multiListOutput.answers[value] = newState;
-                  event.responses[input.name] = multiListOutput.stringifyAnswers();
+                  event.responses[input.name] =
+                      multiListOutput.stringifyAnswers();
                 });
               },
             );

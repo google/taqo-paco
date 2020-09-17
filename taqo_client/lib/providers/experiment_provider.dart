@@ -30,8 +30,8 @@ class ExperimentProvider with ChangeNotifier {
     platform_service.databaseImpl.then((db) {
       db.getAllNotifications().then((all) {
         for (Experiment e in _experiments) {
-          final n = all.firstWhere((n) => n.experimentId == e.id,
-              orElse: () => null);
+          final n =
+              all.firstWhere((n) => n.experimentId == e.id, orElse: () => null);
           if (n != null) {
             e.active = n.isActive;
           }
@@ -70,8 +70,8 @@ class ExperimentProvider with ChangeNotifier {
     platform_service.databaseImpl.then((db) {
       db.getAllNotifications().then((all) {
         for (Experiment e in _experiments) {
-          final n = all.firstWhere((n) => n.experimentId == e.id,
-              orElse: () => null);
+          final n =
+              all.firstWhere((n) => n.experimentId == e.id, orElse: () => null);
           if (n != null) {
             e.active = n.isActive;
           }
@@ -88,7 +88,8 @@ class ExperimentProvider with ChangeNotifier {
     platform_service.databaseImpl.then((db) {
       db.getAllNotifications().then((all) {
         for (Experiment e in _experiments) {
-          final n = all.firstWhere((n) => n.experimentId == e.id, orElse: () => null);
+          final n =
+              all.firstWhere((n) => n.experimentId == e.id, orElse: () => null);
           e.active = n?.isActive ?? false;
         }
         notifyListeners();
