@@ -167,11 +167,13 @@ class TespClient {
           // The server closes early before sending out all the responses
           if (_tespResponseCompleterQueue.isNotEmpty) {
             _logger.warning(
-                'The server closes early before sending out all the responses');
+                'The server closed early before sending out all the responses');
             closeWithError(TespResponseError(
                 TespResponseError.tespClientErrorServerCloseEarly));
           } else {
+            _logger.info('The server closed the connection.');
             _responseAllCompleter.complete();
+            close();
           }
         });
 
@@ -185,7 +187,15 @@ class TespClient {
 
   Future<TespResponse> send(TespRequest tespRequest) async {
     if (_tespSocket == null) {
-      await connect();
+      _logger.info(
+          'Sending a TESP request while not connected to the event server. Trying to connect...');
+      try {
+        await connect();
+      } catch (e) {
+        _logger.warning(
+            'Failed to connect to the PAL event server. Is it running?');
+        rethrow;
+      }
     }
 
     var completer = Completer<TespResponse>();
