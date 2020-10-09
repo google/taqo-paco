@@ -32,18 +32,7 @@ final dt10 = DateTime(2009, 10, 31); // sat
 final dt11 = DateTime(2007, 11, 30); // fri
 final dt12 = DateTime(2011, 12, 31); // sat
 final testDateTimes = [
-  dt1,
-  dt2,
-  dt3,
-  dt4,
-  dt5,
-  dt6,
-  dt7,
-  dt8,
-  dt9,
-  dt10,
-  dt11,
-  dt12,
+  dt1, dt2, dt3, dt4, dt5, dt6, dt7, dt8, dt9, dt10, dt11, dt12, //
 ];
 
 final expected = <String, Map<DateTime, DateTime>>{

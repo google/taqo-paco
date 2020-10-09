@@ -262,11 +262,7 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
 
   List<Widget> _buildSignalTimeList(
       BuildContext context, List<SignalTime> signalTimes) {
-    final children = <Widget>[
-      Divider(
-        height: 8,
-      )
-    ];
+    final children = <Widget>[Divider(height: 8)];
     for (var i = 0; i < signalTimes.length; i++) {
       final time = signalTimes[i];
       String label = "Time $i";

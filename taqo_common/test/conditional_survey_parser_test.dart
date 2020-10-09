@@ -22,16 +22,10 @@ final _lookup = <String, dynamic>{
   '_e': 2.71828,
   'input1': 7,
   'input455': '-11',
-  'list14a': [
-    1,
-    2,
-    4,
-  ],
+  'list14a': [1, 2, 4],
   'list2': '9,1,1',
   '8adSymbol': 666,
-  '__123_4': [
-    1234,
-  ],
+  '__123_4': [1234],
   'null': null,
 };
 

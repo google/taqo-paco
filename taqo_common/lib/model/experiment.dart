@@ -13,10 +13,10 @@ part 'experiment.g.dart';
 @JsonSerializable()
 class Experiment extends ExperimentCore {
   static const DEFAULT_POST_INSTALL_INSTRUCTIONS =
-      "<b>You have successfully joined the experiment!</b><br/><br/>" +
-          "No need to do anything else for now.<br/><br/>" +
-          "Paco will send you a notification when it is time to participate.<br/><br/>" +
-          "Be sure your ringer/buzzer is on so you will hear the notification.";
+      "<b>You have successfully joined the experiment!</b><br/><br/>"
+      "No need to do anything else for now.<br/><br/>"
+      "Paco will send you a notification when it is time to participate.<br/><br/>"
+      "Be sure your ringer/buzzer is on so you will hear the notification.";
 
   String modifyDate;
   bool published;

@@ -33,25 +33,13 @@ void cancel(int id) {
   }
 
   _notifications.remove(id);
-  Process.run(_alerterBinary, [
-    '-remove',
-    '$id',
-  ]);
+  Process.run(_alerterBinary, ['-remove', '$id']);
 }
 
 Future<int> notify(int id, String title, String body, {int timeout = 0}) async {
   Process.start(_alerterBinary, [
-    '-title',
-    title,
-    '-message',
-    body,
-    '-timeout',
-    '$timeout',
-    '-sender',
-    _bundleId,
-    '-group',
-    '$id',
-    '-json'
+    '-title', title, '-message', body, '-timeout', '$timeout', //
+    '-sender', _bundleId, '-group', '$id', '-json'
   ]).then((Process p) {
     p.stdout.listen((List<int> event) {
       _listen(id, event);

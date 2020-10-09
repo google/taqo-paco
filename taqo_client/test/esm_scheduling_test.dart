@@ -98,11 +98,7 @@ class ESMTestResult {
 final dt1 = DateTime(2001, 1, 1);
 final dt2 = DateTime(2005, 9, 15);
 final dt3 = DateTime(2012, 8, 25);
-final _testDateTimes = [
-  dt1,
-  dt2,
-  dt3,
-];
+final _testDateTimes = [dt1, dt2, dt3];
 
 final m = {
   'Experiment 1': {
