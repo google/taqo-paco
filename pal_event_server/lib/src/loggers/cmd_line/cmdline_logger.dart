@@ -118,7 +118,10 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
         for (var rawLine in lines) {
           final line = _escapeRawCmd(rawLine);
           try {
-            events.addAll(await createLoggerPacoEvents(jsonDecode(line), experimentsBeingLogged,
+            final response = jsonDecode(line);
+            // skip the no-op command
+            if (response['cmd_raw'] == ":") continue;
+            events.addAll(await createLoggerPacoEvents(response, experimentsBeingLogged,
                 createCmdUsagePacoEvent, cliGroupType));
           } catch (e) {
             _logger.warning('Error parsing command line: $rawLine: $e');
