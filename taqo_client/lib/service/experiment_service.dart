@@ -144,7 +144,16 @@ class ExperimentService implements ExperimentServiceLite{
           }
           final experiments = <Experiment>[];
           for (var experimentJson in experimentJsonList) {
-            experiments.add(_makeExperimentFromJson(experimentJson));
+            var experiment = _makeExperimentFromJson(experimentJson);
+            var experimentOld = _joined[experiment.id];
+            if (experimentOld != null) {
+              experiment.paused = experimentOld.paused;
+            } else {
+              _logger.warning(
+                  'Server has returned an experiment with id ${experiment.id},'
+                      'which we have not asked for.');
+            }
+            experiments.add(experiment);
           }
 
           _mapifyExperimentsById(experiments);

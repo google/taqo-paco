@@ -130,22 +130,19 @@ Future<void> _insertOrUpdateJoinedExperiments(
   _logger.info('Save joined experiments.');
   try {
     db.transaction((txn) async {
-      await txn.update('experiments', {'joined': 0},
-          where: 'joined=?', whereArgs: [1]);
+      await txn.update('experiments', {'joined': 0}, where: 'joined=1');
       int count;
       String json;
       for (var experiment in experiments) {
         json = jsonEncode(experiment);
-        count = await txn.rawUpdate(
-            'UPDATE experiments SET json=?, joined=1, '
-            ' paused=CASE joined WHEN 0 THEN 0 ELSE paused END'
-            ' WHERE id=?',
-            [json, experiment.id]);
+        count = await txn.update('experiments', {'json': json, 'joined': 1},
+            where: 'id=?', whereArgs: [experiment.id]);
         if (count == 0) {
           await txn.insert('experiments',
               {'id': experiment.id, 'json': json, 'joined': 1, 'paused': 0});
         }
       }
+      await txn.update('experiments', {'paused': 0}, where: 'joined=0');
     });
   } catch (_) {
     rethrow;
