@@ -58,14 +58,21 @@ void cancel(int id) {
   _notifications.remove(id);
 
   Process.run('gdbus', [
-    'call', '--session', '--dest', _dest, '--object-path', _objectPath, //
-    '--method', _cancelMethod, '$notifId'
+    'call', //
+    '--session',
+    '--dest', _dest,
+    '--object-path', _objectPath,
+    '--method', _cancelMethod,
+    '$notifId',
   ]);
 }
 
 void monitor() {
   Process.start('gdbus', [
-    'monitor', '--session', '--dest', _dest, '--object-path', _objectPath, //
+    'monitor', //
+    '--session',
+    '--dest', _dest,
+    '--object-path', _objectPath,
   ]).then((Process process) {
     //stdout.addStream(process.stdout);
     //stderr.addStream(process.stderr);
@@ -110,9 +117,19 @@ Future<int> notify(
     Map<String, dynamic> hints = const {'urgency': Priority.critical},
     int timeout = 0}) async {
   final processResult = await Process.run('gdbus', [
-    'call', '--session', '--dest', _dest, '--object-path', _objectPath, //
-    '--method', _notifyMethod, appName, '$replaceId', iconPath, title, body, //
-    _parseActions(actions), _parseHints(hints), _parseTimeout(timeout),
+    'call', //
+    '--session',
+    '--dest', _dest,
+    '--object-path', _objectPath,
+    '--method', _notifyMethod,
+    appName,
+    '$replaceId',
+    iconPath,
+    title,
+    body,
+    _parseActions(actions),
+    _parseHints(hints),
+    _parseTimeout(timeout),
   ]);
 
   final idString = processResult.stdout;

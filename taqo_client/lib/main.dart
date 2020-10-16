@@ -149,9 +149,7 @@ class _MyAppState extends State<MyApp> {
                 builder: (context) => RunningExperimentsPage(
                     timeout: args == null
                         ? false
-                        : args.length > 0
-                            ? args[0]
-                            : false));
+                        : args.length > 0 ? args[0] : false));
         }
         return null;
       },
