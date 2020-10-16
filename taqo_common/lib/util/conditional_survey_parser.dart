@@ -46,35 +46,39 @@ class InputParser {
     // Symbols begin with a character or underscore (_), followed by zero or more characters,
     // underscores, and digits
     builder.group()
-      ..primitive((digit().plus() & (char('.') & digit().plus()).optional()).trim().flatten()
+      ..primitive((digit().plus() & (char('.') & digit().plus()).optional())
+          .trim()
+          .flatten()
           .map((a) => num.tryParse(a)))
-      ..primitive(((char('_') | letter()) & (word() | char('_')).star()).trim().flatten()
+      ..primitive(((char('_') | letter()) & (word() | char('_')).star())
+          .trim()
+          .flatten()
           .map((a) {
-          final aVal = _env[a.trim()].value;
-          if (aVal is num || aVal is List || aVal == null) {
-            return aVal;
-          } else if (aVal is String) {
-            if (aVal.contains(',')) {
-              return aVal.split(',').map((s) => num.tryParse(s)).toList();
-            }
-            return num.tryParse(aVal);
+        final aVal = _env[a.trim()].value;
+        if (aVal is num || aVal is List || aVal == null) {
+          return aVal;
+        } else if (aVal is String) {
+          if (aVal.contains(',')) {
+            return aVal.split(',').map((s) => num.tryParse(s)).toList();
           }
-          return null;
+          return num.tryParse(aVal);
+        }
+        return null;
       }));
 
     // Supports negation
-    builder.group()
-      ..prefix(char('-').trim(), (op, a) => -a);
+    builder.group().prefix(char('-').trim(), (op, a) => -a);
 
     // Parentheses
-    builder.group()
-      ..wrapper(char('(').trim(), char(')').trim(), (l, a, r) => a);
+    builder.group().wrapper(char('(').trim(), char(')').trim(), (l, a, r) => a);
 
     // Comparison operators
     builder.group()
-      ..left(string('contains').trim(), (a, _, b) => _equalOp((a, b) => false, a, b))
+      ..left(string('contains').trim(),
+          (a, _, b) => _equalOp((a, b) => false, a, b))
       ..left(string('==').trim(), (a, _, b) => _equalOp((a, b) => a == b, a, b))
-      ..left(string('!=').trim(), (a, _, b) => !_equalOp((a, b) => a == b, a, b))
+      ..left(
+          string('!=').trim(), (a, _, b) => !_equalOp((a, b) => a == b, a, b))
       ..left(string('=').trim(), (a, _, b) => _equalOp((a, b) => a == b, a, b))
       ..left(string('<=').trim(), (a, _, b) => _orderOp((a, b) => a <= b, a, b))
       ..left(string('>=').trim(), (a, _, b) => _orderOp((a, b) => a >= b, a, b))
@@ -127,7 +131,8 @@ class Binding {
 class Environment {
   final _knownQuestions = <String, Binding>{};
 
-  void operator []=(String id, Binding binding) => _knownQuestions[id] = binding;
+  void operator []=(String id, Binding binding) =>
+      _knownQuestions[id] = binding;
 
   Binding operator [](String id) => _knownQuestions[id];
 

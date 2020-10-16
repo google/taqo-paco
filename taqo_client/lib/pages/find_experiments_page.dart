@@ -56,6 +56,7 @@ class _FindExperimentsPageState extends State<FindExperimentsPage> {
     );
   }
 }
+
 class ExperimentList extends StatefulWidget {
   @override
   State<ExperimentList> createState() => ExperimentListState();
@@ -104,7 +105,10 @@ class ExperimentListState extends State<ExperimentList> {
     for (var experiment in exProvider.experiments) {
       listItems.add(ExperimentListItem(experiment));
     }
-    return ListView(children: listItems, shrinkWrap: true,);
+    return ListView(
+      children: listItems,
+      shrinkWrap: true,
+    );
   }
 }
 
@@ -114,27 +118,27 @@ class ExperimentListItem extends StatelessWidget {
   ExperimentListItem(this.experiment);
 
   void _onTapExperiment(BuildContext context, Experiment experiment) {
-    Navigator.pushNamed(context, ExperimentDetailPage.routeName, arguments: experiment);
+    Navigator.pushNamed(context, ExperimentDetailPage.routeName,
+        arguments: experiment);
   }
 
   @override
   Widget build(BuildContext context) {
     return TaqoCard(
-      child: InkWell(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(experiment.title, textScaleFactor: 1.5),
-            if (experiment.organization != null &&
-                experiment.organization.isNotEmpty)
-              Text(experiment.organization),
-            Text(experiment.contactEmail != null
-                ? experiment.contactEmail
-                : experiment.creator),
-          ],
-        ),
-        onTap: () => _onTapExperiment(context, experiment),
-      )
-    );
+        child: InkWell(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(experiment.title, textScaleFactor: 1.5),
+          if (experiment.organization != null &&
+              experiment.organization.isNotEmpty)
+            Text(experiment.organization),
+          Text(experiment.contactEmail != null
+              ? experiment.contactEmail
+              : experiment.creator),
+        ],
+      ),
+      onTap: () => _onTapExperiment(context, experiment),
+    ));
   }
 }

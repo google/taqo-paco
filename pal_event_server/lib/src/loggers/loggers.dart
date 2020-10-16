@@ -29,11 +29,13 @@ abstract class PacoEventLogger {
   final Duration sendInterval;
   bool active = false;
 
-  PacoEventLogger(this.loggerName, {
+  PacoEventLogger(
+    this.loggerName, {
     sendIntervalMs = 10000,
   }) : sendInterval = Duration(milliseconds: sendIntervalMs);
 
-  static bool _isCurrentlyTracking(List<ExperimentLoggerInfo> list, int id, String name) {
+  static bool _isCurrentlyTracking(
+      List<ExperimentLoggerInfo> list, int id, String name) {
     for (var info in list) {
       if (info.experiment.id != id) {
         continue;
@@ -55,9 +57,9 @@ abstract class PacoEventLogger {
 
     for (var info in toStart) {
       // Are we already logging some groups for this experiment?
-      final currentlyTracking =
-          tracking.firstWhere((i) => i.experiment.id == info.experiment.id,
-              orElse: () => null);
+      final currentlyTracking = tracking.firstWhere(
+          (i) => i.experiment.id == info.experiment.id,
+          orElse: () => null);
 
       for (var g in info.groups) {
         // Don't start logging the same group if already logging it
@@ -66,7 +68,8 @@ abstract class PacoEventLogger {
         }
 
         // Create Paco Event for logging started
-        events.add(await createLoggerStatusPacoEvent(info.experiment, g.name, loggerName, true));
+        events.add(await createLoggerStatusPacoEvent(
+            info.experiment, g.name, loggerName, true));
 
         // If already logging the experiment, track the new group
         if (currentlyTracking != null) {
@@ -103,7 +106,8 @@ abstract class PacoEventLogger {
     final expToRemove = <int>[];
     for (var info in tracking) {
       // Are there any groups to keep for this experiment?
-      final keep = toKeep.firstWhere((i) => i.experiment.id == info.experiment.id,
+      final keep = toKeep.firstWhere(
+          (i) => i.experiment.id == info.experiment.id,
           orElse: () => null);
 
       final groupsToRemove = <String>[];
@@ -111,12 +115,15 @@ abstract class PacoEventLogger {
         if (keep == null) {
           // Remove all groups for this experiment
           // Create Paco Event for logging stopped
-          events.add(await createLoggerStatusPacoEvent(info.experiment, g.name, loggerName, false));
+          events.add(await createLoggerStatusPacoEvent(
+              info.experiment, g.name, loggerName, false));
         } else {
-          final keepGroup = keep.groups.firstWhere((i) => i.name == g.name, orElse: () => null);
+          final keepGroup = keep.groups
+              .firstWhere((i) => i.name == g.name, orElse: () => null);
           if (keepGroup == null) {
             // Create Paco Event for logging stopped
-            events.add(await createLoggerStatusPacoEvent(info.experiment, g.name, loggerName, false));
+            events.add(await createLoggerStatusPacoEvent(
+                info.experiment, g.name, loggerName, false));
             groupsToRemove.add(g.name);
           }
         }
@@ -159,7 +166,8 @@ abstract class PacoEventLogger {
     final experiments = await experimentService.getJoinedExperiments();
 
     for (var e in experiments) {
-      final paused = await sharedPrefs.getBool("${sharedPrefsExperimentPauseKey}_${e.id}");
+      final paused =
+          await sharedPrefs.getBool("${sharedPrefsExperimentPauseKey}_${e.id}");
       if (e.isOver() || (paused ?? false)) {
         continue;
       }
@@ -175,15 +183,23 @@ void startOrStopLoggers() async {
   final typeToLogger = {
     GroupTypeEnum.APPUSAGE_DESKTOP: {
       'logger': AppLogger(),
-      'cueCodes': [InterruptCue.APP_USAGE_DESKTOP, InterruptCue.APP_CLOSED_DESKTOP, ],
+      'cueCodes': [
+        InterruptCue.APP_USAGE_DESKTOP,
+        InterruptCue.APP_CLOSED_DESKTOP,
+      ],
     },
     GroupTypeEnum.APPUSAGE_SHELL: {
       'logger': CmdLineLogger(),
-      'cueCodes': [InterruptCue.APP_USAGE_SHELL, InterruptCue.APP_CLOSED_SHELL, ],
+      'cueCodes': [
+        InterruptCue.APP_USAGE_SHELL,
+        InterruptCue.APP_CLOSED_SHELL,
+      ],
     },
     GroupTypeEnum.IDE_IDEA_USAGE: {
       'logger': IntelliJLogger(),
-      'cueCodes': [InterruptCue.IDE_IDEA_USAGE, ],
+      'cueCodes': [
+        InterruptCue.IDE_IDEA_USAGE,
+      ],
     }
   };
 
@@ -192,7 +208,8 @@ void startOrStopLoggers() async {
     final List<int> cueCodes = entry.value['cueCodes'];
     final PacoEventLogger logger = entry.value['logger'];
     final experimentsToLog = await getExperimentsToLogForType(type);
-    final experimentsToTrigger = await _getExperimentsToTriggerForCueCodes(cueCodes);
+    final experimentsToTrigger =
+        await _getExperimentsToTriggerForCueCodes(cueCodes);
     // Note: parameters to logger.stop() are inverted, i.e. the experiments
     // passed are the experiments to continue logging/triggering
     logger.stop(experimentsToLog, experimentsToTrigger);
@@ -201,7 +218,8 @@ void startOrStopLoggers() async {
 }
 
 /// Return a Map of Experiments and Groups that should enable logging
-Future<List<ExperimentLoggerInfo>> getExperimentsToLogForType(GroupTypeEnum groupType) async {
+Future<List<ExperimentLoggerInfo>> getExperimentsToLogForType(
+    GroupTypeEnum groupType) async {
   final experimentService = await ExperimentServiceLocal.getInstance();
   final experiments = await experimentService.getJoinedExperiments();
 
@@ -230,7 +248,8 @@ Future<List<ExperimentLoggerInfo>> getExperimentsToLogForType(GroupTypeEnum grou
 }
 
 /// Return a Map of Experiments and Groups that should enable logging
-Future<List<ExperimentLoggerInfo>> _getExperimentsToTriggerForCueCodes(List<int> cueCodes) async {
+Future<List<ExperimentLoggerInfo>> _getExperimentsToTriggerForCueCodes(
+    List<int> cueCodes) async {
   final experimentService = await ExperimentServiceLocal.getInstance();
   final experiments = await experimentService.getJoinedExperiments();
 

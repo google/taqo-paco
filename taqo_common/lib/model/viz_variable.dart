@@ -2,7 +2,6 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'viz_variable.g.dart';
 
-
 @JsonSerializable()
 class VizVariable {
   String id;
@@ -12,8 +11,8 @@ class VizVariable {
 
   VizVariable();
 
-  factory VizVariable.fromJson(Map<String, dynamic> json) => _$VizVariableFromJson(json);
+  factory VizVariable.fromJson(Map<String, dynamic> json) =>
+      _$VizVariableFromJson(json);
 
   Map<String, dynamic> toJson() => _$VizVariableToJson(this);
-  
 }

@@ -44,9 +44,7 @@ class HasEncodedPayload extends CustomMatcher {
   @override
   Description describe(Description description) {
     // Omit the actual payload to avoiding hanging caused by large payload.
-    return description
-        .add(_featureDescription)
-        .add(' <omitted>');
+    return description.add(_featureDescription).add(' <omitted>');
   }
 }
 

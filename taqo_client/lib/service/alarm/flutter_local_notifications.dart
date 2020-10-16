@@ -14,12 +14,15 @@ import 'taqo_alarm.dart' as taqo_alarm;
 
 final _logger = Logger('FlutterLocalNotifications');
 
-const _androidSoundResource = RawResourceAndroidNotificationSound("deepbark_trial");
+const _androidSoundResource =
+    RawResourceAndroidNotificationSound("deepbark_trial");
 const _appleSoundFile = "deepbark_trial.m4a";
 
-const _androidNotificationChannelId = "com.taqo.survey.taqosurvey.NOTIFICATIONS";
+const _androidNotificationChannelId =
+    "com.taqo.survey.taqosurvey.NOTIFICATIONS";
 const _androidNotificationChannelName = "Experiment Reminders";
-const _androidNotificationChannelDesc = "Reminders to participate in Experiments";
+const _androidNotificationChannelDesc =
+    "Reminders to participate in Experiments";
 const _androidIconResource = "paco256";
 
 final _plugin = FlutterLocalNotificationsPlugin();
@@ -33,10 +36,10 @@ void _handleNotification(String payload) async {
 }
 
 /// Shows or schedules a notification with the plugin
-Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
-    bool cancelPending=true}) async {
+Future<int> _notify(ActionSpecification actionSpec,
+    {DateTime when, bool cancelPending = true}) async {
   final notificationHolder = NotificationHolder(
-    -1,   // placeholder, the real ID will be assigned by sqlite
+    -1, // placeholder, the real ID will be assigned by sqlite
     actionSpec.time.millisecondsSinceEpoch,
     actionSpec.experiment.id,
     0,
@@ -45,7 +48,9 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
     actionSpec.actionTrigger.id,
     actionSpec.action?.id,
     null,
-    actionSpec.action == null ? "Time to participate" : actionSpec.action.msgText,
+    actionSpec.action == null
+        ? "Time to participate"
+        : actionSpec.action.msgText,
     actionSpec.actionTriggerSpecId,
   );
 
@@ -56,8 +61,8 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
   // notifications
   final db = await platform_service.databaseImpl;
   if (cancelPending) {
-    final pendingNotifications = await db
-        .getAllNotificationsForExperiment(actionSpec.experiment);
+    final pendingNotifications =
+        await db.getAllNotificationsForExperiment(actionSpec.experiment);
     await Future.forEach(pendingNotifications, (pn) async {
       if (notificationHolder.sameGroupAs(pn)) {
         await taqo_alarm.timeout(pn.id);
@@ -83,18 +88,23 @@ Future<int> _notify(ActionSpecification actionSpec, {DateTime when,
       presentBadge: true,
       presentSound: true,
       sound: _appleSoundFile);
-  final details = NotificationDetails(android: androidDetails, iOS: iOSDetails, macOS: macOSDetails);
+  final details = NotificationDetails(
+      android: androidDetails, iOS: iOSDetails, macOS: macOSDetails);
 
   if (when != null) {
     // Because system time zone changes trigger re-scheduling, we can always assume local here
-    final tzWhen = tz.TZDateTime.local(when.year, when.month, when.day, when.hour, when.minute, when.second);
-    await _plugin.zonedSchedule(
-        id, actionSpec.experiment.title, notificationHolder.message, tzWhen, details,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.wallClockTime,
-        payload: "$id", androidAllowWhileIdle: true);
+    final tzWhen = tz.TZDateTime.local(
+        when.year, when.month, when.day, when.hour, when.minute, when.second);
+    await _plugin.zonedSchedule(id, actionSpec.experiment.title,
+        notificationHolder.message, tzWhen, details,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.wallClockTime,
+        payload: "$id",
+        androidAllowWhileIdle: true);
   } else {
     await _plugin.show(
-        id, actionSpec.experiment.title, notificationHolder.message, details, payload: "$id");
+        id, actionSpec.experiment.title, notificationHolder.message, details,
+        payload: "$id");
   }
 
   return id;
@@ -106,16 +116,21 @@ Future init() async {
 
   tz.initializeTimeZones();
 
-  final initSettingsAndroid = AndroidInitializationSettings(_androidIconResource);
+  final initSettingsAndroid =
+      AndroidInitializationSettings(_androidIconResource);
   final initSettingsIOS = IOSInitializationSettings(
-      onDidReceiveLocalNotification: (int id, String title, String body, String payload) async {
-        _notificationHandledStream.add(payload);
-      });
+      onDidReceiveLocalNotification:
+          (int id, String title, String body, String payload) async {
+    _notificationHandledStream.add(payload);
+  });
   final initSettingsMacOS = MacOSInitializationSettings();
 
   final initSettings = InitializationSettings(
-      android: initSettingsAndroid, iOS: initSettingsIOS, macOS: initSettingsMacOS);
-  await _plugin.initialize(initSettings, onSelectNotification: (String payload) async {
+      android: initSettingsAndroid,
+      iOS: initSettingsIOS,
+      macOS: initSettingsMacOS);
+  await _plugin.initialize(initSettings,
+      onSelectNotification: (String payload) async {
     _notificationHandledStream.add(payload);
   });
 
@@ -138,15 +153,16 @@ Future<int> showNotification(ActionSpecification actionSpec) async {
 /// Schedule a notification at [actionSpec.time]
 Future<int> scheduleNotification(ActionSpecification actionSpec,
     {bool cancelPending}) async {
-  final id = await _notify(actionSpec, when: actionSpec.time,
-      cancelPending: cancelPending);
+  final id = await _notify(actionSpec,
+      when: actionSpec.time, cancelPending: cancelPending);
   _logger.info('Scheduling notification id: $id @ ${actionSpec.time}');
   return id;
 }
 
 /// Cancel notification with [id]
 Future cancelNotification(int id) async {
-  _plugin.cancel(id).catchError((e, st) => _logger.warning("Error canceling notification id $id: $e"));
+  _plugin.cancel(id).catchError(
+      (e, st) => _logger.warning("Error canceling notification id $id: $e"));
   final db = await platform_service.databaseImpl;
   return db.removeNotification(id);
 }
@@ -154,23 +170,25 @@ Future cancelNotification(int id) async {
 /// Cancel all notifications for [experiment]
 Future cancelForExperiment(Experiment experiment) async {
   final db = await platform_service.databaseImpl;
-  return db.getAllNotificationsForExperiment(experiment)
+  return db
+      .getAllNotificationsForExperiment(experiment)
       .then((List<NotificationHolder> notifications) =>
-      notifications.forEach((n) => cancelNotification(n.id)))
+          notifications.forEach((n) => cancelNotification(n.id)))
       .catchError((e, st) => "Error canceling notifications: $e");
 }
 
 /// Cancel all notifications, except ones that fired and are still pending
 Future cancelAllNotifications() async {
   final db = await platform_service.databaseImpl;
-  return db.getAllNotifications()
+  return db
+      .getAllNotifications()
       .then(((List<NotificationHolder> notifications) {
-        for (var n in notifications) {
-          final dt = DateTime.fromMillisecondsSinceEpoch(n.alarmTime);
-          if (dt.isBefore(DateTime.now())) {
-            continue;
-          }
-          cancelNotification(n.id);
-        }
+    for (var n in notifications) {
+      final dt = DateTime.fromMillisecondsSinceEpoch(n.alarmTime);
+      if (dt.isBefore(DateTime.now())) {
+        continue;
+      }
+      cancelNotification(n.id);
+    }
   })).catchError((e, st) => "Error canceling notifications: $e");
 }

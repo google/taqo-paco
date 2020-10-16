@@ -26,8 +26,8 @@ void _appendTimesOfDay(List<SignalTime> signalTimes, StringBuffer sb) {
   }).join(","));
 }
 
-String toPrettyString(Schedule schedule, [bool includeIds=false]) {
-  final sb = new StringBuffer();
+String toPrettyString(Schedule schedule, [bool includeIds = false]) {
+  final sb = StringBuffer();
   if (includeIds) {
     sb.write("${schedule.id}:");
   }
@@ -35,17 +35,23 @@ String toPrettyString(Schedule schedule, [bool includeIds=false]) {
   switch (schedule.scheduleType) {
     case Schedule.DAILY:
     case Schedule.WEEKDAY:
-      repeatRate > 1 ? sb.write("Every $repeatRate days at ") : sb.write("Daily at ");
+      repeatRate > 1
+          ? sb.write("Every $repeatRate days at ")
+          : sb.write("Daily at ");
       _appendTimesOfDay(schedule.signalTimes, sb);
       break;
     case Schedule.WEEKLY:
-      repeatRate > 1 ? sb.write("Every $repeatRate weeks on ") : sb.write("Weekly on ");
+      repeatRate > 1
+          ? sb.write("Every $repeatRate weeks on ")
+          : sb.write("Weekly on ");
       _appendDaysOfWeek(schedule.weekDaysScheduled, sb);
       sb.write(" at ");
       _appendTimesOfDay(schedule.signalTimes, sb);
       break;
     case Schedule.MONTHLY:
-      repeatRate > 1 ? sb.write("Every $repeatRate months on ") : sb.write("Monthly on ");
+      repeatRate > 1
+          ? sb.write("Every $repeatRate months on ")
+          : sb.write("Monthly on ");
       if (schedule.byDayOfMonth) {
         sb.write(schedule.dayOfMonth);
       } else {
@@ -59,7 +65,8 @@ String toPrettyString(Schedule schedule, [bool includeIds=false]) {
       sb.write("Randomly ");
       sb.write(schedule.esmFrequency);
       sb.write(" times per ");
-      sb.write(Schedule.ESM_PERIODS_NAMES[schedule.esmPeriodInDays].toLowerCase());
+      sb.write(
+          Schedule.ESM_PERIODS_NAMES[schedule.esmPeriodInDays].toLowerCase());
       sb.write(" between ");
       sb.write(getHourOffsetAsTimeString(schedule.esmStartHour));
       sb.write(" and ");

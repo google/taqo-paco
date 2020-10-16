@@ -22,13 +22,14 @@ class LoggingService {
 
   // This init() function must be called before any logging activity and after
   // LocalFileStorageFactory is initialized
-  static Future<void> initialize({String logFilePrefix = '',
-    bool outputsToStdout = true}) async {
+  static Future<void> initialize(
+      {String logFilePrefix = '', bool outputsToStdout = true}) async {
     _outputsToStdout = outputsToStdout;
     _logFilePrefix = logFilePrefix;
     _logGlob = Glob('${_logFilePrefix}*.log');
     if (!LocalFileStorageFactory.isInitialized) {
-      throw StateError("LoggingService must be initialized after LocalFileStorageFactory.");
+      throw StateError(
+          "LoggingService must be initialized after LocalFileStorageFactory.");
     }
     _logDirectoryPath = LocalFileStorageFactory.localStorageDirectory.path;
 

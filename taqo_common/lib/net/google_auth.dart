@@ -26,7 +26,8 @@ class GoogleAuth {
   static const _secret = "LOwVPys7lruBjjsI8erzh7KK";
   static final _id = ClientId(_clientId, _secret);
 
-  final _authenticationStreamController = StreamController<AuthState>.broadcast();
+  final _authenticationStreamController =
+      StreamController<AuthState>.broadcast();
   Stream<AuthState> get onAuthChanged => _authenticationStreamController.stream;
 
   static final _instance = GoogleAuth._();
@@ -38,13 +39,17 @@ class GoogleAuth {
   }
 
   void _saveCredentials(credentials) async {
-    final tokenStore = await UnsecureTokenStorage.get(LocalFileStorageFactory.makeLocalFileStorage(UnsecureTokenStorage.filename));
+    final tokenStore = await UnsecureTokenStorage.get(
+        LocalFileStorageFactory.makeLocalFileStorage(
+            UnsecureTokenStorage.filename));
     tokenStore.saveTokens(credentials.refreshToken,
         credentials.accessToken.data, credentials.accessToken.expiry);
   }
 
   Future<List<String>> _readTokens() async {
-    final tokenStore = await UnsecureTokenStorage.get(LocalFileStorageFactory.makeLocalFileStorage(UnsecureTokenStorage.filename));
+    final tokenStore = await UnsecureTokenStorage.get(
+        LocalFileStorageFactory.makeLocalFileStorage(
+            UnsecureTokenStorage.filename));
     return tokenStore.readTokens();
   }
 
@@ -72,7 +77,9 @@ class GoogleAuth {
 
   /// Logout
   Future<void> clearCredentials() async {
-    final tokenStore = await UnsecureTokenStorage.get(LocalFileStorageFactory.makeLocalFileStorage(UnsecureTokenStorage.filename));
+    final tokenStore = await UnsecureTokenStorage.get(
+        LocalFileStorageFactory.makeLocalFileStorage(
+            UnsecureTokenStorage.filename));
     tokenStore.clear();
     _authenticationStreamController.add(AuthState.notAuthenticated);
   }
@@ -85,10 +92,12 @@ class GoogleAuth {
     }
 
     try {
-      final accessToken =
-          AccessToken("Bearer", savedTokens.elementAt(1), DateTime.parse(savedTokens.elementAt(2)));
+      final accessToken = AccessToken("Bearer", savedTokens.elementAt(1),
+          DateTime.parse(savedTokens.elementAt(2)));
       final newCredentials = await refreshCredentials(
-          _id, AccessCredentials(accessToken, savedTokens.elementAt(0), _scopes), client);
+          _id,
+          AccessCredentials(accessToken, savedTokens.elementAt(0), _scopes),
+          client);
       _saveCredentials(newCredentials);
       return {"Authorization": "Bearer ${newCredentials.accessToken.data}"};
     } catch (_) {
@@ -102,8 +111,9 @@ class GoogleAuth {
   // https://github.com/dart-lang/googleapis_auth/pull/44
   // To avoid using another forked plugin, we're importing auth_http_utils.dart
   // to just have this as a method. It's not best practice to import that file.
-  AutoRefreshingClient clientViaStoredCredentials(ClientId clientId,
-      AccessCredentials accessCredentials, {http.Client baseClient}) {
+  AutoRefreshingClient clientViaStoredCredentials(
+      ClientId clientId, AccessCredentials accessCredentials,
+      {http.Client baseClient}) {
     bool closeUnderlyingClient = false;
     if (baseClient == null) {
       baseClient = http.Client();
@@ -121,8 +131,8 @@ class GoogleAuth {
 
     final accessToken = AccessToken('Bearer', savedTokens.elementAt(1),
         DateTime.parse(savedTokens.elementAt(2)));
-    final accessCredentials = AccessCredentials(accessToken,
-        savedTokens.elementAt(0), _scopes);
+    final accessCredentials =
+        AccessCredentials(accessToken, savedTokens.elementAt(0), _scopes);
 
     var client;
     try {

@@ -50,5 +50,4 @@ class ExperimentServiceLocal implements ExperimentServiceLite {
   Future<List<Experiment>> getJoinedExperiments() async {
     return _cache.getJoinedExperiments();
   }
-
 }

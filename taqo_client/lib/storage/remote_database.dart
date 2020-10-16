@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:logging/logging.dart';
 
@@ -64,8 +63,7 @@ class RemoteDatabase extends BaseDatabase {
   @override
   Future<ActionSpecification> getAlarm(int id) {
     return global.tespClient.then((tespClient) async {
-      final TespResponseAnswer response =
-      await tespClient.alarmSelectById(id);
+      final TespResponseAnswer response = await tespClient.alarmSelectById(id);
       return ActionSpecification.fromJson(jsonDecode(response.payload));
     });
   }
@@ -73,8 +71,7 @@ class RemoteDatabase extends BaseDatabase {
   @override
   Future<Map<int, ActionSpecification>> getAllAlarms() {
     return global.tespClient.then((tespClient) async {
-      final TespResponseAnswer response =
-      await tespClient.alarmSelectAll();
+      final TespResponseAnswer response = await tespClient.alarmSelectAll();
       final Map map = jsonDecode(response.payload);
       return Map.fromIterable(map.entries,
           key: (entry) => int.parse(entry.key),
@@ -149,7 +146,8 @@ class RemoteDatabase extends BaseDatabase {
   @override
   Future<void> saveJoinedExperiments(Iterable<Experiment> experiments) async {
     await global.tespClient.then((tespClient) async {
-      final TespResponse response = await tespClient.experimentSaveJoined(experiments);
+      final TespResponse response =
+          await tespClient.experimentSaveJoined(experiments);
       if (response is TespResponseError) {
         _logger.warning('$response');
       }
@@ -159,7 +157,8 @@ class RemoteDatabase extends BaseDatabase {
   @override
   Future<Experiment> getExperimentById(int experimentId) {
     return global.tespClient.then((tespClient) async {
-      final TespResponse response = await tespClient.experimentSelectById(experimentId);
+      final TespResponse response =
+          await tespClient.experimentSelectById(experimentId);
       if (response is TespResponseError) {
         _logger.warning('$response');
         return null;
@@ -178,29 +177,34 @@ class RemoteDatabase extends BaseDatabase {
         return <Experiment>[];
       } else {
         return (((response as TespResponseAnswer).payload) as List)
-            .map((e) => Experiment.fromJson(e)).toList();
+            .map((e) => Experiment.fromJson(e))
+            .toList();
       }
     });
   }
 
   @override
-  Future<Map<int, bool>> getExperimentsPausedStatus(Iterable<Experiment> experiments) {
+  Future<Map<int, bool>> getExperimentsPausedStatus(
+      Iterable<Experiment> experiments) {
     return global.tespClient.then((tespClient) async {
-      final TespResponse response = await tespClient.experimentGetPausedStatuses(experiments.toList());
+      final TespResponse response =
+          await tespClient.experimentGetPausedStatuses(experiments.toList());
       if (response is TespResponseError) {
         _logger.warning('$response');
         return <int, bool>{};
       } else {
         return (((response as TespResponseAnswer).payload) as Map)
-            .map((key, value) => MapEntry<int,bool>(int.parse(key), value));
+            .map((key, value) => MapEntry<int, bool>(int.parse(key), value));
       }
     });
   }
 
   @override
-  Future<void> setExperimentPausedStatus(Experiment experiment, bool paused) async {
+  Future<void> setExperimentPausedStatus(
+      Experiment experiment, bool paused) async {
     await global.tespClient.then((tespClient) async {
-      final TespResponse response = await tespClient.experimentSetPausedStatus(experiment, paused);
+      final TespResponse response =
+          await tespClient.experimentSetPausedStatus(experiment, paused);
       if (response is TespResponseError) {
         _logger.warning('$response');
       }

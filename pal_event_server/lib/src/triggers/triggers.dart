@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/paco_action.dart';
 import 'package:taqo_common/model/experiment.dart';
@@ -25,7 +23,10 @@ class TriggerEvent {
   String eventText;
   String eventContentDescription;
 
-  TriggerEvent(this.dateTime, this.code, this.sourceId, {
+  TriggerEvent(
+    this.dateTime,
+    this.code,
+    this.sourceId, {
     this.packageName,
     this.className,
     this.eventText,
@@ -38,7 +39,10 @@ mixin EventTriggerSource {
 
   /// Create [TriggerEvent] objects
   TriggerEvent createEventTriggers(int code, String sourceId,
-      {String packageName, String className, String eventText, String eventContentDesc}) {
+      {String packageName,
+      String className,
+      String eventText,
+      String eventContentDesc}) {
     return TriggerEvent(DateTime.now(), code, sourceId);
   }
 
@@ -51,7 +55,8 @@ mixin EventTriggerSource {
 
     for (final event in events) {
       for (Experiment experiment in experiments) {
-        final paused = await sharedPrefs.getBool("${sharedPrefsExperimentPauseKey}_${experiment.id}");
+        final paused = await sharedPrefs
+            .getBool("${sharedPrefsExperimentPauseKey}_${experiment.id}");
         if (experiment.isOver() || (paused ?? false)) {
           // TODO Handle InterruptCue.PACO_EXPERIMENT_ENDED_EVENT
           continue;
@@ -63,13 +68,16 @@ mixin EventTriggerSource {
   }
 
   /// Process trigger for experiment
-  Future _broadcastTriggerForExperiment(TriggerEvent event, Experiment experiment) async {
+  Future _broadcastTriggerForExperiment(
+      TriggerEvent event, Experiment experiment) async {
     final groupsToTrigger = _shouldTriggerBy(experiment, event);
     for (final triggerInfo in groupsToTrigger) {
-      final uniqueStringForTrigger = _createUniqueTriggerString(experiment, triggerInfo);
+      final uniqueStringForTrigger =
+          _createUniqueTriggerString(experiment, triggerInfo);
 
       final InterruptTrigger interruptTrigger = triggerInfo[1];
-      if (await _recentlyTriggered(event.dateTime, uniqueStringForTrigger, interruptTrigger.minimumBuffer)) {
+      if (await _recentlyTriggered(event.dateTime, uniqueStringForTrigger,
+          interruptTrigger.minimumBuffer)) {
         continue;
       }
 
@@ -82,11 +90,16 @@ mixin EventTriggerSource {
 
         switch (action.actionCode) {
           case PacoAction.NOTIFICATION_TO_PARTICIPATE_ACTION_CODE:
-            final PacoNotificationAction notificationAction = action as PacoNotificationAction;
+            final PacoNotificationAction notificationAction =
+                action as PacoNotificationAction;
             final delay = Duration(milliseconds: notificationAction.delay ?? 0);
             final actionSpec = ActionSpecification(
-                event.dateTime.add(delay), experiment, group, interruptTrigger,
-                notificationAction, actionTriggerSpecId);
+                event.dateTime.add(delay),
+                experiment,
+                group,
+                interruptTrigger,
+                notificationAction,
+                actionTriggerSpecId);
 
             alarm_manager.createNotificationWithTimeout(actionSpec);
             break;
@@ -103,7 +116,8 @@ mixin EventTriggerSource {
     final groupsToTrigger = [];
 
     for (final group in experiment.groups) {
-      if (group.isOver(event.dateTime) || group.groupType == GroupTypeEnum.SYSTEM) {
+      if (group.isOver(event.dateTime) ||
+          group.groupType == GroupTypeEnum.SYSTEM) {
         continue;
       }
 
@@ -126,15 +140,17 @@ mixin EventTriggerSource {
           bool cueFiltersMatch = false;
 
           if (_usesSourceId(interruptCue)) {
-            if (_isAccessibilityRelatedCueCodeAndMatchesPatterns(interruptCue.cueCode)) {
+            if (_isAccessibilityRelatedCueCodeAndMatchesPatterns(
+                interruptCue.cueCode)) {
               cueFiltersMatch = _isMatchingAccessibilitySource(
-                event.packageName,
-                event.className,
-                event.eventContentDescription,
-                event.eventText,
-                interruptCue);
+                  event.packageName,
+                  event.className,
+                  event.eventContentDescription,
+                  event.eventText,
+                  interruptCue);
             } else {
-              cueFiltersMatch = ((event.sourceId?.isEmpty ?? true) && (interruptCue.cueSource?.isEmpty ?? true)) ||
+              cueFiltersMatch = ((event.sourceId?.isEmpty ?? true) &&
+                      (interruptCue.cueSource?.isEmpty ?? true)) ||
                   (event.sourceId == interruptCue.cueSource);
             }
           } else if (_isExperimentEventTrigger(interruptCue)) {
@@ -166,42 +182,46 @@ mixin EventTriggerSource {
     }
 
     final currTimeMillis = getMillisFromMidnight(when);
-    return trigger.startTimeMillis <= currTimeMillis && currTimeMillis < trigger.endTimeMillis;
+    return trigger.startTimeMillis <= currTimeMillis &&
+        currTimeMillis < trigger.endTimeMillis;
   }
 
   bool _usesSourceId(InterruptCue interruptCue) {
     final cueCode = interruptCue.cueCode;
-    return cueCode == InterruptCue.PACO_ACTION_EVENT
-        || cueCode == InterruptCue.APP_USAGE
-        || cueCode == InterruptCue.APP_CLOSED
-        || cueCode == InterruptCue.ACCESSIBILITY_EVENT_VIEW_CLICKED
-        || cueCode == InterruptCue.NOTIFICATION_CREATED
-        || cueCode == InterruptCue.NOTIFICATION_TRAY_SWIPE_DISMISS
-        || cueCode == InterruptCue.NOTIFICATION_CLICKED
-        || cueCode == InterruptCue.APP_USAGE_DESKTOP
-        || cueCode == InterruptCue.APP_CLOSED_DESKTOP
-        || cueCode == InterruptCue.APP_USAGE_SHELL
-        || cueCode == InterruptCue.APP_CLOSED_SHELL
-        || cueCode == InterruptCue.IDE_IDEA_USAGE;
+    return cueCode == InterruptCue.PACO_ACTION_EVENT ||
+        cueCode == InterruptCue.APP_USAGE ||
+        cueCode == InterruptCue.APP_CLOSED ||
+        cueCode == InterruptCue.ACCESSIBILITY_EVENT_VIEW_CLICKED ||
+        cueCode == InterruptCue.NOTIFICATION_CREATED ||
+        cueCode == InterruptCue.NOTIFICATION_TRAY_SWIPE_DISMISS ||
+        cueCode == InterruptCue.NOTIFICATION_CLICKED ||
+        cueCode == InterruptCue.APP_USAGE_DESKTOP ||
+        cueCode == InterruptCue.APP_CLOSED_DESKTOP ||
+        cueCode == InterruptCue.APP_USAGE_SHELL ||
+        cueCode == InterruptCue.APP_CLOSED_SHELL ||
+        cueCode == InterruptCue.IDE_IDEA_USAGE;
   }
 
   bool _isExperimentEventTrigger(InterruptCue interruptCue) {
     final cueCode = interruptCue.cueCode;
-    return cueCode == InterruptCue.PACO_EXPERIMENT_JOINED_EVENT
-        || cueCode == InterruptCue.PACO_EXPERIMENT_ENDED_EVENT
-        || cueCode == InterruptCue.PACO_EXPERIMENT_RESPONSE_RECEIVED_EVENT;
+    return cueCode == InterruptCue.PACO_EXPERIMENT_JOINED_EVENT ||
+        cueCode == InterruptCue.PACO_EXPERIMENT_ENDED_EVENT ||
+        cueCode == InterruptCue.PACO_EXPERIMENT_RESPONSE_RECEIVED_EVENT;
   }
-
 
   bool _isAccessibilityRelatedCueCodeAndMatchesPatterns(int cueCode) {
-    return cueCode == InterruptCue.ACCESSIBILITY_EVENT_VIEW_CLICKED
-        || cueCode == InterruptCue.NOTIFICATION_CREATED
-        || cueCode == InterruptCue.NOTIFICATION_TRAY_SWIPE_DISMISS
-        || cueCode == InterruptCue.NOTIFICATION_CLICKED;
+    return cueCode == InterruptCue.ACCESSIBILITY_EVENT_VIEW_CLICKED ||
+        cueCode == InterruptCue.NOTIFICATION_CREATED ||
+        cueCode == InterruptCue.NOTIFICATION_TRAY_SWIPE_DISMISS ||
+        cueCode == InterruptCue.NOTIFICATION_CLICKED;
   }
 
-  bool _isMatchingAccessibilitySource(String packageName, String className, String eventContentDescription,
-      String eventText, InterruptCue interruptCue) {
+  bool _isMatchingAccessibilitySource(
+      String packageName,
+      String className,
+      String eventContentDescription,
+      String eventText,
+      InterruptCue interruptCue) {
     if (interruptCue.cueSource?.isNotEmpty ?? false) {
       if (interruptCue.cueSource != packageName) {
         return false;
@@ -230,21 +250,28 @@ mixin EventTriggerSource {
     return '${experiment.id}:${group.name}:${interruptTrigger.id}';
   }
 
-  Future<bool> _recentlyTriggered(DateTime when, String uniqueTriggerString, int minBuffer) async {
+  Future<bool> _recentlyTriggered(
+      DateTime when, String uniqueTriggerString, int minBuffer) async {
     final storageDir = DartFileStorage.getLocalStorageDir().path;
     final sharedPrefs = TaqoSharedPrefs(storageDir);
 
-    final triggered = await sharedPrefs.getInt("${sharedPrefsRecentlyTriggeredKey}_${uniqueTriggerString}");
+    final triggered = await sharedPrefs
+        .getInt("${sharedPrefsRecentlyTriggeredKey}_${uniqueTriggerString}");
     if (triggered == null) {
       return false;
     }
 
-    return DateTime.fromMillisecondsSinceEpoch(triggered).add(Duration(minutes: minBuffer)).isAfter(when);
+    return DateTime.fromMillisecondsSinceEpoch(triggered)
+        .add(Duration(minutes: minBuffer))
+        .isAfter(when);
   }
 
-  Future _setRecentlyTriggered(DateTime when, String uniqueTriggerString) async {
+  Future _setRecentlyTriggered(
+      DateTime when, String uniqueTriggerString) async {
     final storageDir = DartFileStorage.getLocalStorageDir().path;
     final sharedPrefs = TaqoSharedPrefs(storageDir);
-    sharedPrefs.setInt("${sharedPrefsRecentlyTriggeredKey}_${uniqueTriggerString}", when.millisecondsSinceEpoch);
+    sharedPrefs.setInt(
+        "${sharedPrefsRecentlyTriggeredKey}_${uniqueTriggerString}",
+        when.millisecondsSinceEpoch);
   }
 }

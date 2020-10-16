@@ -16,12 +16,16 @@ const _cancelMethod = 'org.freedesktop.Notifications.CloseNotification';
 const _actionInvoked = 'org.freedesktop.Notifications.ActionInvoked';
 const _notificationClosed = 'org.freedesktop.Notifications.NotificationClosed';
 
-final _actionPattern =
-    RegExp("$_objectPath:\\s+$_actionInvoked\\s+\\(uint32\\s+(\\d+),\\s+'([a-zA-Z]+)'");
-final _closedPattern =
-    RegExp("$_objectPath:\\s+$_notificationClosed\\s+\\(uint32\\s+(\\d+),\\s+uint32\\s+(\\d+)");
+final _actionPattern = RegExp(
+    "$_objectPath:\\s+$_actionInvoked\\s+\\(uint32\\s+(\\d+),\\s+'([a-zA-Z]+)'");
+final _closedPattern = RegExp(
+    "$_objectPath:\\s+$_notificationClosed\\s+\\(uint32\\s+(\\d+),\\s+uint32\\s+(\\d+)");
 
-const _defaultActions = <String>['default', 'Open Taqo', '', ];
+const _defaultActions = <String>[
+  'default',
+  'Open Taqo',
+  '',
+];
 
 // Map between Taqo database notification id and libnotify id
 final _notifications = <int, int>{};
@@ -34,7 +38,8 @@ void _listen(String event) {
       final notifId = int.tryParse(action[1]);
       if (notifId != null) {
         // Not super efficient, but fine for now
-        final id = _notifications.keys.firstWhere((k) => _notifications[k] == notifId);
+        final id =
+            _notifications.keys.firstWhere((k) => _notifications[k] == notifId);
         daemon.openSurvey(id);
       }
     }
@@ -52,16 +57,19 @@ void cancel(int id) {
   if (notifId == null) return;
   _notifications.remove(id);
 
-  Process.run('gdbus', ['call',
+  Process.run('gdbus', [
+    'call', //
     '--session',
     '--dest', _dest,
     '--object-path', _objectPath,
     '--method', _cancelMethod,
-    '$notifId']);
+    '$notifId',
+  ]);
 }
 
 void monitor() {
-  Process.start('gdbus', ['monitor',
+  Process.start('gdbus', [
+    'monitor', //
     '--session',
     '--dest', _dest,
     '--object-path', _objectPath,
@@ -102,22 +110,31 @@ String _parseHints(Map<String, dynamic> hints) {
 
 String _parseTimeout(int timeout) => 'int32 $timeout';
 
-Future<int> notify(int id, String appName, int replaceId, String title, String body,
+Future<int> notify(
+    int id, String appName, int replaceId, String title, String body,
     {String iconPath = '',
     List<String> actions = _defaultActions,
-    Map<String, dynamic> hints = const {'urgency': Priority.critical, },
+    Map<String, dynamic> hints = const {'urgency': Priority.critical},
     int timeout = 0}) async {
-  final processResult = await Process.run('gdbus', ['call',
+  final processResult = await Process.run('gdbus', [
+    'call', //
     '--session',
     '--dest', _dest,
     '--object-path', _objectPath,
     '--method', _notifyMethod,
-    appName, '$replaceId', iconPath, title, body,
-    _parseActions(actions), _parseHints(hints), _parseTimeout(timeout),
+    appName,
+    '$replaceId',
+    iconPath,
+    title,
+    body,
+    _parseActions(actions),
+    _parseHints(hints),
+    _parseTimeout(timeout),
   ]);
 
   final idString = processResult.stdout;
-  final notifId = int.tryParse(RegExp(r'\(uint32 (\d+),\)').matchAsPrefix(idString)?.group(1));
+  final notifId = int.tryParse(
+      RegExp(r'\(uint32 (\d+),\)').matchAsPrefix(idString)?.group(1));
   _notifications[id] = notifId;
   return notifId;
 }

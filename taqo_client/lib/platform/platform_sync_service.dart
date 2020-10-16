@@ -17,8 +17,7 @@ import '../storage/flutter_file_storage.dart';
 
 final _logger = Logger('SyncService');
 
-const _platform =
-    const MethodChannel('com.taqo.survey.taqosurvey/sync-service');
+const _platform = MethodChannel('com.taqo.survey.taqosurvey/sync-service');
 const _notifySyncServiceMethod = 'notifySyncService';
 const _runSyncServiceMethod = 'runSyncService';
 
@@ -31,10 +30,11 @@ void _workMangerCallbackDispatcher() {
     // Since we are a new (background) Isolate, we need to re-initialize all
     // the important bits for [SyncService]
     WidgetsFlutterBinding.ensureInitialized();
-    LocalFileStorageFactory.initialize((fileName) => FlutterFileStorage(fileName),
+    LocalFileStorageFactory.initialize(
+        (fileName) => FlutterFileStorage(fileName),
         await FlutterFileStorage.getLocalStorageDir());
-    await LoggingService.initialize(logFilePrefix: 'client-',
-        outputsToStdout: kDebugMode);
+    await LoggingService.initialize(
+        logFilePrefix: 'client-', outputsToStdout: kDebugMode);
     DatabaseFactory.initialize(() => databaseImpl);
     ExperimentServiceLiteFactory.initialize(ExperimentService.getInstance);
 
@@ -50,8 +50,8 @@ Future setupSyncServiceMethodChannel() async {
 
   // TODO Can we transition iOS to use this framework?
   if (Platform.isAndroid) {
-    await Workmanager.initialize(
-        _workMangerCallbackDispatcher, isInDebugMode: false);
+    await Workmanager.initialize(_workMangerCallbackDispatcher,
+        isInDebugMode: false);
     return;
   }
 
@@ -91,6 +91,7 @@ Future<void> notifySyncService() async {
   try {
     await _platform.invokeMethod(_notifySyncServiceMethod);
   } on PlatformException catch (e) {
-    _logger.warning("Failed calling $_notifySyncServiceMethod: '${e.message}'.");
+    _logger
+        .warning("Failed calling $_notifySyncServiceMethod: '${e.message}'.");
   }
 }

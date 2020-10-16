@@ -13,7 +13,6 @@ part 'action_trigger.g.dart';
 
 @JsonSerializable()
 class ActionTrigger implements Validatable {
-
   static const INTERRUPT_TRIGGER_TYPE_SPECIFIER = "interruptTrigger";
   static const SCHEDULE_TRIGGER_TYPE_SPECIFIER = "scheduleTrigger";
 
@@ -26,7 +25,7 @@ class ActionTrigger implements Validatable {
   int id;
 
   ActionTrigger() {
-    actions = new List<PacoAction>();
+    actions = List<PacoAction>();
   }
 
   factory ActionTrigger.fromJson(Map<String, dynamic> json) {
@@ -46,7 +45,7 @@ class ActionTrigger implements Validatable {
 
   set setActions(List<PacoAction> triggerActions) {
     this.actions = triggerActions;
-    ExperimentValidator validator = new ExperimentValidator();
+    ExperimentValidator validator = ExperimentValidator();
     validateActions(validator);
     if (validator.results.isNotEmpty) {
       throw validator.stringifyResults();
@@ -64,14 +63,15 @@ class ActionTrigger implements Validatable {
 
   void validateWith(Validator validator) {
 //    System.out.println("VALIDATING ACTION TRIGGER");
-    validator.isNonEmptyString(type, "ActionTrigger"
-        + " type field is not properly initialized");
+    validator.isNonEmptyString(
+        type, "ActionTrigger" + " type field is not properly initialized");
     validateActions(validator);
   }
 
   void validateActions(Validator validator) {
 //    System.out.println("VALIDATING Actions");
-    validator.isNotNullAndNonEmptyCollection(actions, "ActionTrigger actions should contain at least one action");
+    validator.isNotNullAndNonEmptyCollection(
+        actions, "ActionTrigger actions should contain at least one action");
 
     HashSet<int> ids = HashSet();
 
@@ -80,16 +80,23 @@ class ActionTrigger implements Validatable {
 
     for (PacoAction pacoAction in actions) {
       if (!ids.add(pacoAction.id)) {
-        validator.addError("action id: " + pacoAction.id.toString() + " is not unique. Each action needs a unique id that is stable across edits.");
+        validator.addError("action id: " +
+            pacoAction.id.toString() +
+            " is not unique. Each action needs a unique id that is stable across edits.");
       }
       final int actionCode = pacoAction.actionCode;
       validator.isNotNull(actionCode, "actionCode is not properly initialized");
-      if (actionCode != null && actionCode == PacoAction.NOTIFICATION_TO_PARTICIPATE_ACTION_CODE && hasNotificationToParticipateAction) {
-        validator.addError("Should only have one notification to participate action");
+      if (actionCode != null &&
+          actionCode == PacoAction.NOTIFICATION_TO_PARTICIPATE_ACTION_CODE &&
+          hasNotificationToParticipateAction) {
+        validator.addError(
+            "Should only have one notification to participate action");
       } else {
         hasNotificationToParticipateAction = true;
       }
-      if (actionCode != null && actionCode == PacoAction.NOTIFICATION_ACTION_CODE && hasNotificationMessageAction) {
+      if (actionCode != null &&
+          actionCode == PacoAction.NOTIFICATION_ACTION_CODE &&
+          hasNotificationMessageAction) {
         validator.addError("Should only have one notification message action");
       } else {
         hasNotificationMessageAction = true;
@@ -97,7 +104,4 @@ class ActionTrigger implements Validatable {
       pacoAction.validateWith(validator);
     }
   }
-
 }
-
-

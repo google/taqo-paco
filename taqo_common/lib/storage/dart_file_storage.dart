@@ -11,13 +11,13 @@ class DartFileStorage implements ILocalFileStorage {
   // Is there a better way to keep them in sync?
   static Directory getLocalStorageDir() {
     if (Platform.isLinux) {
-      return Directory(
-          '${Platform.environment['HOME']}/.local/share/taqo')..createSync(recursive: true);
+      return Directory('${Platform.environment['HOME']}/.local/share/taqo')
+        ..createSync(recursive: true);
     } else if (Platform.isMacOS) {
       return Directory(
           '${Platform.environment['HOME']}/Library/Containers/com.taqo.survey.taqoClient/Data/Library/Application Support/com.taqo.survey.taqoClient')
         ..createSync(recursive: true);
-  }
+    }
 
     throw UnsupportedError('Only supported on desktop platforms');
   }
@@ -31,7 +31,10 @@ class DartFileStorage implements ILocalFileStorage {
     if (!(await f.exists())) {
       await f.create();
     }
-    await Process.run('chmod', ['0600', f.path, ]);
+    await Process.run('chmod', [
+      '0600',
+      f.path,
+    ]);
     return f;
   }
 

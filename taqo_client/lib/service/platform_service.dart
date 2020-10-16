@@ -43,7 +43,8 @@ Future<bool> _tryConnect(TespFullClient client) {
   return client.connect().then((_) {
     return true;
   }).catchError((e) {
-    _logger.warning('Failed to connect to the PAL event server. Is it running?');
+    _logger
+        .warning('Failed to connect to the PAL event server. Is it running?');
     return false;
   });
 }

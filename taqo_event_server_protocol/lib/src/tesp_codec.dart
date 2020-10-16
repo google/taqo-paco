@@ -179,7 +179,7 @@ class TespDecoder extends Converter<List<int>, TespMessage> {
         throw TespUndefinedCodeException(code, bytes, TespCodec.codeOffset);
       } on FormatException catch (e) {
         throw TespPayloadDecodingException(
-            e, bytes, TespCodec.payloadOffset + (e.offset??0));
+            e, bytes, TespCodec.payloadOffset + (e.offset ?? 0));
       }
     }
   }
@@ -216,7 +216,9 @@ class _TespDecoderSink extends ByteConversionSinkBase {
   void addSlice(List<int> chunk, int start, int end, bool isLast) {
     // firing an event before the payload get decoded, so that the stream
     // consumer can know that a message is received as soon as possible
-    if (addingEvent && _headerIndex >= TespCodec.payloadOffset && end - start >= _payloadSize - _payloadIndex) {
+    if (addingEvent &&
+        _headerIndex >= TespCodec.payloadOffset &&
+        end - start >= _payloadSize - _payloadIndex) {
       _outputSink.add(TespEventMessageArrived());
     }
     for (var i = start; i < end; i++) {

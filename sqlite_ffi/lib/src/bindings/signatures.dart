@@ -11,7 +11,8 @@ import "types.dart";
 typedef sqlite3_open_v2_native_t = Int32 Function(Pointer<Utf8> filename,
     Pointer<Pointer<Database>> ppDb, Int32 flags, Pointer<Utf8> vfs);
 
-typedef sqlite3_busy_timeout_native_t = Int32 Function(Pointer<Database> database, Int64 ms);
+typedef sqlite3_busy_timeout_native_t = Int32 Function(
+    Pointer<Database> database, Int64 ms);
 
 typedef sqlite3_close_v2_native_t = Int32 Function(Pointer<Database> database);
 
@@ -23,22 +24,19 @@ typedef sqlite3_prepare_v2_native_t = Int32 Function(
     Pointer<Pointer<Utf8>> tail);
 
 typedef sqlite3_bind_double_native_t = Int32 Function(
-    Pointer<Statement>,
-    Int32 index,
-    Double value);
+    Pointer<Statement>, Int32 index, Double value);
 
-typedef sqlite3_bind_int_native_t = Int32 Function(Pointer<Statement>, Int32 index, Int32 value);
+typedef sqlite3_bind_int_native_t = Int32 Function(
+    Pointer<Statement>, Int32 index, Int32 value);
 
-typedef sqlite3_bind_int64_native_t = Int32 Function(Pointer<Statement>, Int32 index, Int64 value);
+typedef sqlite3_bind_int64_native_t = Int32 Function(
+    Pointer<Statement>, Int32 index, Int64 value);
 
-typedef sqlite3_bind_null_native_t = Int32 Function(Pointer<Statement>, Int32 index);
+typedef sqlite3_bind_null_native_t = Int32 Function(
+    Pointer<Statement>, Int32 index);
 
-typedef sqlite3_bind_text_native_t = Int32 Function(
-    Pointer<Statement>,
-    Int32 index,
-    Pointer<Utf8> value,
-    Int32 nbytes,
-    Int32 callback);
+typedef sqlite3_bind_text_native_t = Int32 Function(Pointer<Statement>,
+    Int32 index, Pointer<Utf8> value, Int32 nbytes, Int32 callback);
 
 typedef sqlite3_step_native_t = Int32 Function(Pointer<Statement> statement);
 

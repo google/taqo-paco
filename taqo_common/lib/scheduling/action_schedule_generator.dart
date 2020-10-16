@@ -15,8 +15,11 @@ import 'fixed_schedule_generator.dart';
 
 final _logger = Logger('ActionScheduleGenerator');
 
-Future<List<ActionSpecification>> _getAllAlarmTimesForExperiment(ILocalFileStorage storageImpl,
-    Experiment experiment, DateTime start, DateTime end) async {
+Future<List<ActionSpecification>> _getAllAlarmTimesForExperiment(
+    ILocalFileStorage storageImpl,
+    Experiment experiment,
+    DateTime start,
+    DateTime end) async {
   if (experiment.isOver() || experiment.paused) {
     return null;
   }
@@ -27,18 +30,21 @@ Future<List<ActionSpecification>> _getAllAlarmTimesForExperiment(ILocalFileStora
       continue;
     }
 
-    final startTime = group.isStarted(start) ? start : parseYMDTime(group.startDate);
+    final startTime =
+        group.isStarted(start) ? start : parseYMDTime(group.startDate);
 
-    for (ScheduleTrigger trigger in group.actionTriggers.where((t) => t is ScheduleTrigger)) {
+    for (ScheduleTrigger trigger
+        in group.actionTriggers.where((t) => t is ScheduleTrigger)) {
       for (var schedule in trigger.schedules) {
         List<DateTime> scheduleTimes;
         if (schedule.scheduleType == Schedule.ESM) {
-          scheduleTimes = await ESMScheduleGenerator(storageImpl,
-              startTime, experiment, group.name, trigger.id, schedule).allScheduleTimes();
+          scheduleTimes = await ESMScheduleGenerator(storageImpl, startTime,
+                  experiment, group.name, trigger.id, schedule)
+              .allScheduleTimes();
         } else {
-          scheduleTimes =
-              FixedScheduleGenerator(startTime, experiment, group.name, trigger.id, schedule)
-                  .allAlarmTimesFromUntil(start, end);
+          scheduleTimes = FixedScheduleGenerator(
+                  startTime, experiment, group.name, trigger.id, schedule)
+              .allAlarmTimesFromUntil(start, end);
         }
 
         for (var time in scheduleTimes) {
@@ -51,8 +57,8 @@ Future<List<ActionSpecification>> _getAllAlarmTimesForExperiment(ILocalFileStora
             }
           }
 
-          allAlarmTimes.add(ActionSpecification(time, experiment, group, trigger,
-              notificationAction, schedule.id));
+          allAlarmTimes.add(ActionSpecification(time, experiment, group,
+              trigger, notificationAction, schedule.id));
         }
       }
     }
@@ -61,8 +67,8 @@ Future<List<ActionSpecification>> _getAllAlarmTimesForExperiment(ILocalFileStora
   return allAlarmTimes;
 }
 
-Future<ActionSpecification> _getNextAlarmTimeForExperiment(ILocalFileStorage storageImpl,
-    Experiment experiment, DateTime now) async {
+Future<ActionSpecification> _getNextAlarmTimeForExperiment(
+    ILocalFileStorage storageImpl, Experiment experiment, DateTime now) async {
   if (experiment.isOver() || experiment.paused) {
     return null;
   }
@@ -74,20 +80,22 @@ Future<ActionSpecification> _getNextAlarmTimeForExperiment(ILocalFileStorage sto
       continue;
     }
 
-    final startTime = group.isStarted(now) ? now : parseYMDTime(group.startDate);
+    final startTime =
+        group.isStarted(now) ? now : parseYMDTime(group.startDate);
 
-    for (ScheduleTrigger trigger in group.actionTriggers.where((t) => t is ScheduleTrigger)) {
+    for (ScheduleTrigger trigger
+        in group.actionTriggers.where((t) => t is ScheduleTrigger)) {
       for (var schedule in trigger.schedules) {
         DateTime nextScheduleTime;
         if (schedule.scheduleType == Schedule.ESM) {
-          nextScheduleTime =
-              await ESMScheduleGenerator(storageImpl, startTime, experiment, group.name, trigger.id, schedule)
-                  .nextScheduleTime();
+          nextScheduleTime = await ESMScheduleGenerator(storageImpl, startTime,
+                  experiment, group.name, trigger.id, schedule)
+              .nextScheduleTime();
           _logger.info('Next ESM $nextScheduleTime');
         } else {
-          nextScheduleTime =
-              FixedScheduleGenerator(startTime, experiment, group.name, trigger.id, schedule)
-                  .nextAlarmTimeFromNow(fromNow: startTime);
+          nextScheduleTime = FixedScheduleGenerator(
+                  startTime, experiment, group.name, trigger.id, schedule)
+              .nextAlarmTimeFromNow(fromNow: startTime);
           _logger.info('Next fixed $nextScheduleTime');
         }
 
@@ -102,8 +110,8 @@ Future<ActionSpecification> _getNextAlarmTimeForExperiment(ILocalFileStorage sto
             }
           }
 
-          nextAlarmTime = ActionSpecification(currNextTime, experiment, group, trigger,
-              notificationAction, schedule.id);
+          nextAlarmTime = ActionSpecification(currNextTime, experiment, group,
+              trigger, notificationAction, schedule.id);
         }
       }
     }
@@ -112,15 +120,17 @@ Future<ActionSpecification> _getNextAlarmTimeForExperiment(ILocalFileStorage sto
   return nextAlarmTime;
 }
 
-Future<List<ActionSpecification>> getAllAlarmTimesOrdered(ILocalFileStorage storageImpl,
-    List<Experiment> experiments, {DateTime start, DateTime end}) async {
+Future<List<ActionSpecification>> getAllAlarmTimesOrdered(
+    ILocalFileStorage storageImpl, List<Experiment> experiments,
+    {DateTime start, DateTime end}) async {
   // Default args
   start ??= DateTime.now();
   // TODO establish a default for end time
 
   final alarmTimes = <ActionSpecification>[];
   for (var e in experiments) {
-    final times = await _getAllAlarmTimesForExperiment(storageImpl, e, start, end);
+    final times =
+        await _getAllAlarmTimesForExperiment(storageImpl, e, start, end);
     if (times != null) {
       alarmTimes.addAll(times);
     }
@@ -129,8 +139,9 @@ Future<List<ActionSpecification>> getAllAlarmTimesOrdered(ILocalFileStorage stor
   return alarmTimes;
 }
 
-Future<List<ActionSpecification>> getNextAlarmTimesOrdered(ILocalFileStorage storageImpl,
-    List<Experiment> experiments, {DateTime now}) async {
+Future<List<ActionSpecification>> getNextAlarmTimesOrdered(
+    ILocalFileStorage storageImpl, List<Experiment> experiments,
+    {DateTime now}) async {
   // Default args
   now ??= DateTime.now();
 
@@ -145,33 +156,38 @@ Future<List<ActionSpecification>> getNextAlarmTimesOrdered(ILocalFileStorage sto
   return alarmTimes;
 }
 
-Future<List<ActionSpecification>> getAllAlarmsWithinRange(ILocalFileStorage storageImpl,
-    List<Experiment> experiments, {DateTime start, Duration duration}) async {
+Future<List<ActionSpecification>> getAllAlarmsWithinRange(
+    ILocalFileStorage storageImpl, List<Experiment> experiments,
+    {DateTime start, Duration duration}) async {
   // Default args
   start ??= DateTime.now().subtract(Duration(minutes: 1));
   duration ??= Duration(minutes: 2);
   final end = start.add(duration);
 
-  final alarms = await getAllAlarmTimesOrdered(storageImpl, experiments, start: start, end: end);
+  final alarms = await getAllAlarmTimesOrdered(storageImpl, experiments,
+      start: start, end: end);
   return alarms
       .where((a) =>
-        (a.time.isAtSameMomentAs(start) || a.time.isAfter(start)) &&
-        (a.time.isAtSameMomentAs(end) || a.time.isBefore(end)))
+          (a.time.isAtSameMomentAs(start) || a.time.isAfter(start)) &&
+          (a.time.isAtSameMomentAs(end) || a.time.isBefore(end)))
       .toList();
 }
 
-Future<ActionSpecification> getNextAlarmTime(ILocalFileStorage storageImpl,
-    List<Experiment> experiments, {DateTime now}) async {
+Future<ActionSpecification> getNextAlarmTime(
+    ILocalFileStorage storageImpl, List<Experiment> experiments,
+    {DateTime now}) async {
   // Default args
   now ??= DateTime.now();
 
-  final alarms = await getNextAlarmTimesOrdered(storageImpl, experiments, now: now);
+  final alarms =
+      await getNextAlarmTimesOrdered(storageImpl, experiments, now: now);
   _logger.info('Next alarm is ${alarms.isEmpty ? null : alarms.first}');
   return alarms.isEmpty ? null : alarms.first;
 }
 
-Future<List<ActionSpecification>> getNextNAlarmTimes(ILocalFileStorage storageImpl,
-    List<Experiment> experiments, {int n, DateTime now}) async {
+Future<List<ActionSpecification>> getNextNAlarmTimes(
+    ILocalFileStorage storageImpl, List<Experiment> experiments,
+    {int n, DateTime now}) async {
   // Default args
   now ??= DateTime.now();
   n ??= 64;

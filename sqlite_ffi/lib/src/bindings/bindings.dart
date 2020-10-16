@@ -88,31 +88,19 @@ class _SQLiteBindings {
       Pointer<Pointer<Statement>> statementOut,
       Pointer<Pointer<Utf8>> tail) sqlite3_prepare_v2;
 
-  int Function(
-      Pointer<Statement> statement,
-      int index,
-      double value) sqlite3_bind_double;
+  int Function(Pointer<Statement> statement, int index, double value)
+      sqlite3_bind_double;
 
-  int Function(
-      Pointer<Statement> statement,
-      int index,
-      int value) sqlite3_bind_int;
+  int Function(Pointer<Statement> statement, int index, int value)
+      sqlite3_bind_int;
 
-  int Function(
-      Pointer<Statement> statement,
-      int index,
-      int value) sqlite3_bind_int64;
+  int Function(Pointer<Statement> statement, int index, int value)
+      sqlite3_bind_int64;
 
-  int Function(
-      Pointer<Statement> statement,
-      int index) sqlite3_bind_null;
+  int Function(Pointer<Statement> statement, int index) sqlite3_bind_null;
 
-  int Function(
-      Pointer<Statement> statement,
-      int index,
-      Pointer<Utf8> value,
-      int nbytes,
-      int callback) sqlite3_bind_text;
+  int Function(Pointer<Statement> statement, int index, Pointer<Utf8> value,
+      int nbytes, int callback) sqlite3_bind_text;
 
   /// Evaluate An SQL Statement
   ///
@@ -318,8 +306,7 @@ class _SQLiteBindings {
   Pointer<Utf8> Function(Pointer<Statement> statement, int columnIndex)
       sqlite3_column_text;
 
-  int Function(Pointer<Database> database)
-      sqlite3_last_insert_rowid;
+  int Function(Pointer<Database> database) sqlite3_last_insert_rowid;
 
   /// The sqlite3_errstr() interface returns the English-language text that
   /// describes the result code, as UTF-8. Memory to hold the error message
@@ -365,7 +352,8 @@ class _SQLiteBindings {
         .lookup<NativeFunction<sqlite3_open_v2_native_t>>("sqlite3_open_v2")
         .asFunction();
     sqlite3_busy_timeout = sqlite
-        .lookup<NativeFunction<sqlite3_busy_timeout_native_t>>("sqlite3_busy_timeout")
+        .lookup<NativeFunction<sqlite3_busy_timeout_native_t>>(
+            "sqlite3_busy_timeout")
         .asFunction();
     sqlite3_close_v2 = sqlite
         .lookup<NativeFunction<sqlite3_close_v2_native_t>>("sqlite3_close_v2")
@@ -376,23 +364,20 @@ class _SQLiteBindings {
         .asFunction();
     sqlite3_bind_double = sqlite
         .lookup<NativeFunction<sqlite3_bind_double_native_t>>(
-        "sqlite3_bind_double")
+            "sqlite3_bind_double")
         .asFunction();
     sqlite3_bind_int = sqlite
-        .lookup<NativeFunction<sqlite3_bind_int_native_t>>(
-        "sqlite3_bind_int")
+        .lookup<NativeFunction<sqlite3_bind_int_native_t>>("sqlite3_bind_int")
         .asFunction();
     sqlite3_bind_int64 = sqlite
         .lookup<NativeFunction<sqlite3_bind_int64_native_t>>(
-        "sqlite3_bind_int64")
+            "sqlite3_bind_int64")
         .asFunction();
     sqlite3_bind_null = sqlite
-        .lookup<NativeFunction<sqlite3_bind_null_native_t>>(
-        "sqlite3_bind_null")
+        .lookup<NativeFunction<sqlite3_bind_null_native_t>>("sqlite3_bind_null")
         .asFunction();
     sqlite3_bind_text = sqlite
-        .lookup<NativeFunction<sqlite3_bind_text_native_t>>(
-        "sqlite3_bind_text")
+        .lookup<NativeFunction<sqlite3_bind_text_native_t>>("sqlite3_bind_text")
         .asFunction();
     sqlite3_step = sqlite
         .lookup<NativeFunction<sqlite3_step_native_t>>("sqlite3_step")

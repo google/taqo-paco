@@ -142,33 +142,42 @@ class LocalDatabase extends BaseDatabase {
 
   @override
   Future<Experiment> getExperimentById(int experimentId) async {
-    final experimentFieldsMaps = await _db.query('experiments', where: 'id=?',
-        whereArgs: [experimentId]);
+    final experimentFieldsMaps = await _db
+        .query('experiments', where: 'id=?', whereArgs: [experimentId]);
     if (experimentFieldsMaps.length > 0) {
       assert(experimentFieldsMaps.length == 1); // since id is a primary key
       return Experiment.fromJson(jsonDecode(experimentFieldsMaps[0]['json']));
     } else {
-      _logger.warning('Cannot find experiment with id: ${experimentId}');
+      _logger.warning('Cannot find experiment with id: $experimentId');
       return null;
     }
   }
 
   @override
   Future<List<Experiment>> getJoinedExperiments() async {
-    final experimentFieldsMaps = await _db.query('experiments', where: 'joined=1');
-    return experimentFieldsMaps.map((e) => Experiment.fromJson(jsonDecode(e['json']))).toList();
+    final experimentFieldsMaps =
+        await _db.query('experiments', where: 'joined=1');
+    return experimentFieldsMaps
+        .map((e) => Experiment.fromJson(jsonDecode(e['json'])))
+        .toList();
   }
 
   @override
-  Future<Map<int, bool>> getExperimentsPausedStatus(Iterable<Experiment> experiments) async {
-    final fieldsMaps = await _db.query('experiments', columns: ['id', 'paused'],
+  Future<Map<int, bool>> getExperimentsPausedStatus(
+      Iterable<Experiment> experiments) async {
+    final fieldsMaps = await _db.query('experiments',
+        columns: ['id', 'paused'],
         where: 'id in (${buildQuestionMarksJoinedByComma(experiments.length)})',
         whereArgs: [for (var experiment in experiments) experiment.id]);
-    return <int, bool>{for (var fieldsMap in fieldsMaps) fieldsMap['id']: fieldsMap['paused'] == 1};
+    return <int, bool>{
+      for (var fieldsMap in fieldsMaps)
+        fieldsMap['id']: fieldsMap['paused'] == 1
+    };
   }
 
   @override
-  Future<void> setExperimentPausedStatus(Experiment experiment, bool paused) async {
+  Future<void> setExperimentPausedStatus(
+      Experiment experiment, bool paused) async {
     await _db.update('experiments', {'paused': paused ? 1 : 0},
         where: 'id=?', whereArgs: [experiment.id]);
   }

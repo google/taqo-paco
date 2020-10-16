@@ -32,9 +32,18 @@ class NotificationHolder {
   @visibleForTesting
   NotificationHolder.empty();
 
-  NotificationHolder(this.id, this.alarmTime, this.experimentId, this.noticeCount, this.timeoutMillis,
-      this.experimentGroupName, this.actionTriggerId, this.actionId, this.notificationSource,
-      this.message, this.actionTriggerSpecId);
+  NotificationHolder(
+      this.id,
+      this.alarmTime,
+      this.experimentId,
+      this.noticeCount,
+      this.timeoutMillis,
+      this.experimentGroupName,
+      this.actionTriggerId,
+      this.actionId,
+      this.notificationSource,
+      this.message,
+      this.actionTriggerSpecId);
 
   NotificationHolder.of(NotificationHolder holder) {
     id = holder.id;
@@ -50,7 +59,8 @@ class NotificationHolder {
     actionTriggerSpecId = holder.actionTriggerSpecId;
   }
 
-  factory NotificationHolder.fromJson(Map<String, dynamic> json) => _$NotificationHolderFromJson(json);
+  factory NotificationHolder.fromJson(Map<String, dynamic> json) =>
+      _$NotificationHolderFromJson(json);
 
   Map<String, dynamic> toJson() => _$NotificationHolderToJson(this);
 
@@ -67,8 +77,9 @@ class NotificationHolder {
     return alarmStart.isAfter(now);
   }
 
-  bool isCustomNotification() =>
-      notificationSource == null ? false : notificationSource == CUSTOM_GENERATED_NOTIFICATION;
+  bool isCustomNotification() => notificationSource == null
+      ? false
+      : notificationSource == CUSTOM_GENERATED_NOTIFICATION;
 
   bool matchesAction(ActionSpecification actionSpecification) =>
       experimentId == actionSpecification.experiment.id &&
@@ -80,5 +91,5 @@ class NotificationHolder {
 
   bool sameGroupAs(NotificationHolder other) =>
       experimentId == other.experimentId &&
-          experimentGroupName == other.experimentGroupName;
+      experimentGroupName == other.experimentGroupName;
 }

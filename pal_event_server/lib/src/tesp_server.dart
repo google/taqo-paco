@@ -42,46 +42,49 @@ class PALTespServer with TespRequestHandlerMixin {
     unawaited(SyncService.syncData());
   }
 
-  /**
-   * If there are any events generated from the IDE logger,
-   * find each experiment that is interested in these events
-   * and record a copy of the vent for that experiment with
-    * the experiment fields properly recorded.
-    *
-    */
-   void createEventsPerExperimentOrDeleteIdeaLoggerEvents(List<Event> events) async {
+  /// If there are any events generated from the IDE logger,
+  /// find each experiment that is interested in these events
+  /// and record a copy of the vent for that experiment with
+  /// the experiment fields properly recorded.
+  ///
+  void createEventsPerExperimentOrDeleteIdeaLoggerEvents(
+      List<Event> events) async {
     List<Event> ideaLoggerEvents = getIdeaLoggerEvents(events);
     if (ideaLoggerEvents.isEmpty) {
       return;
     }
-    var experimentsWithIdeaLogging = await loggers.getExperimentsToLogForType(GroupTypeEnum.IDE_IDEA_USAGE);
+    var experimentsWithIdeaLogging =
+        await loggers.getExperimentsToLogForType(GroupTypeEnum.IDE_IDEA_USAGE);
     if (experimentsWithIdeaLogging.isEmpty) {
       deleteAllIdeaLoggerEvents(events);
       return;
     }
-    createEventForEachExperiment(ideaLoggerEvents, experimentsWithIdeaLogging, events);
+    createEventForEachExperiment(
+        ideaLoggerEvents, experimentsWithIdeaLogging, events);
   }
 
-  List<Event> getIdeaLoggerEvents(List<Event> events)  {
-    return events.where((event) =>
-      event.groupName == "**IntelliJLoggerProcess").toList();
+  List<Event> getIdeaLoggerEvents(List<Event> events) {
+    return events
+        .where((event) => event.groupName == "**IntelliJLoggerProcess")
+        .toList();
   }
 
-  void createEventForEachExperiment(List<Event> ideaLoggerEvents,
+  void createEventForEachExperiment(
+      List<Event> ideaLoggerEvents,
       List<loggers.ExperimentLoggerInfo> experimentsWithIdeaLogging,
       List<Event> events) {
     ideaLoggerEvents.forEach((event) {
-        bool firstExperimentNeedingEvent = true;
-        experimentsWithIdeaLogging.forEach((experiment) {
-          if (firstExperimentNeedingEvent) {
-            populateExperimentInfoOnEvent(event, experiment);
-            firstExperimentNeedingEvent = false;
-          } else {
-            var dupevent = event.copy();
-            populateExperimentInfoOnEvent(dupevent, experiment);
-            events.add(dupevent);
-          }
-        });
+      bool firstExperimentNeedingEvent = true;
+      experimentsWithIdeaLogging.forEach((experiment) {
+        if (firstExperimentNeedingEvent) {
+          populateExperimentInfoOnEvent(event, experiment);
+          firstExperimentNeedingEvent = false;
+        } else {
+          var dupevent = event.copy();
+          populateExperimentInfoOnEvent(dupevent, experiment);
+          events.add(dupevent);
+        }
+      });
     });
     //print("done with creating Events");
   }
@@ -90,7 +93,8 @@ class PALTespServer with TespRequestHandlerMixin {
     events.removeWhere((event) => event.groupName == "**IntelliJLoggerProcess");
   }
 
-  void populateExperimentInfoOnEvent(Event event, loggers.ExperimentLoggerInfo experimentInfo) {
+  void populateExperimentInfoOnEvent(
+      Event event, loggers.ExperimentLoggerInfo experimentInfo) {
     event.experimentId = experimentInfo.experiment.id;
     event.experimentName = experimentInfo.experiment.title;
     event.experimentVersion = experimentInfo.experiment.version;
@@ -142,10 +146,12 @@ class PALTespServer with TespRequestHandlerMixin {
   }
 
   @override
-  FutureOr<TespResponse> alarmAdd(ActionSpecification actionSpecification) async {
+  FutureOr<TespResponse> alarmAdd(
+      ActionSpecification actionSpecification) async {
     // On Linux and MacOS, alarms and notifications are handled entirely
     // in the daemon
-    return TespResponseError('Unsupported platform for alarmAdd: ${Platform.operatingSystem}');
+    return TespResponseError(
+        'Unsupported platform for alarmAdd: ${Platform.operatingSystem}');
   }
 
   @override
@@ -158,7 +164,8 @@ class PALTespServer with TespRequestHandlerMixin {
   FutureOr<TespResponse> alarmRemove(int alarmId) async {
     // On Linux and MacOS, alarms and notifications are handled entirely
     // in the daemon
-    return TespResponseError('Unsupported platform for alarmRemove: ${Platform.operatingSystem}');
+    return TespResponseError(
+        'Unsupported platform for alarmRemove: ${Platform.operatingSystem}');
   }
 
   @override
@@ -168,7 +175,8 @@ class PALTespServer with TespRequestHandlerMixin {
   }
 
   @override
-  FutureOr<TespResponse> notificationAdd(NotificationHolder notification) async {
+  FutureOr<TespResponse> notificationAdd(
+      NotificationHolder notification) async {
     // On Linux and MacOS, alarms and notifications are handled entirely
     // in the daemon
     return TespResponseError('Unsupported platform for notificationAdd: '
@@ -182,7 +190,8 @@ class PALTespServer with TespRequestHandlerMixin {
   }
 
   @override
-  FutureOr<TespResponse> notificationCancelByExperiment(int experimentId) async {
+  FutureOr<TespResponse> notificationCancelByExperiment(
+      int experimentId) async {
     await daemon.handleCancelExperimentNotification(experimentId);
     return TespResponseSuccess();
   }
@@ -191,14 +200,16 @@ class PALTespServer with TespRequestHandlerMixin {
   FutureOr<TespResponse> notificationRemove(int notificationId) async {
     // On Linux and MacOS, alarms and notifications are handled entirely
     // in the daemon
-    return TespResponseError('Unsupported platform for notificationRemove: ${Platform.operatingSystem}');
+    return TespResponseError(
+        'Unsupported platform for notificationRemove: ${Platform.operatingSystem}');
   }
 
   @override
   FutureOr<TespResponse> notificationRemoveAll() async {
     // On Linux and MacOS, alarms and notifications are handled entirely
     // in the daemon
-    return TespResponseError('Unsupported platform for notificationRemoveAll: ${Platform.operatingSystem}');
+    return TespResponseError(
+        'Unsupported platform for notificationRemoveAll: ${Platform.operatingSystem}');
   }
 
   @override
@@ -215,8 +226,7 @@ class PALTespServer with TespRequestHandlerMixin {
     final alarms = await database.getAllAlarms();
     // JSON keys must be String
     final json = Map<String, dynamic>.fromIterable(alarms.entries,
-        key: (entry) => '${entry.key}',
-        value: (entry) => entry.value);
+        key: (entry) => '${entry.key}', value: (entry) => entry.value);
     return TespResponseAnswer(jsonEncode(json));
   }
 
@@ -242,24 +252,28 @@ class PALTespServer with TespRequestHandlerMixin {
   }
 
   @override
-  FutureOr<TespResponse> notificationSelectByExperiment(int experimentId) async {
+  FutureOr<TespResponse> notificationSelectByExperiment(
+      int experimentId) async {
     final database = await SqliteDatabase.get();
-    final experimentServiceLite = await ExperimentServiceLiteFactory.makeExperimentServiceLiteOrFuture();
-    final notifications = await database.getAllNotificationsForExperiment(await experimentServiceLite.getExperimentById(experimentId));
+    final experimentServiceLite =
+        await ExperimentServiceLiteFactory.makeExperimentServiceLiteOrFuture();
+    final notifications = await database.getAllNotificationsForExperiment(
+        await experimentServiceLite.getExperimentById(experimentId));
     return TespResponseAnswer(jsonEncode(notifications));
   }
 
   @override
-  Future<TespResponse> experimentSaveJoined(List<Experiment> experiments) async {
-   final database = await SqliteDatabase.get();
-   try {
-     await database.saveJoinedExperiments(experiments);
-   } catch (e) {
-     return TespResponseError(TespResponseError.tespServerErrorDatabase, '$e');
-   }
-   var experimentCache = await ExperimentCache.getInstance();
-   experimentCache.updateCacheWithJoinedExperiment(experiments);
-   return TespResponseSuccess();
+  Future<TespResponse> experimentSaveJoined(
+      List<Experiment> experiments) async {
+    final database = await SqliteDatabase.get();
+    try {
+      await database.saveJoinedExperiments(experiments);
+    } catch (e) {
+      return TespResponseError(TespResponseError.tespServerErrorDatabase, '$e');
+    }
+    var experimentCache = await ExperimentCache.getInstance();
+    experimentCache.updateCacheWithJoinedExperiment(experiments);
+    return TespResponseSuccess();
   }
 
   @override
@@ -287,26 +301,31 @@ class PALTespServer with TespRequestHandlerMixin {
   }
 
   @override
-  Future<TespResponse> experimentGetPausedStatuses(List<int> experimentIds) async {
+  Future<TespResponse> experimentGetPausedStatuses(
+      List<int> experimentIds) async {
     final database = await SqliteDatabase.get();
     final experimentCache = await ExperimentCache.getInstance();
     Map<int, bool> statuses;
     try {
-      statuses = await database.getExperimentsPausedStatus(
-          [for (var experimentId in experimentIds)
-            await experimentCache.getExperimentById(experimentId)]);
+      statuses = await database.getExperimentsPausedStatus([
+        for (var experimentId in experimentIds)
+          await experimentCache.getExperimentById(experimentId)
+      ]);
     } catch (e) {
       return TespResponseError(TespResponseError.tespServerErrorDatabase, '$e');
     }
     // JSON only supports strings as keys.
-    return TespResponseAnswer(statuses.map((key, value) => MapEntry(key.toString(), value)));
+    return TespResponseAnswer(
+        statuses.map((key, value) => MapEntry(key.toString(), value)));
   }
 
   @override
-  Future<TespResponse> experimentSetPausedStatus(int experimentId, bool paused) async {
+  Future<TespResponse> experimentSetPausedStatus(
+      int experimentId, bool paused) async {
     final database = await SqliteDatabase.get();
     final experimentCache = await ExperimentCache.getInstance();
-    final Experiment experiment = await experimentCache.getExperimentById(experimentId);
+    final Experiment experiment =
+        await experimentCache.getExperimentById(experimentId);
     try {
       await database.setExperimentPausedStatus(experiment, paused);
     } catch (e) {
@@ -314,6 +333,5 @@ class PALTespServer with TespRequestHandlerMixin {
     }
     experiment.paused = paused;
     return TespResponseSuccess();
-
   }
 }

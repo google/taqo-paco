@@ -2,7 +2,7 @@ import '../../pal_event_helper.dart';
 
 const command = 'osascript';
 
-const _xpropNameFields = [appNameField, windowNameField, urlNameField, ];
+const _xpropNameFields = [appNameField, windowNameField, urlNameField];
 
 final _fieldSplitRegExp = RegExp(r'❣');
 
@@ -20,7 +20,7 @@ Map<String, dynamic> buildResultMap(dynamic result) {
 }
 
 const scriptArgs = [
-  "-e", r'global frontApp, frontAppName, windowTitle',
+  "-e", r'global frontApp, frontAppName, windowTitle', //
   "-e", r'set windowTitle to ""',
   "-e", r'tell application "System Events"',
   "-e", r'set frontApp to first application process whose frontmost is true',
@@ -49,6 +49,7 @@ const scriptArgs = [
   "-e", r'--end tell',
   "-e", r'--end tell',
   "-e", r'--end tell',
-  "-e", r'set result to frontAppName & "❣" & windowTitle & "❣" & urlText & return',
+  "-e",
+  r'set result to frontAppName & "❣" & windowTitle & "❣" & urlText & return',
   "-e", r'return result',
 ];

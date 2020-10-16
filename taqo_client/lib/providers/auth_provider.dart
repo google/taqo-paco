@@ -22,13 +22,13 @@ class AuthProvider with ChangeNotifier {
 
   AuthProvider() {
     // Listen for auth changes
-    _gAuthListener = _gAuth.onAuthChanged.listen(
-        _gAuthStateListener,
-        onError: _gAuthStateError);
+    _gAuthListener = _gAuth.onAuthChanged
+        .listen(_gAuthStateListener, onError: _gAuthStateError);
 
     // Check and set initial state
     _gAuth.isAuthenticated.then((bool b) {
-      _gAuthStateListener(b ? AuthState.authenticated: AuthState.notAuthenticated);
+      _gAuthStateListener(
+          b ? AuthState.authenticated : AuthState.notAuthenticated);
     });
   }
 
@@ -68,8 +68,7 @@ class AuthProvider with ChangeNotifier {
 
   void signIn() {
     _gAuth.authenticate(_urlCallback).then((_) {
-      MyApp.navigatorKey.currentState.pushNamed(
-          FindExperimentsPage.routeName);
+      MyApp.navigatorKey.currentState.pushNamed(FindExperimentsPage.routeName);
     });
   }
 

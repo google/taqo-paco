@@ -14,7 +14,8 @@ abstract class BaseDatabase {
 
   Future<List<NotificationHolder>> getAllNotifications();
 
-  Future<List<NotificationHolder>> getAllNotificationsForExperiment(Experiment experiment);
+  Future<List<NotificationHolder>> getAllNotificationsForExperiment(
+      Experiment experiment);
 
   Future<void> removeNotification(int id);
 
@@ -38,10 +39,10 @@ abstract class BaseDatabase {
 
   Future<Experiment> getExperimentById(int experimentId);
 
-  Future<Map<int, bool>> getExperimentsPausedStatus(Iterable<Experiment> experiments);
+  Future<Map<int, bool>> getExperimentsPausedStatus(
+      Iterable<Experiment> experiments);
 
   Future<void> setExperimentPausedStatus(Experiment experiment, bool paused);
-
 }
 
 typedef DatabaseFactoryFunction = FutureOr<BaseDatabase> Function();

@@ -14,7 +14,10 @@ class DatabaseTableInfo {
   final String parentObjectName;
   final bool prependIdColumn;
   DatabaseTableInfo(
-      {@required this.name, this.objectName, this.parentObjectName, this.prependIdColumn = false});
+      {@required this.name,
+      this.objectName,
+      this.parentObjectName,
+      this.prependIdColumn = false});
 }
 
 class DatabaseColumnSpecification {
@@ -62,7 +65,11 @@ class DatabaseDescription extends DatabaseDescriptionBase {
       @required List<List<dynamic>> specContent // content of the specification
       }) {
     dbTableInfos[name] = DatabaseTableInfo(
-        name: name, objectName: objectName, parentObjectName: parentObjectName, prependIdColumn: prependIdColumnOverride ?? meta[META_PREPEND_ID_COLUMN] ?? false);
+        name: name,
+        objectName: objectName,
+        parentObjectName: parentObjectName,
+        prependIdColumn:
+            prependIdColumnOverride ?? meta[META_PREPEND_ID_COLUMN] ?? false);
 
     if (specContent == null || specContent.isEmpty) {
       throw ArgumentError('Empty or null specContent');

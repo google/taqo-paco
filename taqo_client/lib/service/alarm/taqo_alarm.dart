@@ -22,19 +22,20 @@ Future init() {
   if (platform_service.isTaqoDesktop) {
     return schedule(cancelAndReschedule: false);
   } else {
-    return flutter_local_notifications.init().then((_) =>
-        schedule(cancelAndReschedule: false));
+    return flutter_local_notifications
+        .init()
+        .then((_) => schedule(cancelAndReschedule: false));
   }
 }
 
 Future<bool> checkActiveNotification() async {
   final db = await platform_service.databaseImpl;
-  final activeNotifications = (await db.getAllNotifications()).where(
-          (n) => n.isActive);
+  final activeNotifications =
+      (await db.getAllNotifications()).where((n) => n.isActive);
   return activeNotifications.isNotEmpty;
 }
 
-Future schedule({bool cancelAndReschedule=true}) async {
+Future schedule({bool cancelAndReschedule = true}) async {
   // TODO schedule alarms in background
   // TODO the calculate() API currently doesn't support using plugins
   if (Platform.isAndroid) {
@@ -114,8 +115,10 @@ Future<void> openSurvey(String payload) async {
   // TODO Timezone could have changed?
   if (!notificationHolder.isActive && !notificationHolder.isFuture) {
     await timeout(id);
-    MyApp.navigatorKey.currentState.pushReplacementNamed(
-        RunningExperimentsPage.routeName, arguments: [true, ]);
+    MyApp.navigatorKey.currentState
+        .pushReplacementNamed(RunningExperimentsPage.routeName, arguments: [
+      true,
+    ]);
     return;
   }
 
@@ -124,7 +127,8 @@ Future<void> openSurvey(String payload) async {
     final e = service
         .getJoinedExperiments()
         .firstWhere((e) => e.id == notificationHolder.experimentId);
-    e.groups.firstWhere((g) => g.name == notificationHolder.experimentGroupName);
+    e.groups
+        .firstWhere((g) => g.name == notificationHolder.experimentGroupName);
     MyApp.navigatorKey.currentState.pushReplacementNamed(SurveyPage.routeName,
         arguments: [e, notificationHolder.experimentGroupName]);
   } on StateError catch (e, stack) {
@@ -135,11 +139,13 @@ Future<void> openSurvey(String payload) async {
 
 void _createMissedEvent(int notificationId) async {
   final db = await platform_service.databaseImpl;
-  final NotificationHolder notification = await db.getNotification(notificationId);
+  final NotificationHolder notification =
+      await db.getNotification(notificationId);
   if (notification == null) return;
 
   final service = await ExperimentService.getInstance();
-  final experiment = await service.getExperimentFromServerById(notification.experimentId);
+  final experiment =
+      await service.getExperimentFromServerById(notification.experimentId);
   if (experiment == null) {
     return;
   }
@@ -152,7 +158,8 @@ void _createMissedEvent(int notificationId) async {
   event.actionTriggerId = notification.actionTriggerId;
   event.actionTriggerSpecId = notification.actionTriggerSpecId;
   event.experimentVersion = experiment.version;
-  event.scheduleTime = getZonedDateTime(DateTime.fromMillisecondsSinceEpoch(notification.alarmTime));
+  event.scheduleTime = getZonedDateTime(
+      DateTime.fromMillisecondsSinceEpoch(notification.alarmTime));
 
   db.insertEvent(event);
 }

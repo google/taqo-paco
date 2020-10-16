@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/experiment_group.dart';
-import '../../service/alarm/flutter_local_notifications.dart' as flutter_local_notifications;
+import '../../service/alarm/flutter_local_notifications.dart'
+    as flutter_local_notifications;
 import '../running_experiments_page.dart';
 
 class FeedbackPage extends StatefulWidget {
@@ -25,7 +26,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
     var list = ModalRoute.of(context).settings.arguments as List;
     _experiment = list.elementAt(0) as Experiment;
     _experimentGroup = list.elementAt(1) as ExperimentGroup;
-
 
     return Scaffold(
         appBar: AppBar(
@@ -49,13 +49,11 @@ class _FeedbackPageState extends State<FeedbackPage> {
                 if (launchDetails.didNotificationLaunchApp) {
                   SystemChannels.platform.invokeMethod('SystemNavigator.pop');
                 } else {
-                  Navigator.pushNamedAndRemoveUntil(
-                      context, RunningExperimentsPage.routeName, (Route route) => false);
+                  Navigator.pushNamedAndRemoveUntil(context,
+                      RunningExperimentsPage.routeName, (Route route) => false);
                 }
               });
-            }
-        )
-    );
+            }));
   }
 
   // TODO determine if it is html feedback and show in an html widget

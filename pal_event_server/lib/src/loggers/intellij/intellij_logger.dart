@@ -28,7 +28,8 @@ class IntelliJLogger extends PacoEventLogger with EventTriggerSource {
   }
 
   @override
-  void start(List<ExperimentLoggerInfo> toLog, List<ExperimentLoggerInfo> toTrigger) async {
+  void start(List<ExperimentLoggerInfo> toLog,
+      List<ExperimentLoggerInfo> toTrigger) async {
     if (active || (toLog.isEmpty && toTrigger.isEmpty)) {
       return;
     }
@@ -47,7 +48,8 @@ class IntelliJLogger extends PacoEventLogger with EventTriggerSource {
   }
 
   @override
-  void stop(List<ExperimentLoggerInfo> toLog, List<ExperimentLoggerInfo> toTrigger) async {
+  void stop(List<ExperimentLoggerInfo> toLog,
+      List<ExperimentLoggerInfo> toTrigger) async {
     if (!active) {
       return;
     }

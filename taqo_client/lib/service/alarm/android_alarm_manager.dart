@@ -19,13 +19,17 @@ final _logger = Logger('AndroidAlarmManager');
 const SHARED_PREFS_LAST_ALARM_TIME = 'lastScheduledAlarm';
 
 /// Schedule an alarm for [actionSpec] at [when] to run [callback]
-Future<int> _schedule(ActionSpecification actionSpec, DateTime when, Function(int) callback) {
+Future<int> _schedule(
+    ActionSpecification actionSpec, DateTime when, Function(int) callback) {
   return AndroidAlarmManager.initialize().then((success) async {
     if (success) {
       final db = await platform_service.databaseImpl;
       final alarmId = await db.insertAlarm(actionSpec);
       AndroidAlarmManager.oneShotAt(when, alarmId, callback,
-          allowWhileIdle: true, exact: true, rescheduleOnReboot: true, wakeup: true);
+          allowWhileIdle: true,
+          exact: true,
+          rescheduleOnReboot: true,
+          wakeup: true);
       return alarmId;
     }
     return -1;
@@ -44,14 +48,16 @@ Future<bool> _scheduleNotification(ActionSpecification actionSpec) async {
   }
 
   final alarmId = await _schedule(actionSpec, actionSpec.time, _notifyCallback);
-  _logger.info('_scheduleNotification: alarmId: $alarmId when: ${actionSpec.time}'
-      ' isolate: ${Isolate.current.hashCode}');
+  _logger
+      .info('_scheduleNotification: alarmId: $alarmId when: ${actionSpec.time}'
+          ' isolate: ${Isolate.current.hashCode}');
   return alarmId >= 0;
 }
 
 void _scheduleTimeout(ActionSpecification actionSpec) async {
   final timeout = actionSpec.action.timeout;
-  final alarmId = await _schedule(actionSpec, actionSpec.time.add(Duration(minutes: timeout)), _expireCallback);
+  final alarmId = await _schedule(actionSpec,
+      actionSpec.time.add(Duration(minutes: timeout)), _expireCallback);
   _logger.info('_scheduleTimeout: alarmId: $alarmId'
       ' when: ${actionSpec.time.add(Duration(minutes: timeout))}'
       ' isolate: ${Isolate.current.hashCode}');
@@ -59,7 +65,8 @@ void _scheduleTimeout(ActionSpecification actionSpec) async {
 
 void _notifyCallback(int alarmId) async {
   // This is running in a different (background) Isolate
-  _logger.info('notify: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
+  _logger
+      .info('notify: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
   DateTime start;
   Duration duration;
   final db = await platform_service.databaseImpl;
@@ -72,9 +79,11 @@ void _notifyCallback(int alarmId) async {
     duration = DateTime.now().add(Duration(seconds: 30)).difference(start);
     final service = await ExperimentService.getInstance();
     final experiments = service.getJoinedExperiments();
-    final allAlarms = await getAllAlarmsWithinRange(FlutterFileStorage(ESMSignalStorage.filename),
-        experiments, start: start, duration: duration);
-    _logger.info('Showing ${allAlarms.length} alarms from: $start to: ${start.add(duration)}');
+    final allAlarms = await getAllAlarmsWithinRange(
+        FlutterFileStorage(ESMSignalStorage.filename), experiments,
+        start: start, duration: duration);
+    _logger.info(
+        'Showing ${allAlarms.length} alarms from: $start to: ${start.add(duration)}');
     var i = 0;
     for (var a in allAlarms) {
       _logger.info('[${i++}] Showing ${a.time}');
@@ -85,7 +94,8 @@ void _notifyCallback(int alarmId) async {
     final storageDir = (await FlutterFileStorage.getLocalStorageDir()).path;
     final sharedPreferences = TaqoSharedPrefs(storageDir);
     _logger.info('Storing ${start.add(duration)}');
-    sharedPreferences.setString(SHARED_PREFS_LAST_ALARM_TIME, start.add(duration).toIso8601String());
+    sharedPreferences.setString(
+        SHARED_PREFS_LAST_ALARM_TIME, start.add(duration).toIso8601String());
   }
 
   // Cleanup alarm
@@ -98,15 +108,17 @@ void _notifyCallback(int alarmId) async {
 
 void _expireCallback(int alarmId) async {
   // This is running in a different (background) Isolate
-  _logger.info('expire: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
+  _logger
+      .info('expire: alarmId: $alarmId isolate: ${Isolate.current.hashCode}');
   // Cancel notification
   final db = await platform_service.databaseImpl;
   final toCancel = await db.getAlarm(alarmId);
   // TODO Move the matches() logic to SQL
   final notifications = await db.getAllNotifications();
   if (notifications != null) {
-    final match = notifications.firstWhere((notificationHolder) =>
-        notificationHolder.matchesAction(toCancel), orElse: () => null);
+    final match = notifications.firstWhere(
+        (notificationHolder) => notificationHolder.matchesAction(toCancel),
+        orElse: () => null);
     if (match != null) {
       taqo_alarm.timeout(match.id);
     }
@@ -133,7 +145,8 @@ void _scheduleNextNotification({DateTime from}) async {
 
   final service = await ExperimentService.getInstance();
   final experiments = service.getJoinedExperiments();
-  getNextAlarmTime(FlutterFileStorage(ESMSignalStorage.filename), experiments, now: from)
+  getNextAlarmTime(FlutterFileStorage(ESMSignalStorage.filename), experiments,
+          now: from)
       .then((ActionSpecification actionSpec) async {
     if (actionSpec != null) {
       // Schedule a notification (android_alarm_manager)
@@ -177,5 +190,7 @@ Future<void> cancel(int alarmId) async {
 
 Future<void> cancelAll() async {
   final db = await platform_service.databaseImpl;
-  (await db.getAllAlarms()).keys.forEach((alarmId) async => await cancel(alarmId));
+  (await db.getAllAlarms())
+      .keys
+      .forEach((alarmId) async => await cancel(alarmId));
 }

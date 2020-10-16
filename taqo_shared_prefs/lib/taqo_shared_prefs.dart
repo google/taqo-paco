@@ -13,8 +13,8 @@ class TaqoSharedPrefs {
   String _sharedPrefDbPath;
   Map<String, dynamic> _sharedPrefMap;
 
-  TaqoSharedPrefs(String path) :
-        _sharedPrefDbPath = join(path, _sharedPrefDbFile),
+  TaqoSharedPrefs(String path)
+      : _sharedPrefDbPath = join(path, _sharedPrefDbFile),
         _sharedPrefMap = <String, dynamic>{};
 
   Future _loadPrefs() async {

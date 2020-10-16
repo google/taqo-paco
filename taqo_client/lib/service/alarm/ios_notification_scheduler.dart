@@ -47,9 +47,11 @@ Future schedule() async {
 
   final service = await ExperimentService.getInstance();
   final experiments = service.getJoinedExperiments();
-  final alarms = await getNextNAlarmTimes(FlutterFileStorage(ESMSignalStorage.filename),
-      experiments, n: count, now: dt);
+  final alarms = await getNextNAlarmTimes(
+      FlutterFileStorage(ESMSignalStorage.filename), experiments,
+      n: count, now: dt);
   for (var a in alarms) {
-    await flutter_local_notifications.scheduleNotification(a, cancelPending: false);
+    await flutter_local_notifications.scheduleNotification(a,
+        cancelPending: false);
   }
 }

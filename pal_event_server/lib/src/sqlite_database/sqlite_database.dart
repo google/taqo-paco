@@ -249,8 +249,12 @@ class SqliteDatabase implements BaseDatabase {
 
   @override
   Future<Experiment> getExperimentById(int experimentId) async {
-    final result = _db.query(selectExperimentByIdCommand,params: [experimentId]);
-    var experiments = <Experiment>[for (var row in result) Experiment.fromJson(jsonDecode(row.readColumnByIndexAsText(0)))];
+    final result =
+        _db.query(selectExperimentByIdCommand, params: [experimentId]);
+    var experiments = <Experiment>[
+      for (var row in result)
+        Experiment.fromJson(jsonDecode(row.readColumnByIndexAsText(0)))
+    ];
     if (experiments.length > 0) {
       assert(experiments.length == 1);
       return experiments[0];
@@ -262,7 +266,10 @@ class SqliteDatabase implements BaseDatabase {
   @override
   Future<List<Experiment>> getJoinedExperiments() async {
     final result = _db.query(selectJoindExperimentsCommand);
-    return [for (var row in result) Experiment.fromJson(jsonDecode(row.readColumnByIndexAsText(0)))];
+    return [
+      for (var row in result)
+        Experiment.fromJson(jsonDecode(row.readColumnByIndexAsText(0)))
+    ];
   }
 
   @override
@@ -270,23 +277,28 @@ class SqliteDatabase implements BaseDatabase {
     _db.execute(beginTransactionCommand);
     _db.execute(quitAllExperimentsCommand);
     for (var experiment in experiments) {
-      _db.execute(insertOrUpdateJoinedExperimentsCommand, params: [experiment.id, jsonEncode(experiment)]);
+      _db.execute(insertOrUpdateJoinedExperimentsCommand,
+          params: [experiment.id, jsonEncode(experiment)]);
     }
     _db.execute(resetPauseStatusCommand);
     _db.execute(commitCommand);
   }
 
   @override
-  Future<Map<int, bool>> getExperimentsPausedStatus(Iterable<Experiment> experiments) async {
+  Future<Map<int, bool>> getExperimentsPausedStatus(
+      Iterable<Experiment> experiments) async {
     final result = _db.query(
         buildQueryExperimentPausedStatusCommand(experiments.length),
         params: [for (var experiment in experiments) experiment.id]);
-    return <int,bool>{for (var row in result)
-      row.readColumnByIndexAsInt(0): row.readColumnByIndexAsInt(1) == 1};
+    return <int, bool>{
+      for (var row in result)
+        row.readColumnByIndexAsInt(0): row.readColumnByIndexAsInt(1) == 1
+    };
   }
 
   @override
-  Future<void> setExperimentPausedStatus(Experiment experiment, bool paused) async {
+  Future<void> setExperimentPausedStatus(
+      Experiment experiment, bool paused) async {
     _db.execute(updateExperimentPausedStatusCommand,
         params: [paused ? 1 : 0, experiment.id]);
   }

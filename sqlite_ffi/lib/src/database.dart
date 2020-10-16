@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import "dart:collection";
-import 'dart:convert';
 import "dart:ffi";
 
 import "package:ffi/ffi.dart";
@@ -28,7 +27,8 @@ class Database {
 
   /// Open a database located at the file [path].
   Database(String path,
-      [int flags = Flags.SQLITE_OPEN_READWRITE | Flags.SQLITE_OPEN_CREATE, int timeout = 5000]) {
+      [int flags = Flags.SQLITE_OPEN_READWRITE | Flags.SQLITE_OPEN_CREATE,
+      int timeout = 5000]) {
     Pointer<Pointer<types.Database>> dbOut = allocate();
     final pathC = Utf8.toUtf8(path);
     final int resultCode =
@@ -79,18 +79,19 @@ class Database {
       for (var i = 0; i < params.length; i++) {
         final param = params[i];
         if (param is int) {
-          resultCode = bindings.sqlite3_bind_int64(statement, i+1, param);
+          resultCode = bindings.sqlite3_bind_int64(statement, i + 1, param);
           if (resultCode != Errors.SQLITE_OK) {
             print('Error binding int64 param[$i]: $param');
           }
-;        } else if (param is double) {
-          resultCode = bindings.sqlite3_bind_double(statement, i+1, param);
+          ;
+        } else if (param is double) {
+          resultCode = bindings.sqlite3_bind_double(statement, i + 1, param);
           if (resultCode != Errors.SQLITE_OK) {
             print('Error binding double param[$i]: $param');
           }
         } else if (param is String) {
           resultCode = bindings.sqlite3_bind_text(
-              statement, i+1, Utf8.toUtf8(param), -1, Flags.SQLITE_STATIC);
+              statement, i + 1, Utf8.toUtf8(param), -1, Flags.SQLITE_STATIC);
           if (resultCode != Errors.SQLITE_OK) {
             print('Error binding text param[$i]: $param');
           }
@@ -136,18 +137,19 @@ class Database {
       for (var i = 0; i < params.length; i++) {
         final param = params[i];
         if (param is int) {
-          resultCode = bindings.sqlite3_bind_int64(statement, i+1, param);
+          resultCode = bindings.sqlite3_bind_int64(statement, i + 1, param);
           if (resultCode != Errors.SQLITE_OK) {
             print('Error binding int64 param[$i]: $param');
           }
-          ;        } else if (param is double) {
-          resultCode = bindings.sqlite3_bind_double(statement, i+1, param);
+          ;
+        } else if (param is double) {
+          resultCode = bindings.sqlite3_bind_double(statement, i + 1, param);
           if (resultCode != Errors.SQLITE_OK) {
             print('Error binding double param[$i]: $param');
           }
         } else if (param is String) {
           resultCode = bindings.sqlite3_bind_text(
-              statement, i+1, Utf8.toUtf8(param), -1, Flags.SQLITE_STATIC);
+              statement, i + 1, Utf8.toUtf8(param), -1, Flags.SQLITE_STATIC);
           if (resultCode != Errors.SQLITE_OK) {
             print('Error binding text param[$i]: $param');
           }

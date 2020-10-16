@@ -7,7 +7,11 @@ class TaqoRoundButton extends StatelessWidget {
   final VoidCallback onPressed;
   final double height;
 
-  TaqoRoundButton({@required this.onPressed, this.child, this.height, });
+  TaqoRoundButton({
+    @required this.onPressed,
+    this.child,
+    this.height,
+  });
 
   @override
   Widget build(BuildContext context) {

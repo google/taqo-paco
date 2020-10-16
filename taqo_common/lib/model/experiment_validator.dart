@@ -13,11 +13,12 @@ class ExperimentValidator implements Validator {
     results = List<ValidationMessage>();
   }
 
-  factory ExperimentValidator.fromJson(Map<String, dynamic> json) => _$ExperimentValidatorFromJson(json);
+  factory ExperimentValidator.fromJson(Map<String, dynamic> json) =>
+      _$ExperimentValidatorFromJson(json);
 
   Map<String, dynamic> toJson() => _$ExperimentValidatorToJson(this);
   void addError(String msg) {
-    results.add(new ValidationMessage(msg, Validator.MANDATORY));
+    results.add(ValidationMessage(msg, Validator.MANDATORY));
   }
 
   bool isNonEmptyString(String value, String msg) {
@@ -41,9 +42,7 @@ class ExperimentValidator implements Validator {
     return empty;
   }
 
-  /**
-   * TODO replace this with a real email address validator
-   */
+  // TODO replace this with a real email address validator
 
   bool isValidEmail(String address, String errorMessage) {
     if (!isNonEmptyString(address, errorMessage)) {
@@ -90,9 +89,7 @@ class ExperimentValidator implements Validator {
     return true;
   }
 
-  /**
-   * TODO replace with real date formatter that is serializable
-   */
+  // TODO replace with real date formatter that is serializable
 
   bool isValidDateString(String dateStr, String errorMessage) {
     if (!isNonEmptyString(dateStr, errorMessage)) {
@@ -203,10 +200,8 @@ class ExperimentValidator implements Validator {
     return true;
   }
 
-  /**
-   * TODO do some real basic javascript linting, some real paco symbol checking,
-   * some caja sandboxing, etc..
-   */
+  // TODO do some real basic javascript linting, some real paco symbol checking,
+  // some caja sandboxing, etc..
 
   bool isValidJavascript(String code, String errorMessage) {
     if (!isNonEmptyString(code, errorMessage)) {
@@ -215,10 +210,8 @@ class ExperimentValidator implements Validator {
     return true;
   }
 
-  /**
-   * TODO this is to validate simple html as well as javascript.
-   * It is broader than isValidJavascript, but for now....
-   */
+  // TODO this is to validate simple html as well as javascript.
+  // It is broader than isValidJavascript, but for now....
 
   bool isValidHtmlOrJavascript(String text, String errorMessage) {
     return isValidJavascript(text, errorMessage);

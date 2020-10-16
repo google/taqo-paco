@@ -10,7 +10,6 @@ import 'package:taqo_common/util/date_time_util.dart';
 import 'package:taqo_common/util/zoned_date_time.dart';
 
 import '../../pages/survey/feedback_page.dart';
-import '../../platform/platform_sync_service.dart';
 import '../../service/alarm/taqo_alarm.dart' as taqo_alarm;
 import '../../service/platform_service.dart' as platform_service;
 import '../../widgets/taqo_widgets.dart';
@@ -91,7 +90,8 @@ class _SurveyPageState extends State<SurveyPage> {
   List<Widget> _evaluateInputConditions(List<Input2> inputs) {
     final env = Environment();
     inputs.forEach((input) {
-      env[input.name] = Binding(input.name, input.responseType, _event.responses[input.name]);
+      env[input.name] =
+          Binding(input.name, input.responseType, _event.responses[input.name]);
     });
 
     final parser = InputParser(env);
@@ -257,11 +257,10 @@ class _SurveyPageState extends State<SurveyPage> {
 //    );
 //  }
 
-  Widget buildMultiSelectListPopupDialog(
-      BuildContext context, Input2 input) {
+  Widget buildMultiSelectListPopupDialog(BuildContext context, Input2 input) {
     var myPopupMultiListOutput = popupListResults[input.name];
     if (myPopupMultiListOutput == null) {
-      myPopupMultiListOutput = new MultiListOutput(input.listChoices);
+      myPopupMultiListOutput = MultiListOutput(input.listChoices);
       popupListResults[input.name] = myPopupMultiListOutput;
     }
 
@@ -304,8 +303,9 @@ class _SurveyPageState extends State<SurveyPage> {
     final leftLabel = buildScaleLabelWidget(input.leftSideLabel);
     final rightLabel = buildScaleLabelWidget(input.rightSideLabel);
 
-    final radioButtons = Iterable.generate(numberOfSteps, (i) =>
-        buildRadio(i + 1, input)).toList();
+    final radioButtons =
+        Iterable.generate(numberOfSteps, (i) => buildRadio(i + 1, input))
+            .toList();
 
     return Expanded(
       child: Row(
@@ -322,17 +322,15 @@ class _SurveyPageState extends State<SurveyPage> {
 
     return Flexible(
         child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Radio(
-              value: i,
-              groupValue: groupValue,
-              onChanged: (int value) {
-                setState(() {
-                  _event.responses[input.name] = value;
-                });
-              })
-        )
-    );
+            fit: BoxFit.scaleDown,
+            child: Radio(
+                value: i,
+                groupValue: groupValue,
+                onChanged: (int value) {
+                  setState(() {
+                    _event.responses[input.name] = value;
+                  });
+                })));
   }
 
   Widget buildScaleLabelWidget(String labelText) {
@@ -344,8 +342,7 @@ class _SurveyPageState extends State<SurveyPage> {
           style: TextStyle(fontSize: 16.0),
           overflow: TextOverflow.ellipsis,
           maxLines: 3,
-        )
-    );
+        ));
   }
 
   Future<void> _alertLog(msg) async {
@@ -383,8 +380,8 @@ class _SurveyPageState extends State<SurveyPage> {
       final id = entry.key;
       final alarm = entry.value;
       if (alarm.experiment.id == _experiment.id &&
-        alarm.experimentGroup.name == _experimentGroup.name &&
-        alarm.time.isBefore(DateTime.now())) {
+          alarm.experimentGroup.name == _experimentGroup.name &&
+          alarm.time.isBefore(DateTime.now())) {
         // This alarm is the timeout for the notification
         // The alarm for the notification was already cleared when it fired
         _event.actionId = alarm.action.id;
@@ -412,12 +409,12 @@ class _SurveyPageState extends State<SurveyPage> {
     // The implication here is that the actual timeout/expiration time is
     // the min of the explicit timeout and the time until the next notification
     // for the same survey fires
-    final pendingNotifications = (await db
-        .getAllNotificationsForExperiment(_experiment))
-        .where((e) => e.experimentGroupName == _experimentGroup.name);
+    final pendingNotifications =
+        (await db.getAllNotificationsForExperiment(_experiment))
+            .where((e) => e.experimentGroupName == _experimentGroup.name);
 
-    final expired = pendingNotifications
-        .where((e) => !e.isActive && !e.isFuture).toList();
+    final expired =
+        pendingNotifications.where((e) => !e.isActive && !e.isFuture).toList();
     for (var pn in expired) {
       // Record Paco missed event for expired or stale
       await taqo_alarm.timeout(pn.id);
@@ -442,15 +439,15 @@ class _SurveyPageState extends State<SurveyPage> {
     _event.responses.removeWhere((String k, _) => !(_visible[k] ?? true));
     _event.responseTime = ZonedDateTime.now();
     _event.responses[FORM_DURATION_IN_SECONDS] =
-    _event.responseTime.dateTime.difference(_startTime).inSeconds;
+        _event.responseTime.dateTime.difference(_startTime).inSeconds;
     var savedOK = validateResponses();
     // TODO Validate answers and store locally.
     await db.insertEvent(_event);
     // If should be uploaded alert sync service
     if (savedOK) {
-      if (_experimentGroup.feedback.type == taqo_feedback.Feedback.FEEDBACK_TYPE_STATIC_MESSAGE) {
-        Navigator.pushNamedAndRemoveUntil(
-            context, FeedbackPage.routeName,
+      if (_experimentGroup.feedback.type ==
+          taqo_feedback.Feedback.FEEDBACK_TYPE_STATIC_MESSAGE) {
+        Navigator.pushNamedAndRemoveUntil(context, FeedbackPage.routeName,
             ModalRoute.withName(RunningExperimentsPage.routeName),
             arguments: [_experiment, _experimentGroup]);
       } else {
@@ -555,11 +552,16 @@ class _SurveyPageState extends State<SurveyPage> {
 
   List<Widget> buildSmileyButtons(Input2 input) {
     Widget getIconWidget(AssetImage asset, Color color, int value) {
-      final blendMode = _event.responses[input.name] == value ? BlendMode.multiply : BlendMode.dst;
+      final blendMode = _event.responses[input.name] == value
+          ? BlendMode.multiply
+          : BlendMode.dst;
       return IconButton(
         icon: ClipRRect(
           borderRadius: BorderRadius.circular(44),
-          child: Image(image: asset, color: color.withOpacity(0.9), colorBlendMode: blendMode),
+          child: Image(
+              image: asset,
+              color: color.withOpacity(0.9),
+              colorBlendMode: blendMode),
         ),
         iconSize: 44,
         onPressed: () => setState(() => _event.responses[input.name] = value),
@@ -567,11 +569,16 @@ class _SurveyPageState extends State<SurveyPage> {
     }
 
     return <Widget>[
-      getIconWidget(AssetImage('assets/sentiment_very_dissatisfied.png'), Colors.red, 1),
-      getIconWidget(AssetImage('assets/sentiment_dissatisfied.png'), Colors.orange, 2),
-      getIconWidget(AssetImage('assets/sentiment_neutral.png'), Colors.yellow, 3),
-      getIconWidget(AssetImage('assets/sentiment_satisfied.png'), Colors.blue, 4),
-      getIconWidget(AssetImage('assets/sentiment_very_satisfied.png'), Colors.green, 5),
+      getIconWidget(
+          AssetImage('assets/sentiment_very_dissatisfied.png'), Colors.red, 1),
+      getIconWidget(
+          AssetImage('assets/sentiment_dissatisfied.png'), Colors.orange, 2),
+      getIconWidget(
+          AssetImage('assets/sentiment_neutral.png'), Colors.yellow, 3),
+      getIconWidget(
+          AssetImage('assets/sentiment_satisfied.png'), Colors.blue, 4),
+      getIconWidget(
+          AssetImage('assets/sentiment_very_satisfied.png'), Colors.green, 5),
     ];
   }
 

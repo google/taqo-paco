@@ -62,8 +62,8 @@ void main() async {
 
   LocalFileStorageFactory.initialize((fileName) => FlutterFileStorage(fileName),
       await FlutterFileStorage.getLocalStorageDir());
-  await LoggingService.initialize(logFilePrefix: 'client-',
-      outputsToStdout: kDebugMode);
+  await LoggingService.initialize(
+      logFilePrefix: 'client-', outputsToStdout: kDebugMode);
   DatabaseFactory.initialize(() => databaseImpl);
   ExperimentServiceLiteFactory.initialize(ExperimentService.getInstance);
   setupLoggingMethodChannel();

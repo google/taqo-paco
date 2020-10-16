@@ -45,26 +45,33 @@ class ESMSignalStorage {
     _storageImpl = storageImpl;
   }
 
-  Future<void> storeSignal(DateTime periodStart, int experimentId, DateTime alarmTime,
-      String groupName, int actionTriggerId, int scheduleId) async {
+  Future<void> storeSignal(
+      DateTime periodStart,
+      int experimentId,
+      DateTime alarmTime,
+      String groupName,
+      int actionTriggerId,
+      int scheduleId) async {
     try {
       final file = await _storageImpl.localFile;
-      await file.writeAsString(jsonEncode({
-        date: periodStart.toIso8601String(),
-        experiment: experimentId,
-        time: alarmTime.toIso8601String(),
-        group: groupName,
-        actionTrigger: actionTriggerId,
-        schedule: scheduleId,
-      }), mode: FileMode.append);
+      await file.writeAsString(
+          jsonEncode({
+            date: periodStart.toIso8601String(),
+            experiment: experimentId,
+            time: alarmTime.toIso8601String(),
+            group: groupName,
+            actionTrigger: actionTriggerId,
+            schedule: scheduleId,
+          }),
+          mode: FileMode.append);
       await file.writeAsString('\n', mode: FileMode.append, flush: true);
     } catch (e) {
       _logger.warning("Error storing esm signal: $e");
     }
   }
 
-  Future<List<DateTime>> getSignals(DateTime periodStart, int experimentId, String groupName,
-      int actionTriggerId, int scheduleId) async {
+  Future<List<DateTime>> getSignals(DateTime periodStart, int experimentId,
+      String groupName, int actionTriggerId, int scheduleId) async {
     final signals = <DateTime>[];
     try {
       final file = await _storageImpl.localFile;
@@ -77,8 +84,10 @@ class ESMSignalStorage {
           } catch (_) {
             continue;
           }
-          if (m[date] == periodStart.toIso8601String() && m[experiment] == experimentId &&
-              m[group] == groupName && m[actionTrigger] == actionTriggerId &&
+          if (m[date] == periodStart.toIso8601String() &&
+              m[experiment] == experimentId &&
+              m[group] == groupName &&
+              m[actionTrigger] == actionTriggerId &&
               m[schedule] == scheduleId) {
             signals.add(DateTime.parse(m[time]));
           }
@@ -124,7 +133,8 @@ class ESMSignalStorage {
     // TODO Perhaps can be improved
     final allSignals = await getAllSignals();
     await deleteAllSignals();
-    allSignals.removeWhere((signal) => int.tryParse(signal[experiment]) == experimentId);
+    allSignals.removeWhere(
+        (signal) => int.tryParse(signal[experiment]) == experimentId);
     try {
       final file = await _storageImpl.localFile;
       for (var signal in allSignals) {
@@ -136,8 +146,8 @@ class ESMSignalStorage {
     }
   }
 
-  Future<void> deleteSignalsForPeriod(DateTime periodStart, int experimentId, String groupName,
-      int actionTriggerId, int scheduleId) async {
+  Future<void> deleteSignalsForPeriod(DateTime periodStart, int experimentId,
+      String groupName, int actionTriggerId, int scheduleId) async {
     // TODO Perhaps can be improved
     final allSignals = await getAllSignals();
     await deleteAllSignals();
@@ -146,8 +156,7 @@ class ESMSignalStorage {
         int.tryParse(signal[experiment]) == experimentId &&
         signal[groupName] == groupName &&
         int.tryParse(signal[actionTrigger]) == actionTriggerId &&
-        int.tryParse(signal[schedule]) == scheduleId
-    );
+        int.tryParse(signal[schedule]) == scheduleId);
     try {
       final file = await _storageImpl.localFile;
       for (var signal in allSignals) {

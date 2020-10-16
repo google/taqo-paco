@@ -19,19 +19,21 @@ List<Experiment> loadExperiments(String json) {
   }
 }
 
-final dt1 = DateTime(2013, 1, 1);     // tues
-final dt2 = DateTime(2005, 2, 4);     // fri
-final dt3 = DateTime(2012, 3, 7);     // wed
-final dt4 = DateTime(2006, 4, 10);    // mon
-final dt5 = DateTime(2017, 5, 14);    // sun
-final dt6 = DateTime(2003, 6, 16);    // mon
-final dt7 = DateTime(2010, 7, 18);    // sun
-final dt8 = DateTime(2019, 8, 22);    // thu
-final dt9 = DateTime(2014, 9, 25);    // thu
-final dt10 = DateTime(2009, 10, 31);  // sat
-final dt11 = DateTime(2007, 11, 30);  // fri
-final dt12 = DateTime(2011, 12, 31);  // sat
-final testDateTimes = [dt1, dt2, dt3, dt4, dt5, dt6, dt7, dt8, dt9, dt10, dt11, dt12, ];
+final dt1 = DateTime(2013, 1, 1); // tues
+final dt2 = DateTime(2005, 2, 4); // fri
+final dt3 = DateTime(2012, 3, 7); // wed
+final dt4 = DateTime(2006, 4, 10); // mon
+final dt5 = DateTime(2017, 5, 14); // sun
+final dt6 = DateTime(2003, 6, 16); // mon
+final dt7 = DateTime(2010, 7, 18); // sun
+final dt8 = DateTime(2019, 8, 22); // thu
+final dt9 = DateTime(2014, 9, 25); // thu
+final dt10 = DateTime(2009, 10, 31); // sat
+final dt11 = DateTime(2007, 11, 30); // fri
+final dt12 = DateTime(2011, 12, 31); // sat
+final testDateTimes = [
+  dt1, dt2, dt3, dt4, dt5, dt6, dt7, dt8, dt9, dt10, dt11, dt12, //
+];
 
 final expected = <String, Map<DateTime, DateTime>>{
   'Experiment 1': {
@@ -58,7 +60,7 @@ final expected = <String, Map<DateTime, DateTime>>{
     dt7: DateTime(2010, 7, 20, 12),
     dt8: DateTime(2019, 8, 26, 12),
     dt9: DateTime(2014, 9, 27, 12),
-    dt10: DateTime(2009, 11, 4, 11),  // TODO daylight savings
+    dt10: DateTime(2009, 11, 4, 11), // TODO daylight savings
     dt11: DateTime(2007, 12, 2, 12),
     dt12: DateTime(2012, 1, 4, 12),
   },
@@ -72,7 +74,7 @@ final expected = <String, Map<DateTime, DateTime>>{
     dt7: DateTime(2010, 7, 19, 13),
     dt8: DateTime(2019, 8, 22, 13),
     dt9: DateTime(2014, 9, 25, 13),
-    dt10: DateTime(2009, 11, 3, 12),  // TODO daylight savings
+    dt10: DateTime(2009, 11, 3, 12), // TODO daylight savings
     dt11: DateTime(2007, 11, 30, 13),
     dt12: DateTime(2012, 1, 2, 13),
   },
@@ -107,7 +109,7 @@ final expected = <String, Map<DateTime, DateTime>>{
   'Experiment 6': {
     dt1: DateTime(2013, 1, 11, 18, 22),
     dt2: DateTime(2005, 2, 11, 18, 22),
-    dt3: DateTime(2012, 3, 11, 19, 22),   // TODO daylight savings
+    dt3: DateTime(2012, 3, 11, 19, 22), // TODO daylight savings
     dt4: DateTime(2006, 4, 11, 18, 22),
     dt5: DateTime(2017, 6, 11, 18, 22),
     dt6: DateTime(2003, 7, 11, 18, 22),
@@ -170,7 +172,7 @@ final expected = <String, Map<DateTime, DateTime>>{
     dt7: DateTime(2010, 9, 1, 23, 59),
     dt8: DateTime(2019, 9, 1, 23, 59),
     dt9: DateTime(2014, 11, 1, 23, 59),
-    dt10: DateTime(2009, 11, 1, 22, 59),  // TODO daylight savings
+    dt10: DateTime(2009, 11, 1, 22, 59), // TODO daylight savings
     dt11: DateTime(2008, 1, 1, 23, 59),
     dt12: DateTime(2012, 1, 1, 23, 59),
   },
@@ -190,13 +192,15 @@ void main() async {
   // Exp 8 - Monthly 3rd TH, repeat rate = 1, time = 9pm
   // Exp 9 - Monthly 5th MF, repeat rate = 4, time = 1010pm
   // Exp 10 - Monthly 1st all, repeat rate = 2, time = 1159pm
-  final fixedExperiments = loadExperiments('test/data/fixed_schedule_test_data.json');
+  final fixedExperiments =
+      loadExperiments('test/data/fixed_schedule_test_data.json');
   final storageImpl = FlutterFileStorage(ESMSignalStorage.filename);
 
   for (var e in fixedExperiments) {
     for (var dt in testDateTimes) {
       test('Fixed ${e.title}: ${dt.toIso8601String()}', () async {
-        final nextAlarm = (await getNextAlarmTimesOrdered(storageImpl, [e], now: dt)).first;
+        final nextAlarm =
+            (await getNextAlarmTimesOrdered(storageImpl, [e], now: dt)).first;
         expect(nextAlarm.time, equals(expected[e.title][dt]));
       });
     }

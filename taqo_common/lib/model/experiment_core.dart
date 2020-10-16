@@ -25,9 +25,8 @@ class ExperimentCore {
 //      this.id, this.informedConsentForm, this.recordPhoneDetails,
 //      this.extraDataCollectionDeclarations, this.deleted);
 
-  factory ExperimentCore.fromJson(Map<String, dynamic> json) => _$ExperimentCoreFromJson(json);
+  factory ExperimentCore.fromJson(Map<String, dynamic> json) =>
+      _$ExperimentCoreFromJson(json);
 
   Map<String, dynamic> toJson() => _$ExperimentCoreToJson(this);
-
-
 }

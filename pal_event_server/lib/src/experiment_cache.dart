@@ -32,7 +32,8 @@ class ExperimentCache {
   Future<void> _init() async {
     _storage = await JoinedExperimentsStorage.get();
     List<Experiment> experiments = await _storage.readJoinedExperiments();
-    Map<int, bool> pausedStatuses = await _storage.loadPausedStatuses(experiments);
+    Map<int, bool> pausedStatuses =
+        await _storage.loadPausedStatuses(experiments);
     for (var experiment in experiments) {
       experiment.paused = pausedStatuses[experiment.id] ?? false;
     }
@@ -48,7 +49,9 @@ class ExperimentCache {
   }
 
   List<Experiment> getJoinedExperiments() {
-    return [for (var experimentId in _joinedExperimentIds) _cache[experimentId]];
+    return [
+      for (var experimentId in _joinedExperimentIds) _cache[experimentId]
+    ];
   }
 
   Future<Experiment> getExperimentById(int experimentId) async {
@@ -59,7 +62,8 @@ class ExperimentCache {
       experiment = await _storage.getExperimentById(experimentId);
     }
     if (experiment == null) {
-      _logger.warning('Cannot find experiment $experimentId in the database...');
+      _logger
+          .warning('Cannot find experiment $experimentId in the database...');
     } else {
       _cache[experimentId] = experiment;
     }

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:logging/logging.dart';
 import 'package:pal_event_server/src/experiment_service_local.dart';
 import 'package:pal_event_server/src/sqlite_database/sqlite_database.dart';
@@ -19,8 +17,8 @@ void main() async {
   print('Server PAL starting...');
   LocalFileStorageFactory.initialize((fileName) => DartFileStorage(fileName),
       await DartFileStorage.getLocalStorageDir());
-  await LoggingService.initialize(logFilePrefix: 'server-',
-      outputsToStdout: true);
+  await LoggingService.initialize(
+      logFilePrefix: 'server-', outputsToStdout: true);
   _logger.info('Logging service is ready');
   DatabaseFactory.initialize(() => SqliteDatabase.get());
   ExperimentServiceLiteFactory.initialize(ExperimentServiceLocal.getInstance);

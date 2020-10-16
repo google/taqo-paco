@@ -33,7 +33,8 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
   }
 
   @override
-  void start(List<ExperimentLoggerInfo> toLog, List<ExperimentLoggerInfo> toTrigger) async {
+  void start(List<ExperimentLoggerInfo> toLog,
+      List<ExperimentLoggerInfo> toTrigger) async {
     if (active || (toLog.isEmpty && toTrigger.isEmpty)) {
       return;
     }
@@ -48,7 +49,8 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
   }
 
   @override
-  void stop(List<ExperimentLoggerInfo> toLog, List<ExperimentLoggerInfo> toTrigger) async {
+  void stop(List<ExperimentLoggerInfo> toLog,
+      List<ExperimentLoggerInfo> toTrigger) async {
     if (!active) {
       return;
     }
@@ -72,7 +74,8 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
     // Handle triggers
     final triggerEvents = <TriggerEvent>[];
     for (final e in pacoEvents) {
-      triggerEvents.add(createEventTriggers(cliStartCue, e.responses[cmdRawKey]));
+      triggerEvents
+          .add(createEventTriggers(cliStartCue, e.responses[cmdRawKey]));
     }
     broadcastEventsForTriggers(triggerEvents);
 
@@ -110,7 +113,8 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
   Future<List<Event>> _readLoggedCommands() async {
     final events = <Event>[];
     try {
-      final file = await File('${DartFileStorage.getLocalStorageDir().path}/command.log');
+      final file = await File(
+          '${DartFileStorage.getLocalStorageDir().path}/command.log');
       if (await file.exists()) {
         final lines = await file.readAsLines();
         // TODO race condition here
@@ -121,8 +125,8 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
             final response = jsonDecode(line);
             // skip the no-op command
             if (response['cmd_raw'] == ":") continue;
-            events.addAll(await createLoggerPacoEvents(response, experimentsBeingLogged,
-                createCmdUsagePacoEvent, cliGroupType));
+            events.addAll(await createLoggerPacoEvents(response,
+                experimentsBeingLogged, createCmdUsagePacoEvent, cliGroupType));
           } catch (e) {
             _logger.warning('Error parsing command line: $rawLine: $e');
           }

@@ -1,6 +1,5 @@
 import 'dart:collection';
 
-import 'package:intl/intl.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import 'action_trigger.dart';
@@ -25,7 +24,6 @@ enum GroupTypeEnum {
 
 @JsonSerializable()
 class ExperimentGroup {
-
   static const MAX_DURATION_DAYS_FOR_LARGE_DATA_LOGGERS = 14;
 
   String name;
@@ -63,15 +61,15 @@ class ExperimentGroup {
   bool logNotificationEvents = false;
 
   ExperimentGroup() {
-    actionTriggers = new List<ActionTrigger>();
-    inputs = new List<Input2>();
+    actionTriggers = List<ActionTrigger>();
+    inputs = List<Input2>();
     feedbackType = Feedback.FEEDBACK_TYPE_STATIC_MESSAGE;
   }
 
-  factory ExperimentGroup.fromJson(Map<String, dynamic> json) => _$ExperimentGroupFromJson(json);
+  factory ExperimentGroup.fromJson(Map<String, dynamic> json) =>
+      _$ExperimentGroupFromJson(json);
 
   Map<String, dynamic> toJson() => _$ExperimentGroupToJson(this);
-
 
 //  factory ExperimentGroup newWithName(String name) {
 //    this();
@@ -94,13 +92,12 @@ class ExperimentGroup {
 
   ActionTrigger getActionTriggerById(int actionTriggerId) {
     for (ActionTrigger at in actionTriggers) {
-      if (at.id ==actionTriggerId) {
+      if (at.id == actionTriggerId) {
         return at;
       }
     }
     return null;
   }
-
 
   void setInputs(List<Input2> inputs) {
     this.inputs = inputs;
@@ -118,37 +115,51 @@ class ExperimentGroup {
     validateActionTriggers(validator);
 
     validator.isNotNull(backgroundListen, "backgroundListen not initialized");
-    validator.isNotNull(accessibilityListen, "accessibilityListen not initialized");
+    validator.isNotNull(
+        accessibilityListen, "accessibilityListen not initialized");
     validator.isNotNull(logActions, "logActions not initialized");
-    validator.isNotNull(logNotificationEvents, "logNotificationEvents not initialized");
+    validator.isNotNull(
+        logNotificationEvents, "logNotificationEvents not initialized");
     validator.isNotNull(logShutdown, "logShutdown not initialized");
     if (backgroundListen != null && backgroundListen) {
       validator.isNonEmptyString(backgroundListenSourceIdentifier,
           "background listening requires a source identifier");
     }
-    validator.isNotNull(customRendering, "customRendering not initialized properly");
+    validator.isNotNull(
+        customRendering, "customRendering not initialized properly");
     if (customRendering != null && customRendering) {
-      validator.isValidJavascript(customRenderingCode, "custom rendering code is not properly formed");
+      validator.isValidJavascript(
+          customRenderingCode, "custom rendering code is not properly formed");
     }
-    validator.isNotNull(fixedDuration, "fixed duration not properly initialized");
+    validator.isNotNull(
+        fixedDuration, "fixed duration not properly initialized");
     if (fixedDuration != null && fixedDuration) {
-      validator.isValidDateString(startDate, "start date must be a valid string");
+      validator.isValidDateString(
+          startDate, "start date must be a valid string");
       validator.isValidDateString(endDate, "end date must be a valid string");
     }
-    if (isPresentAndTrue(logActions) || isPresentAndTrue(accessibilityListen) || isPresentAndTrue(logNotificationEvents)) {
-      if (fixedDuration == null || !fixedDuration || !isDurationLessThanTwoWeeks()) {
-        validator.addError("logActions, logAccessibilityEvents and logNotificationEvents are only "
-            + "allowed on Fixed Duration experiments that run less than 2 weeks due to large data volumes.");
+    if (isPresentAndTrue(logActions) ||
+        isPresentAndTrue(accessibilityListen) ||
+        isPresentAndTrue(logNotificationEvents)) {
+      if (fixedDuration == null ||
+          !fixedDuration ||
+          !isDurationLessThanTwoWeeks()) {
+        validator.addError(
+            "logActions, logAccessibilityEvents and logNotificationEvents are only " +
+                "allowed on Fixed Duration experiments that run less than 2 weeks due to large data volumes.");
       }
     }
-    validator.isNotNull(feedbackType, "feedbacktype is not properly initialized");
+    validator.isNotNull(
+        feedbackType, "feedbacktype is not properly initialized");
     validator.isNotNull(feedback, "feedback is not properly initialized");
 
     validateInputs(validator);
 
-    validator.isNotNull(endOfDayGroup, "endOfDayGroup is not properly initialized");
+    validator.isNotNull(
+        endOfDayGroup, "endOfDayGroup is not properly initialized");
     if (endOfDayGroup != null && endOfDayGroup) {
-      validator.isNonEmptyString(endOfDayReferredGroupName, "endOfDayGroups need to specify the name of the group to which they refer");
+      validator.isNonEmptyString(endOfDayReferredGroupName,
+          "endOfDayGroups need to specify the name of the group to which they refer");
     }
     feedback.validateWith(validator);
   }
@@ -168,7 +179,7 @@ class ExperimentGroup {
         return true;
       }
     } catch (e) {
-    // fall through to return false
+      // fall through to return false
     }
     return false;
   }
@@ -214,7 +225,8 @@ class ExperimentGroup {
   }
 
   DateTime toMidnight(startDateCandidate) {
-    return DateTime(startDateCandidate.year, startDateCandidate.month, startDateCandidate.day);
+    return DateTime(startDateCandidate.year, startDateCandidate.month,
+        startDateCandidate.day);
   }
 
   bool isPresentAndTrue(bool fieldToValidate) {
@@ -224,13 +236,15 @@ class ExperimentGroup {
   void validateInputs(Validator validator) {
 //    System.out.println("VALIDATING INPUTS");
     validator.isNotNullCollection(inputs, "inputs not properly initialized");
-    Set<String> inputNames = new HashSet();
+    Set<String> inputNames = HashSet();
     if (inputs == null) {
       return;
     }
     for (Input2 input in inputs) {
       if (!inputNames.add(input.name)) {
-        validator.addError("Input name: " + input.name + " is duplicate. All input names within a group must be unique");
+        validator.addError("Input name: " +
+            input.name +
+            " is duplicate. All input names within a group must be unique");
       }
       input.validateWith(validator);
     }
@@ -238,13 +252,16 @@ class ExperimentGroup {
 
   void validateActionTriggers(Validator validator) {
 //    System.out.println("VALIDATING ACTION TRIGGERS");
-    validator.isNotNullCollection(actionTriggers, "action triggers not properly initialized");
-    Set<int> ids = new HashSet();
-    if (actionTriggers  != null) {
+    validator.isNotNullCollection(
+        actionTriggers, "action triggers not properly initialized");
+    Set<int> ids = HashSet();
+    if (actionTriggers != null) {
       for (ActionTrigger actionTrigger in actionTriggers) {
         actionTrigger.validateWith(validator);
         if (!ids.add(actionTrigger.id)) {
-          validator.addError("action trigger id: " + actionTrigger.id.toString() + " is not unique. Ids must be unique and stable across edits.");
+          validator.addError("action trigger id: " +
+              actionTrigger.id.toString() +
+              " is not unique. Ids must be unique and stable across edits.");
         }
       }
     }

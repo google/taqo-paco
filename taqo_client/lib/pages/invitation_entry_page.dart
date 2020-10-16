@@ -12,7 +12,6 @@ class InvitationEntryPage extends StatefulWidget {
   _InvitationEntryPageState createState() => _InvitationEntryPageState();
 }
 
-
 class _InvitationEntryPageState extends State<InvitationEntryPage> {
   static const _titleText = 'Invitation Code Entry';
   static const _preambleText =
@@ -77,9 +76,7 @@ class _InvitationEntryPageState extends State<InvitationEntryPage> {
     return Text(
       _promptText,
       softWrap: true,
-      style: TextStyle(
-        fontWeight: FontWeight.bold,
-        fontSize: 16.0),
+      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
     );
   }
 
@@ -100,14 +97,16 @@ class _InvitationEntryPageState extends State<InvitationEntryPage> {
     if (!response.isSuccess) {
       _alertLog(response.statusMsg);
     } else {
-      var experiment = await service.getPubExperimentFromServerById(response.experimentId);
+      var experiment =
+          await service.getPubExperimentFromServerById(response.experimentId);
       if (experiment != null) {
         experiment.participantId = response.participantId;
         experiment.anonymousPublic = true;
-        Navigator.pushReplacementNamed(
-            context, ExperimentDetailPage.routeName, arguments: experiment);
+        Navigator.pushReplacementNamed(context, ExperimentDetailPage.routeName,
+            arguments: experiment);
       } else {
-        _alertLog("Error fetching experiment with id: ${response.experimentId}, participant: ${response.participantId}");
+        _alertLog(
+            "Error fetching experiment with id: ${response.experimentId}, participant: ${response.participantId}");
       }
     }
   }

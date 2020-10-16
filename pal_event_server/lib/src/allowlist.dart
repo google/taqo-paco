@@ -7,41 +7,55 @@ class AllowlistRule {
 
   AllowlistRule(this._test);
 
-  bool matches(String appName, String appsUsedRaw, String appContent, String appUrl) =>
+  bool matches(String appName, String appsUsedRaw, String appContent,
+          String appUrl) =>
       _test(appName, appsUsedRaw, appContent, appUrl);
 }
 
 class Allowlist {
   final _rules = <AllowlistRule>[
-    AllowlistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
-      return appUrl != null ? matchesHost(Uri.dataFromString(appUrl), 'flutter.io') : false;
-    }),
-    AllowlistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
+    AllowlistRule(
+        (String appName, String appsUsedRaw, String appContent, String appUrl) {
       return appUrl != null
-          ? matchesHostAndPath(Uri.dataFromString(appUrl), 'github.com', '^/flutter*')
+          ? matchesHost(Uri.dataFromString(appUrl), 'flutter.io')
           : false;
     }),
-    AllowlistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
-      return appUrl != null ? matchesHost(Uri.dataFromString(appUrl), 'stackoverflow.com') : false;
+    AllowlistRule(
+        (String appName, String appsUsedRaw, String appContent, String appUrl) {
+      return appUrl != null
+          ? matchesHostAndPath(
+              Uri.dataFromString(appUrl), 'github.com', '^/flutter*')
+          : false;
     }),
-    AllowlistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
+    AllowlistRule(
+        (String appName, String appsUsedRaw, String appContent, String appUrl) {
+      return appUrl != null
+          ? matchesHost(Uri.dataFromString(appUrl), 'stackoverflow.com')
+          : false;
+    }),
+    AllowlistRule(
+        (String appName, String appsUsedRaw, String appContent, String appUrl) {
       return appUrl != null
           ? matchesHostAndPort(Uri.dataFromString(appUrl), '127.0.0.1', 8100) &&
               matches(appContent, '^Dart VM Observatory')
           : false;
     }),
-    AllowlistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
-      return appUrl != null
-          ? matchesHostAndPath(Uri.dataFromString(appUrl), 'gitter.im', '/flutter/flutter')
-          : false;
-    }),
-    AllowlistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
+    AllowlistRule(
+        (String appName, String appsUsedRaw, String appContent, String appUrl) {
       return appUrl != null
           ? matchesHostAndPath(
-              Uri.dataFromString(appUrl), 'google.com', '^/search?.*&q=.*flutter.*')
+              Uri.dataFromString(appUrl), 'gitter.im', '/flutter/flutter')
           : false;
     }),
-    AllowlistRule((String appName, String appsUsedRaw, String appContent, String appUrl) {
+    AllowlistRule(
+        (String appName, String appsUsedRaw, String appContent, String appUrl) {
+      return appUrl != null
+          ? matchesHostAndPath(Uri.dataFromString(appUrl), 'google.com',
+              '^/search?.*&q=.*flutter.*')
+          : false;
+    }),
+    AllowlistRule(
+        (String appName, String appsUsedRaw, String appContent, String appUrl) {
       return matches(appContent, '.*flutter.*');
     })
   ];
@@ -49,7 +63,8 @@ class Allowlist {
   List<String> _hideAllButAppName(String appName) =>
       <String>[appName, '$appName❣hidden', 'hidden', 'hidden'];
 
-  List<String> _filterData(String appName, String appsUsedRaw, String appContent, String appUrl) {
+  List<String> _filterData(
+      String appName, String appsUsedRaw, String appContent, String appUrl) {
     for (var rule in _rules) {
       if (rule.matches(appName, appsUsedRaw, appContent, appUrl)) {
         return <String>[appName, appsUsedRaw, appContent, appUrl];
@@ -92,10 +107,14 @@ class Allowlist {
 
         final data = _filterData(appName, appsUsedRaw, appContent, appUrl);
 
-        responsesAllowlisted.add(<String, dynamic>{'name': 'apps_used', 'answer': data[0]});
-        responsesAllowlisted.add(<String, dynamic>{'name': 'apps_used_raw', 'answer': data[1]});
-        responsesAllowlisted.add(<String, dynamic>{'name': 'app_content', 'answer': data[2]});
-        responsesAllowlisted.add(<String, dynamic>{'name': 'url', 'answer': data[3]});
+        responsesAllowlisted
+            .add(<String, dynamic>{'name': 'apps_used', 'answer': data[0]});
+        responsesAllowlisted
+            .add(<String, dynamic>{'name': 'apps_used_raw', 'answer': data[1]});
+        responsesAllowlisted
+            .add(<String, dynamic>{'name': 'app_content', 'answer': data[2]});
+        responsesAllowlisted
+            .add(<String, dynamic>{'name': 'url', 'answer': data[3]});
 
         event['responses'] = responsesAllowlisted;
         results.add(event);

@@ -8,10 +8,8 @@ import 'validator.dart';
 
 part 'schedule_trigger.g.dart';
 
-
 @JsonSerializable()
 class ScheduleTrigger extends ActionTrigger implements Validatable {
-
   List<Schedule> schedules;
 
   ScheduleTrigger() {
@@ -28,14 +26,16 @@ class ScheduleTrigger extends ActionTrigger implements Validatable {
     }
   }
 
-  factory ScheduleTrigger.fromJson(Map<String, dynamic> json) => _$ScheduleTriggerFromJson(json);
+  factory ScheduleTrigger.fromJson(Map<String, dynamic> json) =>
+      _$ScheduleTriggerFromJson(json);
 
   Map<String, dynamic> toJson() => _$ScheduleTriggerToJson(this);
-  
+
   void validateWith(Validator validator) {
     super.validateWith(validator);
 //    System.out.println("VALIDATING SCHEDULETRIGGER");
-    validator.isNotNullAndNonEmptyCollection(schedules, "ScheduleTrigger needs at least one schedule");
+    validator.isNotNullAndNonEmptyCollection(
+        schedules, "ScheduleTrigger needs at least one schedule");
     for (Schedule schedule in schedules) {
       schedule.validateWith(validator);
     }

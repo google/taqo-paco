@@ -11,10 +11,7 @@ class SurveyPickerPage extends StatefulWidget {
 
   final Experiment experiment;
 
-  SurveyPickerPage({
-    Key key,
-    @required this.experiment
-  }) : super(key: key);
+  SurveyPickerPage({Key key, @required this.experiment}) : super(key: key);
 
   @override
   _SurveyPickerPageState createState() => _SurveyPickerPageState();
@@ -77,9 +74,14 @@ class _SurveyPickerPageState extends State<SurveyPickerPage> {
     List<Widget> widgets = [];
     for (var survey in experiment.getActiveSurveys()) {
       var rowChildren = <Widget>[
-        if (_active.contains(survey.name)) Padding(padding: EdgeInsets.all(4),
-          child: Icon(Icons.notifications_active, color: Colors.redAccent,),),
-
+        if (_active.contains(survey.name))
+          Padding(
+            padding: EdgeInsets.all(4),
+            child: Icon(
+              Icons.notifications_active,
+              color: Colors.redAccent,
+            ),
+          ),
         Expanded(
             child: InkWell(
           child: Column(
