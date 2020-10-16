@@ -272,6 +272,7 @@ class SqliteDatabase implements BaseDatabase {
     for (var experiment in experiments) {
       _db.execute(insertOrUpdateJoinedExperimentsCommand, params: [experiment.id, jsonEncode(experiment)]);
     }
+    _db.execute(resetPauseStatusCommand);
     _db.execute(commitCommand);
   }
 
