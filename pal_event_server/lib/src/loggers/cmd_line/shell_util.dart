@@ -53,6 +53,10 @@ Future<bool> enableCmdLineLogging() async {
           "export PROMPT_COMMAND='${existingCommand.trim()};$bashCmd'\n",
           mode: FileMode.append);
     }
+    // Add a no-op command to the history, preventing leaking commands before
+    // the logging starts
+    await bashrc.writeAsString('history -n\nhistory -s :\n',
+        mode: FileMode.append);
     await bashrc.writeAsString('$_endTaqo\n', mode: FileMode.append);
   } on Exception catch (e) {
     _logger.warning(e);
@@ -72,6 +76,9 @@ Future<bool> enableCmdLineLogging() async {
     await zshrc.writeAsString('$_beginTaqo\n', mode: FileMode.append);
     await zshrc.writeAsString("precmd() { eval '${zshCmd}' }\n",
         mode: FileMode.append);
+    // Add a no-op command to the history, preventing leaking commands before
+    // the logging starts
+    await zshrc.writeAsString('print -s :\nfc -A\n', mode: FileMode.append);
     await zshrc.writeAsString('$_endTaqo\n', mode: FileMode.append);
   } on Exception catch (e) {
     _logger.warning(e);

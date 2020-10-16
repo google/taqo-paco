@@ -280,6 +280,7 @@ class SqliteDatabase implements BaseDatabase {
       _db.execute(insertOrUpdateJoinedExperimentsCommand,
           params: [experiment.id, jsonEncode(experiment)]);
     }
+    _db.execute(resetPauseStatusCommand);
     _db.execute(commitCommand);
   }
 
