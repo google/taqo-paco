@@ -13,20 +13,21 @@ const _endTaqo = '# End Taqo';
 
 const _logfileName = 'command.log';
 
-String getBashPromptCmd(String dirPath) {
-  const promptCmd = r'''
-RETURN_VAL=$?;echo "{\"pid\":$$,\"cmd_raw\":\"$(history 1 | sed "s/^[ ]*[0-9]*[ ]*\(\[\([^]]*\)\]\)*[ ]*//")\",\"cmd_ret\":$RETURN_VAL}"''';
-
+String getLogLastCommandFunction(String dirPath) {
   final filePath = path.join(dirPath, _logfileName).replaceAll(r" ", r"\ ");
-  return '${promptCmd} >> ${filePath}';
+  return r'''
+log_last_command () {
+  last_command_number=$(fc -l -1 | awk '{print $1}')
+  if [[ -n "${last_command_number_old}" && \
+        "${last_command_number_old}" != "${last_command_number}" ]]; then
+    RETURN_VAL=$?
+    echo "{\"pid\":$$,\"cmd_raw\":\"$(fc -l -1 | sed "s/^[ ]*[0-9]*[ ]*\(\[\([^]]*\)\]\)*[ ]*//")\",\"cmd_ret\":$RETURN_VAL}"'''
+      ' >> $filePath\n'
+      r'''
+  fi
+  last_command_number_old="$last_command_number"
 }
-
-String getZshPreCmd(String dirPath) {
-  const preCmd = r'''
-RETURN_VAL=$?;echo "{\"pid\":$$,\"cmd_raw\":\"$(history | tail -1 | sed "s/^[ ]*[0-9]*[ ]*//")\",\"cmd_ret\":$RETURN_VAL}"''';
-
-  final filePath = path.join(dirPath, _logfileName).replaceAll(r" ", r"\ ");
-  return '${preCmd} >> ${filePath}';
+''';
 }
 
 Future<bool> enableCmdLineLogging() async {
@@ -36,7 +37,6 @@ Future<bool> enableCmdLineLogging() async {
 
   final existingCommand = Platform.environment['PROMPT_COMMAND'];
   final bashrc = File(path.join(Platform.environment['HOME'], '.bashrc'));
-  final bashCmd = getBashPromptCmd(DartFileStorage.getLocalStorageDir().path);
 
   try {
     // Create it in case the user doesn't have a .bashrc but may use bash anyway
@@ -45,18 +45,17 @@ Future<bool> enableCmdLineLogging() async {
     }
 
     await bashrc.writeAsString('$_beginTaqo\n', mode: FileMode.append);
+    await bashrc.writeAsString(
+        getLogLastCommandFunction(DartFileStorage.getLocalStorageDir().path),
+        mode: FileMode.append);
     if (existingCommand == null) {
-      await bashrc.writeAsString("export PROMPT_COMMAND='$bashCmd'\n",
+      await bashrc.writeAsString("export PROMPT_COMMAND='log_last_command'\n",
           mode: FileMode.append);
     } else {
       await bashrc.writeAsString(
-          "export PROMPT_COMMAND='${existingCommand.trim()};$bashCmd'\n",
+          "export PROMPT_COMMAND='${existingCommand.trim()};log_last_command'\n",
           mode: FileMode.append);
     }
-    // Add a no-op command to the history, preventing leaking commands before
-    // the logging starts
-    await bashrc.writeAsString('history -n\nhistory -s :\n',
-        mode: FileMode.append);
     await bashrc.writeAsString('$_endTaqo\n', mode: FileMode.append);
   } on Exception catch (e) {
     _logger.warning(e);
@@ -64,7 +63,6 @@ Future<bool> enableCmdLineLogging() async {
   }
 
   final zshrc = File(path.join(Platform.environment['HOME'], '.zshrc'));
-  final zshCmd = getZshPreCmd(DartFileStorage.getLocalStorageDir().path);
 
   try {
     // Create it in case the user doesn't have a .zshrc but may use zsh anyway
@@ -72,13 +70,12 @@ Future<bool> enableCmdLineLogging() async {
       await zshrc.create();
     }
 
-    // TODO Could we check for an existing function definition?
     await zshrc.writeAsString('$_beginTaqo\n', mode: FileMode.append);
-    await zshrc.writeAsString("precmd() { eval '${zshCmd}' }\n",
+    await zshrc.writeAsString(
+        getLogLastCommandFunction(DartFileStorage.getLocalStorageDir().path),
         mode: FileMode.append);
-    // Add a no-op command to the history, preventing leaking commands before
-    // the logging starts
-    await zshrc.writeAsString('print -s :\nfc -A\n', mode: FileMode.append);
+    await zshrc.writeAsString("precmd_functions+=(log_last_command)\n",
+        mode: FileMode.append);
     await zshrc.writeAsString('$_endTaqo\n', mode: FileMode.append);
   } on Exception catch (e) {
     _logger.warning(e);
