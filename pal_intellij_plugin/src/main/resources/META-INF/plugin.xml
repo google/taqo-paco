@@ -1,0 +1,39 @@
+<idea-plugin>
+    <id>com.pacoapp.pal_intellij_plugin</id>
+    <name>PAL Dev Logger</name>
+    <vendor email="bobevans@google.com" url="https://github.com/google/paco">Paco Developers</vendor>
+
+    <description><![CDATA[
+    This is the PAL activity logger for intellij.<br>
+    ]]></description>
+
+    <!-- please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <!--
+    <depends>com.intellij.modules.platform</depends>
+    -->
+    <depends>com.intellij.modules.java</depends>
+    <depends>io.flutter</depends>
+    <depends>Dart</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <stepsBeforeRunProvider implementation="com.pacoapp.intellij.launch.PacoBeforeRunTaskProvider"></stepsBeforeRunProvider>
+    </extensions>
+
+    <application-components>
+        <component>
+            <implementation-class>com.pacoapp.intellij.PacoApplicationComponent</implementation-class>
+        </component>
+    </application-components>
+
+    <project-components>
+        <component>
+            <implementation-class>com.pacoapp.intellij.PacoProjectComponent</implementation-class>
+        </component>
+    </project-components>
+
+
+    <actions>
+        <!-- Add your actions here -->
+    </actions>
+</idea-plugin>

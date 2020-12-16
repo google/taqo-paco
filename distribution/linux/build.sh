@@ -33,14 +33,8 @@ popd || exit
   -o "${OUT_DIR}/taqo_server" \
   pal_event_server/lib/main.dart
 
-# Copy IntelliJ plugins
-mkdir -p /tmp/pal_intellij_plugin/classes
-cp -R pal_intellij_plugin/libs/lib /tmp/pal_intellij_plugin/
-cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/com /tmp/pal_intellij_plugin/classes/
-cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/META-INF /tmp/pal_intellij_plugin/classes/
-cp -R pal_intellij_plugin/out/production/pal_intellij_plugin/META-INF /tmp/pal_intellij_plugin/
-
-ZIPFILE=${OUT_DIR}/pal_intellij_plugin.zip
-pushd /tmp || exit
-zip -r "${ZIPFILE}" pal_intellij_plugin/
+# Build IntelliJ Plugin
+pushd pal_intellij_plugin || exit
+./gradlew copyPlugin
+cp "build/distributions/pal_intellij_plugin.zip" "$OUT_DIR/"
 popd || exit
