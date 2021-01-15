@@ -1,0 +1,35 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij' version '0.5.0'
+}
+
+group 'com.pacoapp'
+version '1.2'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    implementation fileTree(dir: "$project.rootDir/lib",
+            includes: ["*.jar"])
+}
+
+// See https://github.com/JetBrains/gradle-intellij-plugin/
+intellij {
+    version '2020.1.4'
+    plugins = ["java", "Dart:$dartPluginVersion", "io.flutter:$flutterPluginVersion"]
+}
+
+patchPluginXml {
+    changeNotes """
+      Add change notes here.<br>
+      <em>most HTML tags may be used</em>"""
+}
+
+task copyPlugin(type: Copy) {
+    from buildPlugin
+    into "$buildDir/distributions"
+    rename { String filenName -> 'pal_intellij_plugin.zip'}
+}
