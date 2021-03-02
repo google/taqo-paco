@@ -19,7 +19,7 @@ dependencies:
   pedantic: ^1.9.0
   sembast: ^2.3.0
   sqlite3:
-    path: ../sqlite_ffi
+    path: ../third_party/sqlite_ffi
 
   taqo_common:
     path: ../taqo_common

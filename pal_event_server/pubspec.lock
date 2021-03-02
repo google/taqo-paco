@@ -186,7 +186,7 @@ packages:
   sqlite3:
     dependency: "direct main"
     description:
-      path: "../sqlite_ffi"
+      path: "../third_party/sqlite_ffi"
       relative: true
     source: path
     version: "0.0.1"
