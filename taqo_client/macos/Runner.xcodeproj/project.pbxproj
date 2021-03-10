@@ -55,7 +55,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 33CC10E52044A3C60003C045 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = C368E82524AA4BC300A99358;
+			remoteGlobalIDString = C382190F24AD1D1500891B3C;
 			remoteInfo = alerter;
 		};
 /* End PBXContainerItemProxy section */
@@ -146,13 +146,10 @@
 		C382190824ABF71B00891B3C /* taqo_daemon */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = taqo_daemon; sourceTree = "<group>"; };
 		C382191024AD1D1500891B3C /* alerter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = alerter; sourceTree = BUILT_PRODUCTS_DIR; };
 		C382191824AD1D4700891B3C /* Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Prefix.pch; sourceTree = "<group>"; };
-		C382191924AD1D4700891B3C /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		C382191A24AD1D4700891B3C /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C382191B24AD1D4700891B3C /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		C382191C24AD1D4700891B3C /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		C382191D24AD1D4700891B3C /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		C382191E24AD1D4700891B3C /* CODE_OF_CONDUCT.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = CODE_OF_CONDUCT.md; sourceTree = "<group>"; };
-		C382191F24AD1D4700891B3C /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		C398031E24A3AB760015501A /* deepbark_trial.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; name = deepbark_trial.m4a; path = ../../ios/Runner/deepbark_trial.m4a; sourceTree = "<group>"; };
 		D73912EF22F37F9E000D13A0 /* App.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = App.framework; path = Flutter/ephemeral/App.framework; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -286,14 +283,12 @@
 			children = (
 				C382191B24AD1D4700891B3C /* AppDelegate.h */,
 				C382191C24AD1D4700891B3C /* AppDelegate.m */,
-				C382191E24AD1D4700891B3C /* CODE_OF_CONDUCT.md */,
 				C382191A24AD1D4700891B3C /* Info.plist */,
-				C382191924AD1D4700891B3C /* LICENSE */,
 				C382191D24AD1D4700891B3C /* main.m */,
 				C382191824AD1D4700891B3C /* Prefix.pch */,
-				C382191F24AD1D4700891B3C /* README.md */,
 			);
-			path = alerter;
+			name = alerter;
+			path = ../../third_party/alerter/alerter;
 			sourceTree = "<group>";
 		};
 		D73912EC22F37F3D000D13A0 /* Frameworks */ = {
@@ -558,7 +553,7 @@
 		};
 		C368E83924AA4E3C00A99358 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = C368E82524AA4BC300A99358 /* alerter */;
+			target = C382190F24AD1D1500891B3C /* alerter */;
 			targetProxy = C368E83824AA4E3C00A99358 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
