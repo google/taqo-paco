@@ -70,6 +70,7 @@ Future<bool> enableCmdLineLogging() async {
           "export PROMPT_COMMAND='${existingCommand.trim()};log_last_command'\n",
           mode: FileMode.append);
     }
+    await bashrc.writeAsString('export PS1="🔴\$PS1"\n', mode: FileMode.append);
     await bashrc.writeAsString('$_endTaqo\n', mode: FileMode.append);
   } on Exception catch (e) {
     _logger.warning(e);
@@ -89,6 +90,8 @@ Future<bool> enableCmdLineLogging() async {
         getLogLastCommandFunction(DartFileStorage.getLocalStorageDir().path),
         mode: FileMode.append);
     await zshrc.writeAsString("precmd_functions+=(log_last_command)\n",
+        mode: FileMode.append);
+    await zshrc.writeAsString('export PROMPT="🔴\$PROMPT"\n',
         mode: FileMode.append);
     await zshrc.writeAsString('$_endTaqo\n', mode: FileMode.append);
   } on Exception catch (e) {
