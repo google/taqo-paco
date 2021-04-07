@@ -25,7 +25,7 @@ public class HardwiredExperimentCreator {
             "\"deleted\":false," +
             "\"modifyDate\":\"2018/02/21\"," +
             "\"published\":true," +
-            "\"admins\":[\"bobevans@google.com\",\"rbe10001@gmail.com\",\"taodong@google.com\",\"mdgilbert@google.com\",\"echurchill@google.com\"]," +
+            "\"admins\":[\"bobevans@google.com\"]," +
             "\"publishedUsers\":[]," +
             "\"version\":11," +
             "\"groups\":[{\"name\":\"Survey\"," +
