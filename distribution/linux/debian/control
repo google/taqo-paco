@@ -1,7 +1,7 @@
 Source: taqosurvey
 Section: devel
 Priority: optional
-Maintainer: Bob Evans <bobevans@google.com>
+Maintainer: Paco Maintainers <support@pacoapp.com>
 Build-Depends: jq, chrpath
 Standards-Version: 4.5.0
 Homepage: https://pacoapp.com/
