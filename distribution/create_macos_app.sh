@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#
-# Build taqo and taqo_daemon binaries
-
 if [[ -z "${FLUTTER_SDK}" ]]; then
   FLUTTER_SDK="$(flutter --version --machine | jq -r '.flutterRoot')"
 fi
@@ -24,36 +21,35 @@ if [[ -z "${DART_SDK}" ]]; then
   DART_SDK="${FLUTTER_SDK}/bin/cache/dart-sdk"
 fi
 
-if [[ -z "$1" ]]; then
-  TAQO_ROOT="$(pwd)"
-else
-  TAQO_ROOT="$1"
-fi
+DISTRIBUTION_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+TAQO_ROOT="$(dirname -- "${DISTRIBUTION_DIR}")"
+
+BUILD="${TAQO_ROOT}/taqo_client/build/macos"
+#DEBUG="${BUILD}/Build/Products/Debug"
+RELEASE="${BUILD}/Build/Products/Release"
+
+"${TAQO_ROOT}/resolve_deps.sh"
+
+mkdir -p "${RELEASE}"
+
 cd -- "${TAQO_ROOT}" || exit
-OUT_DIR="${TAQO_ROOT}/taqo_client/build/linux/release/bundle"
 
-# Build flutter app
-pushd taqo_client || exit
-"${FLUTTER_SDK}"/bin/flutter clean && "${FLUTTER_SDK}"/bin/flutter build linux
-
-# Workaround to remove rpath from shared libs.
-# See https://github.com/flutter/flutter/issues/65400
-pushd build/linux/release/bundle/lib || exit
-for sofile in lib*_plugin.so
-do
-  chrpath -d "${sofile}"
-done
-popd || exit
-
-popd || exit
-
-# Build PAL event server / linux daemon
+# Build PAL event server / macos daemon
 "${DART_SDK}"/bin/dart2native -p pal_event_server/.packages \
-  -o "${OUT_DIR}/taqo_server" \
+  -o "${RELEASE}"/taqo_daemon \
   pal_event_server/lib/main.dart
+
+# cp daemon to Flutter asset
+cp "${RELEASE}"/taqo_daemon taqo_client/macos/TaqoLauncher/taqo_daemon
 
 # Build IntelliJ Plugin
 pushd pal_intellij_plugin || exit
 ./gradlew copyPlugin
-cp "build/distributions/pal_intellij_plugin.zip" "$OUT_DIR/"
+cp "build/distributions/pal_intellij_plugin.zip" "../taqo_client/assets/"
 popd || exit
+
+# Build flutter app
+pushd taqo_client || exit
+"${FLUTTER_SDK}"/bin/flutter build macos
+popd || exit
+
