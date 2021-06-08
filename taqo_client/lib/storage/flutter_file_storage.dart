@@ -16,12 +16,16 @@ import 'dart:io';
 
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_common/storage/local_file_storage.dart';
 
 class FlutterFileStorage implements ILocalFileStorage {
   final _localFileName;
 
   static Future<Directory> getLocalStorageDir() async {
+    if (Platform.isMacOS) {
+      return DartFileStorage.getLocalStorageDir();
+    }
     try {
       return await getApplicationSupportDirectory();
     } catch (e) {

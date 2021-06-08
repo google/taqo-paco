@@ -18,8 +18,10 @@ import 'package:archive/archive.dart';
 import 'package:archive/archive_io.dart';
 import 'package:path/path.dart' as path;
 
+import 'package:taqo_common/storage/dart_file_storage.dart';
+
 const intelliJAssetPath =
-    '/Applications/taqo_client.app/Contents/Frameworks/App.framework/Resources/flutter_assets/assets/pal_intellij_plugin.zip';
+    '/Applications/Taqo.app/Contents/Frameworks/App.framework/Resources/flutter_assets/assets/pal_intellij_plugin.zip';
 
 void extractIntelliJPlugin(String directory) async {
   final zipFile = await File(intelliJAssetPath).readAsBytes();
@@ -42,7 +44,7 @@ void extractIntelliJPlugin(String directory) async {
 void enableAndroidStudio() async {
   final idePath = RegExp(r'AndroidStudio\d+\.\d+');
   final homeDir = Directory(path.join(
-      Platform.environment['HOME'], 'Library', 'Application Support'));
+      DartFileStorage.getHomePath(), 'Library', 'Application Support'));
 
   await for (var dir in homeDir.list()) {
     final baseDir = path.basename(dir.path);
@@ -55,7 +57,7 @@ void enableAndroidStudio() async {
 
 void enableIntelliJ() async {
   final idePath = RegExp(r'IdeaIC\d{4}\.\d+');
-  final jetbrainsDir = Directory(path.join(Platform.environment['HOME'],
+  final jetbrainsDir = Directory(path.join(DartFileStorage.getHomePath(),
       'Library', 'Application Support', 'JetBrains'));
 
   if (!(await jetbrainsDir.exists())) {
@@ -79,7 +81,7 @@ void enableIntelliJPlugin() async {
 void disableAndroidStudio() async {
   final idePath = RegExp(r'AndroidStudio\d+\.\d+');
   final homeDir = Directory(path.join(
-      Platform.environment['HOME'], 'Library', 'Application Support'));
+      DartFileStorage.getHomePath(), 'Library', 'Application Support'));
 
   await for (var dir in homeDir.list()) {
     final baseDir = path.basename(dir.path);
@@ -95,7 +97,7 @@ void disableAndroidStudio() async {
 
 void disableIntelliJ() async {
   final idePath = RegExp(r'IdeaIC\d{4}\.\d+');
-  final jetbrainsDir = Directory(path.join(Platform.environment['HOME'],
+  final jetbrainsDir = Directory(path.join(DartFileStorage.getHomePath(),
       'Library', 'Application Support', 'JetBrains'));
 
   await for (var dir in jetbrainsDir.list()) {
