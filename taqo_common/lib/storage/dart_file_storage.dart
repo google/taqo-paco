@@ -22,11 +22,13 @@ class DartFileStorage implements ILocalFileStorage {
   final _localFileName;
 
   static String getHomePath() {
-    if (Platform.isMacOS) {
-      return '${Platform.environment['HOME']}/../../../..';
-    } else {
-      return '${Platform.environment['HOME']}';
-    }
+//    if (Platform.isMacOS) {
+//      return '${Platform.environment['HOME']}/../../../..';
+//    } else {
+//      return '${Platform.environment['HOME']}';
+//    }
+    return '${Platform.environment['HOME']}';
+
   }
 
   // These should match whatever Flutter path_provider returns
