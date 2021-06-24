@@ -40,7 +40,7 @@ class DartFileStorage implements ILocalFileStorage {
     } else if (Platform.isMacOS) {
       // Process.run("logger", ['${Platform.environment['HOME']}']);
       return Directory(
-          '${getHomePath()}/Library/Group Containers/com.taqo/Library/Application Support/com.taqo')
+          '${getHomePath()}/Library/Application Support/com.taqo')
         ..createSync(recursive: true);
     }
 

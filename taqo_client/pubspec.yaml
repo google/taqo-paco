@@ -44,7 +44,7 @@ dependencies:
   flutter_html: ^0.11.0
   flutter_local_notifications: ^1.5.0-beta.1
   numberpicker: ^1.0.0
-  cached_network_image: ^2.0.0
+  cached_network_image: ^2.4.1
   provider: ^3.2.0
   path_provider: ^1.6.10
   path_provider_macos: '>=0.0.4 <2.0.0'
