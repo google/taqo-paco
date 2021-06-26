@@ -39,7 +39,7 @@ void openSurvey(int id) {
     });
   } else if (Platform.isMacOS) {
     // Note: this will only work if Taqo is installed in /Applications
-    Process.start('open', ['/Applications/taqo_client.app'])
+    Process.start('open', ['/Applications/Taqo.app'])
         .then((Process process) {
       //stdout.addStream(process.stdout);
       //stderr.addStream(process.stderr);

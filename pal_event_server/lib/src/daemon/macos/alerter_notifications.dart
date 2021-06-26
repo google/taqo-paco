@@ -20,7 +20,7 @@ import 'package:logging/logging.dart';
 
 import '../daemon.dart' as daemon;
 
-const _alerterBinary = '/Applications/taqo_client.app/Contents/MacOS/alerter';
+const _alerterBinary = '/Applications/Taqo.app/Contents/MacOS/alerter';
 const _bundleId = '/com.taqo.survey.taqoClient';
 
 final _logger = Logger('AlerterNotifications');

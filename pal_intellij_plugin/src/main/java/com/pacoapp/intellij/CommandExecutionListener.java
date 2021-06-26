@@ -51,6 +51,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -134,14 +135,14 @@ public class CommandExecutionListener implements AnActionListener {
           patchesLib.addAll(patchesTest);
         }
         if (patchesLib.size() > 0) {
-          String basePath = projectBaseDir.getPath();
-          String patchFilePath = new File(Files.createTempDir(), "patch" + getDateTimeString() + ".patch").getAbsolutePath();
-          System.out.println("patch location: " + patchFilePath);
+          Path basePath = projectBaseDir.toNioPath();
+          Path patchFilePath = new File(Files.createTempDir(), "patch" + getDateTimeString() + ".patch").toPath();
+          System.out.println("patch location: " + patchFilePath.toString());
 
-          PatchWriter.writePatches(project, patchFilePath, basePath, patchesLib, (CommitContext) null, Charset.defaultCharset());
-          String patchBufferEncoded = "textdiff===" + base64EncodeFileContents(patchFilePath);
+          PatchWriter.writePatches(project, patchFilePath, basePath, patchesLib, (CommitContext) null, Charset.defaultCharset(), false);
+          String patchBufferEncoded = "textdiff===" + base64EncodeFileContents(patchFilePath.toString());
           Map<String, String> data = Maps.newHashMap();
-          data.put("diff_file", patchFilePath);
+          data.put("diff_file", patchFilePath.toString());
           data.put("project", project.getName());
           data.put("project_dir", project.getBasePath());
           data.put("diff", patchBufferEncoded);

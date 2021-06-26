@@ -50,7 +50,7 @@ Future<bool> enableCmdLineLogging() async {
   bool ret = true;
 
   final existingCommand = Platform.environment['PROMPT_COMMAND'];
-  final bashrc = File(path.join(Platform.environment['HOME'], '.bashrc'));
+  final bashrc = File(path.join(DartFileStorage.getHomePath(), '.bashrc'));
 
   try {
     // Create it in case the user doesn't have a .bashrc but may use bash anyway
@@ -77,7 +77,7 @@ Future<bool> enableCmdLineLogging() async {
     ret = false;
   }
 
-  final zshrc = File(path.join(Platform.environment['HOME'], '.zshrc'));
+  final zshrc = File(path.join(DartFileStorage.getHomePath(), '.zshrc'));
 
   try {
     // Create it in case the user doesn't have a .zshrc but may use zsh anyway
@@ -104,7 +104,7 @@ Future<bool> enableCmdLineLogging() async {
 
 Future<bool> disableCmdLineLogging() async {
   Future<bool> disable(String shrc) async {
-    final withTaqo = File(path.join(Platform.environment['HOME'], shrc));
+    final withTaqo = File(path.join(DartFileStorage.getHomePath(), shrc));
     final withoutTaqo = File(path.join(Directory.systemTemp.path, shrc));
 
     try {
@@ -128,7 +128,7 @@ Future<bool> disableCmdLineLogging() async {
         }
       }
       await withTaqo.delete();
-      await withoutTaqo.copy(path.join(Platform.environment['HOME'], shrc));
+      await withoutTaqo.copy(path.join(DartFileStorage.getHomePath(), shrc));
     } on Exception catch (e) {
       if (!(await withoutTaqo.exists())) {
         _logger.warning("Not writing $shrc; file would have been empty");

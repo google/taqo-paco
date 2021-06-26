@@ -21,15 +21,26 @@ import '../storage/local_file_storage.dart';
 class DartFileStorage implements ILocalFileStorage {
   final _localFileName;
 
+  static String getHomePath() {
+//    if (Platform.isMacOS) {
+//      return '${Platform.environment['HOME']}/../../../..';
+//    } else {
+//      return '${Platform.environment['HOME']}';
+//    }
+    return '${Platform.environment['HOME']}';
+
+  }
+
   // These should match whatever Flutter path_provider returns
   // Is there a better way to keep them in sync?
   static Directory getLocalStorageDir() {
     if (Platform.isLinux) {
-      return Directory('${Platform.environment['HOME']}/.local/share/taqo')
+      return Directory('${getHomePath()}/.local/share/taqo')
         ..createSync(recursive: true);
     } else if (Platform.isMacOS) {
+      // Process.run("logger", ['${Platform.environment['HOME']}']);
       return Directory(
-          '${Platform.environment['HOME']}/Library/Containers/com.taqo.survey.taqoClient/Data/Library/Application Support/com.taqo.survey.taqoClient')
+          '${getHomePath()}/Library/Application Support/com.taqo')
         ..createSync(recursive: true);
     }
 

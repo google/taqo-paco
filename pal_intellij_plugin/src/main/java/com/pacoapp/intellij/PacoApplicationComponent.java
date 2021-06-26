@@ -381,7 +381,7 @@ public class PacoApplicationComponent implements ApplicationComponent {
 
   private BeforeRunTaskProvider<PacoBeforeRunTask> getBeforeRunTaskProvider(Project project) {
     BeforeRunTaskProvider<PacoBeforeRunTask> beforeRunTaskProvider = null;
-    BeforeRunTaskProvider<BeforeRunTask>[] extensions = Extensions.getExtensions(BeforeRunTaskProvider.EXTENSION_POINT_NAME, project);
+    BeforeRunTaskProvider<BeforeRunTask<?>>[] extensions = Extensions.getExtensions(BeforeRunTaskProvider.EXTENSION_POINT_NAME, project);
     for (BeforeRunTaskProvider<? extends BeforeRunTask> extension : extensions) {
       String name = extension.getName();
       if (name.equals(PacoBeforeRunTaskProvider.EXTENSION_NAME))
@@ -393,6 +393,7 @@ public class PacoApplicationComponent implements ApplicationComponent {
   public static void addPacoTaskToRunConfiguration(RunManagerEx projectRunManager, RunConfiguration runConfiguration, BeforeRunTaskProvider<PacoBeforeRunTask> beforeRunTaskProvider) {
     List<BeforeRunTask> beforeRunTasks = projectRunManager.getBeforeRunTasks(runConfiguration);
     if (!containsPacoListener(beforeRunTasks, beforeRunTaskProvider.getId())) {
+      beforeRunTasks = new ArrayList(beforeRunTasks);
       beforeRunTasks.add(beforeRunTaskProvider.createTask(runConfiguration));
       projectRunManager.setBeforeRunTasks(runConfiguration, beforeRunTasks, true);
     }
