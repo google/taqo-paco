@@ -18,7 +18,7 @@ dependencies {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version '2021.1.2'
+    localPath "${project.rootDir.absolutePath}/artifacts/$ide"
     plugins = ["java", "Dart:$dartPluginVersion", "io.flutter:$flutterPluginVersion"]
 }
 
@@ -31,5 +31,6 @@ patchPluginXml {
 task copyPlugin(type: Copy) {
     from buildPlugin
     into "$buildDir/distributions"
-    rename { String filenName -> 'pal_intellij_plugin.zip'}
+    rename { String filenName -> "pal_intellij_plugin.zip"}
+    // rename { String filenName -> "pal_intellij_plugin-${buildVersion}.zip"}
 }
