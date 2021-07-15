@@ -24,8 +24,6 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.WriteExternalException;
 import com.pacoapp.intellij.PacoApplicationComponent;
 import com.pacoapp.intellij.PacoIntellijEventTypes;
-import io.flutter.run.FlutterDevice;
-import io.flutter.run.daemon.DeviceService;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -86,18 +84,13 @@ public class PacoBeforeRunTaskProvider extends BeforeRunTaskProvider<PacoBeforeR
       String projectName = env.getProject().getName();
       String configurationName = configuration.getName();
       String configurtationType = env.getExecutor().getActionName();
-      FlutterDevice device = DeviceService.getInstance(env.getProject()).getSelectedDevice();
 
       Map<String, String> data = Maps.newHashMap();
       data.put("project", projectName);
       data.put("run_configuration_name", configurationName);
       data.put("run_configuration_action", configurtationType);
       data.put("run_configuration_type", runTypeName);
-      if (device != null) {
-        data.put("device_name", device.deviceName());
-        data.put("device_platform", device.platform());
-        data.put("device_emulator", String.valueOf(device.emulator()));
-      }
+
       PacoApplicationComponent.appendPacoEvent(PacoIntellijEventTypes.EventType.LAUNCH, data);
     } catch (WriteExternalException e) {
     }

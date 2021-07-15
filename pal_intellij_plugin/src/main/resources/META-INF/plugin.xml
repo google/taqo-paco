@@ -13,8 +13,6 @@
     <depends>com.intellij.modules.platform</depends>
     -->
     <depends>com.intellij.modules.java</depends>
-    <depends>io.flutter</depends>
-    <depends>Dart</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <stepsBeforeRunProvider implementation="com.pacoapp.intellij.launch.PacoBeforeRunTaskProvider"></stepsBeforeRunProvider>

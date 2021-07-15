@@ -44,7 +44,8 @@ cp "${RELEASE}"/taqo_daemon taqo_client/macos/TaqoLauncher/taqo_daemon
 
 # Build IntelliJ Plugin
 pushd pal_intellij_plugin || exit
-./gradlew copyPlugin
+# ./gradlew copyPlugin
+dart --no-sound-null-safety builder/bin/builder.dart
 cp "build/distributions/pal_intellij_plugin.zip" "../taqo_client/assets/"
 popd || exit
 

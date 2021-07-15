@@ -64,7 +64,7 @@ Future<void> buildPlugins(BuildSpec spec) async {
   for (var i = 0; i < flutter_intellij_specs.length; i++) {
     var fi_spec = flutter_intellij_specs[i];
     // Skip EAP version of IntelliJ
-    if (fi_spec.ideaVersion == 'LATEST-EAP-SNAPSHOT') {
+    if (fi_spec.version != '4.2') {
       continue;
     }
     var buildVersion = fi_spec.sinceBuild;

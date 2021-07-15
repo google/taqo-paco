@@ -18,9 +18,6 @@ import com.google.common.collect.Maps;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.*;
-import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
-import com.jetbrains.lang.dart.analyzer.DartServerData;
-import io.flutter.dart.DartPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -95,22 +92,6 @@ public class FileListener implements VirtualFileListener {
       String projectPath = project.getBaseDir().getCanonicalPath();
       if (filePath.startsWith(projectPath)) {
         foundProject = project;
-      }
-    }
-    if (foundProject != null) {
-      DartAnalysisServerService analysisService = DartPlugin.getInstance().getAnalysisService(foundProject);
-      List<DartServerData.DartError> errors = analysisService.getErrors(file);
-      if (errors.size() > 0) {
-        data.put("errors", String.valueOf(errors.size()));
-        for (int i = 0; i < errors.size(); i++) {
-          DartServerData.DartError error = errors.get(i);
-          String message = error.getMessage();
-          String code = error.getCode();
-          String severity = error.getSeverity();
-          int offset = error.getOffset();
-          String combined =  "type=" + (error.isError() ? "Error" : "Not Error") + ", sev="+severity+", code=" + code + ", offset = " + offset + ", message=" + message;
-          data.put("error_"+i, combined);
-        }
       }
     }
     pacoAppComponent.appendPacoEvent(PacoIntellijEventTypes.EventType.DOCUMENT_SAVED, data);

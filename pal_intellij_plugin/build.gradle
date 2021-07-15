@@ -19,7 +19,7 @@ dependencies {
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
     localPath "${project.rootDir.absolutePath}/artifacts/$ide"
-    plugins = ["java", "Dart:$dartPluginVersion", "io.flutter:$flutterPluginVersion"]
+    plugins = ["java"]
 }
 
 patchPluginXml {

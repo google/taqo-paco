@@ -36,12 +36,6 @@ import com.intellij.openapi.vcs.changes.ChangeListManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.io.ZipUtil;
 import com.intellij.util.messages.MessageBusConnection;
-import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
-import com.jetbrains.lang.dart.analyzer.DartServerData;
-import io.flutter.dart.DartPlugin;
-import io.flutter.dart.FlutterDartAnalysisServer;
-import io.flutter.dart.FlutterOutlineListener;
-import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
 
@@ -60,11 +54,7 @@ public class PacoProjectComponent implements ProjectComponent {
 
   private final Project project;
   private MessageBusConnection connection;
-  private FlutterDartAnalysisServer flutterDartAnalysisServer;
-  private FlutterOutlineListener outlineListener;
   private String outlineListenerFilePath;
-  private static final String FLUTTER_NOTIFICATION_OUTLINE = "flutter.outline";
-  private DartAnalysisServerService dartAnalysisServerService;
 
   public PacoProjectComponent(Project project) {
     this.project = project;
@@ -79,7 +69,6 @@ public class PacoProjectComponent implements ProjectComponent {
     pacoAppComponent.addRunManagerListener(project);
     pacoAppComponent.addFileEditorManagerListener(project);
     registerCompilerListener(project);
-    registerDartAnalysisListener(project);
     registerChangelistManagerListener(project);
     createSnapshotOfFiles(project, pacoAppComponent);
   }
@@ -274,52 +263,13 @@ public class PacoProjectComponent implements ProjectComponent {
     changeListManager.addChangeListListener(changeListListener);
   }
 
-  private void registerDartAnalysisListener(Project project) {
-    JobScheduler.getScheduler().scheduleWithFixedDelay(() -> {
-      final DartAnalysisServerService analysisService = DartPlugin.getInstance().getAnalysisService(project);
-      if (analysisService != null) {
-        dartAnalysisServerService = analysisService;
-      }
-    }, 100, 100, TimeUnit.MILLISECONDS);
-//    flutterDartAnalysisServer = FlutterDartAnalysisServer.getInstance(project);
-//
-//    flutterDartAnalysisServer.addOutlineListener(outlineListenerFilePath, outlineListener);
-  }
-
-  public void getErrors(VirtualFile file) {
-    if (dartAnalysisServerService != null) {
-//      final String id = dartServiceEx.generateUniqueId();
-//
-//      JsonObject request = new JsonObject();
-//
-//      request.addProperty("id", id);
-//      request.addProperty("method", "analysis.getErrors");
-//      JsonObject params = new JsonObject();
-//      params.add("file", new JsonPrimitive("/Users/bobevans/IdeaProjects/my_test_flutter/lib/main.dart"));
-//      request.add("params", params);
-
-      List<DartServerData.DartError> errors = dartAnalysisServerService.getErrors(file);
-    }
-  }
-
   private void processNotification(JsonObject response) {
     final JsonElement eventElement = response.get("event");
     if (eventElement == null || !eventElement.isJsonPrimitive()) {
       return;
     }
     final String event = eventElement.getAsString();
-    if (event.equals(FLUTTER_NOTIFICATION_OUTLINE)) {
-      final JsonObject paramsObject = response.get("params").getAsJsonObject();
-      final String file = paramsObject.get("file").getAsString();
-
-      final JsonElement instrumentedCodeElement = paramsObject.get("instrumentedCode");
-      final String instrumentedCode = instrumentedCodeElement != null ? instrumentedCodeElement.getAsString() : null;
-
-      final JsonObject outlineObject = paramsObject.get("outline").getAsJsonObject();
-      final FlutterOutline outline = FlutterOutline.fromJson(outlineObject);
-      log.info("outline = " + outline.toString());
-
-    } else if (event.equals("analysis.errors")) {
+    if (event.equals("analysis.errors")) {
       final JsonObject paramsObject = response.get("params").getAsJsonObject();
       final String file = paramsObject.get("file").getAsString();
       JsonArray errorArray = paramsObject.get("errors").getAsJsonArray();

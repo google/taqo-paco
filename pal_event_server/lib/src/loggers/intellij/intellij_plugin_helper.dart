@@ -43,8 +43,16 @@ final searchPaths = {
 
 final intelliJPaths = [
   RegExp(r'\.?AndroidStudio(?:WithBlaze)?\d+\.\d+'),
-  RegExp(r'\.?IdeaIC\d{4}\.\d+'),
+  // RegExp(r'\.?IdeaIC\d{4}\.\d+'),
 ];
+
+String getPluginDir(Directory dir) {
+  if (Platform.isLinux) {
+    return dir.path;
+  } else if (Platform.isMacOS) {
+    return path.join(dir.path, 'plugins');
+  }
+}
 
 void extractIntelliJPlugin(String directory) async {
   final zipFile =
@@ -72,7 +80,7 @@ void enableIntelliJPlugin() async {
 
       for (var idePath in intelliJPaths) {
         if (idePath.hasMatch(baseDir)) {
-          await extractIntelliJPlugin(dir.path);
+          await extractIntelliJPlugin(getPluginDir(dir));
         }
       }
     }
@@ -86,7 +94,7 @@ void disableIntelliJPlugin() async {
 
       for (var idePath in intelliJPaths) {
         if (idePath.hasMatch(baseDir)) {
-          var d = Directory(path.join(dir.path, 'pal_intellij_plugin'));
+          var d = Directory(path.join(getPluginDir(dir), 'pal_intellij_plugin'));
           if (await d.exists()) {
             await d.delete(recursive: true);
           }
