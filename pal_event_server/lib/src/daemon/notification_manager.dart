@@ -88,9 +88,9 @@ Future<int> showNotification(ActionSpecification actionSpec) async {
 /// Cancel notification with [id]
 Future cancelNotification(int id) async {
   if (Platform.isLinux) {
-    linux_notifications.cancel(id);
+    await linux_notifications.cancel(id);
   } else if (Platform.isMacOS) {
-    macos_notifications.cancel(id);
+    await macos_notifications.cancel(id);
   }
 
   final database = await SqliteDatabase.get();

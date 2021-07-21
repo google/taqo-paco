@@ -41,17 +41,17 @@ void _listen(int id, List<int> event) {
   }
 }
 
-void cancel(int id) {
+Future<void> cancel(int id) async {
   if (!_notifications.contains(id)) {
     return;
   }
 
   _notifications.remove(id);
-  Process.run(_alerterBinary, ['-remove', '$id']);
+  await Process.run(_alerterBinary, ['-remove', '$id']);
 }
 
 Future<int> notify(int id, String title, String body, {int timeout = 0}) async {
-  Process.start(_alerterBinary, [
+  await Process.start(_alerterBinary, [
     '-title', title, //
     '-message', body,
     '-timeout', '$timeout',
