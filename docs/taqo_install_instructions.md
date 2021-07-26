@@ -135,7 +135,7 @@ your desktop environment.
 ![alt_text](images/12-leave.png "image_tooltip")
 
 After leaving a study explicitly, or, if a study has ended, you can uninstall
-Taqo. Please stop the taqo\_daemon first.
+Taqo.
 
 For a full uninstall, you can run the following commands:
 
