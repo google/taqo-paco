@@ -47,7 +47,8 @@ Future<void> cancel(int id) async {
   }
 
   _notifications.remove(id);
-  await Process.run(_alerterBinary, ['-remove', '$id']);
+  await Process.start(_alerterBinary, ['-remove', '$id'],
+      mode: ProcessStartMode.inheritStdio);
 }
 
 Future<int> notify(int id, String title, String body, {int timeout = 0}) async {
