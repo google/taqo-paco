@@ -66,12 +66,12 @@ void _listen(String event) {
   }
 }
 
-void cancel(int id) {
+Future<void> cancel(int id) async {
   final notifId = _notifications[id];
   if (notifId == null) return;
   _notifications.remove(id);
 
-  Process.run('gdbus', [
+  await Process.run('gdbus', [
     'call', //
     '--session',
     '--dest', _dest,

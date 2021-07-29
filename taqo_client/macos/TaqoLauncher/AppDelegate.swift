@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import Cocoa
+import Darwin
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -32,9 +33,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     NSLog("Launching taqo_daemon at")
     NSLog(taqoDaemon.absoluteString)
 
+    // Create a pseudo tty as the stdin of taqo_daemon, so that when taqo_daemon calls
+    // alerter, alerter won't read an empty message from the stdin.
+    let fd = posix_openpt(O_RDWR)
+    grantpt(fd)
+    unlockpt(fd)
+    let pty = FileHandle.init(forUpdatingAtPath: String.init(cString: ptsname(fd)))
+
     let task = Process()
     task.executableURL = URL(fileURLWithPath: taqoDaemon.absoluteString)
     task.arguments = []
+    task.standardInput = pty
     do {
       try task.run()
     } catch {
