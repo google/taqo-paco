@@ -16,7 +16,7 @@ name: data_binding_builder
 description: A lib for generating data binding code for taqo.
 
 environment:
-  sdk: '>=2.5.0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   path: ^1.6.0

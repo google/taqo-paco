@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// @dart=2.9
+
 import 'package:json_annotation/json_annotation.dart';
 
 part 'event_save_outcome.g.dart';
