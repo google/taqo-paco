@@ -158,8 +158,7 @@ const quitAllExperimentsCommand =
 
 const insertOrUpdateJoinedExperimentsCommand = '''
 insert into experiments(id, json, joined, paused) values (?, ?, 1, 0)
-  on conflict(id) do update set json=excluded.json, joined=1;
-''';
+  on conflict(id) do update set json=excluded.json, joined=1;''';
 
 const resetPauseStatusCommand =
     'update experiments set paused=0 where joined=0;';

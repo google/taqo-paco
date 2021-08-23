@@ -248,8 +248,7 @@ class SqliteDatabase implements BaseDatabase {
       ..actionId = row.columnAt(10);
     final result = _db.select(selectOutputsCommand, [event.id]);
     event.responses = Map.fromIterable(result,
-        key: (row) => row.readColumnByIndexAsText(0),
-        value: (row) => row.readColumnByIndex(1));
+        key: (row) => row.columnAt(0), value: (row) => row.columnAt(1));
     return event;
   }
 
