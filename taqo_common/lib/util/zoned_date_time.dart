@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// @dart=2.9
+
 class ZonedDateTime {
   static const String ISO8601_FORMAT_LOCAL_WITHOUT_US =
       'yyyy-MM-ddTHH:mm:ss.mmm';

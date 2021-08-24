@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// @dart=2.9
+
 import 'package:taqo_common/storage/dart_file_storage.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 

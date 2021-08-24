@@ -12,9 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// @dart=2.9
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:provider/single_child_widget.dart';
 
 import '../pages/find_experiments_page.dart';
 import '../pages/login_page.dart';
@@ -26,7 +29,7 @@ class TaqoAppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: <SingleChildCloneableWidget>[
+      providers: <SingleChildWidget>[
         ChangeNotifierProvider<AuthProvider>(
           create: (_) => AuthProvider(),
         ),

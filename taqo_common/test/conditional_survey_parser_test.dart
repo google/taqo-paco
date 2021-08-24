@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// @dart=2.9
+
 import 'package:petitparser/petitparser.dart';
 import 'package:taqo_common/util/conditional_survey_parser.dart';
 import 'package:test/test.dart';

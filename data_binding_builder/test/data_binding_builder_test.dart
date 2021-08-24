@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// @dart=2.9
+
 import 'package:test/test.dart';
 
 import 'package:data_binding_builder/src/database_description.dart';

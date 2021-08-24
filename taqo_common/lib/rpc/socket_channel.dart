@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// @dart=2.9
+
 // TODO Can delete when done wth json-rpc
 
 import 'dart:async';

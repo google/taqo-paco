@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// @dart=2.9
+
 /// A client/server library for Taqo event server protocol.
 ///
 ///

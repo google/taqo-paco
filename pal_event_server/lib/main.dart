@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// @dart=2.9
+
 import 'package:logging/logging.dart';
 import 'package:pal_event_server/src/experiment_service_local.dart';
 import 'package:pal_event_server/src/sqlite_database/sqlite_database.dart';

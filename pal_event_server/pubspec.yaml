@@ -13,17 +13,20 @@
 # limitations under the License.
 
 name: pal_event_server
+
+environment:
+  sdk: '>=2.12.0 <3.0.0'
+
 dependencies:
   archive: ^2.0.13
-  http: ^0.12.0+4
+  http: ^0.12.2
   pedantic: ^1.9.0
   sembast: ^2.3.0
-  sqlite3:
-    path: ../third_party/sqlite_ffi
-
+  sqlite3: ^1.1.2
   taqo_common:
     path: ../taqo_common
   taqo_shared_prefs:
     path: ../taqo_shared_prefs
   taqo_event_server_protocol:
     path: ../taqo_event_server_protocol
+  collection: ^1.15.0-nullsafety.4

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// @dart=2.9
+
 import 'package:taqo_common/util/sql_statement_building_helper.dart';
 
 const beginTransactionCommand = 'begin transaction;';
@@ -156,8 +158,7 @@ const quitAllExperimentsCommand =
 
 const insertOrUpdateJoinedExperimentsCommand = '''
 insert into experiments(id, json, joined, paused) values (?, ?, 1, 0)
-  on conflict(id) do update set json=excluded.json, joined=1;
-''';
+  on conflict(id) do update set json=excluded.json, joined=1;''';
 
 const resetPauseStatusCommand =
     'update experiments set paused=0 where joined=0;';

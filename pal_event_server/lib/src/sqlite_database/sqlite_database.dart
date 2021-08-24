@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// @dart=2.9
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:pedantic/pedantic.dart';
-import 'package:sqlite3/sqlite.dart';
+import 'package:sqlite3/sqlite3.dart';
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
@@ -59,7 +61,7 @@ class SqliteDatabase implements BaseDatabase {
     final taqoDir = DartFileStorage.getLocalStorageDir().path;
     final dbPath = '$taqoDir/$_dbFile';
     return File(dbPath).create(recursive: true).then((_) async {
-      _db = Database(dbPath);
+      _db = sqlite3.open(dbPath);
       await _createTables();
       return _db;
     });
@@ -67,7 +69,7 @@ class SqliteDatabase implements BaseDatabase {
 
   Future close() async {
     if (_db != null) {
-      _db.close();
+      _db.dispose();
       _db = null;
     }
     _instance = null;
@@ -86,10 +88,10 @@ class SqliteDatabase implements BaseDatabase {
   };
 
   Future _maybeCreateTable(String tableName) async {
-    final result = _db.query(_checkTableExistsQuery(tableName));
+    final result = _db.select(_checkTableExistsQuery(tableName));
     bool exists = true;
     for (Row row in result) {
-      exists = row.readColumnByIndexAsInt(0) > 0;
+      exists = row.columnAt(0) > 0;
     }
     if (!exists) {
       await _db.execute(_createTableStatement[tableName]);
@@ -103,36 +105,36 @@ class SqliteDatabase implements BaseDatabase {
   }
 
   Future<int> insertAlarm(ActionSpecification actionSpecification) async {
-    return _db
-        .execute(insertAlarmCommand, params: [jsonEncode(actionSpecification)]);
+    _db.execute(insertAlarmCommand, [jsonEncode(actionSpecification)]);
+    return _db.lastInsertRowId;
   }
 
   Future<ActionSpecification> getAlarm(int id) async {
-    final result = _db.query(selectAlarmByIdCommand, params: [id]);
+    final result = _db.select(selectAlarmByIdCommand, [id]);
     var json;
     for (Row row in result) {
-      json = row.readColumnAsText('json');
+      json = row['json'];
     }
     return ActionSpecification.fromJson(jsonDecode(json));
   }
 
   Future<Map<int, ActionSpecification>> getAllAlarms() async {
-    final result = _db.query(selectAllAlarmsCommand);
+    final result = _db.select(selectAllAlarmsCommand);
     final alarms = <int, ActionSpecification>{};
     for (var row in result) {
-      final id = row.readColumnByIndexAsInt(0);
-      final json = row.readColumnAsText('json');
+      final id = row.columnAt(0);
+      final json = row['json'];
       alarms[id] = ActionSpecification.fromJson(jsonDecode(json));
     }
     return alarms;
   }
 
   Future removeAlarm(int id) async {
-    _db.execute(deleteAlarmByIdCommand, params: [id]);
+    _db.execute(deleteAlarmByIdCommand, [id]);
   }
 
   Future<int> insertNotification(NotificationHolder notificationHolder) async {
-    return _db.execute(insertNotificationCommand, params: [
+    _db.execute(insertNotificationCommand, [
       '${notificationHolder.alarmTime}',
       '${notificationHolder.experimentId}',
       '${notificationHolder.noticeCount}',
@@ -146,27 +148,28 @@ class SqliteDatabase implements BaseDatabase {
       '${notificationHolder.snoozeTime ?? 0}',
       '${notificationHolder.snoozeCount ?? 0}'
     ]);
+    return _db.lastInsertRowId;
   }
 
   NotificationHolder _buildNotificationHolder(Row row) =>
       NotificationHolder.fromJson({
-        'id': row.readColumnByIndexAsInt(0),
-        'alarmTime': row.readColumnByIndexAsInt(1),
-        'experimentId': row.readColumnByIndexAsInt(2),
-        'noticeCount': row.readColumnByIndexAsInt(3),
-        'timeoutMillis': row.readColumnByIndexAsInt(4),
-        'notificationSource': row.readColumnByIndexAsText(5),
-        'message': row.readColumnByIndexAsText(6),
-        'experimentGroupName': row.readColumnByIndexAsText(7),
-        'actionTriggerId': row.readColumnByIndexAsInt(8),
-        'actionId': row.readColumnByIndexAsInt(9),
-        'actionTriggerSpecId': row.readColumnByIndexAsInt(10),
-        'snoozeTime': row.readColumnByIndexAsInt(11),
-        'snoozeCount': row.readColumnByIndexAsInt(12),
+        'id': row.columnAt(0),
+        'alarmTime': row.columnAt(1),
+        'experimentId': row.columnAt(2),
+        'noticeCount': row.columnAt(3),
+        'timeoutMillis': row.columnAt(4),
+        'notificationSource': row.columnAt(5),
+        'message': row.columnAt(6),
+        'experimentGroupName': row.columnAt(7),
+        'actionTriggerId': row.columnAt(8),
+        'actionId': row.columnAt(9),
+        'actionTriggerSpecId': row.columnAt(10),
+        'snoozeTime': row.columnAt(11),
+        'snoozeCount': row.columnAt(12),
       });
 
   Future<NotificationHolder> getNotification(int id) async {
-    final result = _db.query(selectNotificationByIdCommand, params: [id]);
+    final result = _db.select(selectNotificationByIdCommand, [id]);
     var notification;
     for (Row row in result) {
       notification = _buildNotificationHolder(row);
@@ -175,7 +178,7 @@ class SqliteDatabase implements BaseDatabase {
   }
 
   Future<List<NotificationHolder>> getAllNotifications() async {
-    final result = _db.query(selectAllNotificationsCommand);
+    final result = _db.select(selectAllNotificationsCommand);
     final notifications = <NotificationHolder>[];
     for (var row in result) {
       notifications.add(_buildNotificationHolder(row));
@@ -185,8 +188,8 @@ class SqliteDatabase implements BaseDatabase {
 
   Future<List<NotificationHolder>> getAllNotificationsForExperiment(
       Experiment experiment) async {
-    final result = _db
-        .query(selectNotificationByExperimentCommand, params: [experiment.id]);
+    final result =
+        _db.select(selectNotificationByExperimentCommand, [experiment.id]);
     final notifications = <NotificationHolder>[];
     for (var row in result) {
       notifications.add(_buildNotificationHolder(row));
@@ -195,7 +198,7 @@ class SqliteDatabase implements BaseDatabase {
   }
 
   Future<void> removeNotification(int id) async {
-    _db.execute(deleteNotificationByIdCommand, params: [id]);
+    _db.execute(deleteNotificationByIdCommand, [id]);
   }
 
   Future<void> removeAllNotifications() async {
@@ -203,7 +206,7 @@ class SqliteDatabase implements BaseDatabase {
   }
 
   Future<int> insertEvent(Event event, {bool notifySyncService = true}) async {
-    event.id = await _db.execute(insertEventCommand, params: [
+    _db.execute(insertEventCommand, [
       event.experimentId,
       event.experimentName,
       event.experimentVersion,
@@ -215,9 +218,10 @@ class SqliteDatabase implements BaseDatabase {
       event.actionTriggerSpecId,
       event.actionId
     ]);
+    event.id = _db.lastInsertRowId;
     for (var responseEntry in event.responses.entries) {
-      await _db.execute(insertOutputCommand,
-          params: [event.id, '${responseEntry.key}', '${responseEntry.value}']);
+      _db.execute(insertOutputCommand,
+          [event.id, '${responseEntry.key}', '${responseEntry.value}']);
     }
     if (notifySyncService) {
       unawaited(SyncService.syncData());
@@ -231,43 +235,40 @@ class SqliteDatabase implements BaseDatabase {
 
   Event _buildEvent(Row row) {
     var event = Event()
-      ..id = row.readColumnByIndex(0)
-      ..experimentId = row.readColumnByIndex(1)
-      ..experimentName = row.readColumnByIndex(2)
-      ..experimentVersion = row.readColumnByIndex(3)
-      ..scheduleTime = _buildZonedDateTime(row.readColumnByIndex(4))
-      ..responseTime = _buildZonedDateTime(row.readColumnByIndex(5))
-      ..uploaded = (row.readColumnByIndex(6) == 1)
-      ..groupName = row.readColumnByIndex(7)
-      ..actionTriggerId = row.readColumnByIndex(8)
-      ..actionTriggerSpecId = row.readColumnByIndex(9)
-      ..actionId = row.readColumnByIndex(10);
-    final result = _db.query(selectOutputsCommand, params: [event.id]);
+      ..id = row.columnAt(0)
+      ..experimentId = row.columnAt(1)
+      ..experimentName = row.columnAt(2)
+      ..experimentVersion = row.columnAt(3)
+      ..scheduleTime = _buildZonedDateTime(row.columnAt(4))
+      ..responseTime = _buildZonedDateTime(row.columnAt(5))
+      ..uploaded = (row.columnAt(6) == 1)
+      ..groupName = row.columnAt(7)
+      ..actionTriggerId = row.columnAt(8)
+      ..actionTriggerSpecId = row.columnAt(9)
+      ..actionId = row.columnAt(10);
+    final result = _db.select(selectOutputsCommand, [event.id]);
     event.responses = Map.fromIterable(result,
-        key: (row) => row.readColumnByIndexAsText(0),
-        value: (row) => row.readColumnByIndex(1));
+        key: (row) => row.columnAt(0), value: (row) => row.columnAt(1));
     return event;
   }
 
   @override
   Future<List<Event>> getUnuploadedEvents() async {
-    final result = _db.query(selectUnuploadedEventsCommand);
+    final result = _db.select(selectUnuploadedEventsCommand);
     return [for (var row in result) _buildEvent(row)];
   }
 
   @override
   Future<void> markEventsAsUploaded(Iterable<Event> events) async {
     _db.execute(buildMarkEventAsUploadedCommand(events.length),
-        params: [for (var event in events) event.id]);
+        [for (var event in events) event.id]);
   }
 
   @override
   Future<Experiment> getExperimentById(int experimentId) async {
-    final result =
-        _db.query(selectExperimentByIdCommand, params: [experimentId]);
+    final result = _db.select(selectExperimentByIdCommand, [experimentId]);
     var experiments = <Experiment>[
-      for (var row in result)
-        Experiment.fromJson(jsonDecode(row.readColumnByIndexAsText(0)))
+      for (var row in result) Experiment.fromJson(jsonDecode(row.columnAt(0)))
     ];
     if (experiments.length > 0) {
       assert(experiments.length == 1);
@@ -279,10 +280,9 @@ class SqliteDatabase implements BaseDatabase {
 
   @override
   Future<List<Experiment>> getJoinedExperiments() async {
-    final result = _db.query(selectJoindExperimentsCommand);
+    final result = _db.select(selectJoindExperimentsCommand);
     return [
-      for (var row in result)
-        Experiment.fromJson(jsonDecode(row.readColumnByIndexAsText(0)))
+      for (var row in result) Experiment.fromJson(jsonDecode(row.columnAt(0)))
     ];
   }
 
@@ -292,7 +292,7 @@ class SqliteDatabase implements BaseDatabase {
     _db.execute(quitAllExperimentsCommand);
     for (var experiment in experiments) {
       _db.execute(insertOrUpdateJoinedExperimentsCommand,
-          params: [experiment.id, jsonEncode(experiment)]);
+          [experiment.id, jsonEncode(experiment)]);
     }
     _db.execute(resetPauseStatusCommand);
     _db.execute(commitCommand);
@@ -301,19 +301,18 @@ class SqliteDatabase implements BaseDatabase {
   @override
   Future<Map<int, bool>> getExperimentsPausedStatus(
       Iterable<Experiment> experiments) async {
-    final result = _db.query(
+    final result = _db.select(
         buildQueryExperimentPausedStatusCommand(experiments.length),
-        params: [for (var experiment in experiments) experiment.id]);
+        [for (var experiment in experiments) experiment.id]);
     return <int, bool>{
-      for (var row in result)
-        row.readColumnByIndexAsInt(0): row.readColumnByIndexAsInt(1) == 1
+      for (var row in result) row.columnAt(0): row.columnAt(1) == 1
     };
   }
 
   @override
   Future<void> setExperimentPausedStatus(
       Experiment experiment, bool paused) async {
-    _db.execute(updateExperimentPausedStatusCommand,
-        params: [paused ? 1 : 0, experiment.id]);
+    _db.execute(
+        updateExperimentPausedStatusCommand, [paused ? 1 : 0, experiment.id]);
   }
 }
