@@ -21,7 +21,7 @@ import 'package:logging/logging.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
-import 'package:taqo_common/util/date_time_util.dart';
+import 'package:taqo_common/util/zoned_date_time.dart';
 
 import '../../main.dart';
 import '../../pages/running_experiments_page.dart';
@@ -174,7 +174,7 @@ void _createMissedEvent(int notificationId) async {
   event.actionTriggerId = notification.actionTriggerId;
   event.actionTriggerSpecId = notification.actionTriggerSpecId;
   event.experimentVersion = experiment.version;
-  event.scheduleTime = getZonedDateTime(
+  event.scheduleTime = ZonedDateTime.localFromDateTime(
       DateTime.fromMillisecondsSinceEpoch(notification.alarmTime));
 
   db.insertEvent(event);

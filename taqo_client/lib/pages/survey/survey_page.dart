@@ -22,7 +22,6 @@ import 'package:taqo_common/model/experiment_group.dart';
 import 'package:taqo_common/model/feedback.dart' as taqo_feedback;
 import 'package:taqo_common/model/input2.dart';
 import 'package:taqo_common/util/conditional_survey_parser.dart';
-import 'package:taqo_common/util/date_time_util.dart';
 import 'package:taqo_common/util/zoned_date_time.dart';
 
 import '../../pages/survey/feedback_page.dart';
@@ -403,7 +402,7 @@ class _SurveyPageState extends State<SurveyPage> {
         _event.actionId = alarm.action.id;
         _event.actionTriggerId = alarm.actionTrigger.id;
         _event.actionTriggerSpecId = alarm.actionTriggerSpecId;
-        _event.scheduleTime = getZonedDateTime(alarm.time);
+        _event.scheduleTime = ZonedDateTime.localFromDateTime(alarm.time);
 
         // Cancel timeout alarm
         // We cancel here both for self-report as well as coming from a notification
