@@ -17,6 +17,7 @@
 import 'dart:async';
 
 import 'package:logging/logging.dart';
+import 'package:taqo_common/util/zoned_date_time.dart';
 import 'package:taqo_shared_prefs/taqo_shared_prefs.dart';
 
 import 'package:taqo_common/model/action_specification.dart';
@@ -232,7 +233,7 @@ void _createMissedEvent(NotificationHolder notification) async {
   event.actionTriggerId = notification.actionTriggerId;
   event.actionTriggerSpecId = notification.actionTriggerSpecId;
   event.experimentVersion = experiment.version;
-  event.scheduleTime = getZonedDateTime(
+  event.scheduleTime = ZonedDateTime.localFromDateTime(
       DateTime.fromMillisecondsSinceEpoch(notification.alarmTime));
   final storage = await SqliteDatabase.get();
   storage.insertEvent(event);

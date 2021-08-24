@@ -119,4 +119,22 @@ void main() {
           equals(millis));
     });
   });
+
+  group('ZonedDateTime.fromDateTime()', () {
+    test(
+        'fromDateTime creates a ZonedDateTime object from a DateTime object, possibly changing its timezone.',
+        () {
+      final dateTime1 = DateTime.utc(1969, 7, 20, 20, 18, 04);
+      final zonedDateTime1 =
+          ZonedDateTime.fromDateTime(dateTime1, Duration(hours: -7));
+      expect(zonedDateTime1.toIso8601String(),
+          equals('1969-07-20T13:18:04.000-0700'));
+
+      final dateTime2 = DateTime.utc(1969, 7, 20, 6, 18, 04);
+      final zonedDateTime2 =
+          ZonedDateTime.fromDateTime(dateTime2, Duration(hours: -7));
+      expect(zonedDateTime2.toIso8601String(),
+          equals('1969-07-19T23:18:04.000-0700'));
+    });
+  });
 }

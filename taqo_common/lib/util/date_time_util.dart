@@ -158,16 +158,3 @@ DateTime mixDateWithTime(DateTime date, DateTime time,
         (second ?? time?.second) ?? 0,
         (millisecond ?? time?.millisecond) ?? 0,
         (microsecond ?? time?.microsecond) ?? 0);
-
-/// Get a ZonedDateTime from [dt] using the current timezone
-/// TODO Remove this when ZonedDateTime is used properly
-ZonedDateTime getZonedDateTime(DateTime dt) {
-  final tzOffset = DateTime.now().timeZoneOffset;
-  final sign = tzOffset.isNegative ? '-' : '+';
-  final hours = tzOffset.inMinutes.abs() ~/ 60;
-  final minutes = tzOffset.inMinutes.abs() - 60 * hours;
-  final format = NumberFormat('00');
-  return ZonedDateTime.fromIso8601String('${dt.toIso8601String()}'
-      '${dt.microsecond == 0 ? "000" : ""}'
-      '$sign${format.format(hours)}${format.format(minutes)}');
-}

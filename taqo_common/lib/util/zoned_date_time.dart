@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// @dart=2.9
-
 class ZonedDateTime {
   static const String ISO8601_FORMAT_LOCAL_WITHOUT_US =
       'yyyy-MM-ddTHH:mm:ss.mmm';
@@ -32,18 +30,35 @@ class ZonedDateTime {
   const ZonedDateTime._(
       this.timeZoneOffset, this.dateTime, this._iso8601StringLocal);
 
-  factory ZonedDateTime.now() {
-    final dateTime = DateTime.now();
-    final timeZoneOffset = dateTime.timeZoneOffset;
-    var string = _validateAndFixIso8601StringLocal(
-        dateTime.toIso8601String(), dateTime, timeZoneOffset);
+  factory ZonedDateTime.fromDateTime(DateTime dateTime,
+      [Duration? timeZoneOffset]) {
+    timeZoneOffset ??= dateTime.timeZoneOffset;
+    var stringLocal = dateTime.toIso8601String();
 
-    return ZonedDateTime._(timeZoneOffset, dateTime, string);
+    // validate/fix/adjust the local time string to match the timezone offset
+    if (stringLocal.endsWith('Z')) {
+      stringLocal = stringLocal.substring(0, stringLocal.length - 1);
+    }
+    var stringTZ = '$stringLocal${formatTimeZoneOffset(timeZoneOffset)}';
+    if (dateTime.toUtc() != DateTime.parse(stringTZ)) {
+      // very rare case where the time zone changes immediately after calling DateTime.now()
+      final dateTimeLocal = dateTime.toUtc().add(timeZoneOffset);
+      final tzStartIndex = dateTime.microsecond == 0
+          ? ISO8601_FORMAT_LOCAL_WITHOUT_US.length
+          : ISO8601_FORMAT_LOCAL_WITH_US.length;
+      stringLocal = dateTimeLocal.toIso8601String().substring(0, tzStartIndex);
+    }
+
+    return ZonedDateTime._(timeZoneOffset, dateTime, stringLocal);
   }
 
-  String toIso8601String({withColon = false}) {
-    return '$_iso8601StringLocal${formatTimeZoneOffset(timeZoneOffset, withColon: withColon)}';
-  }
+  factory ZonedDateTime.now() => ZonedDateTime.fromDateTime(DateTime.now());
+
+  factory ZonedDateTime.localFromDateTime(DateTime dateTime) =>
+      ZonedDateTime.fromDateTime(dateTime, DateTime.now().timeZoneOffset);
+
+  String toIso8601String({withColon = false}) =>
+      '$_iso8601StringLocal${formatTimeZoneOffset(timeZoneOffset, withColon: withColon)}';
 
   factory ZonedDateTime.fromIso8601String(String iso8601String) {
     final dateTime = DateTime.parse(iso8601String);
@@ -56,13 +71,12 @@ class ZonedDateTime {
     return ZonedDateTime._(timeZoneOffset, dateTime, iso8601StringLocal);
   }
 
-  String toString() {
-    return _iso8601StringLocal
-            .substring(0, DATETIME_FORMAT_LOCAL.length)
-            .replaceAll('-', '/')
-            .replaceFirst('T', ' ') +
-        formatTimeZoneOffset(timeZoneOffset, withColon: false);
-  }
+  String toString() =>
+      _iso8601StringLocal
+          .substring(0, DATETIME_FORMAT_LOCAL.length)
+          .replaceAll('-', '/')
+          .replaceFirst('T', ' ') +
+      formatTimeZoneOffset(timeZoneOffset, withColon: false);
 
   // Note: this is only a right inverse of toString(), because toString() lost some precision.
   factory ZonedDateTime.fromString(String string) {
@@ -74,21 +88,6 @@ class ZonedDateTime {
         string.substring(string.length - 5, string.length);
     final iso8601String = '${stringLocalDateTime}.000${stringTimeZoneOffset}';
     return ZonedDateTime.fromIso8601String(iso8601String);
-  }
-
-  static String _validateAndFixIso8601StringLocal(
-      String stringLocal, DateTime dateTime, Duration timeZoneOffset) {
-    var stringTZ = '$stringLocal${formatTimeZoneOffset(timeZoneOffset)}';
-    if (dateTime.toUtc() == DateTime.parse(stringTZ)) {
-      return stringLocal;
-    } else {
-      // very rare case where the time zone changes immediately after calling DateTime.now()
-      final dateTimeLocal = dateTime.toUtc().add(timeZoneOffset);
-      final tzStartIndex = dateTime.microsecond == 0
-          ? ISO8601_FORMAT_LOCAL_WITHOUT_US.length
-          : ISO8601_FORMAT_LOCAL_WITH_US.length;
-      return dateTimeLocal.toIso8601String().substring(0, tzStartIndex);
-    }
   }
 
   // ISO8601 allows several variants for formatting timezone, where two of them
@@ -131,16 +130,8 @@ class ZonedDateTime {
     return sign == '-' ? -duration : duration;
   }
 
-  static fromMillis(int millis) {
-    final dateTime = DateTime.fromMillisecondsSinceEpoch(millis);
-    final timeZoneOffset = dateTime.timeZoneOffset;
-    var string = _validateAndFixIso8601StringLocal(
-        dateTime.toIso8601String(), dateTime, timeZoneOffset);
+  static fromMillis(int millis) =>
+      ZonedDateTime.fromDateTime(DateTime.fromMillisecondsSinceEpoch(millis));
 
-    return ZonedDateTime._(timeZoneOffset, dateTime, string);
-  }
-
-  int toMillis() {
-    return dateTime.millisecondsSinceEpoch;
-  }
+  int toMillis() => dateTime.millisecondsSinceEpoch;
 }
