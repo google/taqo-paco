@@ -30,7 +30,7 @@ else
   TAQO_ROOT="$1"
 fi
 cd -- "${TAQO_ROOT}" || exit
-OUT_DIR="${TAQO_ROOT}/taqo_client/build/linux/release/bundle"
+OUT_DIR="${TAQO_ROOT}/taqo_client/build/linux/x64/release/bundle"
 
 # Build flutter app
 pushd taqo_client || exit
@@ -38,7 +38,7 @@ pushd taqo_client || exit
 
 # Workaround to remove rpath from shared libs.
 # See https://github.com/flutter/flutter/issues/65400
-pushd build/linux/release/bundle/lib || exit
+pushd build/linux/x64/release/bundle/lib || exit
 for sofile in lib*_plugin.so
 do
   chrpath -d "${sofile}"

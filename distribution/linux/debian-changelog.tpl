@@ -1,4 +1,4 @@
-taqosurvey (1.0-1) UNRELEASED; urgency=low
+taqosurvey (1.2.0) UNRELEASED; urgency=low
 
   * Initial Release.
 

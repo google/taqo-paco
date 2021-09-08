@@ -15,7 +15,7 @@
 
 SHELL := /bin/bash
 
-OUT_DIR := taqo_client/build/linux/release/bundle
+OUT_DIR := taqo_client/build/linux/x64/release/bundle
 
 %:
 	dh $@
