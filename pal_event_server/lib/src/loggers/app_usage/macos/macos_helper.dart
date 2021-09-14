@@ -30,21 +30,24 @@ void macOSAppLoggerIsolate(SendPort sendPort) {
   Timer.periodic(queryInterval, (Timer _) {
     Process.run(apple_script.command, apple_script.scriptArgs).then((result) {
       final currWindow = result.stdout.trim();
-      final resultMap = apple_script.buildResultMap(currWindow);
-      final currAppAndWindowName =
-          resultMap[appNameField] + resultMap[windowNameField];
+      if (currWindow != '') {
+        final resultMap = apple_script.buildResultMap(currWindow);
+        final currAppAndWindowName =
+            resultMap[appNameField] + resultMap[windowNameField];
 
-      if (currAppAndWindowName != _prevAppAndWindowName) {
-        // Send APP_CLOSED
-        if (_prevAppAndWindowName != null && _prevAppAndWindowName.isNotEmpty) {
-          sendPort.send(_prevAppAndWindowName);
-        }
+        if (currAppAndWindowName != _prevAppAndWindowName) {
+          // Send APP_CLOSED
+          if (_prevAppAndWindowName != null &&
+              _prevAppAndWindowName.isNotEmpty) {
+            sendPort.send(_prevAppAndWindowName);
+          }
 
-        _prevAppAndWindowName = currAppAndWindowName;
+          _prevAppAndWindowName = currAppAndWindowName;
 
-        // Send PacoEvent && APP_USAGE
-        if (resultMap != null) {
-          sendPort.send(resultMap);
+          // Send PacoEvent && APP_USAGE
+          if (resultMap != null) {
+            sendPort.send(resultMap);
+          }
         }
       }
     });
