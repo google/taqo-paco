@@ -22,8 +22,7 @@ import 'package:taqo_common/model/interrupt_cue.dart';
 
 import '../../triggers/triggers.dart';
 import '../loggers.dart';
-import 'linux/linux_helper.dart' as linux_helper;
-import 'macos/macos_helper.dart' as macos_helper;
+import 'intellij_plugin_helper.dart';
 
 final _logger = Logger('IntelliJLogger');
 
@@ -53,11 +52,7 @@ class IntelliJLogger extends PacoEventLogger with EventTriggerSource {
     _logger.info('Starting IntelliJLogger');
     active = true;
 
-    if (Platform.isLinux) {
-      linux_helper.enableIntelliJPlugin();
-    } else if (Platform.isMacOS) {
-      macos_helper.enableIntelliJPlugin();
-    }
+    enableIntelliJPlugin();
 
     // Create Paco Events
     super.start(toLog, toTrigger);
@@ -78,11 +73,7 @@ class IntelliJLogger extends PacoEventLogger with EventTriggerSource {
       _logger.info('Stopping IntelliJLogger');
       active = false;
 
-      if (Platform.isLinux) {
-        linux_helper.disableIntelliJPlugin();
-      } else if (Platform.isMacOS) {
-        macos_helper.disableIntelliJPlugin();
-      }
+      disableIntelliJPlugin();
     }
   }
 }

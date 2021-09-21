@@ -19,23 +19,50 @@ import 'dart:io';
 import 'package:archive/archive.dart';
 import 'package:archive/archive_io.dart';
 import 'package:path/path.dart' as path;
+import 'package:taqo_common/platform/platform.dart';
 
-const intelliJAssetPath = '/usr/lib/taqo/pal_intellij_plugin.zip';
+const intelliJAssetPaths = {
+  PlatformOs.linux: '/usr/lib/taqo/pal_intellij_plugin.zip',
+  PlatformOs.macos:
+      '/Applications/Taqo.app/Contents/Frameworks/App.framework/Resources/flutter_assets/assets/pal_intellij_plugin.zip'
+};
+final homeDir = Directory(Platform.environment['HOME']);
+
+final searchPaths = {
+  PlatformOs.linux: [
+    Directory(path.join(homeDir.path, '.local', 'share')),
+    Directory(path.join(homeDir.path, '.local', 'share', 'JetBrains')),
+    Directory(path.join(homeDir.path, '.local', 'share', 'Google'))
+  ],
+  PlatformOs.macos: [
+    Directory(path.join(homeDir.path, 'Library', 'Application Support')),
+    Directory(
+        path.join(homeDir.path, 'Library', 'Application Support', 'JetBrains')),
+    Directory(
+        path.join(homeDir.path, 'Library', 'Application Support', 'Google')),
+  ]
+};
+
 final intelliJPaths = [
-  RegExp(r'\.?AndroidStudio\d+\.\d+'),
+  //RegExp(r'\.?AndroidStudio(?:WithBlaze)?\d+\.\d+'),
   RegExp(r'\.?IdeaIC\d{4}\.\d+'),
 ];
 
+String getPluginDir(Directory dir) {
+  if (Platform.isLinux) {
+    return dir.path;
+  } else if (Platform.isMacOS) {
+    return path.join(dir.path, 'plugins');
+  }
+}
+
 void extractIntelliJPlugin(String directory) async {
-  final zipFile = await File(intelliJAssetPath).readAsBytes();
+  final zipFile =
+      await File(intelliJAssetPaths[Platform.operatingSystem]).readAsBytes();
   final pluginPkg = ZipDecoder().decodeBytes(zipFile);
 
-  final oldPluginDir = Directory(path.join(directory, 'config', 'plugins'));
-  final newPluginDir = Directory(directory);
-  final pluginDir = await newPluginDir.exists() ? newPluginDir : oldPluginDir;
-
   for (var item in pluginPkg) {
-    final output = path.join(pluginDir.path, item.name);
+    final output = path.join(directory, item.name);
     if (item.isFile) {
       final itemBytes = item.content as List<int>;
       final f = File(output);
@@ -49,20 +76,13 @@ void extractIntelliJPlugin(String directory) async {
 }
 
 void enableIntelliJPlugin() async {
-  final homeDir = Directory(Platform.environment['HOME']);
-  final dirsToCheck = [
-    homeDir,
-    Directory(path.join(homeDir.path, '.local', 'share')),
-    Directory(path.join(homeDir.path, '.local', 'share', 'JetBrains')),
-  ];
-
-  for (var toCheck in dirsToCheck) {
+  for (var toCheck in searchPaths[Platform.operatingSystem]) {
     await for (var dir in toCheck.list()) {
       final baseDir = path.basename(dir.path);
 
       for (var idePath in intelliJPaths) {
         if (idePath.hasMatch(baseDir)) {
-          await extractIntelliJPlugin(dir.path);
+          await extractIntelliJPlugin(getPluginDir(dir));
         }
       }
     }
@@ -70,28 +90,14 @@ void enableIntelliJPlugin() async {
 }
 
 void disableIntelliJPlugin() async {
-  final homeDir = Directory(Platform.environment['HOME']);
-  final dirsToCheck = [
-    homeDir,
-    Directory(path.join(homeDir.path, '.local', 'share')),
-    Directory(path.join(homeDir.path, '.local', 'share', 'JetBrains')),
-  ];
-
-  for (var toCheck in dirsToCheck) {
+  for (var toCheck in searchPaths[Platform.operatingSystem]) {
     await for (var dir in toCheck.list()) {
       final baseDir = path.basename(dir.path);
 
       for (var idePath in intelliJPaths) {
         if (idePath.hasMatch(baseDir)) {
-          // Older versions of IntelliJ
-          var d = Directory(
-              path.join(dir.path, 'config', 'plugins', 'pal_intellij_plugin'));
-          if (await d.exists()) {
-            await d.delete(recursive: true);
-          }
-
-          // Newer versions of IntelliJ
-          d = Directory(path.join(dir.path, 'pal_intellij_plugin'));
+          var d =
+              Directory(path.join(getPluginDir(dir), 'pal_intellij_plugin'));
           if (await d.exists()) {
             await d.delete(recursive: true);
           }

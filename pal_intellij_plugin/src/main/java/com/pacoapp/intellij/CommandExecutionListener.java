@@ -235,8 +235,7 @@ public class CommandExecutionListener implements AnActionListener {
   }
 
   private boolean isActionFencePostForDiffing(AnAction anAction) {
-    return anAction.getClass().getName().equals("com.intellij.execution.ExecutorRegistryImpl$ExecutorAction") ||
-            anAction.getClass().getName().equals("io.flutter.actions.ReloadFlutterAppRetarget");
+    return anAction.getClass().getName().equals("com.intellij.execution.ExecutorRegistryImpl$ExecutorAction");
   }
 
   private boolean cursorMovementAction(Class<? extends AnAction> actionClass) {
