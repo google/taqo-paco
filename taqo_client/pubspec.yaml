@@ -21,7 +21,7 @@ description: A tool for rendering surveys
 # Both the version and the builder number may be overridden in flutter
 # build by specifying --build-name and --build-number, respectively.
 # Read more about versioning at semver.org.
-version: 1.0.0+1
+version: 1.3.0
 
 environment:
   sdk: '>=2.12.0 <3.0.0'
