@@ -53,8 +53,8 @@ Future<void> runGradleBuild() async {
   } else {
     process = await Process.start('./gradlew', args);
   }
-  await stdout.addStream(process.stdout);
-  await stderr.addStream(process.stderr);
+  await Future.wait(
+      [stdout.addStream(process.stdout), stderr.addStream(process.stderr)]);
 }
 
 Future<void> buildPlugins(BuildSpec spec) async {
