@@ -30,3 +30,9 @@ dependencies:
   taqo_event_server_protocol:
     path: ../taqo_event_server_protocol
   collection: ^1.15.0-nullsafety.4
+
+dev_dependencies:
+  test: any
+
+dependency_overrides:
+  meta: 1.6.0

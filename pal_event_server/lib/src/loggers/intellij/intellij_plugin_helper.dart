@@ -18,13 +18,16 @@ import 'dart:io';
 
 import 'package:archive/archive.dart';
 import 'package:archive/archive_io.dart';
+import 'package:logging/logging.dart';
 import 'package:path/path.dart' as path;
 import 'package:taqo_common/platform/platform.dart';
 
-const intelliJAssetPaths = {
-  PlatformOs.linux: '/usr/lib/taqo/pal_intellij_plugin.zip',
+final _logger = Logger('IntelliJPluginHelper');
+
+const intelliJAssetDirs = {
+  PlatformOs.linux: '/usr/lib/taqo/',
   PlatformOs.macos:
-      '/Applications/Taqo.app/Contents/Frameworks/App.framework/Resources/flutter_assets/assets/pal_intellij_plugin.zip'
+      '/Applications/Taqo.app/Contents/Frameworks/App.framework/Resources/flutter_assets/assets/'
 };
 final homeDir = Directory(Platform.environment['HOME']);
 
@@ -44,8 +47,8 @@ final searchPaths = {
 };
 
 final intelliJPaths = [
-  //RegExp(r'\.?AndroidStudio(?:WithBlaze)?\d+\.\d+'),
-  RegExp(r'\.?IdeaIC\d{4}\.\d+'),
+  RegExp(r'\.?(AndroidStudio[A-Za-z]*)(\d+\.\d+)'),
+  RegExp(r'\.?(IdeaI[CU])(\d{4}\.\d+)'),
 ];
 
 String getPluginDir(Directory dir) {
@@ -56,9 +59,52 @@ String getPluginDir(Directory dir) {
   }
 }
 
-void extractIntelliJPlugin(String directory) async {
-  final zipFile =
-      await File(intelliJAssetPaths[Platform.operatingSystem]).readAsBytes();
+String extractVersionRepFromPluginFile(String pluginPath) {
+  final pluginRegExp = RegExp(r'pal_intellij_plugin-(\d+)\.\d+\.\d+\.zip');
+  final pluginBase = path.basename(pluginPath);
+  var pluginMatch = pluginRegExp.firstMatch(pluginBase);
+  return pluginMatch?.group(1);
+}
+
+String extractVersionRepFromIdeSupportFolder(String ideSupportPath) {
+  final ideSupportBase = path.basename(ideSupportPath);
+  for (var idePath in intelliJPaths) {
+    var ideMatch = idePath.firstMatch(ideSupportBase);
+    if (ideMatch != null) {
+      var ide = ideMatch.group(1);
+      var version = ideMatch.group(2);
+      _logger.info('Detected $ideSupportBase ($ide, version $version)');
+
+      if (ide.startsWith('AndroidStudio') && version == '4.2') {
+        return '202';
+      } else if (RegExp(r'^\d{4}\.\d$').hasMatch(version)) {
+        // e.g. '2020.3' => '203'
+        return version.substring(2, 4) + version[5];
+      } else {
+        _logger.info('Does not support $ideSupportBase');
+      }
+    }
+  }
+  return null;
+}
+
+Future<Map<String, String>> loadSupportedVersions() async {
+  final pluginRegExp = RegExp(r'(\d+)\.\d+\.\d+');
+  final intelliJAssetDir =
+      Directory(intelliJAssetDirs[Platform.operatingSystem]);
+  var versionPathMap = <String, String>{};
+  await for (var asset in intelliJAssetDir.list()) {
+    var versionRep = extractVersionRepFromPluginFile(asset.path);
+    if (versionRep != null) {
+      _logger.info('Support IntelliJ version $versionRep at ${asset.path}');
+      versionPathMap[versionRep] = asset.path;
+    }
+  }
+  return versionPathMap;
+}
+
+void extractIntelliJPlugin(String directory, String pluginPath) async {
+  final zipFile = await File(pluginPath).readAsBytes();
   final pluginPkg = ZipDecoder().decodeBytes(zipFile);
 
   for (var item in pluginPkg) {
@@ -76,13 +122,16 @@ void extractIntelliJPlugin(String directory) async {
 }
 
 void enableIntelliJPlugin() async {
+  final versionPathMap = await loadSupportedVersions();
   for (var toCheck in searchPaths[Platform.operatingSystem]) {
     await for (var dir in toCheck.list()) {
-      final baseDir = path.basename(dir.path);
-
-      for (var idePath in intelliJPaths) {
-        if (idePath.hasMatch(baseDir)) {
-          await extractIntelliJPlugin(getPluginDir(dir));
+      final versionRep = extractVersionRepFromIdeSupportFolder(dir.path);
+      if (versionRep != null) {
+        final pluginPath = versionPathMap[versionRep];
+        if (pluginPath != null) {
+          await extractIntelliJPlugin(getPluginDir(dir), pluginPath);
+        } else {
+          _logger.info('IDE at ${dir.path} has no corresponding plugins.');
         }
       }
     }

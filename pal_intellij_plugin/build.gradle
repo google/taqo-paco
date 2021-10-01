@@ -28,9 +28,18 @@ patchPluginXml {
       <em>most HTML tags may be used</em>"""
 }
 
-task copyPlugin(type: Copy) {
-    from buildPlugin
-    into "$buildDir/distributions"
-    rename { String filenName -> "pal_intellij_plugin.zip"}
-    // rename { String filenName -> "pal_intellij_plugin-${buildVersion}.zip"}
+//task copyPlugin(type: Copy) {
+//    from buildPlugin
+//    into "$buildDir/distributions"
+//    rename { String filenName -> "pal_intellij_plugin.zip"}
+//    // rename { String filenName -> "pal_intellij_plugin-${buildVersion}.zip"}
+//}
+
+tasks {
+    instrumentCode {
+        compilerVersion = "$baseVersion"
+    }
+    instrumentTestCode {
+        compilerVersion = "$baseVersion"
+    }
 }

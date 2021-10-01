@@ -57,6 +57,7 @@ Future<void> writeGradleProperties(
 dartPluginVersion = ${spec.dartPluginVersion}
 flutterPluginVersion = $release.$pluginCount
 buildVersion = ${spec.sinceBuild}
+baseVersion = ${spec.baseVersion}
 ''';
   final propertiesFile = File('$rootPath/gradle.properties');
   await propertiesFile.writeAsString(contents);
