@@ -37,3 +37,6 @@ pushd pal_event_server || exit
 "$DART_SDK"/bin/pub get
 popd || exit
 
+pushd pal_intellij_plugin/builder || exit
+"$DART_SDK"/bin/pub get
+popd || exit

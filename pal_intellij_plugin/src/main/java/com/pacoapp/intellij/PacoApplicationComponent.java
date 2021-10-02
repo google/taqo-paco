@@ -48,7 +48,6 @@ import com.pacoapp.paco.net.EventUploader;
 import com.pacoapp.paco.net.tesp.TespClient;
 import com.pacoapp.paco.net.tesp.message.request.TespRequestAddEvent;
 import com.pacoapp.paco.shared.model2.*;
-import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joda.time.DateTime;
@@ -141,7 +140,6 @@ public class PacoApplicationComponent implements ApplicationComponent {
         outputs.add(new Output("type", type.toString()));
         outputs.add(new Output("apps_used", getIdeVersion()));
         //TODO detect if we are in a flutter experiment to guard adding this output
-        outputs.add(new Output("flutterSetting_ReloadOnSave", isReloadOnSaveSet()));
         //outputs.add(new Output("ide", "IntelliJ IDEA"));0
         if (data != null && data.keySet() != null) {
           for (String name : data.keySet()) {
@@ -151,24 +149,6 @@ public class PacoApplicationComponent implements ApplicationComponent {
           event.setWhat(outputs);
         }
         pacoEventsQueue.add(event);
-      }
-
-      private String isReloadOnSaveSet() {
-        try {
-          Class settings = this.getClass().getClassLoader().loadClass("io.flutter.settings.FlutterSettings");
-          if (settings != null) {
-            FlutterSettings flutterSettings = FlutterSettings.getInstance();
-            if (flutterSettings != null) {
-              return String.valueOf(flutterSettings.isReloadOnSave());
-            } else {
-              return "unknown";
-            }
-          } else {
-            return "Unknown";
-          }
-        } catch (ClassNotFoundException e) {
-          return "Unknown";
-        }
       }
     });
   }

@@ -54,6 +54,6 @@ popd || exit
 
 # Build IntelliJ Plugin
 pushd pal_intellij_plugin || exit
-./gradlew copyPlugin
-cp "build/distributions/pal_intellij_plugin.zip" "$OUT_DIR/"
+dart --no-sound-null-safety builder/bin/builder.dart
+cp build/distributions/pal_intellij_plugin-*.zip "$OUT_DIR/"
 popd || exit

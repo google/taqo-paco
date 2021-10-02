@@ -18,7 +18,7 @@ import 'flutter_intellij.dart';
 import 'patches.dart';
 
 final BuildSpec buildSpec = BuildSpec(
-    flutter_intellij_commit: '7793cfc', flutter_intellij_release: '58.0');
+    flutter_intellij_commit: 'release_60', flutter_intellij_release: '60.1');
 
 class BuildSpec {
   final String flutter_intellij_commit;
@@ -46,15 +46,15 @@ class BuildSpec {
 }
 
 Future<void> runGradleBuild() async {
-  var args = ['copyPlugin'];
+  var args = ['buildPlugin'];
   Process process;
   if (Platform.isWindows) {
     process = await Process.start('.\\gradlew.bat', args);
   } else {
     process = await Process.start('./gradlew', args);
   }
-  await stdout.addStream(process.stdout);
-  await stderr.addStream(process.stderr);
+  await Future.wait(
+      [stdout.addStream(process.stdout), stderr.addStream(process.stderr)]);
 }
 
 Future<void> buildPlugins(BuildSpec spec) async {
