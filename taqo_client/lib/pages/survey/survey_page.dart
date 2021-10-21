@@ -239,7 +239,7 @@ class _SurveyPageState extends State<SurveyPage> {
       hint: Text('Please select'),
       isExpanded: true,
       value: (_event.responses[input.name] != null)
-          ? _event.responses[input.name]
+      ? input.listChoices[_event.responses[input.name] - 1].toString()
           : null,
       items: input.listChoices.map((String value) {
         return DropdownMenuItem<String>(
@@ -249,7 +249,7 @@ class _SurveyPageState extends State<SurveyPage> {
       }).toList(),
       onChanged: (String newValue) {
         setState(() {
-          _event.responses[input.name] = newValue;
+          _event.responses[input.name] = input.listChoices.indexOf(newValue) + 1;
         });
       },
     );
