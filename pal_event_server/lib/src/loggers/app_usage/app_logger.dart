@@ -130,8 +130,8 @@ class AppLogger extends PacoEventLogger with EventTriggerSource {
 
       // Handle triggers
       final triggerEvents = <TriggerEvent>[];
-      triggerEvents.add(createEventTriggers(appStartCue, data[appNameField]));
-
+      final cueValue = '${data[appNameField]}:${data[windowNameField]}';
+      triggerEvents.add(createEventTriggers(appStartCue, cueValue));
       broadcastEventsForTriggers(triggerEvents);
     } else if (data is String && data.isNotEmpty) {
       final triggerEvent = createEventTriggers(appClosedCue, data);

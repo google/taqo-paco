@@ -165,11 +165,9 @@ mixin EventTriggerSource {
                   event.eventText,
                   interruptCue);
             } else {
-              cueFiltersMatch = ((event.sourceId?.isEmpty ?? true) &&
-                      (interruptCue.cueSource?.isEmpty ?? true)) ||
-                  (event.sourceId == interruptCue.cueSource);
+              cueFiltersMatch = eventMatchesCueSource(interruptCue.cueSource, event.sourceId);
             }
-          } else if (_isExperimentEventTrigger(interruptCue)) {
+          } else if (_isExperimentLifecycleEventTrigger(interruptCue)) {
             cueFiltersMatch = (event.sourceId?.isNotEmpty ?? false) &&
                 (int.tryParse(event.sourceId) == experiment.id);
           } else {
@@ -218,7 +216,7 @@ mixin EventTriggerSource {
         cueCode == InterruptCue.IDE_IDEA_USAGE;
   }
 
-  bool _isExperimentEventTrigger(InterruptCue interruptCue) {
+  bool _isExperimentLifecycleEventTrigger(InterruptCue interruptCue) {
     final cueCode = interruptCue.cueCode;
     return cueCode == InterruptCue.PACO_EXPERIMENT_JOINED_EVENT ||
         cueCode == InterruptCue.PACO_EXPERIMENT_ENDED_EVENT ||
@@ -290,4 +288,11 @@ mixin EventTriggerSource {
         "${sharedPrefsRecentlyTriggeredKey}_${uniqueTriggerString}",
         when.millisecondsSinceEpoch);
   }
+}
+
+bool eventMatchesCueSource(String cueSource, String eventSource) {
+  if ((eventSource?.isEmpty ?? true) && (cueSource?.isEmpty ?? true)) {
+    return true;
+  }
+  return RegExp(cueSource).hasMatch(eventSource);
 }
