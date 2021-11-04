@@ -20,6 +20,7 @@ environment:
 dependencies:
   archive: ^2.0.13
   http: ^0.12.2
+  logging: ^0.11.4
   pedantic: ^1.9.0
   sembast: ^2.3.0
   sqlite3: ^1.1.2
