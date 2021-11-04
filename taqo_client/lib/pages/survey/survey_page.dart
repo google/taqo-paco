@@ -396,7 +396,8 @@ class _SurveyPageState extends State<SurveyPage> {
       final alarm = entry.value;
       if (alarm.experiment.id == _experiment.id &&
           alarm.experimentGroup.name == _experimentGroup.name &&
-          alarm.time.isBefore(DateTime.now())) {
+          alarm.time.isBefore(DateTime.now()) &&
+      !alarm.time.add(Duration(minutes: alarm.action.timeout)).isBefore(DateTime.now())) {
         // This alarm is the timeout for the notification
         // The alarm for the notification was already cleared when it fired
         _event.actionId = alarm.action.id;
