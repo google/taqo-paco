@@ -14,6 +14,7 @@
 
 // @dart=2.9
 
+import 'package:logging/logging.dart';
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/paco_action.dart';
 import 'package:taqo_common/model/experiment.dart';
@@ -30,6 +31,9 @@ import '../experiment_service_local.dart';
 import '../utils.dart';
 
 class TriggerEvent {
+
+  final _logger = Logger('TriggerEvent');
+
   DateTime dateTime;
   int code;
   String sourceId;
@@ -51,6 +55,8 @@ class TriggerEvent {
 }
 
 mixin EventTriggerSource {
+  final _logger = Logger('EventTriggerSource');
+
   static const sharedPrefsRecentlyTriggeredKey = 'recentlyTriggered';
 
   /// Create [TriggerEvent] objects
@@ -94,6 +100,7 @@ mixin EventTriggerSource {
       final InterruptTrigger interruptTrigger = triggerInfo[1];
       if (await _recentlyTriggered(event.dateTime, uniqueStringForTrigger,
           interruptTrigger.minimumBuffer)) {
+        _logger.info("trigger ${uniqueStringForTrigger} was already recently triggered.");
         continue;
       }
 

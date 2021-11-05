@@ -29,19 +29,26 @@ class TaqoSharedPrefs {
   String _sharedPrefDbPath;
   Map<String, dynamic> _sharedPrefMap;
 
-  TaqoSharedPrefs(String path)
-      : _sharedPrefDbPath = join(path, _sharedPrefDbFile),
-        _sharedPrefMap = <String, dynamic>{};
+  static TaqoSharedPrefs _instance;
 
-  Future _loadPrefs() async {
-    _sharedPrefMap.clear();
+  factory TaqoSharedPrefs(String path)  => _instance ?? TaqoSharedPrefs._internal(path);
 
-    final dbFile = await File(_sharedPrefDbPath);
-    if (!(await dbFile.exists())) {
+  TaqoSharedPrefs._internal(String path) {
+    _logger.info("Constructing a new TaqoSharedPrefs");
+    _sharedPrefDbPath = join(path, _sharedPrefDbFile);
+    _sharedPrefMap = <String, dynamic>{};
+    _loadPrefs();
+    _instance = this;
+  }
+
+  _loadPrefs()  {
+    final dbFile = File(_sharedPrefDbPath);
+    if (!(dbFile.existsSync())) {
       return;
     }
 
-    final contents = await dbFile.readAsString();
+    final contents = dbFile.readAsStringSync();
+    _logger.info("load prefs contents ${contents}");
     try {
       var jsonDecoded = jsonDecode(contents);
       _sharedPrefMap.addAll(jsonDecoded);
@@ -53,18 +60,17 @@ class TaqoSharedPrefs {
   Future _writePrefs() async {
     final dbFile = await File(_sharedPrefDbPath);
     final contents = jsonEncode(_sharedPrefMap);
+    _logger.info("writing prefs ${contents}");
     return dbFile.writeAsString(contents, mode: FileMode.write);
   }
 
   /// Returns all keys in the persistent storage
   Future<Set<String>> getKeys() async {
-    await _loadPrefs();
     return Set.from(_sharedPrefMap.keys);
   }
 
   /// Reads a value of any type from the persistent storage
   Future get(String key) async {
-    await _loadPrefs();
     return _sharedPrefMap[key];
   }
 
@@ -84,7 +90,6 @@ class TaqoSharedPrefs {
   Future<bool> containsKey(String key) async => (await getKeys()).contains(key);
 
   Future _setValue(String key, dynamic value) async {
-    _loadPrefs();
     _sharedPrefMap[key] = value;
     await _writePrefs();
     return value;
