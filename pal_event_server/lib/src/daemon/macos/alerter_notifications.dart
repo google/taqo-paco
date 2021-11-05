@@ -54,6 +54,7 @@ Future<void> cancel(int id) async {
 }
 
 Future<int> notify(int id, String title, String body, {int timeout = 0}) async {
+  _logger.info("Launching alerter for ${id}");
   await Process.start(_alerterBinary, [
     '-title', title, //
     '-message', body,
