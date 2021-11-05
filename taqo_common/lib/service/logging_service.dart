@@ -22,6 +22,8 @@ import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
 import '../storage/local_file_storage.dart';
+import 'package:taqo_common/util/zoned_date_time.dart';
+
 
 class LoggingService {
   static const _MAX_LOG_FILES_COUNT = 7;
@@ -53,7 +55,7 @@ class LoggingService {
     Logger.root.level = Level.INFO;
     Logger.root.onRecord.listen((record) {
       LoggingService.log(
-          '${record.time.toIso8601String()}  ${record.level.name} [${record.loggerName}]: ${record.message}');
+          '${_formatTime(record.time)}  ${record.level.name} [${record.loggerName}]: ${record.message}');
     });
   }
 
@@ -109,4 +111,6 @@ class LoggingService {
     // Output to file
     _logSink.writeln(message);
   }
+
+  static String _formatTime(DateTime time) => ZonedDateTime.fromDateTime(time).toIso8601String(withColon:true);
 }
