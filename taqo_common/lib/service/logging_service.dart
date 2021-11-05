@@ -53,13 +53,13 @@ class LoggingService {
     Logger.root.level = Level.INFO;
     Logger.root.onRecord.listen((record) {
       LoggingService.log(
-          '${record.time.toUtc().toIso8601String()} ${record.level.name} [${record.loggerName}]: ${record.message}');
+          '${record.time.toIso8601String()}  ${record.level.name} [${record.loggerName}]: ${record.message}');
     });
   }
 
   // log file name format is yyyy-MM-dd.log
   static String _getCurrentLogFileName() =>
-      '$_logFilePrefix${DateTime.now().toUtc().toIso8601String().substring(0, _ISO8601_INDEX_DAY)}.log';
+      '$_logFilePrefix${DateTime.now().toIso8601String().substring(0, _ISO8601_INDEX_DAY)}.log';
   static IOSink get _logSink {
     var logFileName = _getCurrentLogFileName();
     if (logFileName != _logFileName) {
