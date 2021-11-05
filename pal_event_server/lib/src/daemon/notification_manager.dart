@@ -27,7 +27,7 @@ import 'alarm_manager.dart' show timeout;
 import 'linux/dbus_notifications.dart' as linux_notifications;
 import 'macos/alerter_notifications.dart' as macos_notifications;
 
-final _logger = Logger('LinuxNotificationManager');
+final _logger = Logger('TaqoNotificationManager');
 
 const _appName = 'Taqo';
 
