@@ -14,6 +14,7 @@
 
 import Cocoa
 import Darwin
+import Foundation
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -44,6 +45,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     task.executableURL = URL(fileURLWithPath: taqoDaemon.absoluteString)
     task.arguments = []
     task.standardInput = pty
+
+    if let outUrl = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?.appendingPathComponent("com.taqo/server.out", isDirectory: false) {
+      if !FileManager.default.fileExists(atPath: outUrl.path) {
+        FileManager.default.createFile(atPath: outUrl.path, contents: nil)
+      }
+      if let outFile = try? FileHandle.init(forWritingTo: outUrl) {
+        task.standardOutput = outFile
+      }
+    }
+
+    if let errUrl = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?.appendingPathComponent("com.taqo/server.err", isDirectory: false) {
+      if !FileManager.default.fileExists(atPath: errUrl.path) {
+        FileManager.default.createFile(atPath: errUrl.path, contents: nil)
+      }
+      if let errFile = try? FileHandle.init(forWritingTo: errUrl) {
+        task.standardError = errFile
+      }
+    }
+
     do {
       try task.run()
     } catch {
