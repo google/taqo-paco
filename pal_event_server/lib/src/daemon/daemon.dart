@@ -25,6 +25,7 @@ import '../sqlite_database/sqlite_database.dart';
 import 'alarm_manager.dart' as alarm_manager;
 import 'notification_manager.dart' as notification_manager;
 import 'linux/dbus_notifications.dart' as linux_notifications;
+import 'macos/alerter_notifications.dart' as macos_notifications;
 
 final _logger = Logger('Daemon');
 
@@ -88,6 +89,8 @@ void start() async {
   if (Platform.isLinux) {
     // Monitor DBus for notification actions
     linux_notifications.monitor();
+  }  else if (Platform.isMacOS) {
+    macos_notifications.askNotificationPermission();
   }
 
   // Schedule
