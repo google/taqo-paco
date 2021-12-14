@@ -194,8 +194,7 @@ isMavericks()
                                sound:(NSString *)sound;
 {
   if (options[@"groupID"] && [self notificationWithGroupIdExists:options[@"groupID"]]) {
-    NSLog(@"Sending notification with the same groupID as existing ones is not supported.");
-    exit(1);
+    [self removeNotificationWithGroupID:options[@"groupID"]];
   }
 
   UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
@@ -230,23 +229,36 @@ isMavericks()
       // notification was removed by another process.
       dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0),
                      ^{
-        __block BOOL notificationIsRemoved;
+        __block BOOL notificationStillPresent;
         do {
-          NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:DefaultsSuiteName];
+          notificationStillPresent = NO;
+          UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+          dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+          [center getDeliveredNotificationsWithCompletionHandler:^(NSArray<UNNotification *> * _Nonnull notifications) {
+            for(UNNotification *notification in notifications) {
+              if ([notification.request.content.userInfo[@"uuid"]  isEqualToString:[NSString stringWithFormat:@"%ld", self.hash] ]) {
+                notificationStillPresent = YES;
+                break;
+              }
+            }
+            dispatch_semaphore_signal(semaphore);
+          }];
+          dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+          if (notificationStillPresent) [NSThread sleepForTimeInterval:5.20f];
+        } while (notificationStillPresent);
 
-          NSString *uuidRemoved = [defaults objectForKey:options[@"groupID"]];
-          notificationIsRemoved = (uuidRemoved != nil && [uuidRemoved isEqualToString:options[@"uuid"]]);
-          if (notificationIsRemoved) {
-            [defaults removeObjectForKey:options[@"groupID"]];
-          } else {
-            [NSThread sleepForTimeInterval:0.20f];
-          }
-        } while (!notificationIsRemoved);
-        dispatch_async(dispatch_get_main_queue(), ^{
 
-          [self QuitRemovalWithOutputEvent:[options[@"output"] isEqualToString:@"outputEvent"]] ;
-          exit(0);
-        });
+        NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:DefaultsSuiteName];
+
+        BOOL notificationIsRemoved = [defaults boolForKey:options[@"uuid"]];
+        if (notificationIsRemoved) {
+          [defaults removeObjectForKey:options[@"uuid"]];
+          dispatch_async(dispatch_get_main_queue(), ^{
+
+            [self QuitRemovalWithOutputEvent:[options[@"output"] isEqualToString:@"outputEvent"]] ;
+            exit(0);
+          });
+        }
       });
     }
 
@@ -272,6 +284,11 @@ isMavericks()
   }];
 }
 
+- (void)markNotificationRemoved: (UNNotification *) notification;
+{
+  NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:DefaultsSuiteName];
+  [defaults setBool:YES forKey:notification.request.content.userInfo[@"uuid"]];
+}
 
 
 - (void)removeNotificationWithGroupID:(NSString *)groupID;
@@ -282,9 +299,8 @@ isMavericks()
   [center getDeliveredNotificationsWithCompletionHandler:^(NSArray<UNNotification *> * _Nonnull notifications) {
     for (UNNotification *userNotification in notifications) {
       if ([@"ALL" isEqualToString:groupID] || [userNotification.request.content.userInfo[@"groupID"] isEqualToString:groupID]) {
+        [self markNotificationRemoved:userNotification];
         [center removeDeliveredNotificationsWithIdentifiers:  @[userNotification.request.identifier]];
-        NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:DefaultsSuiteName];
-        [defaults setObject:userNotification.request.content.userInfo[@"uuid"] forKey:groupID];
       }
     }
     dispatch_semaphore_signal(semaphore);
@@ -310,8 +326,6 @@ isMavericks()
   dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
 
   if (found) return YES;
-  NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:DefaultsSuiteName];
-  if ([defaults objectForKey:groupID] != nil) return YES;
   return NO;
 }
 
