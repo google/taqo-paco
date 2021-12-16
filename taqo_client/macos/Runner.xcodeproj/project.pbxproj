@@ -28,6 +28,7 @@
 		33CC11132044BFA00003C045 /* MainFlutterWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33CC11122044BFA00003C045 /* MainFlutterWindow.swift */; };
 		511EEE1A273DD29A00BCB07C /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 511EEE19273DD29A00BCB07C /* AppDelegate.m */; };
 		511EEE24273DD29E00BCB07C /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 511EEE23273DD29E00BCB07C /* main.m */; };
+		512E3CDB2769E0670059FD33 /* NotificationWithState.m in Sources */ = {isa = PBXBuildFile; fileRef = 512E3CDA2769E0670059FD33 /* NotificationWithState.m */; };
 		51A01875273DDD2C00A06E26 /* alerter.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 511EEE16273DD29A00BCB07C /* alerter.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		51A0187D273F368F00A06E26 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 33CC10F22044A3C60003C045 /* Assets.xcassets */; };
 		51A0188F2742F2F600A06E26 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 51A0188E2742F2F600A06E26 /* InfoPlist.strings */; };
@@ -115,6 +116,8 @@
 		511EEE19273DD29A00BCB07C /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = ../../../third_party/alerter/alerter/AppDelegate.m; sourceTree = "<group>"; };
 		511EEE23273DD29E00BCB07C /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = main.m; path = ../../../third_party/alerter/alerter/main.m; sourceTree = "<group>"; };
 		511EEE25273DD29E00BCB07C /* alerter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = alerter.entitlements; sourceTree = "<group>"; };
+		512E3CDA2769E0670059FD33 /* NotificationWithState.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NotificationWithState.m; sourceTree = "<group>"; };
+		512E3CDC2769E08F0059FD33 /* NotificationWithState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NotificationWithState.h; sourceTree = "<group>"; };
 		51A0188E2742F2F600A06E26 /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = InfoPlist.strings; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
@@ -244,6 +247,8 @@
 				511EEE23273DD29E00BCB07C /* main.m */,
 				511EEE25273DD29E00BCB07C /* alerter.entitlements */,
 				51A0188E2742F2F600A06E26 /* InfoPlist.strings */,
+				512E3CDA2769E0670059FD33 /* NotificationWithState.m */,
+				512E3CDC2769E08F0059FD33 /* NotificationWithState.h */,
 			);
 			path = alerter;
 			sourceTree = "<group>";
@@ -527,6 +532,7 @@
 			files = (
 				511EEE24273DD29E00BCB07C /* main.m in Sources */,
 				511EEE1A273DD29A00BCB07C /* AppDelegate.m in Sources */,
+				512E3CDB2769E0670059FD33 /* NotificationWithState.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

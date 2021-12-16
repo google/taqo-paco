@@ -1,4 +1,5 @@
 #import "AppDelegate.h"
+#import "NotificationWithState.h"
 #import <objc/runtime.h>
 
 NSString * const NotificationCenterUIBundleID = @"com.apple.notificationcenterui";
@@ -33,6 +34,9 @@ isMavericks()
 }
 @end
 
+@interface AppDelegate ()
+@property NSString *outputType;
+@end
 
 @implementation AppDelegate
 
@@ -109,7 +113,7 @@ isMavericks()
 {
   if ([[[NSProcessInfo processInfo] arguments] indexOfObject:@"-help"] != NSNotFound) {
     [self printHelpBanner];
-    exit(0);
+    [NSApp terminate:nil];;
   }
 
   NSArray *runningProcesses = [[[NSWorkspace sharedWorkspace] runningApplications] valueForKey:@"bundleIdentifier"];
@@ -129,7 +133,7 @@ isMavericks()
 
   if ([[[NSProcessInfo processInfo] arguments] indexOfObject:@"-permission"] != NSNotFound) {
     [self askPermission];
-    exit(0);
+    [NSApp terminate:nil];
   }
 
   NSString *subtitle = defaults[@"subtitle"];
@@ -153,7 +157,7 @@ isMavericks()
 
   if (remove) {
     [self removeNotificationWithGroupID:remove];
-    if (message == nil) exit(0);
+    if (message == nil) [NSApp terminate:nil];
   }
 
 
@@ -166,9 +170,9 @@ isMavericks()
 
     NSMutableDictionary *options = [NSMutableDictionary dictionary];
 
-    options[@"output"] = @"outputEvent" ;
+    _outputType = @"outputEvent" ;
     if([[[NSProcessInfo processInfo] arguments] containsObject:@"-json"] == true) {
-      options[@"output"] = @"json" ;
+      _outputType = @"json" ;
     }
 
     if (defaults[@"group"])    options[@"groupID"]          = defaults[@"group"];
@@ -177,6 +181,7 @@ isMavericks()
     if (defaults[@"timeout"])    options[@"timeout"]          = defaults[@"timeout"];
 
     options[@"uuid"] = [NSString stringWithFormat:@"%ld", self.hash] ;
+    NSLog(@"Notification uuid is %@", options[@"uuid"]);
 
     [self deliverNotificationWithTitle:defaults[@"title"] ?: @"Terminal"
                               subtitle:subtitle
@@ -194,6 +199,7 @@ isMavericks()
                                sound:(NSString *)sound;
 {
   if (options[@"groupID"] && [self notificationWithGroupIdExists:options[@"groupID"]]) {
+    NSLog(@"Found notification with groupID %@.", options[@"groupID"]);
     [self removeNotificationWithGroupID:options[@"groupID"]];
   }
 
@@ -244,19 +250,27 @@ isMavericks()
             dispatch_semaphore_signal(semaphore);
           }];
           dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-          if (notificationStillPresent) [NSThread sleepForTimeInterval:5.20f];
+          if (notificationStillPresent) [NSThread sleepForTimeInterval:0.10f];
         } while (notificationStillPresent);
 
 
         NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:DefaultsSuiteName];
-
-        BOOL notificationIsRemoved = [defaults boolForKey:options[@"uuid"]];
-        if (notificationIsRemoved) {
+        NSError *error = nil;
+        NSData *data = [defaults objectForKey:options[@"uuid"]];
+        NotificationWithState *notification = nil;
+        if (data) {
           [defaults removeObjectForKey:options[@"uuid"]];
+          notification = [NSKeyedUnarchiver unarchivedObjectOfClass:[NotificationWithState class] fromData:data error:&error];
+        }
+        if (data==nil || error!=nil || notification==nil) {
           dispatch_async(dispatch_get_main_queue(), ^{
-
-            [self QuitRemovalWithOutputEvent:[options[@"output"] isEqualToString:@"outputEvent"]] ;
-            exit(0);
+            [self Quit:@{@"activationType": @"unknown"} notification:nil];
+            [NSApp terminate:nil];
+          });
+        } else {
+          dispatch_async(dispatch_get_main_queue(), ^{
+            [self Quit:@{@"activationType": notification.state} notification:notification.notification];
+            [NSApp terminate:nil];
           });
         }
       });
@@ -277,17 +291,24 @@ isMavericks()
               break;
             }
           }
-          exit(0);
+          [NSApp terminate:nil];
         }];
       });
     }
   }];
 }
 
-- (void)markNotificationRemoved: (UNNotification *) notification;
+- (void)markNotification: (UNNotification *) notification withState: (NSString *) state;
 {
   NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:DefaultsSuiteName];
-  [defaults setBool:YES forKey:notification.request.content.userInfo[@"uuid"]];
+  NSError *error = nil;
+  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:[NotificationWithState notification:notification state:state] requiringSecureCoding:YES error:&error];
+  if (error) {
+    NSLog(@"Error when archiving a notification: %@", error);
+    return;
+  }
+
+  [defaults setObject:data forKey:notification.request.content.userInfo[@"uuid"]];
 }
 
 
@@ -299,7 +320,7 @@ isMavericks()
   [center getDeliveredNotificationsWithCompletionHandler:^(NSArray<UNNotification *> * _Nonnull notifications) {
     for (UNNotification *userNotification in notifications) {
       if ([@"ALL" isEqualToString:groupID] || [userNotification.request.content.userInfo[@"groupID"] isEqualToString:groupID]) {
-        [self markNotificationRemoved:userNotification];
+        [self markNotification:userNotification withState:@"removed"];
         [center removeDeliveredNotificationsWithIdentifiers:  @[userNotification.request.identifier]];
       }
     }
@@ -329,63 +350,30 @@ isMavericks()
   return NO;
 }
 
-- (void)cleanRemovalRecordsWithGroupID:(NSString *)groupID;
-{
-  NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:DefaultsSuiteName];
-  [defaults removeObjectForKey:groupID];
-}
-
 // Callback to handle user actions (clicked/dismissed)
 // See https://developer.apple.com/documentation/usernotifications/unusernotificationcenterdelegate/1649501-usernotificationcenter?language=objc
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center
 didReceiveNotificationResponse:(UNNotificationResponse *)response
          withCompletionHandler:(void (^)(void))completionHandler {
-  NSLog(@"Notification got a response.");
-  if ([response.notification.request.content.userInfo[@"uuid"]  isNotEqualTo:[NSString stringWithFormat:@"%ld", self.hash] ]) {
-    return;
-  };
+  NSLog(@"Received notification response for uuid %@.", response.notification.request.content.userInfo[@"uuid"]);
+  NSString *notificationState;
 
   if ([response.actionIdentifier isEqualToString: UNNotificationDefaultActionIdentifier]) {
-    [self Quit:@{@"activationType" : @"contentsClicked"} notification:response.notification];
+    notificationState = @"contentsClicked";
   } else if ([response.actionIdentifier isEqualToString: UNNotificationDismissActionIdentifier]) {
-    [self Quit:@{@"activationType" : @"closed"} notification:response.notification];
+    notificationState = @"closed";
   } else {
     NSLog(@"Unexpected action identifier (%@) received.", response.actionIdentifier);
   }
+
   completionHandler();
-  // Wait for the async part of completionHandler to finish.
-  [NSThread sleepForTimeInterval:0.20f];
-  exit(0);
-
-}
-- (BOOL)QuitRemovalWithOutputEvent: (BOOL) outputIsEvent;
-{
-  if (outputIsEvent) {
-    printf("%s", "@REMOVED" );
-  } else {
-    NSError *error = nil;
-    NSData *json;
-    NSDictionary *dict = @{@"activationType" : @"removed"};
-    // Dictionary convertable to JSON ?
-    if ([NSJSONSerialization isValidJSONObject:dict])
-    {
-      // Serialize the dictionary
-      json = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:&error];
-
-      // If no errors, let's view the JSON
-      if (json != nil && error == nil)
-      {
-        NSString *jsonString = [[NSString alloc] initWithData:json encoding:NSUTF8StringEncoding];
-        printf("%s", [jsonString cStringUsingEncoding:NSUTF8StringEncoding]);
-      }
-    }
-  }
-  return 1;
+  [self markNotification:response.notification withState:notificationState];
+  NSLog(@"Marked notification %@ with state %@", response.notification.request.content.userInfo[@"uuid"], notificationState);
 }
 
 - (BOOL)Quit:(NSDictionary *)udict notification:(UNNotification *)notification;
 {
-  if ([notification.request.content.userInfo[@"output"] isEqualToString:@"outputEvent"]) {
+  if ([_outputType isEqualToString:@"outputEvent"]) {
     if ([udict[@"activationType"] isEqualToString:@"closed"]) {
 
       printf("%s", "@CLOSED" );
@@ -394,14 +382,16 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
       printf("%s", "@TIMEOUT" );
     } else  if ([udict[@"activationType"] isEqualToString:@"contentsClicked"]) {
       printf("%s", "@CONTENTCLICKED" );
+    } else  if ([udict[@"activationType"] isEqualToString:@"removed"]) {
+      printf("%s", "@REMOVED" );
+    } else  if ([udict[@"activationType"] isEqualToString:@"unknown"]) {
+      printf("%s", "@UNKNOWN" );
     } else {
       NSLog(@"Unexpected quit information: %@", [udict description]);
     }
 
-    return 1 ;
+    return YES;
   }
-
-
 
 
   NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
@@ -411,8 +401,10 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
   // Dictionary with several key/value pairs and the above array of arrays
   NSMutableDictionary *dict = [NSMutableDictionary dictionary];
   [dict addEntriesFromDictionary:udict] ;
-  [dict setValue:[dateFormatter stringFromDate:notification.date] forKey:@"deliveredAt"] ;
-  [dict setValue:[dateFormatter stringFromDate:[NSDate new]] forKey:@"activationAt"] ;
+  if (notification) {
+    [dict setValue:[dateFormatter stringFromDate:notification.date] forKey:@"deliveredAt"];
+  }
+  [dict setValue:[dateFormatter stringFromDate:[NSDate new]] forKey:@"activationAt"];
   
   NSError *error = nil;
   NSData *json;
@@ -431,7 +423,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
     }
   }
 
-  return 1 ;
+  return YES ;
 }
 
 - (void) bye; {
