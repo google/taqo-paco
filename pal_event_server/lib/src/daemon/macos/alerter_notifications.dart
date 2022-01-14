@@ -22,8 +22,8 @@ import 'package:logging/logging.dart';
 
 import '../daemon.dart' as daemon;
 
-const _alerterBinary = '/Applications/Taqo.app/Contents/MacOS/alerter';
-const _bundleId = '/com.taqo.survey.taqoClient';
+const _alerterBinary = '/Applications/Taqo.app/Contents/Frameworks/alerter.app/Contents/MacOS/alerter';
+const _bundleId = 'com.taqo.survey.taqoClient';
 
 final _logger = Logger('AlerterNotifications');
 
@@ -59,7 +59,6 @@ Future<int> notify(int id, String title, String body, {int timeout = 0}) async {
     '-title', title, //
     '-message', body,
     '-timeout', '$timeout',
-    '-sender', _bundleId,
     '-group', '$id',
     '-json',
   ]).then((Process p) {
@@ -74,4 +73,8 @@ Future<int> notify(int id, String title, String body, {int timeout = 0}) async {
 
   _notifications.add(id);
   return id;
+}
+
+Future<void> askNotificationPermission() async {
+  await Process.run(_alerterBinary, ['-permission']);
 }
