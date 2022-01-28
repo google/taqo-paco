@@ -63,21 +63,12 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "511EEE15273DD29A00BCB07C"
-            BuildableName = "alerter.app"
-            BlueprintName = "alerter"
-            ReferencedContainer = "container:Runner.xcodeproj">
-         </BuildableReference>
-      </BuildableProductRunnable>
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
             BlueprintIdentifier = "33CC10EC2044A3C60003C045"
             BuildableName = "Taqo.app"
             BlueprintName = "Runner"
             ReferencedContainer = "container:Runner.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
             argument = "-message Hello"
