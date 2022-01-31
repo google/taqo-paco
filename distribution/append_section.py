@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# Code example found at
+# https://alexomara.com/blog/adding-a-segment-to-an-existing-macos-mach-o-binary/
 import io
 import os
 import sys

@@ -26,6 +26,7 @@ fi
 # fi
 
 if [[ -z "${DART_SDK}" ]]; then
+    echo "Download the dart-sdk-modified.zip from Drive and put it in distribution/"
     echo "DART_SDK getting set to distribution/dart-sdk-modified in order to properly create a signable taqo_daemon binary"
     DART_SDK="${TAQO_ROOT}/distribution.dart-sdk-modified"
 fi
