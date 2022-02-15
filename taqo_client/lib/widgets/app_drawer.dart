@@ -161,7 +161,7 @@ class _TaqoAppDrawerWidget extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Divider(),
           ),
-
+          //AssetImage('assets/sentiment_very_dissatisfied.png'),
           ListTile(
             leading: Icon(
               Icons.info_outline,
@@ -171,9 +171,8 @@ class _TaqoAppDrawerWidget extends StatelessWidget {
             onTap: () {
               showAboutDialog(
                 context: context,
-                applicationIcon: const FlutterLogo(),
+                applicationIcon:  Image.asset('assets/paco256.png', scale: 10,),
                 applicationName: 'About Taqo',
-                //applicationVersion: 'Feb 2022',
                 applicationLegalese: 'Copyright 2022 Google LLC',
                 children: aboutTaqoWidget,
               );
