@@ -99,7 +99,33 @@ void main() async {
   // This also solves the issue with not having Pending (launch) Intents on Linux
   final activeNotification = await taqo_alarm.checkActiveNotification();
   final authState = await GoogleAuth().isAuthenticated;
+
+  // Add licenses manually for Taqo and Alerter. This help to add the licenses
+  // those are not automatically fetched and added by showLicensePage method.
+  loadManualLicenses();
+
   runApp(MyApp(activeNotification: activeNotification, authState: authState));
+}
+
+/// Add the entries to the list to load the particular license manually.
+void loadManualLicenses() async {
+  List<List<String>> licenses = [
+    ['taqo', '../LICENSE'],
+    [ 'alerter', '../third_party/alerter/LICENSE']
+  ];
+  for (List<String> license in licenses) {
+    addLicense(license[0], license[1]);
+  }
+}
+
+/// Adds the license name[licenseTitle] provided at [filePath] from the assets.
+void addLicense(String licenseTitle, String filePath) async {
+  String license = await rootBundle.loadString(filePath);
+  LicenseRegistry.addLicense(
+        () => Stream<LicenseEntry>.value(
+      new LicenseEntryWithLineBreaks(<String>[licenseTitle], license),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {

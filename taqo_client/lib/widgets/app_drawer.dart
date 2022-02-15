@@ -69,6 +69,26 @@ class _TaqoAppDrawerWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
 
+    // Added for bug #72
+    final ThemeData theme = Theme.of(context);
+
+    final TextStyle textStyle = theme.textTheme.bodyText2;
+    final List<Widget> aboutTaqoWidget = <Widget>[
+      const SizedBox(height: 24),
+      RichText(
+        text: TextSpan(
+          children: <TextSpan>[
+            TextSpan(
+                style: textStyle,
+                text: "Taqo is made possible by Flutter and many other open "
+                    "source software/libraries. Click “VIEW LICENSES” for "
+                    "more details."),
+          ],
+        ),
+      ),
+    ];
+
+    // End of add for bug #72
     return Drawer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -135,6 +155,32 @@ class _TaqoAppDrawerWidget extends StatelessWidget {
             },
             enabled: authProvider.isAuthenticated,
           ),
+
+          // Added for bug #72
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Divider(),
+          ),
+
+          ListTile(
+            leading: Icon(
+              Icons.info_outline,
+              size: _listIconSize,
+            ),
+            title: const Text('About Taqo'),
+            onTap: () {
+              showAboutDialog(
+                context: context,
+                applicationIcon: const FlutterLogo(),
+                applicationName: 'About Taqo',
+                //applicationVersion: 'Feb 2022',
+                applicationLegalese: 'Copyright 2022 Google LLC',
+                children: aboutTaqoWidget,
+              );
+            },
+          ),
+          // End of add for bug #72
+
         ],
       ),
     );
