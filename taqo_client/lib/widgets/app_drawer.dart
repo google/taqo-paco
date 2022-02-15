@@ -172,7 +172,7 @@ class _TaqoAppDrawerWidget extends StatelessWidget {
               showAboutDialog(
                 context: context,
                 applicationIcon:  Image.asset('assets/paco256.png', scale: 10,),
-                applicationName: 'About Taqo',
+                applicationName: 'Taqo',
                 applicationLegalese: 'Copyright 2022 Google LLC',
                 children: aboutTaqoWidget,
               );
