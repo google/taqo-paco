@@ -112,20 +112,22 @@ void loadManualLicenses() async {
   // Add entries to the list below to load particular licenses manually. Make
   // sure that the paths for the listed licenses are specified in the assets
   // section of pubspec.yaml
-  List<List<String>> licenses = [
+  final List<List<String>> licenses = [
     ['taqo', '../LICENSE'],
     ['alerter', '../third_party/alerter/LICENSE']
   ];
+
   final List<LicenseEntry> licenseEntries = [];
   // Iterate through each of the licenses provided in the "licenses" list and
   // then generate the LicenseEntry object.
-  for (List<String> licenseString in licenses) {
-    await generateLicenseEntry(licenseString[0], licenseString[1])
-        .then((value) => licenseEntries.add(value));
-  }
+  licenses.forEach((licenseString) async {
+    licenseEntries
+        .add(await generateLicenseEntry(licenseString[0], licenseString[1]));
+  });
+
   // Add license all at once from the stream.
   LicenseRegistry.addLicense(() {
-    return new Stream<LicenseEntry>.fromIterable(licenseEntries);
+    return Stream<LicenseEntry>.fromIterable(licenseEntries);
   });
 }
 
@@ -134,7 +136,7 @@ void loadManualLicenses() async {
 Future<LicenseEntry> generateLicenseEntry(
     String licenseTitle, String filePath) async {
   String license = await rootBundle.loadString(filePath);
-  return new LicenseEntryWithLineBreaks(<String>[licenseTitle], license);
+  return LicenseEntryWithLineBreaks(<String>[licenseTitle], license);
 }
 
 class MyApp extends StatefulWidget {
