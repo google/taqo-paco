@@ -68,10 +68,7 @@ class _TaqoAppDrawerWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-
-    // Added for bug #72
     final ThemeData theme = Theme.of(context);
-
     final TextStyle textStyle = theme.textTheme.bodyText2;
     final List<Widget> aboutTaqoWidget = <Widget>[
       const SizedBox(height: 24),
@@ -87,8 +84,6 @@ class _TaqoAppDrawerWidget extends StatelessWidget {
         ),
       ),
     ];
-
-    // End of add for bug #72
     return Drawer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -155,31 +150,21 @@ class _TaqoAppDrawerWidget extends StatelessWidget {
             },
             enabled: authProvider.isAuthenticated,
           ),
-
-          // Added for bug #72
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Divider(),
           ),
-          //AssetImage('assets/sentiment_very_dissatisfied.png'),
-          ListTile(
-            leading: Icon(
-              Icons.info_outline,
-              size: _listIconSize,
-            ),
-            title: const Text('About Taqo'),
-            onTap: () {
-              showAboutDialog(
-                context: context,
-                applicationIcon:  Image.asset('assets/paco256.png', scale: 10,),
-                applicationName: 'Taqo',
-                applicationLegalese: 'Copyright 2022 Google LLC',
-                children: aboutTaqoWidget,
-              );
-            },
-          ),
-          // End of add for bug #72
-
+          AboutListTile(
+            icon: const Icon(Icons.info_outline,
+              size: _listIconSize,),
+            applicationIcon: Image.asset(
+                    'assets/paco256.png',
+                    scale: 10,
+                  ),
+            applicationName: 'Taqo',
+            applicationLegalese: 'Copyright 2022 Google LLC',
+            aboutBoxChildren: aboutTaqoWidget,
+          )
         ],
       ),
     );

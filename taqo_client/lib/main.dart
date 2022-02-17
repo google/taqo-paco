@@ -102,30 +102,39 @@ void main() async {
 
   // Add licenses manually for Taqo and Alerter. This help to add the licenses
   // those are not automatically fetched and added by showLicensePage method.
-  loadManualLicenses();
+  await loadManualLicenses();
 
   runApp(MyApp(activeNotification: activeNotification, authState: authState));
 }
 
-/// Add the entries to the list to load the particular license manually.
+/// Loads the manually listed licenses and adds those to the license registry.
 void loadManualLicenses() async {
+  // Add entries to the list below to load particular licenses manually. Make
+  // sure that the paths for the listed licenses are specified in the assets
+  // section of pubspec.yaml
   List<List<String>> licenses = [
     ['taqo', '../LICENSE'],
-    [ 'alerter', '../third_party/alerter/LICENSE']
+    ['alerter', '../third_party/alerter/LICENSE']
   ];
-  for (List<String> license in licenses) {
-    addLicense(license[0], license[1]);
+  final List<LicenseEntry> licenseEntries = [];
+  // Iterate through each of the licenses provided in the "licenses" list and
+  // then generate the LicenseEntry object.
+  for (List<String> licenseString in licenses) {
+    await generateLicenseEntry(licenseString[0], licenseString[1])
+        .then((value) => licenseEntries.add(value));
   }
+  // Add license all at once from the stream.
+  LicenseRegistry.addLicense(() {
+    return new Stream<LicenseEntry>.fromIterable(licenseEntries);
+  });
 }
 
-/// Adds the license name[licenseTitle] provided at [filePath] from the assets.
-void addLicense(String licenseTitle, String filePath) async {
+/// Generates the LicenseEntry object for given name [licenseTitle] provided
+/// at [filePath] from the assets.
+Future<LicenseEntry> generateLicenseEntry(
+    String licenseTitle, String filePath) async {
   String license = await rootBundle.loadString(filePath);
-  LicenseRegistry.addLicense(
-        () => Stream<LicenseEntry>.value(
-      new LicenseEntryWithLineBreaks(<String>[licenseTitle], license),
-    ),
-  );
+  return new LicenseEntryWithLineBreaks(<String>[licenseTitle], license);
 }
 
 class MyApp extends StatefulWidget {
@@ -191,7 +200,9 @@ class _MyAppState extends State<MyApp> {
                 builder: (context) => RunningExperimentsPage(
                     timeout: args == null
                         ? false
-                        : args.length > 0 ? args[0] : false));
+                        : args.length > 0
+                            ? args[0]
+                            : false));
         }
         return null;
       },
