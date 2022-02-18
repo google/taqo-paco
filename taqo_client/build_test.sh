@@ -17,11 +17,12 @@ fi
 # Run test cases
 run_tests() {
   if [[ -f "pubspec.yaml" ]]; then
-    flutter test
+    flutter test --verbose
+#    flutter test -r expanded
     result=$?
     check=0
     if [ $result -ne $check ]; then
-      printf "${red}Failed some test cases${none}\n"
+      printf "\n${red}Failed some test cases${none}\n"
       exit 1
     fi
   else
