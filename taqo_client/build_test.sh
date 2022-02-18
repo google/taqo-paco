@@ -13,7 +13,7 @@ if ! type flutter >/dev/null; then
   export PATH="$PATH:/tmpfs/src/github/flutter/bin"
 #   ls
 #   echo "$PATH"
-  flutter doctor
+#   flutter doctor
   cd taqo-paco/taqo_client || none
 fi
 
