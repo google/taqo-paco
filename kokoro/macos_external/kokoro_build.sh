@@ -16,4 +16,4 @@ set -e
 # The final directory name in this path is determined by the scm name specified
 # in the job configuration.
 cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco/taqo_client"
-# ./build.sh
+./build_test.sh
