@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Setting colors 
+# Setting colors
 red=$(tput setaf 1)
 green=$(tput setaf 2)
 none=$(tput sgr0)
