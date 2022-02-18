@@ -17,8 +17,8 @@ fi
 # Run test cases
 run_tests() {
   if [[ -f "pubspec.yaml" ]]; then
-    flutter test --verbose
-#    flutter test -r expanded
+#    flutter test --verbose
+    flutter test -r expanded
     result=$?
     check=0
     if [ $result -ne $check ]; then
