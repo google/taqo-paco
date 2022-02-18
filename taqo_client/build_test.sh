@@ -23,7 +23,9 @@ run_tests() {
     rm -f coverage/lcov.info
     rm -f coverage/lcov-final.info
     flutter test
-    if (( $? != 0 )); then
+    result=$?
+    printf "Result of the test: ${result}"
+    if (( result != 0 )); then
          printf "\n${red}Error: Some test cases failed${none}\n"
         exit 1
     else
