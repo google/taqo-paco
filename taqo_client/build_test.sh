@@ -22,7 +22,6 @@ run_tests() {
     result=$?
     check=0
     if [ $result -ne $check ]; then
-      printf "\n${red}Failed some test cases${none}\n"
       exit 1
     fi
   else
@@ -33,7 +32,3 @@ run_tests() {
 
 run_tests
 
-# generate_report
-
-# Once the testing is successful, run the build
-printf "\n${green} All test cases passed!\n${none}"
