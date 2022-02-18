@@ -1,6 +1,3 @@
-#!/usr/bin/env bash
-
-# Setting colors
 red=$(tput setaf 1)
 green=$(tput setaf 2)
 none=$(tput sgr0)
@@ -8,28 +5,24 @@ none=$(tput sgr0)
 # Check if flutter is installed, if not, install the flutter
 if ! type flutter >/dev/null; then
   cd ../..
-#   pwd
+  pwd
   git clone https://github.com/flutter/flutter.git -b stable
   export PATH="$PATH:/tmpfs/src/github/flutter/bin"
-#   ls
-#   echo "$PATH"
-#   flutter doctor
+  ls
+  echo "$PATH"
   cd taqo-paco/taqo_client || none
 fi
+
 
 # Run test cases
 run_tests() {
   if [[ -f "pubspec.yaml" ]]; then
-    rm -f coverage/lcov.info
-    rm -f coverage/lcov-final.info
     flutter test
     result=$?
-    printf "Result of the test: ${result}"
-    if (( result != 0 )); then
-         printf "\n${red}Error: Some test cases failed${none}\n"
-        exit 1
-    else
-        printf "\n${green} All test cases passed!${none}\n"
+    check=0
+    if [ $result -ne $check ]; then
+      printf "${red}Failed some test cases${none}\n"
+      exit 1
     fi
   else
     printf "\n${red}Error: Not flutter project${none}\n"
@@ -39,4 +32,7 @@ run_tests() {
 
 run_tests
 
+# generate_report
 
+# Once the testing is successful, run the build
+printf "\n${green} All test cases passed!\n${none}"
