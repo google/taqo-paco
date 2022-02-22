@@ -68,9 +68,9 @@ class _TaqoAppDrawerWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final ThemeData theme = Theme.of(context);
-    final TextStyle textStyle = theme.textTheme.bodyText2;
-    final List<Widget> aboutTaqoWidget = <Widget>[
+    final theme = Theme.of(context);
+    final textStyle = theme.textTheme.bodyText2;
+    final aboutTaqoWidget = <Widget>[
       const SizedBox(height: 24),
       RichText(
         text: TextSpan(
@@ -155,12 +155,14 @@ class _TaqoAppDrawerWidget extends StatelessWidget {
             child: Divider(),
           ),
           AboutListTile(
-            icon: const Icon(Icons.info_outline,
-              size: _listIconSize,),
+            icon: const Icon(
+              Icons.info_outline,
+              size: _listIconSize,
+            ),
             applicationIcon: Image.asset(
-                    'assets/paco256.png',
-                    scale: 10,
-                  ),
+              'assets/paco256.png',
+              scale: 10,
+            ),
             applicationName: 'Taqo',
             applicationLegalese: 'Copyright 2022 Google LLC',
             aboutBoxChildren: aboutTaqoWidget,
