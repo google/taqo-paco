@@ -1,3 +1,5 @@
+#!/bin/bash
+
 red=$(tput setaf 1)
 green=$(tput setaf 2)
 none=$(tput sgr0)
@@ -20,8 +22,7 @@ run_tests() {
 #    flutter test --verbose
     flutter test -r expanded
     result=$?
-    check=0
-    if [ $result -ne $check ]; then
+    if [ $result -ne 0 ]; then
       exit 1
     fi
   else
