@@ -4,16 +4,6 @@ red=$(tput setaf 1)
 green=$(tput setaf 2)
 none=$(tput sgr0)
 
-# Check if flutter is installed, if not, install the flutter
-if ! type flutter >/dev/null; then
-  cd ../..
-  pwd
-  git clone https://github.com/flutter/flutter.git -b stable
-  export PATH="$PATH:/tmpfs/src/github/flutter/bin"
-  ls
-  echo "$PATH"
-  cd taqo-paco/taqo_client || none
-fi
 
 # Check if correct version of java is installed, if not, install the jdk11
 if type -p java; then
@@ -31,6 +21,26 @@ if [[ "$_java" ]]; then
         brew install java11
     fi
 fi
+
+
+# /Library/Java/JavaVirtualMachines/jdk-11.0.13.jdk
+ls /Library/Java/JavaVirtualMachines/
+echo $JAVA_HOME
+
+exit 1
+
+# Check if flutter is installed, if not, install the flutter
+if ! type flutter >/dev/null; then
+  cd ../..
+  pwd
+  git clone https://github.com/flutter/flutter.git -b stable
+  export PATH="$PATH:/tmpfs/src/github/flutter/bin"
+  ls
+  echo "$PATH"
+  cd taqo-paco/taqo_client || none
+fi
+
+
 
 # Check if jq is installed, if not, install the jq
 if ! type jq >/dev/null; then
