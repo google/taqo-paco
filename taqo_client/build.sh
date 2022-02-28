@@ -24,11 +24,17 @@ if [[ "$_java" ]]; then
         export CPPFLAGS="-I/usr/local/opt/openjdk@11/include"
     fi
 fi
+/usr/libexec/java_home -V
+echo "\n\n"
+/usr/libexec/java_home -v11
+echo "\n\n"
+export JAVA_HOME=$(/usr/libexec/java_home -v11)
 
 java --version 
-export "JAVA_HOME=\$(/usr/local/Cellar/openjdk@11/ -v11)"
-export JAVA_HOME="/usr/libexec/java_home -v 11"
-
+source ~/.zshenv
+export JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk-11.jdk/Contents/Home"
+source ~/.bash_profile
+echo $JAVA_HOME
 # /Library/Java/JavaVirtualMachines/jdk-11.0.13.jdk
 
 ls /usr/local/Cellar/openjdk@11/
