@@ -22,8 +22,7 @@ if [[ "$_java" ]]; then
     fi
 fi
 
-export JAVA_11_HOME=$(/usr/libexec/java_home -v11)
-export JAVA_HOME=$JAVA_11_HOME
+export "JAVA_HOME=\$(/usr/local/Cellar/openjdk@11/11.0.12 -v11)"
 
 
 # /Library/Java/JavaVirtualMachines/jdk-11.0.13.jdk
