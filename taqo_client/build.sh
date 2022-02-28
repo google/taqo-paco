@@ -19,18 +19,20 @@ if [[ "$_java" ]]; then
     printf "Version of java is: ${version}"
     if [[ "$version" > "11" ]]; then
         brew install java11
+        sudo ln -sfn /usr/local/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
+        echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
+        export CPPFLAGS="-I/usr/local/opt/openjdk@11/include"
     fi
 fi
 
-export "JAVA_HOME=\$(/usr/local/Cellar/openjdk@11/ -v11)"
-export JAVA_HOME="/usr/libexec/java_home -v 11"
+# export "JAVA_HOME=\$(/usr/local/Cellar/openjdk@11/ -v11)"
+# export JAVA_HOME="/usr/libexec/java_home -v 11"
 
 # /Library/Java/JavaVirtualMachines/jdk-11.0.13.jdk
-ls /Library/Java/JavaVirtualMachines/
-ls /usr/local/Cellar/openjdk@11/
-echo $JAVA_HOME
+# ls /Library/Java/JavaVirtualMachines/
+# ls /usr/local/Cellar/openjdk@11/
+# echo $JAVA_HOME
 
-exit 1
 
 # Check if flutter is installed, if not, install the flutter
 if ! type flutter >/dev/null; then
