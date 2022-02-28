@@ -40,7 +40,7 @@ echo $JAVA_HOME
 ls /usr/local/Cellar/openjdk@11/
 # echo $JAVA_HOME
 java --version
-exit 1
+
 
 # Check if flutter is installed, if not, install the flutter
 if ! type flutter >/dev/null; then
