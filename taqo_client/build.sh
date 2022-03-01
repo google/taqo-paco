@@ -27,7 +27,7 @@ fi
 printf "\n\n"
 printf "Old java version: "
 java --version
-export JAVA_HOME=$(/usr/libexec/java_home -v11)
+# export JAVA_HOME=$(/usr/libexec/java_home -v11)
 printf "\n New java version: "
 java --version
 printf "\n"
