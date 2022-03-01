@@ -51,5 +51,9 @@ popd || exit 1
 # Build flutter app
 pushd taqo_client || exit 1
 "${FLUTTER_SDK}"/bin/flutter build macos
+result=$?
+if [ $result -ne 0 ]; then
+  exit 1
+fi
 popd || exit 1
 
