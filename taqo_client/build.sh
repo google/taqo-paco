@@ -12,6 +12,9 @@ elif [[ -n "$JAVA_HOME" ]] && [[ -x "$JAVA_HOME/bin/java" ]];  then
     _java="$JAVA_HOME/bin/java"
 else
     brew install java11
+    sudo ln -sfn /usr/local/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
+    echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
+    export CPPFLAGS="-I/usr/local/opt/openjdk@11/include"
 fi
 
 if [[ "$_java" ]]; then
@@ -19,6 +22,9 @@ if [[ "$_java" ]]; then
     printf "Version of java is: ${version}"
     if [[ "$version" > "11" ]]; then
         brew install java11
+        sudo ln -sfn /usr/local/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
+        echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
+        export CPPFLAGS="-I/usr/local/opt/openjdk@11/include"
     fi
 fi
 
