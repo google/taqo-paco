@@ -130,12 +130,12 @@ Future<void> loadManualLicenses() async {
   });
 }
 
-/// Generates the LicenseEntry object for given name [titleName] provided
-/// at [filePath] from the assets.
+/// Generates a LicenseEntry object given the package name [packageName], and
+/// the path to the package's license file [licensePath].
 Future<LicenseEntry> generateLicenseEntry(
-    String titleName, String filePath) async {
-  final licenseText = await rootBundle.loadString(filePath);
-  return LicenseEntryWithLineBreaks([titleName], licenseText);
+    String packageName, String licensePath) async {
+  final licenseText = await rootBundle.loadString(licensePath);
+  return LicenseEntryWithLineBreaks([packageName], licenseText);
 }
 
 class MyApp extends StatefulWidget {
