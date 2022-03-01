@@ -28,7 +28,7 @@ if [[ "$_java" ]]; then
     fi
 fi
 
-# export JAVA_HOME=$(/usr/libexec/java_home -v11)
+export JAVA_HOME=$(/usr/libexec/java_home -v11)
 printf "\n New java version: "
 java --version
 
@@ -55,7 +55,7 @@ pwd
 printf "\n${none} Now running the build process!\n"
 flutter clean # Clean existing build
 cd ..         # Come out of the client directory
-
+flutter config --enable-macos-desktop
 #chmod +x .distribution/create_macos_app.sh
 ./distribution/create_macos_app.sh # Run the mac os build script located in the distribution directory
 result=$?
