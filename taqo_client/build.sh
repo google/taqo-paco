@@ -89,7 +89,10 @@ cd ..         # Come out of the client directory
 
 #chmod +x .distribution/create_macos_app.sh
 ./distribution/create_macos_app.sh # Run the mac os build script located in the distribution directory
-
+result=$?
+if [ $result -ne 0 ]; then
+  exit 1
+fi
 #case $1 in
 #-h | --help)
 #  show_help
