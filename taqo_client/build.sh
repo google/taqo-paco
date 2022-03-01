@@ -24,25 +24,14 @@ if [[ "$_java" ]]; then
         export CPPFLAGS="-I/usr/local/opt/openjdk@11/include"
     fi
 fi
-/usr/libexec/java_home -V
 printf "\n\n"
-/usr/libexec/java_home -v11
-printf "\n\n"
-export JAVA_HOME=$(/usr/libexec/java_home -v11)
-
-java --version 
-source ~/.zshenv
-# export JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk-11.jdk/Contents/Home"
-source ~/.bash_profile
-printf "JAVA Home: "
-echo $JAVA_HOME
-# /Library/Java/JavaVirtualMachines/jdk-11.0.13.jdk
-
-ls /usr/local/Cellar/openjdk@11/
-# echo $JAVA_HOME
-printf "\n java v: "
+printf "Old java version: "
 java --version
-
+export JAVA_HOME=$(/usr/libexec/java_home -v11)
+printf "\n New java version: "
+java --version
+printf "\n"
+which java
 
 # Check if flutter is installed, if not, install the flutter
 if ! type flutter >/dev/null; then
