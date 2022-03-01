@@ -48,7 +48,7 @@ java --version
 if ! type flutter >/dev/null; then
   cd ../..
   pwd
-  git clone https://github.com/flutter/flutter.git -b stable
+  git clone https://github.com/flutter/flutter.git -b 2.5.0-6.0.pre
   export PATH="$PATH:/tmpfs/src/github/flutter/bin"
   ls
   echo "$PATH"
