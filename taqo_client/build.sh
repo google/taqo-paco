@@ -19,19 +19,13 @@ if [[ "$_java" ]]; then
     printf "Version of java is: ${version}"
     if [[ "$version" > "11" ]]; then
         brew install java11
-        sudo ln -sfn /usr/local/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
-        echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
-        export CPPFLAGS="-I/usr/local/opt/openjdk@11/include"
     fi
 fi
-printf "\n\n"
-printf "Old java version: "
-java --version
-# export JAVA_HOME=$(/usr/libexec/java_home -v11)
+
+export JAVA_HOME=$(/usr/libexec/java_home -v11)
 printf "\n New java version: "
 java --version
-printf "\n"
-which java
+
 
 # Check if flutter is installed, if not, install the flutter
 if ! type flutter >/dev/null; then
@@ -52,37 +46,6 @@ if ! type jq >/dev/null; then
 fi
 pwd
 
-# Run test cases
-run_tests() {
-  if [[ -f "pubspec.yaml" ]]; then
-    rm -f coverage/lcov.info
-    rm -f coverage/lcov-final.info
-    flutter test --coverage
-  else
-    printf "\n${red}Error: Not flutter project${none}"
-    exit 1
-  fi
-}
-
-run_tests
-
-# Code coverage export
-generate_report() {
-  if [[ -f "coverage/lcov.info" ]]; then
-    lcov -r coverage/lcov.info lib/resources/l10n/\* lib/\*/fake_\*.dart \
-      -o coverage/lcov-final.info
-    genhtml -o coverage coverage/lcov-final.info
-    open coverage/index-sort-l.html
-  else
-    printf "\n${red}Error: Failed to generate code coverage${none}"
-    exit 1
-  fi
-}
-
-# generate_report
-
-# Once the testing is successful, run the build
-printf "\n${green} All test cases passed!\n"
 printf "\n${none} Now running the build process!\n"
 flutter clean # Clean existing build
 cd ..         # Come out of the client directory
@@ -93,18 +56,4 @@ result=$?
 if [ $result -ne 0 ]; then
   exit 1
 fi
-#case $1 in
-#-h | --help)
-#  show_help
-#  ;;
-#-t | --test)
-#  run_tests
-#  ;;
-#-r | --report)
-#  run_report
-#  ;;
-#*)
-#  run_tests
-#  run_report
-#  ;;
-#esac
+exit 0
