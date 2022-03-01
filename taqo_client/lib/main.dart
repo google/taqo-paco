@@ -99,7 +99,43 @@ void main() async {
   // This also solves the issue with not having Pending (launch) Intents on Linux
   final activeNotification = await taqo_alarm.checkActiveNotification();
   final authState = await GoogleAuth().isAuthenticated;
+
+  // Add licenses manually for Taqo and Alerter. This help to add the licenses
+  // those are not automatically fetched and added by showLicensePage method.
+  await loadManualLicenses();
+
   runApp(MyApp(activeNotification: activeNotification, authState: authState));
+}
+
+/// Loads the manually listed licenses and adds those to the license registry.
+Future<void> loadManualLicenses() async {
+  // Add entries to the list below to load particular licenses manually. Make
+  // sure that the paths for the listed licenses are specified in the assets
+  // section of pubspec.yaml
+  final manualLicenses = [
+    ['taqo', '../LICENSE'],
+    ['alerter', '../third_party/alerter/LICENSE']
+  ];
+
+  // Iterate through each of the licenses provided in the "licenses" list and
+  // then generate the LicenseEntry object.
+  final licenseEntries = <LicenseEntry>[
+    for (final licenseInfo in manualLicenses)
+      await generateLicenseEntry(licenseInfo[0], licenseInfo[1])
+  ];
+
+  // Add license all at once from the stream.
+  LicenseRegistry.addLicense(() {
+    return Stream.fromIterable(licenseEntries);
+  });
+}
+
+/// Generates a LicenseEntry object given the package name [packageName], and
+/// the path to the package's license file [licensePath].
+Future<LicenseEntry> generateLicenseEntry(
+    String packageName, String licensePath) async {
+  final licenseText = await rootBundle.loadString(licensePath);
+  return LicenseEntryWithLineBreaks([packageName], licenseText);
 }
 
 class MyApp extends StatefulWidget {
@@ -165,7 +201,9 @@ class _MyAppState extends State<MyApp> {
                 builder: (context) => RunningExperimentsPage(
                     timeout: args == null
                         ? false
-                        : args.length > 0 ? args[0] : false));
+                        : args.length > 0
+                            ? args[0]
+                            : false));
         }
         return null;
       },
