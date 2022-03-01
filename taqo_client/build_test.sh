@@ -5,10 +5,12 @@ none=$(tput sgr0)
 # Check if flutter is installed, if not, install the flutter
 if ! type flutter >/dev/null; then
   cd ..
+    printf "\n PWD: "
   pwd
   git clone https://github.com/flutter/flutter.git -b 2.5.0-6.0.pre
-  export PATH="$PATH:/tmpfs/src/github/flutter/bin"
+  export PATH="$PATH:$PWD/flutter/bin"
   ls
+  printf "\n Path: "
   echo "$PATH"
   cd taqo_client || none
 fi
