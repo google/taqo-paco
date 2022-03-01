@@ -25,20 +25,22 @@ if [[ "$_java" ]]; then
     fi
 fi
 /usr/libexec/java_home -V
-echo "\n\n"
+printf "\n\n"
 /usr/libexec/java_home -v11
-echo "\n\n"
+printf "\n\n"
 export JAVA_HOME=$(/usr/libexec/java_home -v11)
 
 java --version 
 source ~/.zshenv
-export JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk-11.jdk/Contents/Home"
+# export JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk-11.jdk/Contents/Home"
 source ~/.bash_profile
+printf "JAVA Home: "
 echo $JAVA_HOME
 # /Library/Java/JavaVirtualMachines/jdk-11.0.13.jdk
 
 ls /usr/local/Cellar/openjdk@11/
 # echo $JAVA_HOME
+printf "\n java v: "
 java --version
 
 
