@@ -3,6 +3,9 @@
 # Fail on any error.
 set -u -e
 
+red=$(tput setaf 1)
+green=$(tput setaf 2)
+none=$(tput sgr0)
 
 FLUTTER_VER=""
 while (( "$#" )); do
@@ -15,7 +18,7 @@ while (( "$#" )); do
   fi
   shift 2
 done
-echo ${FLUTTER_VER}
+
 # Check if flutter is installed, if not, install the flutter
 if ! type flutter >/dev/null; then
   cd ..
@@ -42,7 +45,7 @@ run_tests() {
       exit 1
     fi
   else
-    printf "\nError: Not flutter project\n"
+    printf "\n${red}Error: Not flutter project${none}\n"
     exit 1
   fi
 }
