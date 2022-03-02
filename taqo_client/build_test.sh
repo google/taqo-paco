@@ -1,3 +1,8 @@
+#!/bin/bash
+
+# Fail on any error.
+set -e
+
 red=$(tput setaf 1)
 green=$(tput setaf 2)
 none=$(tput sgr0)
@@ -19,7 +24,7 @@ if ! type flutter >/dev/null; then
   cd ..
     printf "\n PWD: "
   pwd
-  git clone https://github.com/flutter/flutter.git -b FLUTTER_VER
+  git clone https://github.com/flutter/flutter.git -b "$FLUTTER_VER"
   export PATH="$PATH:$PWD/flutter/bin"
   ls
   printf "\n Path: "
