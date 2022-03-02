@@ -24,6 +24,7 @@ if ! type flutter >/dev/null; then
   cd ..
     printf "\n PWD: "
   pwd
+  echo ${FLUTTER_VER}
   git clone https://github.com/flutter/flutter.git -b ${FLUTTER_VER}
   export PATH="$PATH:$PWD/flutter/bin"
   ls

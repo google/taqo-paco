@@ -16,4 +16,4 @@ set -e
 # The final directory name in this path is determined by the scm name specified
 # in the job configuration.
 cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/taqo_client"
-./build_test.sh --flutter_version 2.5.0-6.0.pre
+./build_test.sh --flutter_version '2.5.0-6.0.pre'
