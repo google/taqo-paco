@@ -2,12 +2,24 @@ red=$(tput setaf 1)
 green=$(tput setaf 2)
 none=$(tput sgr0)
 
+FLUTTER_VER = ""
+while (( "$#" )); do
+  if [[ "$1" == "--flutter_version" ]]; then
+    FLUTTER_VER="$2"
+  else
+    echo "Error: unknown flag $1."
+    print_usage
+    exit 1
+  fi
+  shift 2
+done
+
 # Check if flutter is installed, if not, install the flutter
 if ! type flutter >/dev/null; then
   cd ..
     printf "\n PWD: "
   pwd
-  git clone https://github.com/flutter/flutter.git -b 2.5.0-6.0.pre
+  git clone https://github.com/flutter/flutter.git -b FLUTTER_VER
   export PATH="$PATH:$PWD/flutter/bin"
   ls
   printf "\n Path: "
