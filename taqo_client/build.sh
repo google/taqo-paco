@@ -16,6 +16,20 @@
 # Fail on any error.
 set -e
 
+# Read flutter version from command line arguments
+FLUTTER_VER=""
+while (( "$#" )); do
+  if [[ "$1" == "--flutter_version" ]]; then
+    FLUTTER_VER="$2"
+  else
+    echo "Error: unknown flag $1."
+    print_usage
+    exit 1
+  fi
+  shift 2
+done
+printf "Flutter Version Passed: $FLUTTER_VER"
+
 # Check if correct version of java is installed, if not, install the jdk11
 if type -p java; then
     _java=java
@@ -39,7 +53,7 @@ if [[ "$_java" ]]; then
     fi
 fi
 
-export JAVA_HOME=$(/usr/libexec/java_home -v11)
+# export JAVA_HOME=$(/usr/libexec/java_home -v11)
 printf "\n New java version: "
 java --version
 
@@ -48,7 +62,7 @@ java --version
 if ! type flutter >/dev/null; then
   cd ../..
   pwd
-  git clone https://github.com/flutter/flutter.git -b 2.5.0-6.0.pre
+  git clone https://github.com/flutter/flutter.git -b ${FLUTTER_VER}
   export PATH="$PATH:/tmpfs/src/github/flutter/bin"
   ls
   echo "$PATH"
