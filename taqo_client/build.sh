@@ -16,11 +16,6 @@
 # Fail on any error.
 set -e
 
-red=$(tput setaf 1)
-green=$(tput setaf 2)
-none=$(tput sgr0)
-
-
 # Check if correct version of java is installed, if not, install the jdk11
 if type -p java; then
     _java=java
