@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Fail on any error.
+set -e
+
 if [[ -z "${FLUTTER_SDK}" ]]; then
   FLUTTER_SDK="$(flutter --version --machine | jq -r '.flutterRoot')"
 fi
@@ -32,7 +35,7 @@ RELEASE="${BUILD}/Build/Products/Release"
 
 mkdir -p "${RELEASE}"
 
-cd -- "${TAQO_ROOT}" || exit 1
+cd -- "${TAQO_ROOT}" || exit
 
 # Build PAL event server / macos daemon
 "${DART_SDK}"/bin/dart2native -p pal_event_server/.packages \
@@ -43,17 +46,13 @@ cd -- "${TAQO_ROOT}" || exit 1
 cp "${RELEASE}"/taqo_daemon taqo_client/macos/TaqoLauncher/taqo_daemon
 
 # Build IntelliJ Plugin
-pushd pal_intellij_plugin || exit 1
+pushd pal_intellij_plugin || exit
 dart --no-sound-null-safety builder/bin/builder.dart
 cp build/distributions/pal_intellij_plugin-*.zip "../taqo_client/assets/"
-popd || exit 1
+popd || exit
 
 # Build flutter app
-pushd taqo_client || exit 1
+pushd taqo_client || exit
 "${FLUTTER_SDK}"/bin/flutter build macos
-result=$?
-if [ $result -ne 0 ]; then
-  exit 1
-fi
-popd || exit 1
+popd || exit
 
