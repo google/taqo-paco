@@ -28,7 +28,7 @@ while (( "$#" )); do
   fi
   shift 2
 done
-printf "Flutter Version Passed: $FLUTTER_VER"
+printf "\nFlutter Version Passed: $FLUTTER_VER \n"
 
 # Check if correct version of java is installed, if not, install the jdk11
 if type -p java; then
