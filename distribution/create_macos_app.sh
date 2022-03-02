@@ -35,24 +35,34 @@ RELEASE="${BUILD}/Build/Products/Release"
 
 mkdir -p "${RELEASE}"
 
-cd -- "${TAQO_ROOT}" || exit
+cd -- "${TAQO_ROOT}" || exit 1
+
+# Check if the command resulted error
+check_result() {
+   if [ $1 -ne 0 ]; then
+      exit 1
+   fi
+}
 
 # Build PAL event server / macos daemon
 "${DART_SDK}"/bin/dart2native -p pal_event_server/.packages \
   -o "${RELEASE}"/taqo_daemon \
   pal_event_server/lib/main.dart
+check_result $?
 
 # cp daemon to Flutter asset
 cp "${RELEASE}"/taqo_daemon taqo_client/macos/TaqoLauncher/taqo_daemon
 
 # Build IntelliJ Plugin
-pushd pal_intellij_plugin || exit
+pushd pal_intellij_plugin || exit 1
 dart --no-sound-null-safety builder/bin/builder.dart
+check_result $?
 cp build/distributions/pal_intellij_plugin-*.zip "../taqo_client/assets/"
-popd || exit
+popd || exit 1
 
 # Build flutter app
-pushd taqo_client || exit
+pushd taqo_client || exit 1
 "${FLUTTER_SDK}"/bin/flutter build macos
-popd || exit
+check_result $?
+popd || exit 1
 
