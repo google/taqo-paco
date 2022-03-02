@@ -1,11 +1,8 @@
 #!/bin/bash
 
 # Fail on any error.
-set -e
+set -u -e
 
-red=$(tput setaf 1)
-green=$(tput setaf 2)
-none=$(tput sgr0)
 
 FLUTTER_VER = ""
 while (( "$#" )); do
@@ -45,7 +42,7 @@ run_tests() {
       exit 1
     fi
   else
-    printf "\n${red}Error: Not flutter project${none}\n"
+    printf "\nError: Not flutter project\n"
     exit 1
   fi
 }
