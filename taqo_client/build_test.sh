@@ -4,7 +4,7 @@
 set -u -e
 
 
-FLUTTER_VER = ""
+FLUTTER_VER=""
 while (( "$#" )); do
   if [[ "$1" == "--flutter_version" ]]; then
     FLUTTER_VER="$2"
@@ -15,7 +15,7 @@ while (( "$#" )); do
   fi
   shift 2
 done
-
+echo ${FLUTTER_VER}
 # Check if flutter is installed, if not, install the flutter
 if ! type flutter >/dev/null; then
   cd ..
