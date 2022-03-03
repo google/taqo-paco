@@ -16,13 +16,15 @@ printf "\nFlutter Version Passed: $FLUTTER_VER \n"
 
 # Check if flutter is installed, if not, install the flutter
 if ! type flutter >/dev/null; then
-  cd ../..
+  cd ..
+  printf "\n PWD: "
   pwd
   git clone https://github.com/flutter/flutter.git -b ${FLUTTER_VER}
-  export PATH="$PATH:/tmpfs/src/github/flutter/bin"
+  export PATH="$PATH:$PWD/flutter/bin"
   ls
+  printf "\n Path: "
   echo "$PATH"
-  cd taqo-paco/taqo_client || none
+  cd taqo_client || none
 fi
 
 flutter clean
