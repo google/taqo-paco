@@ -30,7 +30,7 @@ fi
 flutter clean
 
 # Install debhelper if not already installed
-sudo apt-get install debhelper
+#sudo apt-get install debhelper
 sudo apt-get update
 
 # Install Jq if not already installed
