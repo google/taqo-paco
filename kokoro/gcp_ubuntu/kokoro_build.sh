@@ -16,14 +16,8 @@ set -e
 # The final directory name in this path is determined by the scm name specified
 # in the job configuration.
 cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco/taqo_client"
-./build_test.sh
-result=$?
-if [ $result -ne 0 ]; then
-    printf "Build failed! Please check the log for the details"
-  exit 1
-fi
 
-./build_linux.sh
+./build_linux.sh --flutter_version '2.5.0-6.0.pre'
 result=$?
 if [ $result -ne 0 ]; then
     printf "Build failed! Please check the log for the details"
