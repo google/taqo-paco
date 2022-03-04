@@ -45,7 +45,8 @@ fi
 if ! type chrpath >/dev/null; then
     sudo apt-get install -y chrpath
 fi
-
+sudo apt-get install -y rsync
+sudo apt-get install -y cmake
 sudo apt-get install -y ninja-build
 # Go to root directory.
  cd ..
