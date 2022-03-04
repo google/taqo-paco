@@ -15,23 +15,26 @@ done
 printf "\nFlutter Version Passed: $FLUTTER_VER \n"
 
 # Check if flutter is installed, if not, install the flutter
-if ! type flutter >/dev/null; then
+
   cd ..
   printf "\n PWD: "
   pwd
+
   git clone https://github.com/flutter/flutter.git -b ${FLUTTER_VER}
-  export PATH="$PATH:$PWD/flutter/bin"
+    export PATH="`pwd`/flutter/bin:$PATH"
+
   ls
-  printf "\n Path: "
+  printf "\n****************** Path: *************************\n"
   echo "$PATH"
   cd taqo_client || none
-fi
 
-flutter clean
+printf "\n****************************\n Flutter version: \**********************n"
+flutter --version
+which flutter
+
 
 # Install debhelper if not already installed
-#sudo apt-get install debhelper
-#sudo apt-get update
+sudo apt-get install -y debhelper
 
 # Install Jq if not already installed
 if ! type jq >/dev/null; then
@@ -43,10 +46,12 @@ if ! type chrpath >/dev/null; then
     sudo apt-get install -y chrpath
 fi
 
+sudo apt-get install -y ninja-build
 # Go to root directory.
  cd ..
 
 #  Run the linux build
+flutter config --enable-linux-desktop
 distribution/create_deb_pkg.sh
 result=$?
 if [ $result -ne 0 ]; then
