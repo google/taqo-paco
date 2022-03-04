@@ -14,6 +14,8 @@ while (( "$#" )); do
 done
 printf "\nFlutter Version Passed: $FLUTTER_VER \n"
 
+sudo apt-get install -y unzip
+
 # Check if flutter is installed, if not, install the flutter
 
   cd ..
