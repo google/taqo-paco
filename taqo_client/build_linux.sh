@@ -60,7 +60,7 @@ if type -p java; then
 elif [[ -n "$JAVA_HOME" ]] && [[ -x "$JAVA_HOME/bin/java" ]];  then
     _java="$JAVA_HOME/bin/java"
 else
-    sudo apt install openjdk-11-jdk
+    sudo apt install -y openjdk-11-jdk
 
 fi
 
@@ -68,7 +68,7 @@ if [[ "$_java" ]]; then
     version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
     printf "Version of java is: ${version}"
     if [[ "$version" > "11" ]]; then
-       sudo apt install openjdk-11-jdk
+       sudo apt install -y openjdk-11-jdk
     fi
 fi
 #/usr/libexec/java_home -V
