@@ -49,7 +49,11 @@ if ! type chrpath >/dev/null; then
 fi
 sudo apt-get install -y rsync
 sudo apt-get install -y cmake
-sudo apt-get install -y ninja-build
+sudo apt install libgtk-3-dev
+sudo apt install clang
+sudo apt install ninja-build
+sudo apt install clang
+sudo apt-get install pkg-config
 # Go to root directory.
  cd ..
 
