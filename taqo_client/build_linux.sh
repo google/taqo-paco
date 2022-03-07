@@ -14,8 +14,6 @@ while (( "$#" )); do
 done
 printf "\nFlutter Version Passed: $FLUTTER_VER \n"
 
-sudo apt-get install -y unzip
-
 # Check if flutter is installed, if not, install the flutter
 
   cd ..
@@ -49,13 +47,39 @@ if ! type chrpath >/dev/null; then
 fi
 sudo apt-get install -y rsync
 sudo apt-get install -y cmake
-sudo apt install libgtk-3-dev
-sudo apt install clang
-sudo apt install ninja-build
-sudo apt install clang
-sudo apt-get install pkg-config
+sudo apt-get install -y libgtk-3-dev
+sudo apt-get install -y  clang
+sudo apt-get install -y  ninja-build
+sudo apt-get install -y clang
+sudo apt-get install -y pkg-config
 # Go to root directory.
  cd ..
+# Check if correct version of java is installed, if not, install the jdk11
+if type -p java; then
+    _java=java
+elif [[ -n "$JAVA_HOME" ]] && [[ -x "$JAVA_HOME/bin/java" ]];  then
+    _java="$JAVA_HOME/bin/java"
+else
+    brew install java11
+    sudo ln -sfn /usr/local/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
+    echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
+    export CPPFLAGS="-I/usr/local/opt/openjdk@11/include"
+fi
+
+if [[ "$_java" ]]; then
+    version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
+    printf "Version of java is: ${version}"
+    if [[ "$version" > "11" ]]; then
+        brew install java11
+        sudo ln -sfn /usr/local/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
+        echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
+        export CPPFLAGS="-I/usr/local/opt/openjdk@11/include"
+    fi
+fi
+
+export JAVA_HOME=$(/usr/libexec/java_home -v11)
+printf "\n New java version: "
+java --version
 
 #  Run the linux build
 flutter config --enable-linux-desktop
