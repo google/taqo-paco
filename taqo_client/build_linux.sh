@@ -76,7 +76,11 @@ if [[ "$_java" ]]; then
         export CPPFLAGS="-I/usr/local/opt/openjdk@11/include"
     fi
 fi
-
+/usr/libexec/java_home -V
+printf "\n\n"
+/usr/libexec/java_home -v11
+printf "\n\n"
+printf "Old java version: "
 export JAVA_HOME=$(/usr/libexec/java_home -v11)
 printf "\n New java version: "
 java --version
