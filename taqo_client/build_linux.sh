@@ -60,31 +60,26 @@ if type -p java; then
 elif [[ -n "$JAVA_HOME" ]] && [[ -x "$JAVA_HOME/bin/java" ]];  then
     _java="$JAVA_HOME/bin/java"
 else
-    brew install java11
-    sudo ln -sfn /usr/local/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
-    echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
-    export CPPFLAGS="-I/usr/local/opt/openjdk@11/include"
+    sudo apt install openjdk-11-jdk
+
 fi
 
 if [[ "$_java" ]]; then
     version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
     printf "Version of java is: ${version}"
     if [[ "$version" > "11" ]]; then
-        brew install java11
-        sudo ln -sfn /usr/local/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
-        echo 'export PATH="/usr/local/opt/openjdk@11/bin:$PATH"' >> ~/.zshrc
-        export CPPFLAGS="-I/usr/local/opt/openjdk@11/include"
+       sudo apt install openjdk-11-jdk
     fi
 fi
-/usr/libexec/java_home -V
+#/usr/libexec/java_home -V
 printf "\n\n"
-/usr/libexec/java_home -v11
+#/usr/libexec/java_home -v11
 printf "\n\n"
 printf "Old java version: "
-export JAVA_HOME=$(/usr/libexec/java_home -v11)
+#export JAVA_HOME=$(/usr/libexec/java_home -v11)
 printf "\n New java version: "
 java --version
-
+which java
 #  Run the linux build
 flutter config --enable-linux-desktop
 distribution/create_deb_pkg.sh
