@@ -33,7 +33,7 @@ fi
 #fi
 
 
-
+PASSWORD=
 BUILD="${TAQO_ROOT}/taqo_client/build/macos"
 #DEBUG="${BUILD}/Build/Products/Debug"
 RELEASE="${BUILD}/Build/Products/Release"
@@ -64,7 +64,7 @@ cp "${RELEASE}"/taqo_daemon taqo_client/macos/TaqoLauncher/taqo_daemon
 codesign --force --timestamp --options runtime --entitlements taqo_client/macos/TaqoLauncher/TaqoLauncher.entitlements -s "Paco Developers" taqo_client/macos/TaqoLauncher/taqo_daemon
 
 # verify the signature
-codesign -v taqo_client/macos/TaqoLauncher/taqo_daemon
+codesign -v --verbose=4 taqo_client/macos/TaqoLauncher/taqo_daemon
 
 # Build IntelliJ Plugin
 # note we have previously signed the nested dylibs for the jnr-unixsocket library with the "Paco Developers" cert to comply with signing.
@@ -86,13 +86,37 @@ echo "Read this file, distribution/create_macos_app.sh for next steps"
 #      Note: Hardened Runtime also needs to be enabled on all targets with the entitlements listed in TaqoLauncher.entitlements. This should already be set.
 #      Note: if this is a new release candidate, be sure to upgrade the app version for each target under "General/Version"
 
+xcodebuild -scheme Runner -workspace taqo_client/macos/Runner.xcworkspace build
+
+
+codesign --force --timestamp --options runtime --entitlements taqo_client/macos/TaqoLauncher/TaqoLauncher.entitlements -s "Paco Developers" taqo_client/macos/TaqoLauncher/taqo_daemon
+
+
+zip -r taqo_client/build/macos/Build/Products/Release/Taqo.app.zip taqo_client/build/macos/Build/Products/Release/Taqo.app
+
 # Xcode Archive
 #   Menu/Product/Archive
 
 # XCode Notarization -> Export
 #   Organizer/Distribute App, Choose 'Developer ID', Choose 'Upload' (Be sure to be logged in with the proper developer account), Choose 'Automatic Signing', It will generate a zip file for review. If all looks right, Choose 'Upload'
+xcrun altool -t osx -f taqo_client/build/macos/Build/Products/Release/Taqo.app.zip \
+  --primary-bundle-id com.taqo.survey.taqoClient --notarize-app \
+  --username iosapp@pacoapp.com \
+  --password $PASSWORD
 
 # Wait for a response from the notarization service. Usually a few minutes.
+
+xcrun altool --notarization-info 395f4889-aca1-4057-8507-34a26a672f3d \
+  --username iosapp@pacoapp.com \
+  --password $PASSWORD
+
+# staple the notarization to the app
+
+xcrun stapler staple taqo_client/build/macos/Build/Products/Release/Taqo.app
+
+# verify that it worked. It should report something like, "com.taqo.survey.taqoClient accepted\nsource=Notarized Developer"
+
+spctl --assess --verbose taqo_client/build/macos/Build/Products/Release/Taqo.app
 
 # XCode Export
 #   Export the Taqo.app bundle to somewhere useful.
