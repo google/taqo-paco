@@ -17,3 +17,5 @@ set -e
 # in the job configuration.
 cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco/taqo_client"
 ./build.sh --flutter_version '2.5.0-6.0.pre'
+
+
