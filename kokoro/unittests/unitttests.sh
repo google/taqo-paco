@@ -15,7 +15,7 @@ set -e
 # Code under repo is checked out to ${KOKORO_ARTIFACTS_DIR}/github.
 # The final directory name in this path is determined by the scm name specified
 # in the job configuration.
-#cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/kokoro/unittests"
+cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/kokoro/unittests"
 #./unittests.sh
 cd ../.. ||none
 source read_config.sh
