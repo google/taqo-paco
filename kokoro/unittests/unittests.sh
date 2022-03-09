@@ -22,7 +22,7 @@ source read_config.sh
 get_value flutter_version
 FLUTTER_VER=${value}
 
-printf "Flutter Version read from config file: %s" "${FLUTTER_VER}"
+printf "\nFlutter Version read from config file: %s \n" "${FLUTTER_VER}"
 # Check if flutter is installed, if not, install the flutter
 if ! type flutter >/dev/null; then
   printf "\n Current directory is: %s \n" "$PWD"
