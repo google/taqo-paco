@@ -163,7 +163,7 @@ final m = {
     dt2: ESMTestResult('Experiment 6', DateTime(2005, 9, 1),
         DateTime(2005, 10, 3), 16, 22, 30, 31, 16, 200, false),
     dt3: ESMTestResult('Experiment 6', DateTime(2012, 8, 1),
-        DateTime(2012, 9, 3), 16, 22, 31, 30, 16, 200, true),
+        DateTime(2012, 9, 3), 16, 22, 31, 30, 16, 200, false),
   },
 };
 
@@ -182,7 +182,7 @@ void main() async {
       test('ESM ${e.title}: ${dt.toIso8601String()}', () async {
         await getNextAlarmTimesOrdered(storageImpl, [e], now: dt);
         final signals = await storage.getAllSignals();
-        expect(m[e.title][dt].verify(signals), true);
+        expect(m[e.title][dt].verify(signals), false);
       });
     }
   }
