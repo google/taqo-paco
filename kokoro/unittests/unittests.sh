@@ -15,9 +15,9 @@ set -e
 # Code under repo is checked out to ${KOKORO_ARTIFACTS_DIR}/github.
 # The final directory name in this path is determined by the scm name specified
 # in the job configuration.
-cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/kokoro/unittests"
-#./unittests.sh
-cd ../.. ||none
+
+cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/" || none
+
 source read_config.sh
 get_value flutter_version
 FLUTTER_VER=${value}
@@ -31,10 +31,10 @@ if ! type flutter >/dev/null; then
 fi
 cd taqo_client || none
 printf "\n Current directory is: %s \n" "$PWD"
+
 # Run test cases
 run_tests() {
   if [[ -f "pubspec.yaml" ]]; then
-#    flutter test --verbose
     flutter test -r expanded
     result=$?
     check=0
@@ -42,7 +42,6 @@ run_tests() {
       exit 1
     fi
   else
-#     printf "\n${red}Error: Not flutter project${none}\n"
     printf "\nError: This directory is not a flutter project\n";
     printf "\n Current directory is: %s \n" "$PWD"
     exit 1
