@@ -39,7 +39,7 @@ cd -- "${TAQO_ROOT}" || exit 1
 
 # Check if the command resulted error
 check_result() {
-   if [ $1 -ne 0 ]; then
+   if [ "$1" -ne "0" ]; then
       exit 1
    fi
 }
@@ -65,4 +65,41 @@ pushd taqo_client || exit 1
 "${FLUTTER_SDK}"/bin/flutter build macos
 check_result $?
 popd || exit 1
+
+xcodebuild -scheme Runner -workspace taqo_client/macos/Runner.xcworkspace build
+codesign --force --timestamp --options runtime --entitlements taqo_client/macos/TaqoLauncher/TaqoLauncher.entitlements -s "Paco Developers" taqo_client/macos/TaqoLauncher/taqo_daemon
+zip -r taqo_client/build/macos/Build/Products/Release/Taqo.app.zip taqo_client/build/macos/Build/Products/Release/Taqo.app
+
+# Xcode Archive
+#   Menu/Product/Archive
+
+# XCode Notarization -> Export
+#   Organizer/Distribute App, Choose 'Developer ID', Choose 'Upload' (Be sure to be logged in with the proper developer account), Choose 'Automatic Signing', It will generate a zip file for review. If all looks right, Choose 'Upload'
+xcrun altool -t osx -f taqo_client/build/macos/Build/Products/Release/Taqo.app.zip \
+  --primary-bundle-id com.taqo.survey.taqoClient --notarize-app \
+  --username iosapp@pacoapp.com \
+  --password "$PASSWORD"
+
+# Wait for a response from the notarization service. Usually a few minutes.
+
+xcrun altool --notarization-info 395f4889-aca1-4057-8507-34a26a672f3d \
+  --username iosapp@pacoapp.com \
+  --password "$PASSWORD"
+
+# staple the notarization to the app
+
+xcrun stapler staple taqo_client/build/macos/Build/Products/Release/Taqo.app
+
+# verify that it worked. It should report something like, "com.taqo.survey.taqoClient accepted\nsource=Notarized Developer"
+
+spctl --assess --verbose taqo_client/build/macos/Build/Products/Release/Taqo.app
+
+# XCode Export
+#   Export the Taqo.app bundle to somewhere useful.
+
+# create-dmg
+#   run create-dmg on the exported Taqo.app bundle.
+create-dmg taqo_client/build/macos/Build/Products/Release/Taqo.app taqo_client/build/macos/Build/Products/Release/
+# upload to github release
+# If this is a new release, create a new release entry on github.com/google/taqo-paco.
 

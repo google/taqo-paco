@@ -15,6 +15,7 @@
 
 # Fail on any error.
 set -e
+ cd ../..
 
 # Read flutter version from command line arguments
 FLUTTER_VER=""
@@ -60,16 +61,12 @@ java --version
 
 # Check if flutter is installed, if not, install the flutter
 if ! type flutter >/dev/null; then
-  cd ../..
   pwd
   git clone https://github.com/flutter/flutter.git -b ${FLUTTER_VER}
   export PATH="$PATH:/tmpfs/src/github/flutter/bin"
   ls
   echo "$PATH"
-  cd taqo-paco/taqo_client || none
 fi
-
-
 
 # Check if jq is installed, if not, install the jq
 if ! type jq >/dev/null; then
@@ -77,7 +74,8 @@ if ! type jq >/dev/null; then
 fi
 pwd
 
-printf "\n${none} Now running the build process!\n"
+cd taqo_client || none
+printf "\nNow running the build process!\n"
 flutter clean # Clean existing build
 cd ..         # Come out of the client directory
 flutter config --enable-macos-desktop
@@ -87,4 +85,6 @@ result=$?
 if [ $result -ne 0 ]; then
   exit 1
 fi
+open taqo_client/macos/Runner.xcworkspace
+#create-dmg Taqo.app
 exit 0
