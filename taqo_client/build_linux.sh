@@ -59,22 +59,23 @@ sudo aptitude -y upgrade
 # Go to root directory.
  cd ..
 # Check if correct version of java is installed, if not, install the jdk11
-if type -p java; then
-    _java=java
-elif [[ -n "$JAVA_HOME" ]] && [[ -x "$JAVA_HOME/bin/java" ]];  then
-    _java="$JAVA_HOME/bin/java"
-else
-    sudo apt install -y openjdk-11-jdk
-
-fi
-
-if [[ "$_java" ]]; then
-    version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
-    printf "Version of java is: ${version}"
-    if [[ "$version" -gt "11" ]]; then
-       sudo apt install -y openjdk-11-jdk
-    fi
-fi
+#if type -p java; then
+#    _java=java
+#elif [[ -n "$JAVA_HOME" ]] && [[ -x "$JAVA_HOME/bin/java" ]];  then
+#    _java="$JAVA_HOME/bin/java"
+#else
+#    sudo apt install -y openjdk-11-jdk
+#
+#fi
+#
+#if [[ "$_java" ]]; then
+#    version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
+#    printf "Version of java is: ${version}"
+#    if [[ "$version" -gt "11" ]]; then
+#       sudo apt install -y openjdk-11-jdk
+#    fi
+#fi
+sudo apt install -y openjdk-11-jdk
 #/usr/libexec/java_home -V
 printf "\n\n"
 #/usr/libexec/java_home -v11
