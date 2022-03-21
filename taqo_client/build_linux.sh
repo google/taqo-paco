@@ -82,9 +82,10 @@ printf "\n\n"
 #/usr/libexec/java_home -v11
 printf "\n\n"
 printf "Old java version: "
-#export JAVA_HOME=$(/usr/libexec/java_home -v11)
-export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+sudo vim /etc/profile.d/jdk.sh
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
 export PATH=$PATH:$JAVA_HOME/bin
+source /etc/profile.d/jdk.sh
 printf "\n New java version: "
 java -version
 which java
