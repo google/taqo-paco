@@ -35,9 +35,8 @@ which flutter
 
 # Install debhelper if not already installed
 sudo apt-get install -y debhelper
-sudo apt upgrade -y debhelper
-
-#sudo apt install -y dh-autoreconf=12~ubuntu16.04.1 debhelper=10.2.2ubuntu1~ubuntu16.04.1
+sudo apt update
+sudo apt install -y dh-autoreconf=12~ubuntu16.04.1 debhelper=10.2.2ubuntu1~ubuntu16.04.1
 # Install Jq if not already installed
 if ! type jq >/dev/null; then
     sudo apt-get install -y jq
@@ -54,8 +53,6 @@ sudo apt-get install -y  clang
 sudo apt-get install -y  ninja-build
 sudo apt-get install -y clang
 sudo apt-get install -y pkg-config
-sudo apt update
-sudo aptitude -y upgrade
 # Go to root directory.
  cd ..
 # Check if correct version of java is installed, if not, install the jdk11
@@ -71,22 +68,23 @@ sudo aptitude -y upgrade
 #if [[ "$_java" ]]; then
 #    version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
 #    printf "Version of java is: ${version}"
-#    if [[ "$version" -gt "11" ]]; then
+#    if [[ "$version" > "11" ]]; then
 #       sudo apt install -y openjdk-11-jdk
 #    fi
 #fi
+
 sudo apt install -y openjdk-11-jdk
+printf "\n\n"
+sudo update-alternatives --config java
+
 #/usr/libexec/java_home -V
 printf "\n\n"
 #/usr/libexec/java_home -v11
 printf "\n\n"
-printf "Java version:\n"
-java -version
+printf "Old java version: "
 #export JAVA_HOME=$(/usr/libexec/java_home -v11)
-printf "\n All java versions: "
-ls /usr/bin/java
-
-printf "\n JAva location: "
+printf "\n New java version: "
+java -version
 which java
 #  Run the linux build
 flutter config --enable-linux-desktop
