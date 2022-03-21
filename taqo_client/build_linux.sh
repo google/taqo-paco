@@ -83,6 +83,8 @@ printf "\n\n"
 printf "\n\n"
 printf "Old java version: "
 #export JAVA_HOME=$(/usr/libexec/java_home -v11)
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+export PATH=$PATH:$JAVA_HOME/bin
 printf "\n New java version: "
 java -version
 which java
