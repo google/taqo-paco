@@ -76,7 +76,7 @@ sudo apt-get install -y pkg-config
 sudo apt install -y openjdk-11-jdk
 printf "\n\n"
 sudo update-alternatives --config java
-
+1
 #/usr/libexec/java_home -V
 printf "\n\n"
 #/usr/libexec/java_home -v11
