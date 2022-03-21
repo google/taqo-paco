@@ -83,8 +83,10 @@ printf "\n\n"
 printf "Java version:\n"
 java -version
 #export JAVA_HOME=$(/usr/libexec/java_home -v11)
-printf "\n JAva location: "
+printf "\n All java versions: "
+ls /usr/bin/java
 
+printf "\n JAva location: "
 which java
 #  Run the linux build
 flutter config --enable-linux-desktop
