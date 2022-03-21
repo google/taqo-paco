@@ -35,7 +35,8 @@ which flutter
 
 # Install debhelper if not already installed
 sudo apt-get install -y debhelper
-sudo apt update
+sudo apt upgrade -y debhelper
+
 #sudo apt install -y dh-autoreconf=12~ubuntu16.04.1 debhelper=10.2.2ubuntu1~ubuntu16.04.1
 # Install Jq if not already installed
 if ! type jq >/dev/null; then
@@ -53,6 +54,8 @@ sudo apt-get install -y  clang
 sudo apt-get install -y  ninja-build
 sudo apt-get install -y clang
 sudo apt-get install -y pkg-config
+sudo apt update
+sudo aptitude -y upgrade
 # Go to root directory.
  cd ..
 # Check if correct version of java is installed, if not, install the jdk11
@@ -76,9 +79,9 @@ fi
 printf "\n\n"
 #/usr/libexec/java_home -v11
 printf "\n\n"
-printf "Old java version: "
+printf "Java version: %s" "${_java -version}"
 #export JAVA_HOME=$(/usr/libexec/java_home -v11)
-printf "\n New java version: "
+printf "\n JAva location: "
 
 which java
 #  Run the linux build
