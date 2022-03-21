@@ -68,7 +68,7 @@ fi
 if [[ "$_java" ]]; then
     version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
     printf "Version of java is: ${version}"
-    if [[ "$version" > "11" ]]; then
+    if [[ "$version" -gt "11" ]]; then
        sudo apt install -y openjdk-11-jdk
     fi
 fi
@@ -79,7 +79,7 @@ printf "\n\n"
 printf "Old java version: "
 #export JAVA_HOME=$(/usr/libexec/java_home -v11)
 printf "\n New java version: "
-java --version
+
 which java
 #  Run the linux build
 flutter config --enable-linux-desktop
