@@ -76,16 +76,16 @@ sudo apt-get install -y pkg-config
 sudo apt install -y openjdk-11-jdk
 printf "\n\n"
 sudo update-alternatives --config java
-1
+
 #/usr/libexec/java_home -V
 printf "\n\n"
 #/usr/libexec/java_home -v11
 printf "\n\n"
 printf "Old java version: "
-sudo vim /etc/profile.d/jdk.sh
-export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
-export PATH=$PATH:$JAVA_HOME/bin
-source /etc/profile.d/jdk.sh
+
+export JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+export PATH="${JAVA_HOME}/bin:{$PATH}"
+
 printf "\n New java version: "
 java -version
 which java
