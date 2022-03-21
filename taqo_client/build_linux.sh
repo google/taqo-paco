@@ -14,13 +14,22 @@ while (( "$#" )); do
 done
 printf "\nFlutter Version Passed: $FLUTTER_VER \n"
 
+sudo apt install -y openjdk-11-jdk
+printf "\n\n"
+
+export JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+export PATH="${JAVA_HOME}/bin:{$PATH}"
+
+printf "\n New java version: "
+java -version
+
 # Check if flutter is installed, if not, install the flutter
 
   cd ..
   printf "\n PWD: "
   pwd
 
-  git clone https://github.com/flutter/flutter.git -b ${FLUTTER_VER}
+  git clone https://github.com/flutter/flutter.git -b "${FLUTTER_VER}"
     export PATH="`pwd`/flutter/bin:$PATH"
 
   ls
@@ -73,22 +82,8 @@ sudo apt-get install -y pkg-config
 #    fi
 #fi
 
-sudo apt install -y openjdk-11-jdk
-printf "\n\n"
-sudo update-alternatives --config java
 
-#/usr/libexec/java_home -V
-printf "\n\n"
-#/usr/libexec/java_home -v11
-printf "\n\n"
-printf "Old java version: "
 
-export JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
-export PATH="${JAVA_HOME}/bin:{$PATH}"
-echo $PATH
-printf "\n New java version: "
-java -version
-which java
 #  Run the linux build
 flutter config --enable-linux-desktop
 distribution/create_deb_pkg.sh
