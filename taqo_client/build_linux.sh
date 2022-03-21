@@ -80,7 +80,8 @@ sudo apt install -y openjdk-11-jdk
 printf "\n\n"
 #/usr/libexec/java_home -v11
 printf "\n\n"
-printf "Java version: %s" "${_java -version}"
+printf "Java version:\n"
+java -version
 #export JAVA_HOME=$(/usr/libexec/java_home -v11)
 printf "\n JAva location: "
 
