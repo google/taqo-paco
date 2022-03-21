@@ -85,7 +85,7 @@ printf "Old java version: "
 
 export JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
 export PATH="${JAVA_HOME}/bin:{$PATH}"
-
+echo $PATH
 printf "\n New java version: "
 java -version
 which java
