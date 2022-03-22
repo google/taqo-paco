@@ -43,6 +43,8 @@ which flutter
 
 
 # Install debhelper if not already installed
+sudo apt-get update
+
 sudo apt-get install -y debhelper
 sudo apt update
 sudo apt install -y dh-autoreconf=12~ubuntu16.04.1 debhelper=10.2.2ubuntu1~ubuntu16.04.1
