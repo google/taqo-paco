@@ -29,7 +29,6 @@ FLUTTER_VER=${value}
 printf "\nFlutter version read from config file: %s \n" "${FLUTTER_VER}"
 # Check if flutter is installed, if not, install the flutter
 if ! type flutter >/dev/null; then
-  printf "\n Current directory is: %s \n" "$PWD"
   git clone https://github.com/flutter/flutter.git -b "${FLUTTER_VER}"
   export PATH="$PATH:$PWD/flutter/bin"
 fi
