@@ -44,7 +44,7 @@ run_tests() {
       exit 1
     fi
   else
-    printf "\nError: This directory is not a flutter project\n";
+    printf "\nError: This directory is not a flutter project.\n";
     exit 1
   fi
 }
