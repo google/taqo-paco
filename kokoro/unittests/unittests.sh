@@ -20,27 +20,26 @@ set -e
 # The final directory name in this path is determined by the scm name specified
 # in the job configuration.
 
-cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/" || none
+#cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
 
-source read_config.sh
-get_value flutter_version
-FLUTTER_VER=${value}
+source deps.cfg
 
-printf "\nFlutter version read from config file: %s \n" "${FLUTTER_VER}"
-# Check if flutter is installed, if not, install the flutter
-if ! type flutter >/dev/null; then
-  git clone https://github.com/flutter/flutter.git -b "${FLUTTER_VER}"
-  export PATH="$PATH:$PWD/flutter/bin"
+printf "\nFlutter version read from config file: %s \n" "${flutter_version}"
+# Check if flutter is installed, if yes, remove old local flutter
+if [[ -d flutter ]]; then
+  rm -rf flutter
 fi
-cd taqo_client || none
+# Install the flutter with the specified version if it is not already installed
+git clone -b "${flutter_version}" --single-branch https://github.com/flutter/flutter.git
+export PATH="$PWD/flutter/bin:$PATH"
+cd taqo_client
 
 # Run test cases
 run_tests() {
   if [[ -f "pubspec.yaml" ]]; then
     flutter test -r expanded
     result=$?
-    check=0
-    if [ $result -ne $check ]; then
+    if [ $result -ne 0 ]; then
       exit 1
     fi
   else
@@ -50,6 +49,5 @@ run_tests() {
 }
 
 run_tests
-
 
 
