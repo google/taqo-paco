@@ -89,4 +89,4 @@ cd ..
 # Run test cases which are in taqo_event_server_protocol directory.
 cd taqo_event_server_protocol
 run_dart_tests
-cd ..
+cd ..clea
