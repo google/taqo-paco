@@ -22,6 +22,7 @@ set -e
 
 cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
 
+# Read dependencies file to resolve versions
 source deps.cfg
 
 printf "\nFlutter version read from config file: %s \n" "${flutter_version}"
