@@ -36,7 +36,7 @@ export PATH="$PWD/flutter/bin:$PATH"
 cd taqo_client
 
 # Run test cases
-run_tests() {
+run_flutter_tests() {
   if [[ -f "pubspec.yaml" ]]; then
     flutter test -r expanded
     result=$?
@@ -49,6 +49,44 @@ run_tests() {
   fi
 }
 
-run_tests
 
+# Run dart test cases
+run_dart_tests() {
 
+  if [[ -f "pubspec.yaml" ]]; then
+    dart test
+    result=$?
+
+    if [[ $result -ne 0 ]]; then
+      exit 1
+    fi
+  else
+    printf "\nError: This directory is not a dart project.\n";
+    exit 1
+  fi
+}
+
+# Run test cases which are in taqo_client directory.
+cd taqo_client
+run_flutter_tests
+cd ..
+
+# Run test cases which are in data_binding_builder directory.
+cd data_binding_builder
+run_dart_tests
+cd ..
+
+# Run test cases which are in pal_event_server directory.
+cd pal_event_server
+run_dart_tests
+cd ..
+
+# Run test cases which are in taqo_common directory.
+cd taqo_common
+run_dart_tests
+cd ..
+
+# Run test cases which are in taqo_event_server_protocol directory.
+cd taqo_event_server_protocol
+run_dart_tests
+cd ..
