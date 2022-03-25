@@ -33,7 +33,6 @@ fi
 # Install the flutter with the specified version if it is not already installed
 git clone -b "${flutter_version}" --single-branch https://github.com/flutter/flutter.git
 export PATH="$PWD/flutter/bin:$PATH"
-cd taqo_client
 
 # Run test cases
 run_flutter_tests() {
