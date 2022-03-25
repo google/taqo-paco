@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2021 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
 # Read dependencies file to resolve versions
 source deps.cfg
 
-printf "\nFlutter version read from config file: %s \n" "${flutter_version}"
+printf "\nFlutter version read from deps.cfg file is: %s \n" "${flutter_version}"
 # Check if flutter is installed, if yes, remove old local flutter
 if [[ -d flutter ]]; then
   rm -rf flutter
@@ -33,7 +33,6 @@ fi
 # Install the flutter with the specified version if it is not already installed
 git clone -b "${flutter_version}" --single-branch https://github.com/flutter/flutter.git
 export PATH="$PWD/flutter/bin:$PATH"
-cd taqo_client
 
 # Run test cases
 run_tests() {
@@ -49,6 +48,5 @@ run_tests() {
   fi
 }
 
+cd taqo_client
 run_tests
-
-
