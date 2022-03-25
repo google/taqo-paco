@@ -39,7 +39,7 @@ run_tests() {
   if [[ -f "pubspec.yaml" ]]; then
     flutter test -r expanded
     result=$?
-    if [ $result -ne 0 ]; then
+    if [[ $result -ne 0 ]]; then
       exit 1
     fi
   else
