@@ -49,21 +49,21 @@ sudo apt-get install -y debhelper
 sudo apt update
 sudo apt install -y dh-autoreconf=12~ubuntu16.04.1 debhelper=10.2.2ubuntu1~ubuntu16.04.1
 # Install Jq if not already installed
-if ! type jq >/dev/null; then
-    sudo apt-get install -y jq
-fi
+#if ! type jq >/dev/null; then
+#    sudo apt-get install -y jq
+#fi
 
 # Install chrpath if not already installed
-if ! type chrpath >/dev/null; then
-    sudo apt-get install -y chrpath
-fi
-sudo apt-get install -y rsync
-sudo apt-get install -y cmake
-sudo apt-get install -y libgtk-3-dev
-sudo apt-get install -y unzip
-sudo apt-get install -y  ninja-build
-sudo apt-get install -y clang
-sudo apt-get install -y pkg-config
+#if ! type chrpath >/dev/null; then
+#    sudo apt-get install -y chrpath
+#fi
+#sudo apt-get install -y rsync
+#sudo apt-get install -y cmake
+#sudo apt-get install -y libgtk-3-dev
+#sudo apt-get install -y unzip
+#sudo apt-get install -y  ninja-build
+#sudo apt-get install -y clang
+#sudo apt-get install -y pkg-config
 # Go to root directory.
  cd ..
 # Check if correct version of java is installed, if not, install the jdk11
