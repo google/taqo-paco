@@ -25,6 +25,12 @@ cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
 # Read dependencies file to resolve versions
 source deps.cfg
 
+#Install java with specified version in the deps.cfg file
+printf "\nJava version read from deps.cfg file is: %s \n" "${java_version}"
+sudo apt install -y openjdk-"${java_version}"-jdk
+export JAVA_HOME="/usr/lib/jvm/java-${java_version}-openjdk-amd64"
+export PATH="${JAVA_HOME}/bin:{$PATH}"
+
 printf "\nFlutter version read from deps.cfg file is: %s \n" "${flutter_version}"
 # Check if flutter is installed, if yes, remove old local flutter
 if [[ -d flutter ]]; then
@@ -33,12 +39,6 @@ fi
 # Install the flutter with the specified version if it is not already installed
 git clone -b "${flutter_version}" --single-branch https://github.com/flutter/flutter.git
 export PATH="$PWD/flutter/bin:$PATH"
-
-#Install java with specified version in the deps.cfg file
-printf "\nJava version read from deps.cfg file is: %s \n" "${java_version}"
-sudo apt install -y openjdk-"${java_version}"-jdk
-export JAVA_HOME="/usr/lib/jvm/java-${java_version}-openjdk-amd64"
-export PATH="${JAVA_HOME}/bin:{$PATH}"
 
 printf "\n New java version is: "
 java -version
