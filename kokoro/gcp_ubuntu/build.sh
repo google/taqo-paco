@@ -40,10 +40,10 @@ fi
 git clone -b "${flutter_version}" --single-branch https://github.com/flutter/flutter.git
 export PATH="$PWD/flutter/bin:$PATH"
 
-printf "\n New java version is: "
+printf "\n The java version is: "
 java -version
 
-printf "\n New Flutter version is: "
+printf "\n The Flutter version is: "
 flutter --version
 
 # Clean previous flutter builds
