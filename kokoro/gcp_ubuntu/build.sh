@@ -22,8 +22,7 @@ set -e
 
 cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
 pwd
-sudo su - kbuilder
-pwd
+printf "%s" "${USER}"
 # Clean previous flutter builds
 cd taqo_client
 flutter clean
