@@ -21,12 +21,14 @@ set -e
 # in the job configuration.
 
 cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
-
+pwd
+sudo su - kbuilder
+pwd
 # Clean previous flutter builds
 cd taqo_client
 flutter clean
 cd ..
-sudo su - kbuilder
+
 #  Run the linux build
 flutter config --enable-linux-desktop
 distribution/create_deb_pkg.sh
