@@ -16,14 +16,21 @@
 # Fail on any error.
 set -e
 
+# Export the flutter which is installed in vm.
+#export PATH="/home/${USER}/flutter/bin:${PATH}"
+
 # Code under repo is checked out to ${KOKORO_ARTIFACTS_DIR}/github.
 # The final directory name in this path is determined by the scm name specified
 # in the job configuration.
-export PATH="/home/${USER}/flutter/bin:${PATH}"
 cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
-pwd
-printf "Current user is: %s\n" "${USER}"
-printf "Path is: %s\n" "${PATH}"
+
+# Read dependencies file to resolve versions
+source deps.cfg
+
+# Export the java path if not already exported
+#export JAVA_HOME="/usr/lib/jvm/java-${java_version}-openjdk-amd64"
+#export PATH="${JAVA_HOME}/bin:{$PATH}"
+
 # Clean previous flutter builds
 cd taqo_client
 flutter clean
@@ -37,5 +44,3 @@ if [ $result -ne 0 ]; then
     printf "Build failed! Please check the log for the details."
   exit 1
 fi
-
-#exit 0
