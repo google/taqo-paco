@@ -18,7 +18,7 @@ set -e
 
 # Export the flutter which is installed in vm.
 export PATH="/home/${USER}/flutter/bin:${PATH}"
-
+printf "\n Path: %s\n" "${PATH}"
 # Code under repo is checked out to ${KOKORO_ARTIFACTS_DIR}/github.
 # The final directory name in this path is determined by the scm name specified
 # in the job configuration.
