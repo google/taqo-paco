@@ -19,10 +19,13 @@ set -e
 # Code under repo is checked out to ${KOKORO_ARTIFACTS_DIR}/github.
 # The final directory name in this path is determined by the scm name specified
 # in the job configuration.
+ls /home/${USER}
+ls /home/${USER}/flutter
 printf "Old path is: %s\n" "${PATH}"
 export PATH="/home/${USER}/flutter/bin:${PATH}"
-sudo chown -R $(whoami) /home/kbuilder/flutter/bin/cache/lockfile
-sudo chown -R $(whoami) /home/kbuilder/flutter/version
+
+#sudo chown -R $(whoami) /home/kbuilder/flutter/bin/cache/lockfile
+#sudo chown -R $(whoami) /home/kbuilder/flutter/version
 cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
 pwd
 printf "Current user is: %s\n" "${USER}"
