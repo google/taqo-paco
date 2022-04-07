@@ -21,6 +21,8 @@ set -e
 # in the job configuration.
 printf "Old path is: %s\n" "${PATH}"
 export PATH="/home/${USER}/flutter/bin:${PATH}"
+sudo chown -R $(whoami) /home/kbuilder/flutter/bin/cache/lockfile
+sudo chown -R $(whoami) /home/kbuilder/flutter/version
 cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
 pwd
 printf "Current user is: %s\n" "${USER}"
