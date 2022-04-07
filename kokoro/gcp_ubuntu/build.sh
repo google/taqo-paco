@@ -25,7 +25,7 @@ set -e
 cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
 
 # Read dependencies file to resolve versions
-source deps.cfg
+#source deps.cfg
 
 # Export the java path if not already exported
 #export JAVA_HOME="/usr/lib/jvm/java-${java_version}-openjdk-amd64"
