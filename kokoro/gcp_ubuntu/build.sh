@@ -19,6 +19,7 @@ set -e
 # Code under repo is checked out to ${KOKORO_ARTIFACTS_DIR}/github.
 # The final directory name in this path is determined by the scm name specified
 # in the job configuration.
+printf "Old path is: %s\n" "${PATH}"
 export PATH="/home/${USER}/flutter/bin:${PATH}"
 cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
 pwd
