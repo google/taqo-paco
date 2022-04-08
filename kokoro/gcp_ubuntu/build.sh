@@ -27,7 +27,7 @@ printf "Old path is: %s\n" "${PATH}"
 export PATH="/tmpfs/flutter/bin:${PATH}"
 
 sudo chown -R $(whoami) /tmpfs/flutter/bin/cache/lockfile
-sudo chown -R $(whoami) /tmpfs/flutter/bin/cache/downloads
+#sudo chown -R $(whoami) /tmpfs/flutter/bin/cache/downloads
 sudo chown -R $(whoami) /tmpfs/flutter/version
 
 cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
