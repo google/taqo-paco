@@ -21,7 +21,7 @@ set -e
 # in the job configuration.
 #ls /home/"${USER}"
 #ls /home/"${USER}"/flutter
-sudo chmod 777  /tmpfs/flutter/
+#sudo chmod 777  /tmpfs/flutter/
 
 printf "Old path is: %s\n" "${PATH}"
 
