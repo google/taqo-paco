@@ -21,14 +21,14 @@ set -e
 # in the job configuration.
 #ls /home/"${USER}"
 #ls /home/"${USER}"/flutter
-sudo chmod 777  /tempfs/flutter/
+sudo chmod 777  /tmpfs/flutter/
 
 printf "Old path is: %s\n" "${PATH}"
-export PATH="/tempfs/flutter/bin:${PATH}"
+export PATH="/tmpfs/flutter/bin:${PATH}"
 
-sudo chown -R $(whoami) /tempfs/flutter/bin/cache/lockfile
-sudo chown -R $(whoami) /tempfs/flutter/bin/cache/downloads
-sudo chown -R $(whoami) /tempfs/flutter/version
+sudo chown -R $(whoami) /tmpfs/flutter/bin/cache/lockfile
+sudo chown -R $(whoami) /tmpfs/flutter/bin/cache/downloads
+sudo chown -R $(whoami) /tmpfs/flutter/version
 
 cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
 pwd
