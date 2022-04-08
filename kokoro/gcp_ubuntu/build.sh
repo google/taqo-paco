@@ -32,7 +32,7 @@ flutter clean
 cd ..
 
 #  Run the linux build
-flutter config --enable-linux-desktop
+#flutter config --enable-linux-desktop
 distribution/create_deb_pkg.sh
 result=$?
 if [ $result -ne 0 ]; then
