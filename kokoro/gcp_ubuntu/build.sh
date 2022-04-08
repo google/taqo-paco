@@ -19,19 +19,12 @@ set -e
 # Code under repo is checked out to ${KOKORO_ARTIFACTS_DIR}/github.
 # The final directory name in this path is determined by the scm name specified
 # in the job configuration.
-#ls /home/"${USER}"
-#ls /home/"${USER}"/flutter
-#sudo chmod 777  /tmpfs/flutter/
-
-printf "Old path is: %s\n" "${PATH}"
-
-#sudo chown -R $(whoami) /tmpfs/flutter/bin/cache/lockfile
-##sudo chown -R $(whoami) /tmpfs/flutter/bin/cache/downloads
-#sudo chown -R $(whoami) /tmpfs/flutter/version
-
-
-export PATH="/tmpfs/flutter/bin:${PATH}"
 cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
+
+# Export the flutter path which is installed by the taqo custom gcp image at
+# location /tmpfs
+export PATH="/tmpfs/flutter/bin:${PATH}"
+
 
 # Clean previous flutter builds
 cd taqo_client
