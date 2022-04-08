@@ -25,16 +25,12 @@ cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
 # location /tmpfs
 export PATH="/tmpfs/flutter/bin:${PATH}"
 
-ls /tmpfs
-ls /tmpfs/flutter
-
 # Clean previous flutter builds
 cd taqo_client
 flutter clean
 cd ..
 
 #  Run the linux build
-#flutter config --enable-linux-desktop
 distribution/create_deb_pkg.sh
 result=$?
 if [ $result -ne 0 ]; then
