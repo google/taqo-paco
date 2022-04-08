@@ -25,6 +25,8 @@ cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
 # location /tmpfs
 export PATH="/tmpfs/flutter/bin:${PATH}"
 
+ls /tmpfs
+ls /tmpfs/flutter
 
 # Clean previous flutter builds
 cd taqo_client
