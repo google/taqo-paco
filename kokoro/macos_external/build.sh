@@ -68,5 +68,3 @@ if [ $result -ne 0 ]; then
 fi
 xcodebuild -scheme Runner -workspace taqo_client/macos/Runner.xcworkspace build
 zip -r taqo_client/build/macos/Build/Products/Release/Taqo.app.zip taqo_client/build/macos/Build/Products/Release/Taqo.app
-
-ls  taqo_client/build/macos/Build/Products/Release/Taqo.app.zip taqo_client/build/macos/Build/Products/Release/
