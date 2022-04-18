@@ -20,7 +20,7 @@ set -e
 # The final directory name in this path is determined by the scm name specified
 # in the job configuration.
 
-cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
+#cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
 
 # Read dependencies file to resolve versions
 source deps.cfg
@@ -35,7 +35,7 @@ git clone -b "${flutter_version}" --single-branch https://github.com/flutter/flu
 export PATH="$PWD/flutter/bin:$PATH"
 
 # Run test cases
-run_tests() {
+run_flutter_tests() {
   if [[ -f "pubspec.yaml" ]]; then
     flutter test -r expanded
     result=$?
@@ -48,5 +48,44 @@ run_tests() {
   fi
 }
 
+
+# Run dart test cases
+run_dart_tests() {
+
+  if [[ -f "pubspec.yaml" ]]; then
+    dart test
+    result=$?
+
+    if [[ $result -ne 0 ]]; then
+      exit 1
+    fi
+  else
+    printf "\nError: This directory is not a dart project.\n";
+    exit 1
+  fi
+}
+
+# Run test cases which are in taqo_client directory.
 cd taqo_client
-run_tests
+run_flutter_tests
+cd ..
+
+# Run test cases which are in data_binding_builder directory.
+cd data_binding_builder
+run_dart_tests
+cd ..
+
+# Run test cases which are in pal_event_server directory.
+cd pal_event_server
+run_dart_tests
+cd ..
+
+# Run test cases which are in taqo_common directory.
+cd taqo_common
+run_dart_tests
+cd ..
+
+# Run test cases which are in taqo_event_server_protocol directory.
+cd taqo_event_server_protocol
+run_dart_tests
+cd ..
