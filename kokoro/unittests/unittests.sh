@@ -20,7 +20,7 @@ set -e
 # The final directory name in this path is determined by the scm name specified
 # in the job configuration.
 
-cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
+#cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
 
 # Read dependencies file to resolve versions
 source deps.cfg
@@ -31,8 +31,8 @@ if [[ -d flutter ]]; then
   rm -rf flutter
 fi
 # Install the flutter with the specified version if it is not already installed
-git clone -b "${flutter_version}" --single-branch https://github.com/flutter/flutter.git
-export PATH="$PWD/flutter/bin:$PATH"
+#git clone -b "${flutter_version}" --single-branch https://github.com/flutter/flutter.git
+#export PATH="$PWD/flutter/bin:$PATH"
 
 # Run test cases
 run_flutter_tests() {
@@ -86,6 +86,6 @@ run_dart_tests
 cd ..
 
 # Run test cases which are in taqo_event_server_protocol directory.
-cd taqo_event_server_protocol
-run_dart_tests
-cd ..
+#cd taqo_event_server_protocol
+#run_dart_tests
+#cd ..
