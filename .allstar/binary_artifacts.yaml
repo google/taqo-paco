@@ -1,0 +1,13 @@
+# Ignore reason: These artifacts are used as build dependencies and are not
+#   built from source on our side.
+ignorePaths:
+- pal_intellij_plugin/lib/Shared.jar
+- pal_intellij_plugin/lib/commons-lang3-3.2.1.jar
+- pal_intellij_plugin/lib/gson-2.6.2.jar
+- pal_intellij_plugin/lib/guava-16.0.1.jar
+- pal_intellij_plugin/lib/jackson-all-1.9.11.jar
+- pal_intellij_plugin/lib/jnr-unixsocket-0.19-SNAPSHOT-jar-with-dependencies.jar
+- pal_intellij_plugin/lib/joda-time-2.9.3.jar
+- pal_intellij_plugin/lib/json.jar
+- pal_intellij_plugin/lib/junit-4.10.jar
+- pal_intellij_plugin/lib/weberknecht-0.1.5.jar
