@@ -113,8 +113,8 @@ Future<void> loadManualLicenses() async {
   // sure that the paths for the listed licenses are specified in the assets
   // section of pubspec.yaml
   final manualLicenses = [
-    ['taqo', '../LICENSE'],
-    ['alerter', '../third_party/alerter/LICENSE']
+    ['taqo', 'assets/LICENSE'],
+    ['alerter', 'assets/alerter_LICENSE']
   ];
 
   // Iterate through each of the licenses provided in the "licenses" list and
