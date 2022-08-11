@@ -69,3 +69,20 @@ class TaqoCard extends StatelessWidget {
     );
   }
 }
+
+
+class TaqoTextField extends StatefulWidget {
+  const TaqoTextField({Key key,ValueChanged<String> onChanged, });
+  @override
+  State<TaqoTextField> createState() {
+    // TODO: implement createState
+    throw UnimplementedError();
+  }
+}
+class _TaqoTextFieldState extends State<TaqoTextField> {
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    throw UnimplementedError();
+  }
+}

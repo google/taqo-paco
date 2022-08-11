@@ -55,6 +55,8 @@ class _SurveyPageState extends State<SurveyPage> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   static const String FORM_DURATION_IN_SECONDS = "Form Duration";
+  static const String EVENT_TYPE = "eventType";
+
   Experiment _experiment;
   ExperimentGroup _experimentGroup;
   Event _event;
@@ -166,6 +168,8 @@ class _SurveyPageState extends State<SurveyPage> {
       return buildNumberQuestionWidget(context, input);
     } else if (input.responseType == Input2.LIKERT_SMILEYS) {
       return buildSmileyScaleQuestionWidget(context, input);
+    } else if (input.responseType == Input2.TEXTBLOB) {
+      return buildTextPrompt(input.text);
     } else {
       return Text("Can't render a " + input.responseType);
     }
@@ -234,12 +238,24 @@ class _SurveyPageState extends State<SurveyPage> {
     );
   }
 
+  Future<void> addTimestampEvent(String inputName, String value) async {
+    final db = await platform_service.databaseImpl;
+    var event = Event.of(_experiment, _experimentGroup);
+    event.responseTime = ZonedDateTime.now();
+    // The string literals used below are only supposed to be used once here.
+    // General string literals that might be used elsewhere are defined as constant
+    event.responses['inputName'] = inputName;
+    event.responses[inputName] = value;
+    event.responses[EVENT_TYPE] = 'surveyAction';
+    await db.insertEvent(event);
+  }
+
   DropdownButton buildSingleSelectList(Input2 input) {
     return DropdownButton<String>(
       hint: Text('Please select'),
       isExpanded: true,
       value: (_event.responses[input.name] != null)
-      ? input.listChoices[_event.responses[input.name] - 1].toString()
+          ? input.listChoices[_event.responses[input.name] - 1].toString()
           : null,
       items: input.listChoices.map((String value) {
         return DropdownMenuItem<String>(
@@ -248,8 +264,10 @@ class _SurveyPageState extends State<SurveyPage> {
         );
       }).toList(),
       onChanged: (String newValue) {
+        addTimestampEvent(input.name, newValue);
         setState(() {
-          _event.responses[input.name] = input.listChoices.indexOf(newValue) + 1;
+          _event.responses[input.name] =
+              input.listChoices.indexOf(newValue) + 1;
         });
       },
     );
@@ -397,7 +415,9 @@ class _SurveyPageState extends State<SurveyPage> {
       if (alarm.experiment.id == _experiment.id &&
           alarm.experimentGroup.name == _experimentGroup.name &&
           alarm.time.isBefore(DateTime.now()) &&
-      !alarm.time.add(Duration(minutes: alarm.action.timeout)).isBefore(DateTime.now())) {
+          !alarm.time
+              .add(Duration(minutes: alarm.action.timeout))
+              .isBefore(DateTime.now())) {
         // This alarm is the timeout for the notification
         // The alarm for the notification was already cleared when it fired
         _event.actionId = alarm.action.id;
