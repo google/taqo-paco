@@ -13,17 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Fail on any error.
-set -e
-
 # Code under repo is checked out to ${KOKORO_ARTIFACTS_DIR}/github.
 # The final directory name in this path is determined by the scm name specified
 # in the job configuration.
-
 cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
 
 # Read dependencies file to resolve versions
 source deps.cfg
+
+JSON2XML_PY="$(readlink -f kokoro/unittests/dart_test_json2xml.py)"
 
 printf "\nFlutter version read from deps.cfg file is: %s \n" "${flutter_version}"
 # Check if flutter is installed, if yes, remove old local flutter
@@ -37,55 +35,45 @@ export PATH="$PWD/flutter/bin:$PATH"
 # Run test cases
 run_flutter_tests() {
   if [[ -f "pubspec.yaml" ]]; then
-    flutter test -r expanded
-    result=$?
-    if [[ $result -ne 0 ]]; then
-      exit 1
-    fi
+    flutter test -r json | python3 "${JSON2XML_PY}" >sponge_log.xml
   else
-    printf "\nError: This directory is not a flutter project.\n";
+    printf "\nError: This directory is not a flutter project.\n"
     exit 1
   fi
 }
-
 
 # Run dart test cases
 run_dart_tests() {
 
   if [[ -f "pubspec.yaml" ]]; then
-    dart test
-    result=$?
-
-    if [[ $result -ne 0 ]]; then
-      exit 1
-    fi
+    dart test -r json | python3 "${JSON2XML_PY}" >sponge_log.xml
   else
-    printf "\nError: This directory is not a dart project.\n";
+    printf "\nError: This directory is not a dart project.\n"
     exit 1
   fi
 }
 
 # Run test cases which are in taqo_client directory.
-cd taqo_client
+pushd taqo_client
 run_flutter_tests
-cd ..
+popd
 
 # Run test cases which are in data_binding_builder directory.
-cd data_binding_builder
+pushd data_binding_builder
 run_dart_tests
-cd ..
+popd
 
 # Run test cases which are in pal_event_server directory.
-cd pal_event_server
+pushd pal_event_server
 run_dart_tests
-cd ..
+popd
 
 # Run test cases which are in taqo_common directory.
-cd taqo_common
+pushd taqo_common
 run_dart_tests
-cd ..
+popd
 
 # Run test cases which are in taqo_event_server_protocol directory.
-cd taqo_event_server_protocol
+pushd taqo_event_server_protocol
 run_dart_tests
-cd ..
+popd
