@@ -395,7 +395,7 @@ def compute_timings_and_finalize(test_tree: TestTree,
 
 
 # Pass 4
-def print_xml(test_tree: TestTree):
+def generate_xml(test_tree: TestTree):
   xml_elements = {}
 
   def visit(node_id, parents):
@@ -407,6 +407,10 @@ def print_xml(test_tree: TestTree):
 
   test_tree.traverse_with_parents(visit)
   root = xml_elements[test_tree.root_id]
+  return root
+
+
+def print_xml(root):
   print(etree.tostring(root, encoding=str, pretty_print=True))
 
 
@@ -426,7 +430,8 @@ def main() -> None:
   compute_counts_and_end_time(test_tree)
   assert isinstance(time_zero, datetime)
   compute_timings_and_finalize(test_tree, time_zero)
-  print_xml(test_tree)
+  xml = generate_xml(test_tree)
+  print_xml(xml)
 
 
 if __name__ == '__main__':
