@@ -23,7 +23,9 @@ class AppDelegate: FlutterAppDelegate {
   override func applicationDidFinishLaunching(_ aNotification: Notification) {
     // Seting LoginItem -> True
     let launcherAppId = "com.taqo.survey.TaqoLauncher"
-    SMLoginItemSetEnabled(launcherAppId as CFString, true)
+    let enabled = SMLoginItemSetEnabled(launcherAppId as CFString, true)
+      NSLog("Runner TaqoLauncher launch result: ")
+      NSLog(enabled.description)
   }
 
   override func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

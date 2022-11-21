@@ -65,7 +65,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     do {
+      NSLog("Starting taqo_daemon")
       try task.run()
+        NSLog("Done Starting taqo_daemon")
     } catch {
       NSLog("Error running taqo_daemon")
     }
