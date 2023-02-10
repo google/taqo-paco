@@ -18,15 +18,14 @@ version: 1.0.0
 # homepage: https://www.example.com
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
-
+  sdk: '>=3.0.0-0.0.dev <4.0.0'
 dependencies:
   path: ^1.8.0
   plugin_tool:
     git:
       url: https://github.com/flutter/flutter-intellij.git
       path: tool/plugin
-      ref: release_60
+      ref: 5a6c0330d39bbbf86a658d4e40f6891447f03b2e
 
 dev_dependencies:
   pedantic: ^1.10.0

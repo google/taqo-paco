@@ -1,12 +1,23 @@
 # Building distributable packages for Taqo
 
-## Build .deb package for Linux
+## Build .deb package for Linux (tested on Ubuntu 20.04)
 
 ### Requirements
 
 - debhelper (>=13) (debhelper 12 seems working, but not guaranteed)
+- rsync
+- cmake
+- libgtk-3-dev
+- unzip
+- ninja-build
+- clang
+- pkg-config
 - jq
 - chrpath
+- libsqlite3-dev
+- openjdk-11-jdk 
+- openjdk-17-jdk
+- (See deps.cfg for the specific version of Flutter)
 
 ### Build steps
 To create a deb package under `distribution/build`, run the `create_deb_pkg.sh`
@@ -16,13 +27,7 @@ script.
 
 ### Requirements
 
-- Flutter 1.22.0-12.0.pre  
-  Under Flutter installation directory:
-
-  ```bash
-  git checkout 1.22.0-12.0.pre
-  flutter doctor
-  ```
+- (See deps.cfg for the specific version of Flutter)  
 
 - Xcode 11.7
   (Xcode 12+ won't work)

@@ -18,6 +18,7 @@ import 'package:path/path.dart' as p;
 import 'package:plugin_tool/globals.dart';
 import 'package:plugin_tool/plugin.dart';
 import 'package:plugin_tool/build_spec.dart';
+import 'package:plugin_tool/util.dart';
 
 void initGlobals() {
   rootPath = Directory.current.path;
@@ -45,6 +46,13 @@ List<BuildSpec> readFlutterIntellijSpecs() {
 class DownloadException implements Exception {}
 
 Future<void> downloadArtifacts(BuildSpec spec) async {
+  // Manually remove 'artifacts/dart' folder due to a combination of the following reasons:
+  // 1. ArtifactManager.provision() will stuck on unzip if any target file exists
+  // 2. ArtifactManager.provision() actually tries to delete existing targets before unzipping
+  // 3. For Dart artifacts, ArtifactManager.provision() tries to delete 'Dart' folder
+  // 4. However, for some versions of Dart artifacts, it was actually unzipped to 'dart' folder
+  await removeAll('$rootPath/artifacts/dart');
+
   var result = await spec.artifacts.provision(rebuildCache: true);
   if (result != 0) {
     throw DownloadException();

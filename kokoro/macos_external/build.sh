@@ -25,13 +25,14 @@ cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
 # Read dependencies file to resolve versions
 source deps.cfg
 
-#Install java with specified version in the deps.cfg file
-printf "\nJava version read from deps.cfg file is: %s \n" "${java_version}"
-brew install java"${java_version}"
-sudo ln -sfn /usr/local/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-'${java_version}'.jdk
-echo "export PATH=/usr/local/opt/openjdk@${java_version}/bin:$PATH" >> ~/.zshrc
-export CPPFLAGS="-I/usr/local/opt/openjdk@${java_version}/include"
-export JAVA_HOME=$(/usr/libexec/java_home -v"${java_version}")
+# Install both Java 11 and Java 17 since IntelliJ plugins requires Java 17
+# since version 2023 and Java 11 for previous versions.
+brew install openjdk@11 openjdk@17
+sudo ln -sfn /usr/local/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
+sudo ln -sfn /usr/local/opt/openjdk@17/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-17.jdk
+export JAVA_HOME_11="$(/usr/libexec/java_home -F -v11)"
+export JAVA_HOME_17="$(/usr/libexec/java_home -F -v17)"
+
 
 printf "\nFlutter version read from deps.cfg file is: %s \n" "${flutter_version}"
 # Check if flutter is installed, if yes, remove old local flutter
@@ -41,9 +42,6 @@ fi
 # Install the flutter with the specified version if it is not already installed
 git clone -b "${flutter_version}" --single-branch https://github.com/flutter/flutter.git
 export PATH="${PWD}/flutter/bin:${PATH}"
-
-printf "\n New java version is: "
-java -version
 
 printf "\n New Flutter version is: "
 flutter --version

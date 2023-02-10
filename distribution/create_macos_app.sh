@@ -21,6 +21,26 @@ if [[ -z "${DART_SDK}" ]]; then
   DART_SDK="${FLUTTER_SDK}/bin/cache/dart-sdk"
 fi
 
+if [[ -z "${JAVA_HOME_11}" ]]; then
+  JAVA_HOME_11="$(/usr/libexec/java_home -F -v11)"
+fi
+
+if [[ -z "${JAVA_HOME_11}" ]]; then
+  echo "Please set JAVA_HOME_11 to the path of JDK 11"
+fi
+
+if [[ -z "${JAVA_HOME_17}" ]]; then
+  JAVA_HOME_17="$(/usr/libexec/java_home -F -v17)"
+fi
+
+if [[ -z "${JAVA_HOME_17}" ]]; then
+  echo "Please set JAVA_HOME_17 to the path of JDK 17"
+fi
+
+export JAVA_HOME_11
+export JAVA_HOME_17
+
+
 DISTRIBUTION_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 TAQO_ROOT="$(dirname -- "${DISTRIBUTION_DIR}")"
 

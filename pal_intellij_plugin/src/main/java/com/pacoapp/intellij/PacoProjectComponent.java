@@ -211,12 +211,12 @@ public class PacoProjectComponent implements ProjectComponent {
       }
 
       @Override
-      public void changesRemoved(Collection<Change> collection, ChangeList changeList) {
+      public void changesRemoved(Collection<? extends Change> collection, ChangeList changeList) {
         System.out.println("changeList = " + changeList.getName());
       }
 
       @Override
-      public void changesAdded(Collection<Change> collection, ChangeList changeList) {
+      public void changesAdded(Collection<? extends Change> collection, ChangeList changeList) {
         System.out.println("changeList = " + changeList.getName());
       }
 

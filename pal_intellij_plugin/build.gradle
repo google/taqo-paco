@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '0.5.0'
+    id 'org.jetbrains.intellij' version '1.9.0'
 }
 
 group 'com.pacoapp'
@@ -18,12 +18,12 @@ dependencies {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    localPath "${project.rootDir.absolutePath}/artifacts/$ide"
+    localPath = "${project.rootDir.absolutePath}/artifacts/$ide"
     plugins = ["java"]
 }
 
 patchPluginXml {
-    changeNotes """
+    changeNotes = """
       Add change notes here.<br>
       <em>most HTML tags may be used</em>"""
 }

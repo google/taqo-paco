@@ -24,6 +24,22 @@ if [[ -z "${DART_SDK}" ]]; then
   DART_SDK="${FLUTTER_SDK}/bin/cache/dart-sdk"
 fi
 
+if [[ -z "${JAVA_HOME_11}" ]]; then
+  if [[ -d "/usr/lib/jvm/java-11-openjdk-amd64" ]]; then
+    export JAVA_HOME_11="/usr/lib/jvm/java-11-openjdk-amd64"
+  else
+    echo "Please set JAVA_HOME_11 to the path of JDK 11"
+  fi
+fi
+
+if [[ -z "${JAVA_HOME_17}" ]]; then
+  if [[ -d "/usr/lib/jvm/java-17-openjdk-amd64" ]]; then
+    export JAVA_HOME_17="/usr/lib/jvm/java-17-openjdk-amd64"
+  else
+    echo "Please set JAVA_HOME_17 to the path of JDK 17"
+  fi
+fi
+
 if [[ -z "$1" ]]; then
   TAQO_ROOT="$(pwd)"
 else

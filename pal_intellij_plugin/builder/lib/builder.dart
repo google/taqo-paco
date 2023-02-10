@@ -18,7 +18,8 @@ import 'flutter_intellij.dart';
 import 'patches.dart';
 
 final BuildSpec buildSpec = BuildSpec(
-    flutter_intellij_commit: 'release_60', flutter_intellij_release: '60.1');
+    flutter_intellij_commit: '5a6c0330d39bbbf86a658d4e40f6891447f03b2e',
+    flutter_intellij_release: '72.0');
 
 class BuildSpec {
   final String flutter_intellij_commit;
@@ -45,13 +46,15 @@ class BuildSpec {
   }
 }
 
-Future<void> runGradleBuild() async {
-  var args = ['buildPlugin'];
+Future<void> runGradleBuild({String? javaHome}) async {
+  final args = ['buildPlugin'];
+  final env = (javaHome == null) ? null : {'JAVA_HOME': javaHome};
+
   Process process;
   if (Platform.isWindows) {
-    process = await Process.start('.\\gradlew.bat', args);
+    process = await Process.start('.\\gradlew.bat', args, environment: env);
   } else {
-    process = await Process.start('./gradlew', args);
+    process = await Process.start('./gradlew', args, environment: env);
   }
   await Future.wait(
       [stdout.addStream(process.stdout), stderr.addStream(process.stderr)]);
@@ -63,11 +66,6 @@ Future<void> buildPlugins(BuildSpec spec) async {
 
   for (var i = 0; i < flutter_intellij_specs.length; i++) {
     var fi_spec = flutter_intellij_specs[i];
-    // Skip EAP version of IntelliJ
-    if (fi_spec.ideaVersion == 'LATEST-EAP-SNAPSHOT') {
-      continue;
-    }
-    var buildVersion = fi_spec.sinceBuild;
     await downloadArtifacts(fi_spec);
     await writeGradleProperties(fi_spec, spec.flutter_intellij_release, i + 1);
     await buildWithPatches(fi_spec, runGradleBuild, patches);

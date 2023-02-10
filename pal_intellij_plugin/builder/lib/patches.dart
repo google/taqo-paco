@@ -17,19 +17,43 @@
 // (e.g. IntelliJ IDEA and Android Studio), we patch some source files for
 // specific versions to match their API definitions.
 
-// @dart = 2.10
+import 'dart:io' show Platform;
 
 import 'package:plugin_tool/build_spec.dart';
 import 'package:plugin_tool/edit.dart';
 
 final patches = <EditCommand>[
   Subst(
-      path: 'src/main/java/com/pacoapp/intellij/CommandExecutionListener.java',
-      initial: 'PatchWriter.writePatches(project, patchFilePath, basePath',
+      path: 'src/main/java/com/pacoapp/intellij/PacoProjectComponent.java',
+      initial:
+          'public void changesRemoved(Collection<Change> collection, ChangeList changeList) {',
       replacement:
-          'PatchWriter.writePatches(project, patchFilePath.toString(), basePath.toString()',
-      version: '4.2')
+          'public void changesRemoved(Collection<? extends Change> collection, ChangeList changeList) {',
+      version: '2023.1'),
+  Subst(
+      path: 'src/main/java/com/pacoapp/intellij/PacoProjectComponent.java',
+      initial:
+          'public void changesAdded(Collection<Change> collection, ChangeList changeList) {',
+      replacement:
+          'public void changesAdded(Collection<? extends Change> collection, ChangeList changeList) {',
+      version: '2023.1'),
+  Subst(
+      path: 'src/main/java/com/pacoapp/intellij/PacoProjectComponent.java',
+      initial:
+          'public void changesMoved(Collection<Change> collection, ChangeList changeList, ChangeList changeList1) {',
+      replacement:
+          'public void changesMoved(Collection<? extends Change> collection, ChangeList changeList, ChangeList changeList1) {',
+      version: '2023.1'),
 ];
+
+String? getJavaHome(BuildSpec spec) {
+  final needJava17 = spec.ideaVersion.compareTo('2022.z') > 0;
+  if (needJava17) {
+    return Platform.environment['JAVA_HOME_17'];
+  } else {
+    return Platform.environment['JAVA_HOME_11'];
+  }
+}
 
 Future<void> buildWithPatches(
     BuildSpec spec, Function buildFn, List<EditCommand> patches) async {
@@ -41,7 +65,7 @@ Future<void> buildWithPatches(
         patched[patch] = source;
       }
     }
-    await buildFn.call();
+    await buildFn.call(javaHome: getJavaHome(spec));
   } finally {
     // Restore sources.
     patched.forEach((edit, source) {
