@@ -21,6 +21,7 @@ import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
+import 'package:taqo_common/model/shell_command_log.dart';
 import 'package:taqo_event_server_protocol/src/json_utils.dart';
 
 abstract class TespMessage {
@@ -30,6 +31,7 @@ abstract class TespMessage {
 
   static const tespCodeRequestPalAddEvents = 0x01;
   static const tespCodeRequestPalPause = 0x02;
+  static const tespCodeRequestPalLogCmd = 0x03;
   static const tespCodeRequestPalResume = 0x04;
   static const tespCodeRequestPalAllowlistDataOnly = 0x06;
   static const tespCodeRequestPalAllData = 0x08;
@@ -76,6 +78,8 @@ abstract class TespMessage {
         return TespRequestPalAddEvents.withEncodedPayload(encodedPayload);
       case tespCodeRequestPalPause:
         return TespRequestPalPause();
+      case tespCodeRequestPalLogCmd:
+        return TespRequestPalLogCmd.withEncodedPayload(encodedPayload);
       case tespCodeRequestPalResume:
         return TespRequestPalResume();
       case tespCodeRequestPalAllowlistDataOnly:
@@ -186,7 +190,7 @@ mixin Payload<T> on TespMessage {
     try {
       setPayload(createObjectFromJson(_codec.decode(encodedPayload)));
     } catch (e) {
-      throw FormatException('encodedPayload is not valid for $runtimeType');
+      throw FormatException('encodedPayload is not valid for $runtimeType: $e');
     }
     _encodedPayload = encodedPayload;
   }
@@ -255,6 +259,32 @@ class TespRequestPalAddEvents extends TespRequest
 class TespRequestPalPause extends TespRequest {
   @override
   final code = TespMessage.tespCodeRequestPalPause;
+}
+
+class TespRequestPalLogCmd extends TespRequest with Payload<ShellCommandLog> {
+  @override
+  final code = TespMessage.tespCodeRequestPalLogCmd;
+
+  ShellCommandLog get shellCommandLog => payload;
+
+  TespRequestPalLogCmd(ShellCommandLog cmdLog) {
+    setPayload(cmdLog);
+  }
+  TespRequestPalLogCmd.withEncodedPayload(Uint8List encodedPayload) {
+    setPayloadWithEncoded(encodedPayload);
+  }
+
+  @override
+  ShellCommandLog createObjectFromJson(jsonObject) {
+    switch(jsonObject['type']) {
+      case 'start':
+        return ShellCommandStart.fromJson(jsonObject);
+      case 'end':
+        return ShellCommandEnd.fromJson(jsonObject);
+      default:
+        throw ArgumentError.value(jsonObject['type'], null, 'TespRequestPalLogCmd.createObjectFromJson: type should be "start" or "end", but is');
+    }
+  }
 }
 
 class TespRequestPalResume extends TespRequest {

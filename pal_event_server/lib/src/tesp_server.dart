@@ -136,6 +136,11 @@ class PALTespServer with TespRequestHandlerMixin {
   }
 
   @override
+  Future<TespResponse> palLogCmd(ShellCommandLog) async {
+    throw UnimplementedError();
+  }
+
+  @override
   FutureOr<TespResponse> palResume() async {
     await pal_commands.resumeDataUpload();
     return TespResponseSuccess();

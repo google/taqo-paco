@@ -16,7 +16,7 @@ name: taqo_common
 environment:
   sdk: '>=2.12.0 <3.0.0'
 dependencies:
-  glob: ^1.2.0
+  glob: ^2.0.0
   intl: ^0.16.1
   json_annotation: ^3.0.1
   logging: ^0.11.4
@@ -29,5 +29,10 @@ dev_dependencies:
   json_serializable: ^3.3.0
   test: any
 
+# TODO(https://github.com/google/taqo-paco/issues/142):
+# Remove the dependency overrides after migrationg to null-safe Dart, since these are all
+# workarounds to fix broken dependencies due to lack/mix of null-safety support.
 dependency_overrides:
   meta: 1.6.0
+  # To make build_runner work, we need newer analyzer that supports Dart 2.14
+  analyzer: ^1.0.0

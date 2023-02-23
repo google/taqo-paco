@@ -22,6 +22,7 @@ import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
+import 'package:taqo_common/model/shell_command_log.dart';
 import 'package:taqo_common/util/zoned_date_time.dart';
 import 'package:taqo_event_server_protocol/src/tesp_codec.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
@@ -99,6 +100,17 @@ void main() {
 
     final msgRequestPause = TespRequestPalPause();
     final msgRequestResume = TespRequestPalResume();
+    final msgRequestLogCmdStart = TespRequestPalLogCmd(ShellCommandStart(
+        timestamp:
+            ZonedDateTime.fromIso8601String('2020-05-05T16:21:31.415926-0700'),
+        command: 'command',
+        shellPid: 1,
+        isBackground: false));
+    final msgRequestLogCmdEnd = TespRequestPalLogCmd(ShellCommandEnd(
+        timestamp:
+            ZonedDateTime.fromIso8601String('2020-05-05T16:21:31.415926-0700'),
+        shellPid: 1,
+        exitCode: 0));
     final msgRequestAllowlistDataOnly = TespRequestPalAllowlistDataOnly();
     final msgRequestAllData = TespRequestPalAllData();
     final msgRequestPing = TespRequestPing();
@@ -151,6 +163,10 @@ void main() {
           equalsTespMessage(msgResponseAnswer));
       expect(tesp.decode(tesp.encode(msgRequestPause)),
           equalsTespMessage(msgRequestPause));
+      expect(tesp.decode(tesp.encode(msgRequestLogCmdStart)),
+          equalsTespMessage(msgRequestLogCmdStart));
+      expect(tesp.decode(tesp.encode(msgRequestLogCmdEnd)),
+          equalsTespMessage(msgRequestLogCmdEnd));
       expect(tesp.decode(tesp.encode(msgRequestResume)),
           equalsTespMessage(msgRequestResume));
       expect(tesp.decode(tesp.encode(msgRequestAllowlistDataOnly)),
@@ -213,6 +229,7 @@ void main() {
       final messages = <TespMessage>[
         msgRequestAddEvent, msgRequestAddEvent, msgRequestPause, //
         msgRequestAddEvent, msgRequestResume, msgRequestAddEvent, //
+        msgRequestLogCmdStart, msgRequestLogCmdEnd, //
         msgRequestAllowlistDataOnly, msgRequestAllData, msgResponseSuccess, //
         msgResponseSuccess, msgResponseSuccess, msgResponsePaused, //
         msgResponseSuccess, msgResponseSuccess, msgResponseSuccess, //

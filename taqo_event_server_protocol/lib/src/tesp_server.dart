@@ -20,6 +20,7 @@ import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
+import 'package:taqo_common/model/shell_command_log.dart';
 
 import 'tesp_message_socket.dart';
 import 'tesp_message.dart';
@@ -31,6 +32,7 @@ abstract class TespRequestHandler {
 mixin TespRequestHandlerMixin implements TespRequestHandler {
   FutureOr<TespResponse> palAddEvents(List<Event> events);
   FutureOr<TespResponse> palPause();
+  FutureOr<TespResponse> palLogCmd(ShellCommandLog cmdLog);
   FutureOr<TespResponse> palResume();
   FutureOr<TespResponse> palAllowlistDataOnly();
   FutureOr<TespResponse> palAllData();
@@ -72,6 +74,8 @@ mixin TespRequestHandlerMixin implements TespRequestHandler {
         return palAddEvents((tespRequest as TespRequestPalAddEvents).events);
       case TespRequestPalPause:
         return palPause();
+      case TespRequestPalLogCmd:
+        return palLogCmd((tespRequest as TespRequestPalLogCmd).shellCommandLog);
       case TespRequestPalResume:
         return palResume();
       case TespRequestPalAllowlistDataOnly:
