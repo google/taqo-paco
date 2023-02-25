@@ -24,6 +24,7 @@ import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
+import 'package:taqo_common/model/shell_command_log.dart';
 import 'package:taqo_event_server_protocol/src/tesp_codec.dart';
 
 import 'tesp_message.dart';
@@ -274,6 +275,8 @@ class TespEventClient extends TespClient {
       palAddEventsJson([eventJson]);
 
   Future<TespResponse> ping() => send(TespRequestPing());
+
+  Future<TespResponse> palLogCmd(ShellCommandLog cmdLog) => send(TespRequestPalLogCmd(cmdLog));
 }
 
 class TespFullClient extends TespEventClient {
