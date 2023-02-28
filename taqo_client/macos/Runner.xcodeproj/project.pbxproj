@@ -32,6 +32,9 @@
 		51A01875273DDD2C00A06E26 /* alerter.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 511EEE16273DD29A00BCB07C /* alerter.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		51A0187D273F368F00A06E26 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 33CC10F22044A3C60003C045 /* Assets.xcassets */; };
 		51A0188F2742F2F600A06E26 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 51A0188E2742F2F600A06E26 /* InfoPlist.strings */; };
+		51CC684D29AE91DC001EF5F7 /* logcmd in CopyFiles */ = {isa = PBXBuildFile; fileRef = 51CC682F29AE8145001EF5F7 /* logcmd */; };
+		51CC684F29AE91F0001EF5F7 /* bash-preexec.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 51CC684029AE83F9001EF5F7 /* bash-preexec.sh */; };
+		51CC685029AE91F4001EF5F7 /* LICENSE.md in CopyFiles */ = {isa = PBXBuildFile; fileRef = 51CC683729AE83F9001EF5F7 /* LICENSE.md */; };
 		630B1A657994358960C31EDF /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B46DEA055892DFD7E89F54F /* Pods_Runner.framework */; };
 		C38218F724ABF53D00891B3C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C38218F624ABF53D00891B3C /* AppDelegate.swift */; };
 		C38218F924ABF53E00891B3C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C38218F824ABF53E00891B3C /* Assets.xcassets */; };
@@ -67,6 +70,27 @@
 			dstSubfolderSpec = 10;
 			files = (
 				51A01875273DDD2C00A06E26 /* alerter.app in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		51CC684C29AE91CE001EF5F7 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 6;
+			files = (
+				51CC684D29AE91DC001EF5F7 /* logcmd in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		51CC684E29AE91E1001EF5F7 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "third_party/bash-preexec";
+			dstSubfolderSpec = 7;
+			files = (
+				51CC685029AE91F4001EF5F7 /* LICENSE.md in CopyFiles */,
+				51CC684F29AE91F0001EF5F7 /* bash-preexec.sh in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -119,6 +143,15 @@
 		512E3CDA2769E0670059FD33 /* NotificationWithState.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NotificationWithState.m; sourceTree = "<group>"; };
 		512E3CDC2769E08F0059FD33 /* NotificationWithState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NotificationWithState.h; sourceTree = "<group>"; };
 		51A0188E2742F2F600A06E26 /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = InfoPlist.strings; sourceTree = "<group>"; };
+		51CC682F29AE8145001EF5F7 /* logcmd */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = logcmd; sourceTree = "<group>"; };
+		51CC683729AE83F9001EF5F7 /* LICENSE.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
+		51CC683929AE83F9001EF5F7 /* bash-preexec.bats */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "bash-preexec.bats"; sourceTree = "<group>"; };
+		51CC683A29AE83F9001EF5F7 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		51CC683B29AE83F9001EF5F7 /* include-test.bats */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "include-test.bats"; sourceTree = "<group>"; };
+		51CC683C29AE83F9001EF5F7 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		51CC683F29AE83F9001EF5F7 /* bats.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; path = bats.yaml; sourceTree = "<group>"; };
+		51CC684029AE83F9001EF5F7 /* bash-preexec.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "bash-preexec.sh"; sourceTree = "<group>"; };
+		51CC684129AE83F9001EF5F7 /* .travis.yml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.yaml; path = .travis.yml; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		C38218F424ABF53D00891B3C /* TaqoLauncher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TaqoLauncher.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -173,6 +206,7 @@
 		33CC10E42044A3C60003C045 = {
 			isa = PBXGroup;
 			children = (
+				51CC683629AE83F9001EF5F7 /* bash-preexec */,
 				33FAB671232836740065AC1E /* Runner */,
 				33CEB47122A05771004F2AC0 /* Flutter */,
 				C38218F524ABF53D00891B3C /* TaqoLauncher */,
@@ -218,6 +252,7 @@
 		33FAB671232836740065AC1E /* Runner */ = {
 			isa = PBXGroup;
 			children = (
+				51CC682F29AE8145001EF5F7 /* logcmd */,
 				C398031E24A3AB760015501A /* deepbark_trial.m4a */,
 				33CC10F02044A3C60003C045 /* AppDelegate.swift */,
 				33CC11122044BFA00003C045 /* MainFlutterWindow.swift */,
@@ -251,6 +286,46 @@
 				512E3CDC2769E08F0059FD33 /* NotificationWithState.h */,
 			);
 			path = alerter;
+			sourceTree = "<group>";
+		};
+		51CC683629AE83F9001EF5F7 /* bash-preexec */ = {
+			isa = PBXGroup;
+			children = (
+				51CC683729AE83F9001EF5F7 /* LICENSE.md */,
+				51CC683829AE83F9001EF5F7 /* test */,
+				51CC683C29AE83F9001EF5F7 /* README.md */,
+				51CC683D29AE83F9001EF5F7 /* .github */,
+				51CC684029AE83F9001EF5F7 /* bash-preexec.sh */,
+				51CC684129AE83F9001EF5F7 /* .travis.yml */,
+			);
+			name = "bash-preexec";
+			path = "../../third_party/bash-preexec";
+			sourceTree = "<group>";
+		};
+		51CC683829AE83F9001EF5F7 /* test */ = {
+			isa = PBXGroup;
+			children = (
+				51CC683929AE83F9001EF5F7 /* bash-preexec.bats */,
+				51CC683A29AE83F9001EF5F7 /* README.md */,
+				51CC683B29AE83F9001EF5F7 /* include-test.bats */,
+			);
+			path = test;
+			sourceTree = "<group>";
+		};
+		51CC683D29AE83F9001EF5F7 /* .github */ = {
+			isa = PBXGroup;
+			children = (
+				51CC683E29AE83F9001EF5F7 /* workflows */,
+			);
+			path = .github;
+			sourceTree = "<group>";
+		};
+		51CC683E29AE83F9001EF5F7 /* workflows */ = {
+			isa = PBXGroup;
+			children = (
+				51CC683F29AE83F9001EF5F7 /* bats.yaml */,
+			);
+			path = workflows;
 			sourceTree = "<group>";
 		};
 		C38218F524ABF53D00891B3C /* TaqoLauncher */ = {
@@ -290,6 +365,8 @@
 				46693CF45747D7CDB275D469 /* [CP] Embed Pods Frameworks */,
 				C382190424ABF60F00891B3C /* CopyFiles */,
 				51A01874273DDD0F00A06E26 /* CopyFiles */,
+				51CC684C29AE91CE001EF5F7 /* CopyFiles */,
+				51CC684E29AE91E1001EF5F7 /* CopyFiles */,
 			);
 			buildRules = (
 			);

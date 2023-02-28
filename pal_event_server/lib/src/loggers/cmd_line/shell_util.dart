@@ -44,7 +44,7 @@ String getBashPreexecPath() {
   if (Platform.isLinux) {
     return '/usr/lib/taqo/third_party/bash-preexec/bash-preexec.sh';
   } else if (Platform.isMacOS) {
-    return '/Applications/Taqo.app/Contents/Library/third_party/bash-preexec/bash-preexec.sh';
+    return '/Applications/Taqo.app/Contents/Resources/third_party/bash-preexec/bash-preexec.sh';
   } else {
     throw UnsupportedError(
         'Desktop platform other than Linux and macOS is not supported');
