@@ -48,9 +48,18 @@ popd || exit
 popd || exit
 
 # Build PAL event server / linux daemon
-"${DART_SDK}"/bin/dart2native -p pal_event_server/.packages \
-  -o "${OUT_DIR}/taqo_server" \
-  pal_event_server/lib/main.dart
+"${DART_SDK}"/bin/dart compile exe  pal_event_server/lib/main.dart \
+  -o "${OUT_DIR}/taqo_server"
+
+# Build Taqo Command Logger
+"${DART_SDK}"/bin/dart compile exe taqo_log_cmd/bin/taqo_log_cmd.dart \
+  --no-sound-null-safety \
+  -o "${OUT_DIR}"/logcmd
+
+# Copy bash-preexec
+mkdir -p "${OUT_DIR}"/third_party/bash-preexec
+cp third_party/bash-preexec/bash-preexec.sh "${OUT_DIR}"/third_party/bash-preexec
+cp third_party/bash-preexec/LICENSE.md "${OUT_DIR}"/third_party/bash-preexec
 
 # Build IntelliJ Plugin
 pushd pal_intellij_plugin || exit
