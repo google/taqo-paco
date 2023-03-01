@@ -22,6 +22,12 @@ set -e
 
 cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
 
+# Download git submodules
+pushd third_party/bash-preexec
+git submodule init
+git submodule update
+popd 
+
 # Read dependencies file to resolve versions
 source deps.cfg
 

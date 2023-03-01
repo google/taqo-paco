@@ -27,7 +27,10 @@ override_dh_auto_build:
 	./build.sh
 
 override_dh_strip:
-	dh_strip --exclude=taqo_server
+	dh_strip --exclude=taqo_server --exclude=logcmd
+
+# Disable dwz as it will bring errors but only little benefits
+override_dh_dwz:
 
 override_dh_auto_install:
 	mkdir -p debian/tmp/out

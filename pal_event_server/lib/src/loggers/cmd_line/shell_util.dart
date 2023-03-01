@@ -29,29 +29,58 @@ const _endTaqo = '# End Taqo';
 
 const _logfileName = 'command.log';
 
-String getLogLastCommandFunction(String dirPath) {
-  final filePath = path.join(dirPath, _logfileName).replaceAll(r" ", r"\ ");
-  return r'''
-log_last_command () {
-  last_command_number=$(fc -l -1 | awk '{print $1}')
-  if [[ -n "${last_command_number_old}" && \
-        "${last_command_number_old}" != "${last_command_number}" ]]; then
-    RETURN_VAL=$?
-    echo "{\"pid\":$$,\"cmd_raw\":\"$(fc -l -1 | sed "s/^[ ]*[0-9]*[ ]*\(\[\([^]]*\)\]\)*[ ]*//")\",\"cmd_ret\":$RETURN_VAL}"'''
-      ' >> $filePath\n'
-      r'''
+String getLogCmdPath() {
+  if (Platform.isLinux) {
+    return '/usr/lib/taqo/logcmd';
+  } else if (Platform.isMacOS) {
+    return '/Applications/Taqo.app/Contents/MacOS/logcmd';
+  } else {
+    throw UnsupportedError(
+        'Desktop platform other than Linux and macOS is not supported');
+  }
+}
+
+String getBashPreexecPath() {
+  if (Platform.isLinux) {
+    return '/usr/lib/taqo/third_party/bash-preexec/bash-preexec.sh';
+  } else if (Platform.isMacOS) {
+    return '/Applications/Taqo.app/Contents/Resources/third_party/bash-preexec/bash-preexec.sh';
+  } else {
+    throw UnsupportedError(
+        'Desktop platform other than Linux and macOS is not supported');
+  }
+}
+
+final scripts = '__taqo_log_cmd="${getLogCmdPath()}"\n'
+    r'''
+preexec_log_command() {
+  if [[ "$1" == *\& ]]; then
+    __taqo_bfg=bg
+    unset __taqo_need_log_precmd
+  else
+    __taqo_bfg=fg
+    __taqo_need_log_precmd=1
   fi
-  last_command_number_old="$last_command_number"
+  $__taqo_log_cmd start "$1" "$$" "$__taqo_bfg"
 }
+
+precmd_log_status() {
+  __taqo_last_ret="$?"
+  if [[ "$__taqo_need_log_precmd" == 1 ]]; then
+    $__taqo_log_cmd end "$$" "$__taqo_last_ret"
+    unset __taqo_need_log_precmd
+  fi
+}
+
+preexec_functions+=(preexec_log_command)
+precmd_functions+=(precmd_log_status)
 ''';
-}
 
 Future<bool> enableCmdLineLogging() async {
   await disableCmdLineLogging();
 
   bool ret = true;
 
-  final existingCommand = Platform.environment['PROMPT_COMMAND'];
   final bashrc = File(path.join(DartFileStorage.getHomePath(), '.bashrc'));
 
   try {
@@ -62,16 +91,12 @@ Future<bool> enableCmdLineLogging() async {
 
     await bashrc.writeAsString('$_beginTaqo\n', mode: FileMode.append);
     await bashrc.writeAsString(
-        getLogLastCommandFunction(DartFileStorage.getLocalStorageDir().path),
+        r'if [[ -z "${bash_preexec_imported:-}" ]] && [[ -z "${__bp_imported}" ]]; then'
+        '\n  source ${getBashPreexecPath()}\n'
+        'fi\n',
         mode: FileMode.append);
-    if (existingCommand == null) {
-      await bashrc.writeAsString("export PROMPT_COMMAND='log_last_command'\n",
-          mode: FileMode.append);
-    } else {
-      await bashrc.writeAsString(
-          "export PROMPT_COMMAND='${existingCommand.trim()};log_last_command'\n",
-          mode: FileMode.append);
-    }
+    await bashrc.writeAsString(scripts, mode: FileMode.append);
+
     await bashrc.writeAsString('export PS1="🔴\$PS1"\n', mode: FileMode.append);
     await bashrc.writeAsString('$_endTaqo\n', mode: FileMode.append);
   } on Exception catch (e) {
@@ -88,11 +113,7 @@ Future<bool> enableCmdLineLogging() async {
     }
 
     await zshrc.writeAsString('$_beginTaqo\n', mode: FileMode.append);
-    await zshrc.writeAsString(
-        getLogLastCommandFunction(DartFileStorage.getLocalStorageDir().path),
-        mode: FileMode.append);
-    await zshrc.writeAsString("precmd_functions+=(log_last_command)\n",
-        mode: FileMode.append);
+    await zshrc.writeAsString(scripts, mode: FileMode.append);
     await zshrc.writeAsString('export PROMPT="🔴\$PROMPT"\n',
         mode: FileMode.append);
     await zshrc.writeAsString('$_endTaqo\n', mode: FileMode.append);

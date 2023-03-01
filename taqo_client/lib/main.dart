@@ -114,7 +114,8 @@ Future<void> loadManualLicenses() async {
   // section of pubspec.yaml
   final manualLicenses = [
     ['taqo', 'assets/LICENSE'],
-    ['alerter', 'assets/alerter_LICENSE']
+    ['alerter', 'assets/alerter_LICENSE'],
+    ['bash-preexec', 'assets/bash_preexec_LICENSE']
   ];
 
   // Iterate through each of the licenses provided in the "licenses" list and

@@ -40,3 +40,7 @@ popd || exit
 pushd pal_intellij_plugin/builder || exit
 "$DART_SDK"/bin/pub get
 popd || exit
+
+pushd taqo_log_cmd || exit
+"$DART_SDK"/bin/pub get
+popd || exit

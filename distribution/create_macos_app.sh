@@ -35,12 +35,17 @@ mkdir -p "${RELEASE}"
 cd -- "${TAQO_ROOT}" || exit
 
 # Build PAL event server / macos daemon
-"${DART_SDK}"/bin/dart2native -p pal_event_server/.packages \
-  -o "${RELEASE}"/taqo_daemon \
-  pal_event_server/lib/main.dart
+"${DART_SDK}"/bin/dart compile exe  pal_event_server/lib/main.dart \
+  -o "${RELEASE}"/taqo_daemon
+
+# Build Taqo Command Logger
+"${DART_SDK}"/bin/dart compile exe taqo_log_cmd/bin/taqo_log_cmd.dart \
+  --no-sound-null-safety \
+  -o "${RELEASE}"/logcmd
 
 # cp daemon to Flutter asset
-cp "${RELEASE}"/taqo_daemon taqo_client/macos/TaqoLauncher/taqo_daemon
+cp "${RELEASE}"/taqo_daemon taqo_client/macos/TaqoLauncher/
+cp "${RELEASE}"/logcmd taqo_client/macos/Runner/
 
 # Build IntelliJ Plugin
 pushd pal_intellij_plugin || exit
