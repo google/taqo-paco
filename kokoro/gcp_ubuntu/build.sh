@@ -21,14 +21,20 @@ set -e
 # in the job configuration.
 cd "${KOKORO_ARTIFACTS_DIR}/github/taqo-paco-kokoro/"
 
+# Download git submodules
+pushd third_party/bash-preexec
+git submodule init
+git submodule update
+popd
+
 # Export the flutter path which is installed by the taqo custom gcp image at
 # location /tmpfs
 export PATH="/tmpfs/flutter/bin:${PATH}"
 
 # Clean previous flutter builds
-cd taqo_client
+pushd taqo_client
 flutter clean
-cd ..
+popd
 
 #  Run the linux build
 flutter config --enable-linux-desktop
