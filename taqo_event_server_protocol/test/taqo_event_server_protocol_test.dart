@@ -23,6 +23,8 @@ import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
+import 'package:taqo_common/model/shell_command_log.dart';
+import 'package:taqo_common/util/zoned_date_time.dart';
 import 'package:taqo_event_server_protocol/src/tesp_message_socket.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 import 'package:test/test.dart';
@@ -31,6 +33,7 @@ import 'tesp_matchers.dart';
 
 const _stringAddEvents = 'addEvents';
 const _stringPause = 'pause';
+const _stringLogCmd = 'logCmd';
 const _stringResume = 'resume';
 const _stringAllData = 'allData';
 const _stringAllowlistDataOnly = 'allowlistDataOnly';
@@ -152,6 +155,8 @@ void main() {
           Experiment()..id = 20
         ]),
         TespRequestExperimentSetPausedStatus(Experiment()..id = 21, true),
+        createDummyTespRequestPalLogCmdStart('22'),
+        createDummyTespRequestPalLogCmdEnd(23),
       ];
       var responses = [
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|1'),
@@ -188,6 +193,8 @@ void main() {
         TespResponseAnswer('${_stringExperimentSelectById}: 17'),
         TespResponseAnswer('${_stringExperimentGetPausedStatuses}: 18|19|20'),
         TespResponseAnswer('${_stringExperimentSetPausedStatus}: 21 true'),
+        TespResponseAnswer('${_stringLogCmd}:start: 22'),
+        TespResponseAnswer('${_stringLogCmd}:end: 23'),
       ];
       requests.forEach((element) {
         tespSocket.add(element);
@@ -603,6 +610,8 @@ void main() {
           Experiment()..id = 20
         ]),
         TespRequestExperimentSetPausedStatus(Experiment()..id = 21, true),
+        createDummyTespRequestPalLogCmdStart('22'),
+        createDummyTespRequestPalLogCmdEnd(23),
       ];
       var responses = [
         TespResponseAnswer('${_stringAddEvents}: $_stringDummy|1'),
@@ -639,6 +648,8 @@ void main() {
         TespResponseAnswer('${_stringExperimentSelectById}: 17'),
         TespResponseAnswer('${_stringExperimentGetPausedStatuses}: 18|19|20'),
         TespResponseAnswer('${_stringExperimentSetPausedStatus}: 21 true'),
+        TespResponseAnswer('${_stringLogCmd}:start: 22'),
+        TespResponseAnswer('${_stringLogCmd}:end: 23'),
       ];
       for (var i = 0; i < requests.length; i++) {
         expect(client.send(requests[i]),
@@ -676,6 +687,23 @@ TespRequestAlarmAdd createDummyTespRequestAddAlarm(DateTime time) {
 
 TespRequestNotificationAdd createDummyTespRequestAddNotification(int id) {
   return TespRequestNotificationAdd(NotificationHolder.empty()..id = id);
+}
+
+TespRequestPalLogCmd createDummyTespRequestPalLogCmdStart(String command) {
+  return TespRequestPalLogCmd(ShellCommandStart(
+      timestamp:
+      ZonedDateTime.fromIso8601String('2020-05-05T16:21:31.415926-0700'),
+      command: command,
+      shellPid: 1,
+      isBackground: false));
+}
+
+TespRequestPalLogCmd createDummyTespRequestPalLogCmdEnd(int exitCode) {
+  return TespRequestPalLogCmd(ShellCommandEnd(
+      timestamp:
+      ZonedDateTime.fromIso8601String('2020-05-05T16:21:31.415926-0700'),
+      exitCode: exitCode,
+      shellPid: 1));
 }
 
 class TestingEventServer with TespRequestHandlerMixin {
@@ -718,6 +746,18 @@ class TestingEventServer with TespRequestHandlerMixin {
   TespResponse palPause() {
     isPaused = true;
     return TespResponseAnswer(_stringPause);
+  }
+
+  @override
+  TespResponse palLogCmd(ShellCommandLog cmdLog) {
+    switch(cmdLog.runtimeType) {
+      case ShellCommandStart:
+        return TespResponseAnswer('$_stringLogCmd:start: ${(cmdLog as ShellCommandStart).command}');
+      case ShellCommandEnd:
+        return TespResponseAnswer('$_stringLogCmd:end: ${(cmdLog as ShellCommandEnd).exitCode}');
+      default:
+        throw UnsupportedError('Unsupported ShellCommandLog subtype: ${cmdLog.runtimeType}');
+    }
   }
 
   @override

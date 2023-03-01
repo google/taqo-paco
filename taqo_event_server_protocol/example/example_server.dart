@@ -20,6 +20,7 @@ import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/notification_holder.dart';
+import 'package:taqo_common/model/shell_command_log.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 
 // This is only a no-op example event server.
@@ -55,6 +56,12 @@ class ExampleEventServer with TespRequestHandlerMixin {
   TespResponse palPause() {
     print('pause');
     return TespResponseSuccess();
+  }
+
+  @override
+  Future<TespResponse> palLogCmd(ShellCommandLog cmdLog) {
+    print('logCmd: $cmdLog');
+    return Future.value(TespResponseSuccess());
   }
 
   @override
