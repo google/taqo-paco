@@ -19,6 +19,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:pal_event_server/src/experiment_cache.dart';
+import 'package:pal_event_server/src/loggers/cmd_line/cmdline_logger.dart';
 import 'package:pal_event_server/src/loggers/loggers.dart' as loggers;
 
 import 'package:pedantic/pedantic.dart';
@@ -27,6 +28,7 @@ import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/model/experiment_group.dart';
 import 'package:taqo_common/model/notification_holder.dart';
+import 'package:taqo_common/model/shell_command_log.dart';
 import 'package:taqo_common/service/experiment_service_lite.dart';
 import 'package:taqo_common/service/sync_service.dart';
 import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
@@ -136,8 +138,10 @@ class PALTespServer with TespRequestHandlerMixin {
   }
 
   @override
-  Future<TespResponse> palLogCmd(ShellCommandLog) async {
-    throw UnimplementedError();
+  TespResponse palLogCmd(ShellCommandLog cmdLog) {
+    final shellLogger = CmdLineLogger();
+    shellLogger.addLog(cmdLog);
+    return TespResponseSuccess();
   }
 
   @override

@@ -20,10 +20,11 @@ part 'shell_command_log.g.dart';
 
 abstract class ShellCommandLog {
   String get type;
+  Map<String, dynamic> toJson();
 }
 
 @JsonSerializable()
-class ShellCommandStart extends ShellCommandLog {
+class ShellCommandStart implements ShellCommandLog {
   @override
   final type = 'start';
 
@@ -45,12 +46,13 @@ class ShellCommandStart extends ShellCommandLog {
   // Once we migrated to null-safe Dart, we can upgrade json_annotation to 4.8.0 or higher,
   // where we can force `type` to be serialized and does not need to manually append key-value pairs.
   // See also https://github.com/google/json_serializable.dart/issues/274
+  @override
   Map<String, dynamic> toJson() =>
       _$ShellCommandStartToJson(this)..putIfAbsent('type', () => this.type);
 }
 
 @JsonSerializable()
-class ShellCommandEnd extends ShellCommandLog {
+class ShellCommandEnd implements ShellCommandLog {
   @override
   final type = 'end';
 
@@ -70,6 +72,7 @@ class ShellCommandEnd extends ShellCommandLog {
   // Once we migrated to null-safe Dart, we can upgrade json_annotation to 4.8.0 or higher,
   // where we can force `type` to be serialized and does not need to manually append key-value pairs.
   // See also https://github.com/google/json_serializable.dart/issues/274
+  @override
   Map<String, dynamic> toJson() =>
       _$ShellCommandEndToJson(this)..putIfAbsent('type', () => this.type);
 }

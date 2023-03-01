@@ -120,6 +120,9 @@ Future<Event> createAppUsagePacoEvent(Experiment experiment, String groupName,
   return event;
 }
 
+// TODO(https://github.com/google/taqo-paco/issues/56):
+// Remove createCmdUsagePacoEvent and use createShellUsagePacoEvent below instead, after
+// we migrate to the new shell usage tracer.
 //const _uidKey = 'uid';
 const _pidKey = 'pid';
 const cmdRawKey = 'cmd_raw';
@@ -135,6 +138,13 @@ Future<Event> createCmdUsagePacoEvent(Experiment experiment, String groupName,
     cmdRawKey: response[cmdRawKey].trim(),
   };
   event.responses.addAll(responses);
+  return event;
+}
+
+Future<Event> createShellUsagePacoEvent(Experiment experiment, String groupName,
+    Map<String, dynamic> response) async {
+  final event = await _createPacoEvent(experiment, groupName);
+  event.responses.addAll(response);
   return event;
 }
 

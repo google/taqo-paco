@@ -22,6 +22,7 @@ import 'package:logging/logging.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment_group.dart';
 import 'package:taqo_common/model/interrupt_cue.dart';
+import 'package:taqo_common/model/shell_command_log.dart';
 import 'package:taqo_common/storage/dart_file_storage.dart';
 
 import '../../triggers/triggers.dart';
@@ -39,7 +40,16 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
 
   static CmdLineLogger _instance;
 
-  CmdLineLogger._() : super(cliLoggerName);
+  final _controller = StreamController<ShellCommandLog>();
+
+  CmdLineLogger._() : super(cliLoggerName) {
+    StreamSubscription<ShellCommandLog> subscription;
+    subscription = _controller.stream.listen((cmdLog) async {
+      subscription.pause();
+      await _addLog(cmdLog);
+      subscription.resume();
+    });
+  }
 
   factory CmdLineLogger() {
     if (_instance == null) {
@@ -80,6 +90,29 @@ class CmdLineLogger extends PacoEventLogger with EventTriggerSource {
       await shell.disableCmdLineLogging();
       active = false;
     }
+  }
+
+  void addLog(ShellCommandLog cmdLog) {
+    if (active) {
+      _controller.add(cmdLog);
+    }
+  }
+
+  Future<void> _addLog(ShellCommandLog cmdLog) async {
+    // Log events
+    final pacoEvents = await createLoggerPacoEvents(cmdLog.toJson(),
+        experimentsBeingLogged, createShellUsagePacoEvent, cliGroupType);
+    if (pacoEvents.isNotEmpty) {
+      storePacoEvent(pacoEvents);
+    }
+
+    // Handle triggers
+    final triggerEvents = <TriggerEvent>[];
+    for (final e in pacoEvents) {
+      triggerEvents
+          .add(createEventTriggers(cliStartCue, e.responses['command']));
+    }
+    broadcastEventsForTriggers(triggerEvents);
   }
 
   void _timerFunc(Timer t) async {
