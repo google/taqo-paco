@@ -59,7 +59,7 @@ class SyncService {
     return _completer.future;
   }
 
-  static Future<bool> syncData() => _instance._syncData();
+  static Future<bool> syncData() => Future.value(true);
 
   static List<EventSaveOutcome> _parseSyncResponse(PacoResponse response) {
     final outcomes = <EventSaveOutcome>[];
