@@ -61,13 +61,13 @@ preexec_log_command() {
     __taqo_bfg=fg
     __taqo_need_log_precmd=1
   fi
-  $__taqo_log_cmd start "$1" "$$" "$__taqo_bfg"
+  $__taqo_log_cmd start "$1" "$$" "$__taqo_bfg" 2> /dev/null
 }
 
 precmd_log_status() {
   __taqo_last_ret="$?"
   if [[ "$__taqo_need_log_precmd" == 1 ]]; then
-    $__taqo_log_cmd end "$$" "$__taqo_last_ret"
+    $__taqo_log_cmd end "$$" "$__taqo_last_ret" 2> /dev/null
     unset __taqo_need_log_precmd
   fi
 }
