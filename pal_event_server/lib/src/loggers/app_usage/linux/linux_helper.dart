@@ -28,34 +28,47 @@ String _prevAppAndWindowName;
 // Query xprop for the active window
 void linuxAppLoggerIsolate(SendPort sendPort) {
   Timer.periodic(queryInterval, (Timer _) {
-    // Gets the active window ID
-    Process.run(xprop.command, xprop.getIdArgs).then((result) {
-      // Parse the window ID
-      final windowId = xprop.parseWindowId(result.stdout);
-      if (windowId != xprop.invalidWindowId) {
-        // Gets the active window name
-        Process.run(xprop.command, xprop.getAppArgs(windowId)).then((result) {
-          final currWindow = result.stdout;
-          final resultMap = xprop.buildResultMap(currWindow);
-          final currAppAndWindowName =
-              resultMap[appNameField] + resultMap[windowNameField];
-
-          if (currAppAndWindowName != _prevAppAndWindowName) {
-            // Send APP_CLOSED
-            if (_prevAppAndWindowName != null &&
-                _prevAppAndWindowName.isNotEmpty) {
-              sendPort.send(_prevAppAndWindowName);
+    try {
+      // Gets the active window ID
+      Process.run(xprop.command, xprop.getIdArgs).then((result) {
+        // Parse the window ID
+        final windowId = xprop.parseWindowId(result.stdout);
+        if (windowId != xprop.invalidWindowId) {
+          // Gets the active window name
+          Process.run(xprop.command, xprop.getAppArgs(windowId)).then((result) {
+            final currWindow = result.stdout;
+            final resultMap = xprop.buildResultMap(currWindow);
+            String currApp = resultMap[appNameField];
+            String currWindowName = resultMap[windowNameField];
+            if (currApp == null) {
+              currApp = "UNKNOWN";
             }
-
-            _prevAppAndWindowName = currAppAndWindowName;
-
-            // Send PacoEvent && APP_USAGE
-            if (resultMap != null) {
-              sendPort.send(resultMap);
+            if (currWindowName == null) {
+              currWindowName = "UNKNOWN";
             }
-          }
-        });
-      }
-    });
+            final currAppAndWindowName =
+                currApp + currWindowName;
+
+            if (currAppAndWindowName != _prevAppAndWindowName) {
+              // Send APP_CLOSED
+              if (_prevAppAndWindowName != null &&
+                  _prevAppAndWindowName.isNotEmpty) {
+                sendPort.send(_prevAppAndWindowName);
+              }
+
+              _prevAppAndWindowName = currAppAndWindowName;
+
+              // Send PacoEvent && APP_USAGE
+              if (resultMap != null) {
+                sendPort.send(resultMap);
+              }
+            }
+          });
+        }
+      });
+    } catch (e, s) {
+      print('Exception details:\n $e');
+      print('Stack trace:\n $s');
+    }
   });
 }
