@@ -3,7 +3,7 @@
 TAQO_SERVER=/usr/lib/taqo/taqo_server
 
 do_start() {
-  /sbin/start-stop-daemon -b -x "${TAQO_SERVER}" -u "${USER}" -S
+  /sbin/start-stop-daemon -b -x "${TAQO_SERVER}" -u "${USER}" -S -a /bin/bash -- -c "${TAQO_SERVER} 1>${HOME}/.local/share/taqo/server.out 2>${HOME}/.local/share/taqo/server.err"
 }
 
 do_stop() {
