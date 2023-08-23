@@ -84,8 +84,10 @@ Future<bool> enableCmdLineLogging() async {
   final bashrc = File(path.join(DartFileStorage.getHomePath(), '.bashrc'));
 
   try {
-    // Create it in case the user doesn't have a .bashrc but may use bash anyway
-    if (!(await bashrc.exists())) {
+    if (await bashrc.exists()) {
+      await bashrc
+          .copy(path.join(DartFileStorage.getHomePath(), '.bashrc.taqo_bak'));
+    } else {
       await bashrc.create();
     }
 
@@ -107,8 +109,10 @@ Future<bool> enableCmdLineLogging() async {
   final zshrc = File(path.join(DartFileStorage.getHomePath(), '.zshrc'));
 
   try {
-    // Create it in case the user doesn't have a .zshrc but may use zsh anyway
-    if (!(await zshrc.exists())) {
+    if (await zshrc.exists()) {
+      await zshrc
+          .copy(path.join(DartFileStorage.getHomePath(), '.zshrc.taqo_bak'));
+    } else {
       await zshrc.create();
     }
 

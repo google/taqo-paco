@@ -1,5 +1,5 @@
-taqosurvey (1.4.0) UNRELEASED; urgency=low
+taqosurvey (1.4.1) UNRELEASED; urgency=low
 
-  * Initial Release.
+  * Added fix for app usage error crashes
 
  -- Paco Maintainers <support@pacoapp.com>  $DATE
