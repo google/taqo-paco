@@ -85,5 +85,6 @@ To manually disable Taqo's shell tracer, remove the line that sources
   <taqo-lib-dir>/scripts/logger.bash or <taqo-lib-dir>/scripts/logger.zsh
 in ~/.bashrc or ~/.zshrc, respectively, and restart the shell.
 Please contact the Taqo authors if you have any questions.
+
 ''');
 }
