@@ -61,6 +61,11 @@ mkdir -p "${OUT_DIR}"/third_party/bash-preexec
 cp third_party/bash-preexec/bash-preexec.sh "${OUT_DIR}"/third_party/bash-preexec
 cp third_party/bash-preexec/LICENSE.md "${OUT_DIR}"/third_party/bash-preexec
 
+# Copy logcmd scripts
+mkdir -p "${OUT_DIR}"/scripts
+cp taqo_log_cmd/scripts/register_logger.sh "${OUT_DIR}"/scripts
+cp taqo_log_cmd/scripts/logger.{bash,zsh} "${OUT_DIR}"/scripts
+
 # Build IntelliJ Plugin
 pushd pal_intellij_plugin || exit
 dart --no-sound-null-safety builder/bin/builder.dart

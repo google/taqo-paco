@@ -24,11 +24,6 @@ import 'package:taqo_common/storage/dart_file_storage.dart';
 
 final _logger = Logger('ShellUtil');
 
-const _beginTaqo = '# Begin Taqo';
-const _endTaqo = '# End Taqo';
-
-const _logfileName = 'command.log';
-
 String getLogCmdPath() {
   if (Platform.isLinux) {
     return '/usr/lib/taqo/logcmd';
@@ -40,41 +35,22 @@ String getLogCmdPath() {
   }
 }
 
-String getBashPreexecPath() {
+String getTaqoLibPath() {
   if (Platform.isLinux) {
-    return '/usr/lib/taqo/third_party/bash-preexec/bash-preexec.sh';
+    return '/usr/lib/taqo';
   } else if (Platform.isMacOS) {
-    return '/Applications/Taqo.app/Contents/Resources/third_party/bash-preexec/bash-preexec.sh';
+    return '/Applications/Taqo.app/Contents/Resources';
   } else {
     throw UnsupportedError(
         'Desktop platform other than Linux and macOS is not supported');
   }
 }
 
-final scripts = '__taqo_log_cmd="${getLogCmdPath()}"\n'
-    r'''
-preexec_log_command() {
-  if [[ "$1" == *\& ]]; then
-    __taqo_bfg=bg
-    unset __taqo_need_log_precmd
-  else
-    __taqo_bfg=fg
-    __taqo_need_log_precmd=1
-  fi
-  $__taqo_log_cmd start "$1" "$$" "$__taqo_bfg" 2> /dev/null
-}
-
-precmd_log_status() {
-  __taqo_last_ret="$?"
-  if [[ "$__taqo_need_log_precmd" == 1 ]]; then
-    $__taqo_log_cmd end "$$" "$__taqo_last_ret" 2> /dev/null
-    unset __taqo_need_log_precmd
-  fi
-}
-
-preexec_functions+=(preexec_log_command)
-precmd_functions+=(precmd_log_status)
-''';
+final _source_taqo = 'source ${getTaqoLibPath()}/scripts/logger';
+final _source_taqo_bash = '${_source_taqo}.bash';
+final _source_taqo_zsh = '${_source_taqo}.zsh';
+final _taqo_log_cmd = getLogCmdPath();
+final _taqo_lib_dir = getTaqoLibPath();
 
 Future<bool> enableCmdLineLogging() async {
   await disableCmdLineLogging();
@@ -91,16 +67,9 @@ Future<bool> enableCmdLineLogging() async {
       await bashrc.create();
     }
 
-    await bashrc.writeAsString('$_beginTaqo\n', mode: FileMode.append);
     await bashrc.writeAsString(
-        r'if [[ -z "${bash_preexec_imported:-}" ]] && [[ -z "${__bp_imported}" ]]; then'
-        '\n  source ${getBashPreexecPath()}\n'
-        'fi\n',
+        '$_source_taqo_bash $_taqo_lib_dir $_taqo_log_cmd\n',
         mode: FileMode.append);
-    await bashrc.writeAsString(scripts, mode: FileMode.append);
-
-    await bashrc.writeAsString('export PS1="🔴\$PS1"\n', mode: FileMode.append);
-    await bashrc.writeAsString('$_endTaqo\n', mode: FileMode.append);
   } on Exception catch (e) {
     _logger.warning(e);
     ret = false;
@@ -116,11 +85,9 @@ Future<bool> enableCmdLineLogging() async {
       await zshrc.create();
     }
 
-    await zshrc.writeAsString('$_beginTaqo\n', mode: FileMode.append);
-    await zshrc.writeAsString(scripts, mode: FileMode.append);
-    await zshrc.writeAsString('export PROMPT="🔴\$PROMPT"\n',
+    await zshrc.writeAsString(
+        '$_source_taqo_zsh $_taqo_lib_dir $_taqo_log_cmd\n',
         mode: FileMode.append);
-    await zshrc.writeAsString('$_endTaqo\n', mode: FileMode.append);
   } on Exception catch (e) {
     _logger.warning(e);
     ret = false;
@@ -142,15 +109,10 @@ Future<bool> disableCmdLineLogging() async {
       _logger.warning(e);
     }
 
-    var skip = false;
     try {
       final lines = await withTaqo.readAsLines();
       for (var line in lines) {
-        if (line == _beginTaqo) {
-          skip = true;
-        } else if (line == _endTaqo) {
-          skip = false;
-        } else if (!skip) {
+        if (!line.startsWith(_source_taqo)) {
           await withoutTaqo.writeAsString('$line\n', mode: FileMode.append);
         }
       }

@@ -29,6 +29,12 @@
 		511EEE1A273DD29A00BCB07C /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 511EEE19273DD29A00BCB07C /* AppDelegate.m */; };
 		511EEE24273DD29E00BCB07C /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 511EEE23273DD29E00BCB07C /* main.m */; };
 		512E3CDB2769E0670059FD33 /* NotificationWithState.m in Sources */ = {isa = PBXBuildFile; fileRef = 512E3CDA2769E0670059FD33 /* NotificationWithState.m */; };
+		5163229D2A96C3C000F73680 /* register_logger.sh in Resources */ = {isa = PBXBuildFile; fileRef = 5163229A2A96C3C000F73680 /* register_logger.sh */; };
+		5163229E2A96C3C000F73680 /* logger.zsh in Resources */ = {isa = PBXBuildFile; fileRef = 5163229B2A96C3C000F73680 /* logger.zsh */; };
+		5163229F2A96C3C000F73680 /* logger.bash in Resources */ = {isa = PBXBuildFile; fileRef = 5163229C2A96C3C000F73680 /* logger.bash */; };
+		516322A02A96C3C900F73680 /* logger.bash in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5163229C2A96C3C000F73680 /* logger.bash */; };
+		516322A12A96C3C900F73680 /* logger.zsh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5163229B2A96C3C000F73680 /* logger.zsh */; };
+		516322A22A96C3C900F73680 /* register_logger.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 5163229A2A96C3C000F73680 /* register_logger.sh */; };
 		51A01875273DDD2C00A06E26 /* alerter.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 511EEE16273DD29A00BCB07C /* alerter.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		51A0187D273F368F00A06E26 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 33CC10F22044A3C60003C045 /* Assets.xcassets */; };
 		51A0188F2742F2F600A06E26 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 51A0188E2742F2F600A06E26 /* InfoPlist.strings */; };
@@ -63,6 +69,18 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		516322972A96C34D00F73680 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = scripts;
+			dstSubfolderSpec = 7;
+			files = (
+				516322A02A96C3C900F73680 /* logger.bash in CopyFiles */,
+				516322A12A96C3C900F73680 /* logger.zsh in CopyFiles */,
+				516322A22A96C3C900F73680 /* register_logger.sh in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		51A01874273DDD0F00A06E26 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -142,6 +160,9 @@
 		511EEE25273DD29E00BCB07C /* alerter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = alerter.entitlements; sourceTree = "<group>"; };
 		512E3CDA2769E0670059FD33 /* NotificationWithState.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NotificationWithState.m; sourceTree = "<group>"; };
 		512E3CDC2769E08F0059FD33 /* NotificationWithState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NotificationWithState.h; sourceTree = "<group>"; };
+		5163229A2A96C3C000F73680 /* register_logger.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = register_logger.sh; path = ../../taqo_log_cmd/scripts/register_logger.sh; sourceTree = "<group>"; };
+		5163229B2A96C3C000F73680 /* logger.zsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = logger.zsh; path = ../../taqo_log_cmd/scripts/logger.zsh; sourceTree = "<group>"; };
+		5163229C2A96C3C000F73680 /* logger.bash */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = logger.bash; path = ../../taqo_log_cmd/scripts/logger.bash; sourceTree = "<group>"; };
 		51A0188E2742F2F600A06E26 /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = InfoPlist.strings; sourceTree = "<group>"; };
 		51CC682F29AE8145001EF5F7 /* logcmd */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = logcmd; sourceTree = "<group>"; };
 		51CC683729AE83F9001EF5F7 /* LICENSE.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
@@ -206,6 +227,7 @@
 		33CC10E42044A3C60003C045 = {
 			isa = PBXGroup;
 			children = (
+				516322992A96C37D00F73680 /* scripts */,
 				51CC683629AE83F9001EF5F7 /* bash-preexec */,
 				33FAB671232836740065AC1E /* Runner */,
 				33CEB47122A05771004F2AC0 /* Flutter */,
@@ -288,6 +310,16 @@
 			path = alerter;
 			sourceTree = "<group>";
 		};
+		516322992A96C37D00F73680 /* scripts */ = {
+			isa = PBXGroup;
+			children = (
+				5163229C2A96C3C000F73680 /* logger.bash */,
+				5163229B2A96C3C000F73680 /* logger.zsh */,
+				5163229A2A96C3C000F73680 /* register_logger.sh */,
+			);
+			name = scripts;
+			sourceTree = "<group>";
+		};
 		51CC683629AE83F9001EF5F7 /* bash-preexec */ = {
 			isa = PBXGroup;
 			children = (
@@ -367,6 +399,7 @@
 				51A01874273DDD0F00A06E26 /* CopyFiles */,
 				51CC684C29AE91CE001EF5F7 /* CopyFiles */,
 				51CC684E29AE91E1001EF5F7 /* CopyFiles */,
+				516322972A96C34D00F73680 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -473,8 +506,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				33CC10F32044A3C60003C045 /* Assets.xcassets in Resources */,
+				5163229F2A96C3C000F73680 /* logger.bash in Resources */,
 				33CC10F62044A3C60003C045 /* MainMenu.xib in Resources */,
+				5163229E2A96C3C000F73680 /* logger.zsh in Resources */,
 				C398031F24A3AB760015501A /* deepbark_trial.m4a in Resources */,
+				5163229D2A96C3C000F73680 /* register_logger.sh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
