@@ -44,19 +44,29 @@ const _defaultActions = <String>[
 ];
 
 // Map between Taqo database notification id and libnotify id
-final _notifications = <int, int>{};
+// visible for testing
+var notifications = <int, int>{};
 
-void _listen(String event) {
+void openSurvey(id) {
+  daemon.openSurvey(id);
+}
+
+// visible for testing
+void listen(String event) {
+  _logger.info('Event:${event}');
   final action = _actionPattern.matchAsPrefix(event);
-  if (action != null) {
+  
+  if (action != null && notifications.keys.isNotEmpty) {
     _logger.info('action: id: ${action[1]} action: ${action[2]}');
     if (action.groupCount >= 2 && _defaultActions.contains(action[2])) {
       final notifId = int.tryParse(action[1]);
       if (notifId != null) {
         // Not super efficient, but fine for now
         final id =
-            _notifications.keys.firstWhere((k) => _notifications[k] == notifId);
-        daemon.openSurvey(id);
+            notifications.keys.firstWhere((k) => notifications[k] == notifId, orElse: () => null);
+	if (id != null) {
+	  openSurvey(id);
+	}
       }
     }
   }
@@ -69,9 +79,9 @@ void _listen(String event) {
 }
 
 Future<void> cancel(int id) async {
-  final notifId = _notifications[id];
+  final notifId = notifications[id];
   if (notifId == null) return;
-  _notifications.remove(id);
+  notifications.remove(id);
 
   await Process.run('gdbus', [
     'call', //
@@ -92,7 +102,7 @@ void monitor() {
   ]).then((Process process) {
     //stdout.addStream(process.stdout);
     //stderr.addStream(process.stderr);
-    Utf8Codec().decoder.bind(process.stdout).listen(_listen);
+    Utf8Codec().decoder.bind(process.stdout).listen(listen);
   });
 }
 
@@ -151,6 +161,6 @@ Future<int> notify(
   final idString = processResult.stdout;
   final notifId = int.tryParse(
       RegExp(r'\(uint32 (\d+),\)').matchAsPrefix(idString)?.group(1));
-  _notifications[id] = notifId;
+  notifications[id] = notifId;
   return notifId;
 }
