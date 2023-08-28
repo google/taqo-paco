@@ -25,7 +25,7 @@ void main() {
       listen("");
       expect(true, true);
     });
-    test('A notification fired with an event while no notifications are outstanding should nto throw a StateException', () {
+    test('A notification fired with an event while no notifications are outstanding should not throw a StateException', () {
       notifications = <int, int>{};
       listen("/org/freedesktop/Notifications: org.freedesktop.Notifications.ActionInvoked (uint32 27, 'default')\n" +
         "/org/freedesktop/Notifications: org.freedesktop.Notifications.NotificationClosed (uint32 27, uint32 2)");
