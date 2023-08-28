@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,26 +20,30 @@ import 'package:pal_event_server/src/daemon/linux/dbus_notifications.dart';
 void main() {
   group('All', ()
   {
-    test('notificationWithEmptyEventAndNoNotificationsOutstanding', () {
+    test('A notification fired with an empty event while no notifications are outstanding should not throw a StateException', () {
       notifications = <int, int>{};
       listen("");
+      expect(true, true);
     });
-    test('notificationWithEventAndNoNotificationsOutstanding', () {
+    test('A notification fired with an event while no notifications are outstanding should nto throw a StateException', () {
       notifications = <int, int>{};
       listen("/org/freedesktop/Notifications: org.freedesktop.Notifications.ActionInvoked (uint32 27, 'default')\n" +
         "/org/freedesktop/Notifications: org.freedesktop.Notifications.NotificationClosed (uint32 27, uint32 2)");
+      expect(true, true);
    });
-   test('notificationWithUnmatchedEventAndOneNotificationOutstanding', () {
+   test('A notification fired with an unmatched Event while a notification is outstanding should not throw a StateException', () {
      notifications = <int, int>{1:1};
      listen("/org/freedesktop/Notifications: org.freedesktop.Notifications.ActionInvoked (uint32 27, 'default')\n" +
         "/org/freedesktop/Notifications: org.freedesktop.Notifications.NotificationClosed (uint32 27, uint32 2)");
+     expect(true, true);
    });
    // commented out since it causes the Taqo graphical client to open
-   // test('notificationWithNatchedEventAndOneNotificationOutstanding', () {
+   // test('A notification fired with a matched event while a notification is outstanding should not throw a StateException', () {
    //   sut.notifications = <int, int>{1:27};
    //   sut.openSurvey = (id) => print("Called");
    //   sut.listen("/org/freedesktop/Notifications: org.freedesktop.Notifications.ActionInvoked (uint32 27, 'default')\n" +
    //      "/org/freedesktop/Notifications: org.freedesktop.Notifications.NotificationClosed (uint32 27, uint32 2)");
+   //   expect(true, true);
    // });
   });
 }

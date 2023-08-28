@@ -22,6 +22,8 @@ import 'package:logging/logging.dart';
 
 import '../daemon.dart' as daemon;
 
+import 'package:meta/meta.dart';
+
 final _logger = Logger('DbusNotifications');
 
 const _objectPath = '/org/freedesktop/Notifications';
@@ -44,14 +46,14 @@ const _defaultActions = <String>[
 ];
 
 // Map between Taqo database notification id and libnotify id
-// visible for testing
+@visibleForTesting
 var notifications = <int, int>{};
 
 void openSurvey(id) {
   daemon.openSurvey(id);
 }
 
-// visible for testing
+@visibleForTesting
 void listen(String event) {
   _logger.info('Event:${event}');
   final action = _actionPattern.matchAsPrefix(event);
