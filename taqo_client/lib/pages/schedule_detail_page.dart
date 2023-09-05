@@ -116,7 +116,7 @@ class _ScheduleDetailPageState extends State<ScheduleDetailPage> {
             final newTime =
                 await showTimePicker(context: context, initialTime: time);
             if (newTime != null) {
-                final newMsFromMidnight = 3600000 * newTime.hour + 60000 * newTime.minute;
+              final newMsFromMidnight = 3600000 * newTime.hour + 60000 * newTime.minute;
 
               _setStateAndMarkChanged(() => set(newMsFromMidnight));
             }
