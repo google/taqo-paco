@@ -31,14 +31,14 @@ const _dest = 'org.freedesktop.Notifications';
 const _notifyMethod = 'org.freedesktop.Notifications.Notify';
 const _cancelMethod = 'org.freedesktop.Notifications.CloseNotification';
 
-const _actionInvoked = 'org.freedesktop.Notifications.ActionInvoked';
-const _notificationClosed = 'org.freedesktop.Notifications.NotificationClosed';
+@visibleForTesting
+final actionPattern = RegExp(
+    ".*path=/org/freedesktop/Notifications; interface=org.freedesktop.Notifications;\\s+member=ActionInvoked\\s+uint32\\s+(\\d+)\\s+string\\s+\"([a-zA-Z]+)\""); 
 
-final _actionPattern = RegExp(
-    "$_objectPath:\\s+$_actionInvoked\\s+\\(uint32\\s+(\\d+),\\s+'([a-zA-Z]+)'");
-final _closedPattern = RegExp(
-    "$_objectPath:\\s+$_notificationClosed\\s+\\(uint32\\s+(\\d+),\\s+uint32\\s+(\\d+)");
-
+@visibleForTesting
+final closedPattern = RegExp(
+    ".*path=/org/freedesktop/Notifications; interface=org.freedesktop.Notifications;\\s+member=NotificationClosed\\s+uint32\\s+(\\d+)\\s+uint32\\s+([a-zA-Z0-9]+)");
+    
 const _defaultActions = <String>[
   'default',
   'Open Taqo',
@@ -49,14 +49,16 @@ const _defaultActions = <String>[
 @visibleForTesting
 var notifications = <int, int>{};
 
-void openSurvey(id) {
+void openSurvey2(id) {
   daemon.openSurvey(id);
 }
 
 @visibleForTesting
 void listen(String event) {
   _logger.info('Event:${event}');
-  final action = _actionPattern.matchAsPrefix(event);
+  final action = actionPattern.matchAsPrefix(event);
+
+  _logger.info('action:${action}');
   
   if (action != null && notifications.keys.isNotEmpty) {
     _logger.info('action: id: ${action[1]} action: ${action[2]}');
@@ -67,17 +69,17 @@ void listen(String event) {
         final id =
             notifications.keys.firstWhere((k) => notifications[k] == notifId, orElse: () => null);
 	if (id != null) {
-	  openSurvey(id);
+	  openSurvey2(id);
 	}
       }
     }
   }
 
-  final closed = _closedPattern.matchAsPrefix(event);
+  final closed = closedPattern.matchAsPrefix(event);
   if (closed != null) {
-    // TODO Handle?
     _logger.info('closed: id: ${closed[1]} reason: ${closed[2]}');
   }
+  _logger.info("Finished processing event");
 }
 
 Future<void> cancel(int id) async {
@@ -96,16 +98,15 @@ Future<void> cancel(int id) async {
 }
 
 void monitor() {
-  Process.start('gdbus', [
-    'monitor', //
+    Process.start('dbus-monitor', [
     '--session',
-    '--dest', _dest,
-    '--object-path', _objectPath,
+    'interface=org.freedesktop.Notifications',
   ]).then((Process process) {
     //stdout.addStream(process.stdout);
     //stderr.addStream(process.stderr);
     Utf8Codec().decoder.bind(process.stdout).listen(listen);
   });
+
 }
 
 enum Priority {
