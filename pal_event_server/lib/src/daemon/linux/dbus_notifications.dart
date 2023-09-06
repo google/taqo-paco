@@ -49,7 +49,7 @@ const _defaultActions = <String>[
 @visibleForTesting
 var notifications = <int, int>{};
 
-void openSurvey2(id) {
+void openSurvey(id) {
   daemon.openSurvey(id);
 }
 
@@ -69,7 +69,7 @@ void listen(String event) {
         final id =
             notifications.keys.firstWhere((k) => notifications[k] == notifId, orElse: () => null);
 	if (id != null) {
-	  openSurvey2(id);
+	  openSurvey(id);
 	}
       }
     }
