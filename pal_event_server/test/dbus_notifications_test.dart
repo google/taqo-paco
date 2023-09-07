@@ -17,6 +17,19 @@
 import 'package:test/test.dart';
 import 'package:pal_event_server/src/daemon/linux/dbus_notifications.dart';
 
+final _closedNotificationMessage = "signal time=1693957303.167479 sender=:1.130 -> destination=(null destination) serial=1217 path=/org/freedesktop/Notifications; interface=org.freedesktop.Notifications; member=NotificationClosed\n" +
+  "   uint32 1\n" + 
+  "   uint32 2\n\n";
+
+final _actionInvokedMessage = "signal time=1693957303.166625 sender=:1.130 -> destination=(null destination) serial=1216 path=/org/freedesktop/Notifications; interface=org.freedesktop.Notifications; member=ActionInvoked\n"
+  "   uint32 1\n" +
+  "   string \"default\"\n\n";
+
+final _inapplicableActionInvokedMessage = "signal time=1693957303.166625 sender=:1.130 -> destination=(null destination) serial=1216 path=/org/freedesktop/Notifications; interface=org.freedesktop.Notifications; member=ActionInvoked\n"
+  "   uint32 15\n" +
+  "   string \"other\"\n\n";
+
+
 void main() {
   group('All', ()
   {
@@ -27,23 +40,45 @@ void main() {
     });
     test('A notification fired with an event while no notifications are outstanding should not throw a StateException', () {
       notifications = <int, int>{};
-      listen("/org/freedesktop/Notifications: org.freedesktop.Notifications.ActionInvoked (uint32 27, 'default')\n" +
-        "/org/freedesktop/Notifications: org.freedesktop.Notifications.NotificationClosed (uint32 27, uint32 2)");
+      listen(_actionInvokedMessage + _closedNotificationMessage);
       expect(true, true);
    });
    test('A notification fired with an unmatched Event while a notification is outstanding should not throw a StateException', () {
      notifications = <int, int>{1:1};
-     listen("/org/freedesktop/Notifications: org.freedesktop.Notifications.ActionInvoked (uint32 27, 'default')\n" +
-        "/org/freedesktop/Notifications: org.freedesktop.Notifications.NotificationClosed (uint32 27, uint32 2)");
+     listen(_inapplicableActionInvokedMessage);      
      expect(true, true);
    });
    // commented out since it causes the Taqo graphical client to open
    // test('A notification fired with a matched event while a notification is outstanding should not throw a StateException', () {
    //   sut.notifications = <int, int>{1:27};
    //   sut.openSurvey = (id) => print("Called");
-   //   sut.listen("/org/freedesktop/Notifications: org.freedesktop.Notifications.ActionInvoked (uint32 27, 'default')\n" +
-   //      "/org/freedesktop/Notifications: org.freedesktop.Notifications.NotificationClosed (uint32 27, uint32 2)");
+   //   listen(_actionInvokedMessage + _closedNotificationMessage);      
    //   expect(true, true);
    // });
+   test('actionInvoked regex matches', () {
+     final action = actionPattern.matchAsPrefix(_actionInvokedMessage);
+     expect(action, isNotNull);
+     expect(action[1], equals("1"));
+     expect(action[2], equals("default"));
+});
+   test('actionInvoked+closedNotification regex matches', () {
+     final action = actionPattern.matchAsPrefix(_actionInvokedMessage + _closedNotificationMessage);
+     expect(action, isNotNull);
+     expect(action[1], equals("1"));
+     expect(action[2], equals("default"));
+   });
+   test('closedNotification regex matches', () {
+     final action = closedPattern.matchAsPrefix(_closedNotificationMessage);
+     expect(action, isNotNull);
+     expect(action[1], equals("1"));
+     expect(action[2], equals("2"));
+   });
+   test('inApplicableNotification regex does not match', () {
+     final action = actionPattern.matchAsPrefix(_inapplicableActionInvokedMessage);
+     expect(action, isNotNull);
+     expect(action[1], isNot(equals("1")));
+     expect(action[2], isNot(equals("default")));
+     expect(action[2], isNot(equals("taqo")));
+   });
   });
 }
