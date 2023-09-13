@@ -33,12 +33,12 @@ const _cancelMethod = 'org.freedesktop.Notifications.CloseNotification';
 
 @visibleForTesting
 final actionPattern = RegExp(
-    ".*path=/org/freedesktop/Notifications; interface=org.freedesktop.Notifications;\\s+member=ActionInvoked\\s+uint32\\s+(\\d+)\\s+string\\s+\"([a-zA-Z]+)\""); 
+    ".*path=/org/freedesktop/Notifications; interface=org.freedesktop.Notifications;\\s+member=ActionInvoked\\s+uint32\\s+(\\d+)\\s+string\\s+\"([a-zA-Z]+)\"");
 
 @visibleForTesting
 final closedPattern = RegExp(
     ".*path=/org/freedesktop/Notifications; interface=org.freedesktop.Notifications;\\s+member=NotificationClosed\\s+uint32\\s+(\\d+)\\s+uint32\\s+([a-zA-Z0-9]+)");
-    
+
 const _defaultActions = <String>[
   'default',
   'Open Taqo',
@@ -59,7 +59,7 @@ void listen(String event) {
   final action = actionPattern.matchAsPrefix(event);
 
   _logger.info('action:${action}');
-  
+
   if (action != null && notifications.keys.isNotEmpty) {
     _logger.info('action: id: ${action[1]} action: ${action[2]}');
     if (action.groupCount >= 2 && _defaultActions.contains(action[2])) {
@@ -139,7 +139,7 @@ String _parseHints(Map<String, dynamic> hints) {
 
 String _parseTimeout(int timeout) => 'int32 $timeout';
 
-Future<int> notify(
+Future<void> notify(
     int id, String appName, int replaceId, String title, String body,
     {String iconPath = '',
     List<String> actions = _defaultActions,
@@ -161,9 +161,12 @@ Future<int> notify(
     _parseTimeout(timeout),
   ]);
 
+  if (processResult.exitCode != 0) {
+    _logger.warning('Failed to send notification $id.');
+    return;
+  }
   final idString = processResult.stdout;
   final notifId = int.tryParse(
       RegExp(r'\(uint32 (\d+),\)').matchAsPrefix(idString)?.group(1));
   notifications[id] = notifId;
-  return notifId;
 }
