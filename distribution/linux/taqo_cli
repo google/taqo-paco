@@ -1,0 +1,5 @@
+#!/bin/bash
+
+/usr/bin/taqo_daemon start 2>&1 >/dev/null
+/usr/lib/taqo/taqo_cli "$@"
+
