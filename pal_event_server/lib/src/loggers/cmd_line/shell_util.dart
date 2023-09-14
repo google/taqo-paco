@@ -69,11 +69,45 @@ Future<bool> modifyFishShell(String homeDir) async {
     }
 
     await fish_config.writeAsString(
-        '$_source_taqo_fish $_taqo_lib_dir $_taqo_log_cmd\n',
+        'set taqologcmd $_taqo_log_cmd\n$_source_taqo_fish\n',
         mode: FileMode.append);
   } on Exception catch (e) {
     print("exception $e");
     _logger.warning(e);
+    return false;
+  }
+  return true;
+}
+
+// TODO (#190) Remove tech debt by refactoring this and the disable inner function
+Future<bool> restoreFishShell(String homeDir) async {
+  var fish_config_path = path.join(homeDir, '.config/fish/config.fish');
+  final fish_config = File(fish_config_path);
+  final withoutTaqo = File(path.join(Directory.systemTemp.path, "config.fish"));
+  try {
+    if (await withoutTaqo.exists()) {
+      await withoutTaqo.delete();
+    }
+  } on Exception catch (e) {
+    _logger.warning(e);
+  }
+
+  try {
+    final lines = await fish_config.readAsLines();
+    for (var line in lines) {
+      if (!line.startsWith("set taqologcmd ") &&
+          !line.startsWith(_source_taqo)) {
+        await withoutTaqo.writeAsString('$line\n', mode: FileMode.append);
+      }
+    }
+    await fish_config.delete();
+    await withoutTaqo.copy(fish_config_path);
+  } on Exception catch (e) {
+    if (!(await withoutTaqo.exists())) {
+      _logger.warning("Not writing fish_config; file would have been empty");
+    } else {
+      _logger.warning(e);
+    }
     return false;
   }
   return true;
@@ -121,7 +155,6 @@ Future<bool> enableCmdLineLogging() async {
   }
 
   ret = await modifyFishShell(DartFileStorage.getHomePath());
-
   return ret;
 }
 
@@ -160,6 +193,6 @@ Future<bool> disableCmdLineLogging() async {
 
   var ret1 = await disable('.bashrc');
   var ret2 = await disable('.zshrc');
-  var ret3 = await disable('/.config/fish/config.fish');
+  var ret3 = await restoreFishShell(DartFileStorage.getHomePath());
   return ret1 && ret2 && ret3;
 }

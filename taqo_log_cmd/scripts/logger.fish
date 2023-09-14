@@ -17,17 +17,17 @@
 
 function prehook --on-event fish_preexec
     if status is-interactive
-        $logcmd start $argv shell_pid bg|fg 
+    	set -f fgbg "fg"
+    	if string match -r "&\$" $argv 1 >/dev/null
+    	  set -f fgbg "bg"
+    	end
+      $taqologcmd start $argv $fish_pid $fgbg
     end
     commandline
 end
 
 function posthook --on-event fish_postexec
-    if status is-interactive
-        $logcmd end shell_pid exitcode
-    end
+    # do not check if status is-interactive as it wipes the $status value
+    $taqologcmd end $fish_pid $status
     commandline
 end
-
-
-

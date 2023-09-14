@@ -20,14 +20,13 @@ import 'package:pal_event_server/src/loggers/cmd_line/shell_util.dart';
 import 'package:path/path.dart' as path show join;
 import 'package:taqo_common/storage/dart_file_storage.dart';
 
+// TODO(#190) Remove tech debt
 void main() {
   group('All', ()
   {
     test('creates a fish config file', () async {
       Directory tmp = Directory("/tmp");
       Directory tmpHome = tmp.createTempSync("testshellutil");
-      //expect(tmpHome.existsSync(), isFalse);
-
       File expectedFishFile = File(path.join(tmpHome.path, ".config/fish/config.fish"));
       expect(expectedFishFile.existsSync(), isFalse);
       try {
@@ -35,9 +34,79 @@ void main() {
         expect(result, isTrue);
         expect(expectedFishFile.existsSync(), isTrue);
         String expectedFileContent = expectedFishFile.readAsStringSync();
-        expect(expectedFileContent, equals("source /usr/lib/taqo/scripts/logger.fish /usr/lib/taqo /usr/lib/taqo/logcmd\n"));
+        expect(expectedFileContent, equals("set taqologcmd /usr/lib/taqo/logcmd\n" +
+                "source /usr/lib/taqo/scripts/logger.fish\n"));
       } finally {
-        tmpHome.delete();
+        tmpHome.delete(recursive: true);
+      }
+    });
+    test('modifies an existing fish config file', () async {
+      Directory tmp = Directory("/tmp");
+      Directory tmpHome = tmp.createTempSync("testshellutil");
+      try {
+        File expectedFishFile = File(path.join(tmpHome.path, ".config/fish/config.fish"));
+        await expectedFishFile.create(recursive:true);
+        expect(expectedFishFile.existsSync(), isTrue);
+        var previousContent = '# previous line in file';
+        await expectedFishFile.writeAsString(
+            previousContent+"\n",
+            mode: FileMode.append);
+        bool result = await modifyFishShell(tmpHome.path);
+        expect(result, isTrue);
+        expect(expectedFishFile.existsSync(), isTrue);
+        String expectedFileContent = expectedFishFile.readAsStringSync();
+        expect(expectedFileContent, equals("$previousContent\n"
+            "set taqologcmd /usr/lib/taqo/logcmd\n" +
+            "source /usr/lib/taqo/scripts/logger.fish\n"));
+      } finally {
+        tmpHome.delete(recursive: true);
+      }
+    });
+    test('deletes a fish config file', () async {
+      Directory tmp = Directory("/tmp");
+      Directory tmpHome = tmp.createTempSync("testshellutil");
+      File expectedFishFile = File(path.join(tmpHome.path, ".config/fish/config.fish"));
+      expect(expectedFishFile.existsSync(), isFalse);
+      try {
+        bool result = await modifyFishShell(tmpHome.path);
+        expect(result, isTrue);
+        expect(expectedFishFile.existsSync(), isTrue);
+        String expectedFileContent = expectedFishFile.readAsStringSync();
+        expect(expectedFileContent, equals("set taqologcmd /usr/lib/taqo/logcmd\n" +
+            "source /usr/lib/taqo/scripts/logger.fish\n"));
+
+        bool restored = await restoreFishShell(tmpHome.path);
+        expect(restored, isFalse, reason: "There should be no file since there was none before.");
+        expect(expectedFishFile.existsSync(), isFalse);
+      } finally {
+        tmpHome.delete(recursive: true);
+      }
+    });
+    test('restores a previous fish config file', () async {
+      Directory tmp = Directory("/tmp");
+      Directory tmpHome = tmp.createTempSync("testshellutil");
+      try {
+        File expectedFishFile = File(path.join(tmpHome.path, ".config/fish/config.fish"));
+        await expectedFishFile.create(recursive:true);
+        expect(expectedFishFile.existsSync(), isTrue);
+        var previousContent = '# previous line in file';
+        await expectedFishFile.writeAsString(
+            previousContent+"\n",
+            mode: FileMode.append);
+        bool result = await modifyFishShell(tmpHome.path);
+        expect(result, isTrue);
+        expect(expectedFishFile.existsSync(), isTrue);
+        String expectedFileContent = expectedFishFile.readAsStringSync();
+        expect(expectedFileContent, equals("$previousContent\n"
+            "set taqologcmd /usr/lib/taqo/logcmd\n" +
+            "source /usr/lib/taqo/scripts/logger.fish\n"));
+        bool restored = await restoreFishShell(tmpHome.path);
+        expect(restored, isTrue);
+        expect(expectedFishFile.existsSync(), isTrue);
+        String expectedOldFileContent = expectedFishFile.readAsStringSync();
+        expect(expectedOldFileContent, equals("$previousContent\n"));
+      } finally {
+        tmpHome.delete(recursive: true);
       }
     });
   });
