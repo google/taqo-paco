@@ -28,6 +28,9 @@ end
 
 function posthook --on-event fish_postexec
     # do not check if status is-interactive as it wipes the $status value
-    $taqologcmd end $fish_pid $status
+    set -f stat $status
+    if status is-interactive; and not string match -r "&\$" $argv 1 >/dev/null
+       $taqologcmd end $fish_pid $stat
+    end
     commandline
 end
