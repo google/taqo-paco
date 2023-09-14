@@ -26,6 +26,7 @@ rsync -a --delete "${DISTRIBUTION_DIR}/linux/debian" "${BUILD_DIR}"
 DATE=$(date -R) envsubst < "${LINUX_DIR}/debian-changelog.tpl" > "${BUILD_DIR}/debian/changelog"
 cp "${LINUX_DIR}/build.sh" "${BUILD_DIR}/"
 cp "${LINUX_DIR}"/{taqo,taqo_daemon}{,.desktop} "${BUILD_DIR}/"
+cp "${LINUX_DIR}"/taqo_cli "${BUILD_DIR}"/taqo_cli.sh
 
 cd "${BUILD_DIR}" || exit
 dpkg-buildpackage -B -us -uc

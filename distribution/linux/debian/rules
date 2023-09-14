@@ -27,7 +27,7 @@ override_dh_auto_build:
 	./build.sh
 
 override_dh_strip:
-	dh_strip --exclude=taqo_server --exclude=logcmd
+	dh_strip --exclude=taqo_server --exclude=logcmd --exclude=taqo_cli
 
 # Disable dwz as it will bring errors but only little benefits
 override_dh_dwz:
@@ -37,5 +37,6 @@ override_dh_auto_install:
 	cp -R $(OUT_DIR) debian/tmp/out/taqo
 	mkdir -p debian/tmp/out/files
 	cp {taqo,taqo_daemon}{,.desktop} debian/tmp/out/files
+	cp taqo_cli.sh debian/tmp/out/files/taqo_cli
 	dh_install
 	dh_link

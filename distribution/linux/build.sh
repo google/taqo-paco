@@ -56,6 +56,12 @@ popd || exit
   --no-sound-null-safety \
   -o "${OUT_DIR}"/logcmd
 
+# Build Taqo CLI
+"${DART_SDK}"/bin/dart compile exe taqo_cli/bin/taqo_cli.dart \
+  --no-sound-null-safety \
+  -o "${OUT_DIR}"/taqo_cli
+
+
 # Copy bash-preexec
 mkdir -p "${OUT_DIR}"/third_party/bash-preexec
 cp third_party/bash-preexec/bash-preexec.sh "${OUT_DIR}"/third_party/bash-preexec

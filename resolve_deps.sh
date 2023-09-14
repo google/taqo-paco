@@ -44,3 +44,7 @@ popd || exit
 pushd taqo_log_cmd || exit
 "$DART_SDK"/bin/pub get
 popd || exit
+
+pushd taqo_cli || exit
+"$DART_SDK"/bin/pub get
+popd || exit
