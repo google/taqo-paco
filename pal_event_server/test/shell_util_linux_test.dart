@@ -13,6 +13,9 @@
 // limitations under the License.
 
 // @dart=2.9
+
+@TestOn('linux')
+
 import 'dart:io';
 
 import 'package:test/test.dart';
