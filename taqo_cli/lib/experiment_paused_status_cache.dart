@@ -19,6 +19,11 @@ import 'dart:async';
 import 'package:taqo_common/model/experiment.dart';
 import 'package:taqo_common/storage/joined_experiments_storage.dart';
 
+// TODO(#189): tech debt
+// This class is duplicated from the Taqo client code for a fast
+// implementation of a standalone Taqo CLI client. The class is to support
+// pausing/resuming experiments. For a CLI client, such cache system is not
+// necessary and should be removed.
 class ExperimentPausedStatusCache {
   JoinedExperimentsStorage _storage;
   Map<int, bool> _cache = <int, bool>{};

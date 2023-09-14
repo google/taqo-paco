@@ -30,6 +30,11 @@ import 'platform_service.dart' as global;
 
 final _logger = Logger('RemoteDatabase');
 
+// TODO(#189): tech debt
+// This class is duplicated from the Taqo client code for a fast
+// implementation of a standalone Taqo CLI client. Some modifications and
+// additions were made. Specifically, Flutter dependency for mobile support is
+// removed.
 /// Desktop clients use the PAL event server for all database functions over IPC
 class RemoteDatabase extends BaseDatabase {
   static Completer<RemoteDatabase> _completer;

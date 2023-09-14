@@ -14,6 +14,12 @@
 
 // @dart=2.9
 
+// TODO(#189): tech debt
+// This file is duplicated from the Taqo client code for a fast
+// implementation of a standalone Taqo CLI client. Some modifications and
+// additions were made. Specifically, Flutter dependency for mobile support is
+// removed. This file is for connecting to the PAL event server.
+
 import 'dart:async';
 
 import 'package:logging/logging.dart';

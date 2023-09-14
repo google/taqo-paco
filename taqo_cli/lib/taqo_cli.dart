@@ -13,26 +13,10 @@
 // limitations under the License.
 
 import 'dart:io';
-import 'dart:developer';
-
-import 'package:taqo_common/model/shell_command_log.dart';
-import 'package:taqo_common/rpc/rpc_constants.dart';
-import 'package:taqo_common/util/zoned_date_time.dart';
-import 'package:taqo_event_server_protocol/taqo_event_server_protocol.dart';
 
 import 'experiment_service.dart';
 
-const _start_server_linux = '/usr/bin/taqo_daemon restart';
-const _start_server_mac =
-    'killall taqo_daemon; open /Applications/Taqo.app/Contents/Library/LoginItems/TaqoLauncher.app';
-
-String getStartServerCmd() {
-  if (Platform.isMacOS) {
-    return _start_server_mac;
-  }
-  return _start_server_linux;
-}
-
+/// Taqo CLI main implementation
 class TaqoCli {
   Future<void> joinPublicExperimentWithInvitationCode(String code) async {
     final experimentService = await ExperimentService.getInstance();

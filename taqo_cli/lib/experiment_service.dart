@@ -32,6 +32,12 @@ import 'platform_service.dart' as platform_service;
 
 final _logger = Logger('ExperimentService');
 
+// TODO(#189): tech debt
+// This class is duplicated from the Taqo client code for a fast
+// implementation of a standalone Taqo CLI client. Some modifications and
+// additions were made. Specifically, Flutter dependency for mobile support is
+// removed. The class is responsible for fetching/joining/pausing/resuming/etc.
+// the experiments.
 class ExperimentService implements ExperimentServiceLite {
   final PacoApi _pacoApi;
 
