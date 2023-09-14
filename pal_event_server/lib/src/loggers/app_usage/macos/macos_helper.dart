@@ -18,39 +18,53 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
+import '../idle_time.dart';
+
 import '../../pal_event_helper.dart';
 import '../app_logger.dart';
 import 'apple_script_util.dart' as apple_script;
 
 String _prevAppAndWindowName;
+bool _prevIdleState;
 
 // Isolate entry point must be a top-level function (or static?)
 // Run Apple Script for the active window
 void macOSAppLoggerIsolate(SendPort sendPort) {
   Timer.periodic(queryInterval, (Timer _) {
     try {
-      Process.run(apple_script.command, apple_script.scriptArgs).then((result) {
-        final currWindow = result.stdout.trim();
+      Future.wait([
+        Process.run(apple_script.command, apple_script.scriptArgs),
+        isIdle()
+      ]).then((result) {
+        final currWindow = (result[0] as ProcessResult).stdout.trim();
+        final idleState = result[1];
         if (currWindow != '') {
           final resultMap = apple_script.buildResultMap(currWindow);
           final currAppAndWindowName =
               resultMap[appNameField] + resultMap[windowNameField];
 
-          if (currAppAndWindowName != _prevAppAndWindowName) {
+          if (currAppAndWindowName != _prevAppAndWindowName ||
+              idleState != _prevIdleState) {
             // Send APP_CLOSED
-            if (_prevAppAndWindowName != null &&
+            if (currAppAndWindowName != _prevAppAndWindowName &&
+                _prevAppAndWindowName != null &&
                 _prevAppAndWindowName.isNotEmpty) {
               sendPort.send(_prevAppAndWindowName);
             }
 
             _prevAppAndWindowName = currAppAndWindowName;
+            _prevIdleState = idleState;
 
             // Send PacoEvent && APP_USAGE
             if (resultMap != null) {
+              resultMap[isIdleField] = idleState;
               sendPort.send(resultMap);
             }
           }
         }
+      }).catchError((e, s) {
+        print('Exception details:\n $e');
+        print('Stack trace:\n $s');
       });
     } catch (e, s) {
       print('Exception details:\n $e');
