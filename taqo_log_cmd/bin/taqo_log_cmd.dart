@@ -82,8 +82,9 @@ void displayError(e, st) {
       '''Taqo's shell tracer cannot connect to the Taqo server. To restart the Taqo server, please run
   ${getStartServerCmd()}
 To manually disable Taqo's shell tracer, remove the line that sources 
-  <taqo-lib-dir>/scripts/logger.bash or <taqo-lib-dir>/scripts/logger.zsh
-in ~/.bashrc or ~/.zshrc, respectively, and restart the shell.
+  <taqo-lib-dir>/scripts/logger.bash, <taqo-lib-dir>/scripts/logger.zsh,
+  or <taqo-lib-dir>/scripts/logger.fish
+in ~/.bashrc, ~/.zshrc, or ~/.config/fish/config.fish respectively, and restart the shell.
 Please contact the Taqo authors if you have any questions.
 
 ''');
