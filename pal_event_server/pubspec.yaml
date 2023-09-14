@@ -31,6 +31,7 @@ dependencies:
   taqo_event_server_protocol:
     path: ../taqo_event_server_protocol
   collection: ^1.15.0-nullsafety.4
+  uuid: ^2.2.2
 
 dev_dependencies:
   test: any

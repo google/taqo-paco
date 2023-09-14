@@ -16,6 +16,7 @@
 
 import 'package:logging/logging.dart';
 import 'package:pal_event_server/src/experiment_service_local.dart';
+import 'package:pal_event_server/src/machine_id.dart';
 import 'package:pal_event_server/src/sqlite_database/sqlite_database.dart';
 import 'package:taqo_common/rpc/rpc_constants.dart';
 import 'package:taqo_common/service/experiment_service_lite.dart';
@@ -38,6 +39,7 @@ void main() async {
   _logger.info('Logging service is ready');
   DatabaseFactory.initialize(() => SqliteDatabase.get());
   ExperimentServiceLiteFactory.initialize(ExperimentServiceLocal.getInstance);
+  await MachineId.initialize();
 
   final server = PALTespServer();
   await server.serve(address: localServerHost, port: localServerPort);
