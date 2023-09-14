@@ -18,6 +18,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:pal_event_server/src/machine_id.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:taqo_common/model/action_specification.dart';
@@ -206,6 +207,7 @@ class SqliteDatabase implements BaseDatabase {
   }
 
   Future<int> insertEvent(Event event, {bool notifySyncService = true}) async {
+    event.responses['machineId'] = MachineId.get();
     _db.execute(insertEventCommand, [
       event.experimentId,
       event.experimentName,
