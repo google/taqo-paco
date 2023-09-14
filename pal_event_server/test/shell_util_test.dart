@@ -30,7 +30,7 @@ void main() {
       File expectedFishFile = File(path.join(tmpHome.path, ".config/fish/config.fish"));
       expect(expectedFishFile.existsSync(), isFalse);
       try {
-        bool result = await modifyFishShell(tmpHome.path);
+        bool result = await addCmdLoggingToFishShellConfigFile(tmpHome.path);
         expect(result, isTrue);
         expect(expectedFishFile.existsSync(), isTrue);
         String expectedFileContent = expectedFishFile.readAsStringSync();
@@ -51,7 +51,7 @@ void main() {
         await expectedFishFile.writeAsString(
             previousContent+"\n",
             mode: FileMode.append);
-        bool result = await modifyFishShell(tmpHome.path);
+        bool result = await addCmdLoggingToFishShellConfigFile(tmpHome.path);
         expect(result, isTrue);
         expect(expectedFishFile.existsSync(), isTrue);
         String expectedFileContent = expectedFishFile.readAsStringSync();
@@ -68,14 +68,14 @@ void main() {
       File expectedFishFile = File(path.join(tmpHome.path, ".config/fish/config.fish"));
       expect(expectedFishFile.existsSync(), isFalse);
       try {
-        bool result = await modifyFishShell(tmpHome.path);
+        bool result = await addCmdLoggingToFishShellConfigFile(tmpHome.path);
         expect(result, isTrue);
         expect(expectedFishFile.existsSync(), isTrue);
         String expectedFileContent = expectedFishFile.readAsStringSync();
         expect(expectedFileContent, equals("set taqologcmd /usr/lib/taqo/logcmd\n" +
             "source /usr/lib/taqo/scripts/logger.fish\n"));
 
-        bool restored = await restoreFishShell(tmpHome.path);
+        bool restored = await removeCmdLoggingFromFishShellConfigFile(tmpHome.path);
         expect(restored, isFalse, reason: "There should be no file since there was none before.");
         expect(expectedFishFile.existsSync(), isFalse);
       } finally {
@@ -93,14 +93,14 @@ void main() {
         await expectedFishFile.writeAsString(
             previousContent+"\n",
             mode: FileMode.append);
-        bool result = await modifyFishShell(tmpHome.path);
+        bool result = await addCmdLoggingToFishShellConfigFile(tmpHome.path);
         expect(result, isTrue);
         expect(expectedFishFile.existsSync(), isTrue);
         String expectedFileContent = expectedFishFile.readAsStringSync();
         expect(expectedFileContent, equals("$previousContent\n"
             "set taqologcmd /usr/lib/taqo/logcmd\n" +
             "source /usr/lib/taqo/scripts/logger.fish\n"));
-        bool restored = await restoreFishShell(tmpHome.path);
+        bool restored = await removeCmdLoggingFromFishShellConfigFile(tmpHome.path);
         expect(restored, isTrue);
         expect(expectedFishFile.existsSync(), isTrue);
         String expectedOldFileContent = expectedFishFile.readAsStringSync();

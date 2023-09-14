@@ -53,18 +53,15 @@ final _source_taqo_fish = '${_source_taqo}.fish';
 final _taqo_log_cmd = getLogCmdPath();
 final _taqo_lib_dir = getTaqoLibPath();
 
-Future<bool> modifyFishShell(String homeDir) async {
+Future<bool> addCmdLoggingToFishShellConfigFile(String homeDir) async {
   final fish_config = File(
       path.join(homeDir, '.config/fish/config.fish'));
-  print("$homeDir, $fish_config.toString()");
   try {
     if (await fish_config.exists()) {
       await fish_config
           .copy(path.join(
           homeDir, '.config/fish/config.fish.taqo_bak'));
     } else {
-      print("creating $fish_config");
-      print("creating fish_config $fish_config");
       await fish_config.create(recursive: true);
     }
 
@@ -72,7 +69,6 @@ Future<bool> modifyFishShell(String homeDir) async {
         'set taqologcmd $_taqo_log_cmd\n$_source_taqo_fish\n',
         mode: FileMode.append);
   } on Exception catch (e) {
-    print("exception $e");
     _logger.warning(e);
     return false;
   }
@@ -80,7 +76,11 @@ Future<bool> modifyFishShell(String homeDir) async {
 }
 
 // TODO (#190) Remove tech debt by refactoring this and the disable inner function
-Future<bool> restoreFishShell(String homeDir) async {
+/*
+This returns a user fish config file back to its previous state by
+removing the taqo config lines.
+ */
+Future<bool> removeCmdLoggingFromFishShellConfigFile(String homeDir) async {
   var fish_config_path = path.join(homeDir, '.config/fish/config.fish');
   final fish_config = File(fish_config_path);
   final withoutTaqo = File(path.join(Directory.systemTemp.path, "config.fish"));
@@ -154,7 +154,7 @@ Future<bool> enableCmdLineLogging() async {
     ret = false;
   }
 
-  ret = await modifyFishShell(DartFileStorage.getHomePath());
+  ret = await addCmdLoggingToFishShellConfigFile(DartFileStorage.getHomePath());
   return ret;
 }
 
@@ -193,6 +193,6 @@ Future<bool> disableCmdLineLogging() async {
 
   var ret1 = await disable('.bashrc');
   var ret2 = await disable('.zshrc');
-  var ret3 = await restoreFishShell(DartFileStorage.getHomePath());
+  var ret3 = await removeCmdLoggingFromFishShellConfigFile(DartFileStorage.getHomePath());
   return ret1 && ret2 && ret3;
 }
