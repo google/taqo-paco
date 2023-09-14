@@ -15,7 +15,7 @@
 # For event-handler Fish scripts, they need to be installed in
 # $XDG_CONFIG_HOME/fish/config.fish to get registered.
 
-function prehook --on-event fish_preexec
+function taqo_prehook --on-event fish_preexec
     if status is-interactive
     	set -f fgbg "fg"
     	if string match -r "&\$" $argv 1 >/dev/null
@@ -26,7 +26,7 @@ function prehook --on-event fish_preexec
     commandline
 end
 
-function posthook --on-event fish_postexec
+function taqo_posthook --on-event fish_postexec
     # do not check if status is-interactive as it wipes the $status value
     set -f stat $status
     if status is-interactive; and not string match -r "&\$" $argv 1 >/dev/null
