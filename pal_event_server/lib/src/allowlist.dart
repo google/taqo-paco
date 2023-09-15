@@ -64,7 +64,7 @@ class AllowList {
     _appContentRules = _rules.where((element) => element._type == APP_CONTENT_RULE_TYPE);
   }
 
-  List<Event> filterData(List events) {
+  List<Event> filterData(List<Event> events) {
     for (var event in events) {
       filter(event);
     }
