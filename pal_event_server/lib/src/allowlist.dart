@@ -115,20 +115,41 @@ class AllowList {
   void hashAllAppLoggerFields(Event event) {
     _logger.info("hashing all app fields");
     var responses = event.responses;
-    responses[appsUsedKey] = hash(responses[appsUsedKey]);
-    responses[appContentKey] = hash(responses[appContentKey]);
-    responses[appsUsedRawKey] = hash(responses[appsUsedRawKey]);
+    var appsUsedValue = responses[appsUsedKey];
+    if (appsUsedValue == null) {
+      appsUsedValue = "";
+    }
+    var appsUsedValueHash = hash(appsUsedValue);
+    responses[appsUsedKey] = appsUsedValueHash;
+    var appContentValue = responses[appContentKey];
+    if (appContentValue == null) {
+      appContentValue = "";
+    }
+    var appContentValueHash = hash(appContentValue);
+    responses[appContentKey] = appContentValueHash;
+    responses[appsUsedRawKey] = appsUsedValueHash + ":" + appContentValueHash;
   }
 
   String hash(String value) {
+    if (value == null) {
+      value = "";
+    }
     return sha1.convert(utf8.encode(value)).toString();
   }
 
   void hashAllAppContentFields(Event event) {
     _logger.info("hashing app  content fields");
     var responses = event.responses;
-    var hashedAppContent = hash(responses[appContentKey]);
+    var appContentValue = responses[appContentKey];
+    if (appContentValue == null) {
+      appContentValue = "";
+    }
+    var appsUsedValue = responses[appsUsedKey];
+    if (appsUsedValue ==null) {
+      appsUsedValue = "";
+    }
+    var hashedAppContent = hash(appContentValue);
     responses[appContentKey] = hashedAppContent;
-    responses[appsUsedRawKey] = responses[appsUsedKey] + ":" + hashedAppContent;
+    responses[appsUsedRawKey] = appsUsedValue + ":" + hashedAppContent;
   }
 }

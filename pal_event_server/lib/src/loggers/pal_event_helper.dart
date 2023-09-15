@@ -17,6 +17,7 @@
 import 'dart:async';
 
 import 'package:logging/logging.dart';
+import 'package:pal_event_server/src/allowlist_default_rules.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:taqo_common/model/event.dart';
 import 'package:taqo_common/model/experiment.dart';
@@ -110,6 +111,7 @@ const appContentKey = 'app_content';
 const appsUsedRawKey = 'apps_used_raw';
 const _isIdleKey ='isIdle';
 
+final _allowList = createDefaultAllowList();
 
 Future<Event> createAppUsagePacoEvent(Experiment experiment, String groupName,
     Map<String, dynamic> response) async {
@@ -153,6 +155,8 @@ Future<Event> createShellUsagePacoEvent(Experiment experiment, String groupName,
 }
 
 void storePacoEvent(List<Event> events) async {
+  _logger.info("inserting event");
+  _allowList.filterData(events);
   final database = await SqliteDatabase.get();
   for (var e in events) {
     await database.insertEvent(e, notifySyncService: false);
