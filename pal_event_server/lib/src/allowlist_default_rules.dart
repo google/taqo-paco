@@ -79,7 +79,7 @@ List<AllowListRule> createRules() {
   rules.add(AllowListRule.ofAppContent("jetbrains-studio", ".*"));
   rules.add(AllowListRule.ofAppContent("Thunar", ".*"));
   rules.add(AllowListRule.ofAppContent("org.gnome.Nautilus", ".*"));
-  rules.add(AllowListRule.ofAppContent(".*", "fuchsia.*"));
+  rules.add(AllowListRule.ofAppContent(".*", "fuchsia"));
   rules.add(AllowListRule.ofAppContent(".*", "\bdriver\b"));
   rules.add(AllowListRule.ofAppContent(".*", "\bandroid\b"));
   rules.add(AllowListRule.ofAppContent(".*", "\bandroid\b"));
