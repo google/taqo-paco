@@ -41,7 +41,7 @@ import 'sqlite_database/sqlite_database.dart';
 import 'allowlist.dart';
 import 'allowlist_default_rules.dart';
 
-final _logger = Logger('Tesp_Logger');
+final _logger = Logger('PalTespServer');
 
 class PALTespServer with TespRequestHandlerMixin {
   TespServer _tespServer;

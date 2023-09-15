@@ -106,9 +106,7 @@ class AllowList {
     }
     var allowed = false;
     for (var appRule in _appRules) {
-      if (event.responses.containsKey(appsUsedKey) &&
-          event.responses[appsUsedKey] != null &&
-          appRule.matches(event.responses[appsUsedKey], null)) {
+      if (appRule.matches(event.responses[appsUsedKey] ?? '', null)) {
         allowed = true;
         _logger.info("AppRule that allowed is $appRule");
         break;
@@ -123,10 +121,8 @@ class AllowList {
       }
       var allowAppContents = false;
       for (var appContentRule in _appContentRules) {
-        if (event.responses.containsKey(appContentKey) &&
-            event.responses[appContentKey] != null &&
-            appContentRule.matches(event.responses[appsUsedKey],
-                event.responses[appContentKey])) {
+        if (appContentRule.matches(event.responses[appsUsedKey] ?? '',
+            event.responses[appContentKey] ?? '')) {
           allowAppContents = true;
           _logger.info("AppContentRule that allowed is $appContentRule");
           break;
@@ -142,17 +138,9 @@ class AllowList {
   void hashAllAppLoggerFields(Event event) {
     _logger.info("hashing all app fields");
     var responses = event.responses;
-    var appsUsedValue = responses[appsUsedKey];
-    if (appsUsedValue == null) {
-      appsUsedValue = "";
-    }
-    var appsUsedValueHash = hash(appsUsedValue);
+    var appsUsedValueHash = hash(responses[appsUsedKey] ?? "");
     responses[appsUsedKey] = appsUsedValueHash;
-    var appContentValue = responses[appContentKey];
-    if (appContentValue == null) {
-      appContentValue = "";
-    }
-    var appContentValueHash = hash(appContentValue);
+    var appContentValueHash = hash(responses[appContentKey] ?? "");
     responses[appContentKey] = appContentValueHash;
     responses[appsUsedRawKey] = appsUsedValueHash + ":" + appContentValueHash;
   }
@@ -191,16 +179,8 @@ class AllowList {
   void hashAllAppContentFields(Event event) {
     _logger.info("hashing app  content fields");
     var responses = event.responses;
-    var appContentValue = responses[appContentKey];
-    if (appContentValue == null) {
-      appContentValue = "";
-    }
-    var appsUsedValue = responses[appsUsedKey];
-    if (appsUsedValue ==null) {
-      appsUsedValue = "";
-    }
-    var hashedAppContent = hash(appContentValue);
+    var hashedAppContent = hash(responses[appContentKey] ?? "");
     responses[appContentKey] = hashedAppContent;
-    responses[appsUsedRawKey] = appsUsedValue + ":" + hashedAppContent;
+    responses[appsUsedRawKey] = (responses[appsUsedKey] ?? "") + ":" + hashedAppContent;
   }
 }
