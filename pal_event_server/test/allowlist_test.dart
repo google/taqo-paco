@@ -161,7 +161,19 @@ void main() {
       expect(resultResponses2[appsUsedKey], isNot(equals('Safari')));
       expect(resultResponses2[appContentKey], isNot(equals('Google')));
       expect(resultResponses2[appsUsedRawKey], isNot(equals('Safari:Google')));
+    });
+    test("wipeEvent scrubs matching data", () async {
+      var event = await createPacoEvent(createAppUsageExperiment(), 'APPUSAGE_DESKTOP');
+      event.responses.addAll({ appsUsedKey : 'Chrome', appContentKey : 'Google Docs - My design doc',
+        appsUsedRawKey : 'Chrome:Google Docs - My design doc'});
 
+      var allowlist = AllowList();
+      allowlist.wipeDetailsOnEvent(event);
+
+      var resultResponses = event.responses;
+      expect(resultResponses[appsUsedKey], equals('Chrome'));
+      expect(resultResponses[appContentKey], equals('Google Docs'));
+      expect(resultResponses[appsUsedRawKey], equals('Chrome:Google Docs'));
     });
   });
 }

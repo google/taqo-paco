@@ -61,11 +61,13 @@ class AllowList {
   set rules(value) {
     _rules = value;
     _appRules = _rules.where((element) => element._type == APPS_USED_RULE_TYPE);
-    _appContentRules = _rules.where((element) => element._type == APP_CONTENT_RULE_TYPE);
+    _appContentRules =
+        _rules.where((element) => element._type == APP_CONTENT_RULE_TYPE);
   }
 
   List<Event> filterData(List<Event> events) {
     for (var event in events) {
+      wipeDetailsOnEvent(event);
       filter(event);
     }
     return events;
@@ -82,12 +84,12 @@ class AllowList {
     }
     var allowed = false;
     for (var appRule in _appRules) {
-       if (event.responses.containsKey(appsUsedKey) &&
-           event.responses[appsUsedKey] != null &&
-           appRule.matches(event.responses[appsUsedKey])) {
-         allowed = true;
-         break;
-       }
+      if (event.responses.containsKey(appsUsedKey) &&
+          event.responses[appsUsedKey] != null &&
+          appRule.matches(event.responses[appsUsedKey])) {
+        allowed = true;
+        break;
+      }
     }
     if (!allowed) {
       hashAllAppLoggerFields(event);
@@ -128,6 +130,36 @@ class AllowList {
     var appContentValueHash = hash(appContentValue);
     responses[appContentKey] = appContentValueHash;
     responses[appsUsedRawKey] = appsUsedValueHash + ":" + appContentValueHash;
+  }
+
+  final chatRegex = RegExp(r'\bchat\b', caseSensitive: false);
+  final meetRegex = RegExp(r'\bmeet\b', caseSensitive: false);
+  final mailRegex = RegExp(r'\bmail\b', caseSensitive: false);
+  final calendarRegex = RegExp(r'\bcalendar\b', caseSensitive: false);
+  final googleDocsRegex = RegExp(r'\bGoogle Docs\b', caseSensitive: false);
+
+  void wipeDetailsOnEvent(Event event) {
+    if (event.responses.containsKey(appContentKey)) {
+      var app_content = event.responses[appContentKey];
+      if (chatRegex.hasMatch(app_content)) {
+        event.responses[appContentKey] = 'Chat';
+      } else if (meetRegex.hasMatch(app_content)) {
+        event.responses[appContentKey] = 'Meet';
+      } else if (mailRegex.hasMatch(app_content)) {
+        event.responses[appContentKey] = 'Mail';
+      } else if (calendarRegex.hasMatch(app_content)) {
+        event.responses[appContentKey] = 'Calendar';
+      } else if (googleDocsRegex.hasMatch(app_content)) {
+        event.responses[appContentKey] = 'Google Docs';
+      }
+    
+      var apps_used = '';
+      if (event.responses.containsKey(appsUsedKey)) {
+        apps_used = event.responses[appsUsedKey];
+      }
+      event.responses[appsUsedRawKey] =
+          apps_used + ':' + event.responses[appContentKey];
+    }
   }
 
   String hash(String value) {
