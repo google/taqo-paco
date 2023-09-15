@@ -14,129 +14,173 @@
 
 // @dart=2.9
 
-import 'url_matcher.dart';
+import 'package:pal_event_server/src/loggers/pal_event_helper.dart';
+import 'package:taqo_common/model/event.dart';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
+import 'package:logging/logging.dart';
 
-typedef TestFunc = bool Function(String, String, String, String);
+import 'allowlist_default_rules.dart';
 
-class AllowlistRule {
-  final TestFunc _test;
+const APPS_USED_RULE_TYPE = 'apps_used';
+const APP_CONTENT_RULE_TYPE = 'app_content';
 
-  AllowlistRule(this._test);
+final _logger = Logger('AllowListLogger');
 
-  bool matches(String appName, String appsUsedRaw, String appContent,
-          String appUrl) =>
-      _test(appName, appsUsedRaw, appContent, appUrl);
-}
+class AllowListRule {
+  String _type;
+  RegExp _expression;
+  String _appForContentRule;
 
-class Allowlist {
-  final _rules = <AllowlistRule>[
-    AllowlistRule(
-        (String appName, String appsUsedRaw, String appContent, String appUrl) {
-      return appUrl != null
-          ? matchesHost(Uri.dataFromString(appUrl), 'flutter.io')
-          : false;
-    }),
-    AllowlistRule(
-        (String appName, String appsUsedRaw, String appContent, String appUrl) {
-      return appUrl != null
-          ? matchesHostAndPath(
-              Uri.dataFromString(appUrl), 'github.com', '^/flutter*')
-          : false;
-    }),
-    AllowlistRule(
-        (String appName, String appsUsedRaw, String appContent, String appUrl) {
-      return appUrl != null
-          ? matchesHost(Uri.dataFromString(appUrl), 'stackoverflow.com')
-          : false;
-    }),
-    AllowlistRule(
-        (String appName, String appsUsedRaw, String appContent, String appUrl) {
-      return appUrl != null
-          ? matchesHostAndPort(Uri.dataFromString(appUrl), '127.0.0.1', 8100) &&
-              matches(appContent, '^Dart VM Observatory')
-          : false;
-    }),
-    AllowlistRule(
-        (String appName, String appsUsedRaw, String appContent, String appUrl) {
-      return appUrl != null
-          ? matchesHostAndPath(
-              Uri.dataFromString(appUrl), 'gitter.im', '/flutter/flutter')
-          : false;
-    }),
-    AllowlistRule(
-        (String appName, String appsUsedRaw, String appContent, String appUrl) {
-      return appUrl != null
-          ? matchesHostAndPath(Uri.dataFromString(appUrl), 'google.com',
-              '^/search?.*&q=.*flutter.*')
-          : false;
-    }),
-    AllowlistRule(
-        (String appName, String appsUsedRaw, String appContent, String appUrl) {
-      return matches(appContent, '.*flutter.*');
-    })
-  ];
+  RegExp _appForContentRuleExpression;
 
-  List<String> _hideAllButAppName(String appName) =>
-      <String>[appName, '$appName❣hidden', 'hidden', 'hidden'];
-
-  List<String> _filterData(
-      String appName, String appsUsedRaw, String appContent, String appUrl) {
-    for (var rule in _rules) {
-      if (rule.matches(appName, appsUsedRaw, appContent, appUrl)) {
-        return <String>[appName, appsUsedRaw, appContent, appUrl];
-      }
+  AllowListRule(Map<String, String> map) {
+    _type = map['type'];
+    _expression = RegExp(map['expression'], caseSensitive: false);
+    if (_type == APP_CONTENT_RULE_TYPE) {
+      _appForContentRule = map['app'];
+      _appForContentRuleExpression = RegExp(_appForContentRule, caseSensitive: false);
+    }
+  }
+  
+  bool matches(appsUsedValue, appContentValue) {
+    switch (_type) {
+      case APPS_USED_RULE_TYPE:
+        return _expression.hasMatch(appsUsedValue);
+      case APP_CONTENT_RULE_TYPE:
+        return _appForContentRuleExpression.hasMatch(appsUsedValue) &&
+            _expression.hasMatch(appContentValue);
+      default:
+        false;
     }
 
-    return _hideAllButAppName(appName);
   }
 
-  List<Map<String, dynamic>> filterData(List eventJson) {
-    final results = <Map<String, dynamic>>[];
-    for (var event in eventJson) {
-      // TODO This probably shouldn't be here?
-      if (event['experimentGroupName'] != 'AppLog') {
-        results.add(event);
-      } else {
-        var appName = '';
-        var appsUsedRaw = '';
-        var appContent = '';
-        var appUrl = '';
-
-        final responsesAllowlisted = <Map<String, dynamic>>[];
-        final responses = event['responses'];
-        for (Map<String, dynamic> response in responses) {
-          final responseName = response['name'];
-          final responseAnswer = response['answer'];
-
-          if (responseName == 'apps_used') {
-            appName = responseAnswer;
-          } else if (responseName == 'apps_used_raw') {
-            appsUsedRaw = responseAnswer;
-          } else if (responseName == 'app_content') {
-            appContent = responseAnswer;
-          } else if (responseName == 'url') {
-            appUrl = responseAnswer;
-          } else {
-            responsesAllowlisted.add(response);
-          }
-        }
-
-        final data = _filterData(appName, appsUsedRaw, appContent, appUrl);
-
-        responsesAllowlisted
-            .add(<String, dynamic>{'name': 'apps_used', 'answer': data[0]});
-        responsesAllowlisted
-            .add(<String, dynamic>{'name': 'apps_used_raw', 'answer': data[1]});
-        responsesAllowlisted
-            .add(<String, dynamic>{'name': 'app_content', 'answer': data[2]});
-        responsesAllowlisted
-            .add(<String, dynamic>{'name': 'url', 'answer': data[3]});
-
-        event['responses'] = responsesAllowlisted;
-        results.add(event);
-      }
+    @override
+    String toString() {
+      return 'AllowListRule{_type: $_type, _expression: $_expression, _appForContentRule: $_appForContentRule}';
     }
 
-    return results;
+    static AllowListRule ofAppUsed(String expression) {
+      return AllowListRule({"type": APPS_USED_RULE_TYPE, "expression": expression});
+    }
+
+    static AllowListRule ofAppContent(String app, String expression) {
+      return AllowListRule({"type": APP_CONTENT_RULE_TYPE, "app": app, "expression": expression});
+    }
+  }
+
+
+class AllowList {
+  var _rules = <AllowListRule>[];
+
+  Iterable<AllowListRule> _appRules;
+
+  Iterable<AllowListRule> _appContentRules;
+
+  get rules => _rules;
+
+  set rules(value) {
+    _rules = value;
+    _appRules = _rules.where((element) => element._type == APPS_USED_RULE_TYPE);
+    _appContentRules =
+        _rules.where((element) => element._type == APP_CONTENT_RULE_TYPE);
+  }
+
+  List<Event> filterData(List<Event> events) {
+    for (var event in events) {
+      wipeDetailsOnEvent(event);
+      filter(event);
+    }
+    return events;
+  }
+
+  filter(Event event) {
+    _logger.info("Event: ${event.toJson()}");
+    if (event.groupName != 'APPUSAGE_DESKTOP') {
+      return event;
+    }
+    if (_appRules == null) {
+      hashAllAppLoggerFields(event);
+      return;
+    }
+    var allowed = false;
+    for (var appRule in _appRules) {
+      if (appRule.matches(event.responses[appsUsedKey] ?? '', null)) {
+        allowed = true;
+        _logger.info("AppRule that allowed is $appRule");
+        break;
+      }
+    }
+    if (!allowed) {
+      hashAllAppLoggerFields(event);
+    } else {
+      if (_appContentRules == null) {
+        hashAllAppContentFields(event);
+        return;
+      }
+      var allowAppContents = false;
+      for (var appContentRule in _appContentRules) {
+        if (appContentRule.matches(event.responses[appsUsedKey] ?? '',
+            event.responses[appContentKey] ?? '')) {
+          allowAppContents = true;
+          _logger.info("AppContentRule that allowed is $appContentRule");
+          break;
+        }
+      }
+      if (!allowAppContents) {
+        hashAllAppContentFields(event);
+      }
+    }
+    return event;
+  }
+
+  void hashAllAppLoggerFields(Event event) {
+    _logger.info("hashing all app fields");
+    var responses = event.responses;
+    var appsUsedValueHash = hash(responses[appsUsedKey] ?? "");
+    responses[appsUsedKey] = appsUsedValueHash;
+    var appContentValueHash = hash(responses[appContentKey] ?? "");
+    responses[appContentKey] = appContentValueHash;
+    responses[appsUsedRawKey] = appsUsedValueHash + ":" + appContentValueHash;
+  }
+
+  void wipeDetailsOnEvent(Event event) {
+    if (event.responses.containsKey(appContentKey)) {
+      var app_content = event.responses[appContentKey];
+      if (chatRegex.hasMatch(app_content)) {
+        event.responses[appContentKey] = 'Chat';
+      } else if (meetRegex.hasMatch(app_content)) {
+        event.responses[appContentKey] = 'Meet';
+      } else if (mailRegex.hasMatch(app_content)) {
+        event.responses[appContentKey] = 'Mail';
+      } else if (calendarRegex.hasMatch(app_content)) {
+        event.responses[appContentKey] = 'Calendar';
+      } else if (googleDocsRegex.hasMatch(app_content)) {
+        event.responses[appContentKey] = 'Google Docs';
+      }
+    
+      var apps_used = '';
+      if (event.responses.containsKey(appsUsedKey)) {
+        apps_used = event.responses[appsUsedKey];
+      }
+      event.responses[appsUsedRawKey] =
+          apps_used + ':' + event.responses[appContentKey];
+    }
+  }
+
+  String hash(String value) {
+    if (value == null) {
+      value = "";
+    }
+    return sha1.convert(utf8.encode(value)).toString();
+  }
+
+  void hashAllAppContentFields(Event event) {
+    _logger.info("hashing app  content fields");
+    var responses = event.responses;
+    var hashedAppContent = hash(responses[appContentKey] ?? "");
+    responses[appContentKey] = hashedAppContent;
+    responses[appsUsedRawKey] = (responses[appsUsedKey] ?? "") + ":" + hashedAppContent;
   }
 }

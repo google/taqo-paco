@@ -85,7 +85,7 @@ abstract class PacoEventLogger {
 
         // Create Paco Event for logging started
         events.add(await createLoggerStatusPacoEvent(
-            info.experiment, g.name, loggerName, true));
+            info.experiment, SYSTEM_GROUP_NAME, loggerName, true));
 
         // If already logging the experiment, track the new group
         if (currentlyTracking != null) {
@@ -128,18 +128,19 @@ abstract class PacoEventLogger {
 
       final groupsToRemove = <String>[];
       for (var g in info.groups) {
+
         if (keep == null) {
           // Remove all groups for this experiment
           // Create Paco Event for logging stopped
           events.add(await createLoggerStatusPacoEvent(
-              info.experiment, g.name, loggerName, false));
+              info.experiment, SYSTEM_GROUP_NAME, loggerName, false));
         } else {
           final keepGroup = keep.groups
               .firstWhere((i) => i.name == g.name, orElse: () => null);
           if (keepGroup == null) {
             // Create Paco Event for logging stopped
             events.add(await createLoggerStatusPacoEvent(
-                info.experiment, g.name, loggerName, false));
+                info.experiment, SYSTEM_GROUP_NAME, loggerName, false));
             groupsToRemove.add(g.name);
           }
         }
