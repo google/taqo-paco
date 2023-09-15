@@ -71,7 +71,7 @@ const _participantId = 'participantId';
 const _responseName = 'name';
 const _responseAnswer = 'answer';
 
-Event _createPacoEvent(Experiment experiment, String groupName) {
+Event createPacoEvent(Experiment experiment, String groupName) {
   var group;
   try {
     group = experiment.groups.firstWhere((g) => g.name == groupName);
@@ -96,7 +96,7 @@ const _loggerStopped = 'stopped';
 
 Future<Event> createLoggerStatusPacoEvent(Experiment experiment,
     String groupName, String loggerName, bool status) async {
-  final event = await _createPacoEvent(experiment, groupName);
+  final event = await createPacoEvent(experiment, groupName);
   final responses = <String, dynamic>{
     loggerName: status ? _loggerStarted : _loggerStopped,
   };
@@ -105,16 +105,18 @@ Future<Event> createLoggerStatusPacoEvent(Experiment experiment,
 }
 
 const appsUsedKey = 'apps_used';
-const _appContentKey = 'app_content';
-const _appsUsedRawKey = 'apps_used_raw';
+//@VisibleForTesting
+const appContentKey = 'app_content';
+//@VisibleForTesting
+const appsUsedRawKey = 'apps_used_raw';
 
 Future<Event> createAppUsagePacoEvent(Experiment experiment, String groupName,
     Map<String, dynamic> response) async {
-  final event = await _createPacoEvent(experiment, groupName);
+  final event = await createPacoEvent(experiment, groupName);
   final responses = <String, dynamic>{
     appsUsedKey: response[appNameField],
-    _appContentKey: response[windowNameField],
-    _appsUsedRawKey: '${response[appNameField]}:${response[windowNameField]}',
+    appContentKey: response[windowNameField],
+    appsUsedRawKey: '${response[appNameField]}:${response[windowNameField]}',
   };
   event.responses.addAll(responses);
   return event;
@@ -124,17 +126,17 @@ Future<Event> createAppUsagePacoEvent(Experiment experiment, String groupName,
 // Remove createCmdUsagePacoEvent and use createShellUsagePacoEvent below instead, after
 // we migrate to the new shell usage tracer.
 //const _uidKey = 'uid';
-const _pidKey = 'pid';
+const pidKey = 'pid';
 const cmdRawKey = 'cmd_raw';
-const _cmdRetKey = 'cmd_ret';
+const cmdRetKey = 'cmd_ret';
 
 Future<Event> createCmdUsagePacoEvent(Experiment experiment, String groupName,
     Map<String, dynamic> response) async {
-  final event = await _createPacoEvent(experiment, groupName);
+  final event = await createPacoEvent(experiment, groupName);
   final responses = <String, String>{
     //_uidKey: response[_uidKey],
-    _pidKey: '${response[_pidKey]}',
-    _cmdRetKey: '${response[_cmdRetKey]}',
+    pidKey: '${response[pidKey]}',
+    cmdRetKey: '${response[cmdRetKey]}',
     cmdRawKey: response[cmdRawKey].trim(),
   };
   event.responses.addAll(responses);
@@ -143,7 +145,7 @@ Future<Event> createCmdUsagePacoEvent(Experiment experiment, String groupName,
 
 Future<Event> createShellUsagePacoEvent(Experiment experiment, String groupName,
     Map<String, dynamic> response) async {
-  final event = await _createPacoEvent(experiment, groupName);
+  final event = await createPacoEvent(experiment, groupName);
   event.responses.addAll(response);
   return event;
 }

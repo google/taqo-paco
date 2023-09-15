@@ -22,6 +22,8 @@ import 'package:pal_event_server/src/experiment_cache.dart';
 import 'package:pal_event_server/src/loggers/cmd_line/cmdline_logger.dart';
 import 'package:pal_event_server/src/loggers/loggers.dart' as loggers;
 
+import 'package:logging/logging.dart';
+
 import 'package:pedantic/pedantic.dart';
 import 'package:taqo_common/model/action_specification.dart';
 import 'package:taqo_common/model/event.dart';
@@ -37,10 +39,13 @@ import 'daemon/daemon.dart' as daemon;
 import 'pal_server/pal_commands.dart' as pal_commands;
 import 'sqlite_database/sqlite_database.dart';
 import 'allowlist.dart';
+import 'allowlist_default_rules.dart';
+
+final _logger = Logger('Tesp_Logger');
 
 class PALTespServer with TespRequestHandlerMixin {
   TespServer _tespServer;
-  final _allowlist = Allowlist();
+  final _allowlist = createDefaultAllowList();
 
   PALTespServer() {
     _tespServer = TespServer(this);
@@ -123,7 +128,8 @@ class PALTespServer with TespRequestHandlerMixin {
   @override
   FutureOr<TespResponse> palAddEvents(List<Event> events) async {
     await createEventsPerExperimentOrDeleteIdeaLoggerEvents(events);
-    if (await pal_commands.isAllowlistedDataOnly()) {
+    if (true/*await pal_commands.isAllowlistedDataOnly()*/) {
+      _logger.info("filtering");
       await _storeEvent(_allowlist.filterData(events));
     } else {
       await _storeEvent(events);
