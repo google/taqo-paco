@@ -45,6 +45,9 @@ List<AllowListRule> createRules() {
   rules.add(AllowListRule.ofAppUsed("Thunar"));
   rules.add(AllowListRule.ofAppUsed("org.gnome.Nautilus"));
   rules.add(AllowListRule.ofAppUsed("Firefox"));
+  rules.add(AllowListRule.ofAppUsed("Safari"));
+  rules.add(AllowListRule.ofAppUsed("Opera"));
+  rules.add(AllowListRule.ofAppUsed("Brave"));
   rules.add(AllowListRule.ofAppContent("Terminal", ".*"));
   rules.add(AllowListRule.ofAppContent("Taqo", ".*"));
   rules.add(AllowListRule.ofAppContent("Chrome", ".*search.*"));
@@ -74,7 +77,6 @@ List<AllowListRule> createRules() {
   rules.add(AllowListRule.ofAppContent("jetbrains-studio", ".*"));
   rules.add(AllowListRule.ofAppContent("Thunar", ".*"));
   rules.add(AllowListRule.ofAppContent("org.gnome.Nautilus", ".*"));
-  rules.add(AllowListRule.ofAppContent("Firefox", ".*"));
   rules.add(AllowListRule.ofAppContent(".*", "\bfuchsia\b.*"));
   rules.add(AllowListRule.ofAppContent(".*", "\bdriver\b"));
   rules.add(AllowListRule.ofAppContent(".*", "\bandroid\b"));
@@ -82,6 +84,10 @@ List<AllowListRule> createRules() {
   rules.add(AllowListRule.ofAppContent(".*", "\btest\b"));
   rules.add(AllowListRule.ofAppContent(".*", "\berror\b"));
   rules.add(AllowListRule.ofAppContent(".*", "\brust\b"));
+  rules.add(AllowListRule.ofAppContent(".*", "\bjava\b"));
+  rules.add(AllowListRule.ofAppContent(".*", "\bjavascript\b"));
+  rules.add(AllowListRule.ofAppContent(".*", "\btypescript\b"));
+  rules.add(AllowListRule.ofAppContent(".*", "\blua\b"));
   rules.add(AllowListRule.ofAppContent(".*", 'c\\+\\+'));
   rules.add(AllowListRule.ofAppContent(".*", "\bc\b"));
   rules.add(AllowListRule.ofAppContent(".*", "\bfidl\b"));
@@ -126,6 +132,7 @@ List<AllowListRule> createRules() {
   rules.add(AllowListRule.ofAppContent(".*", "\bdremel\b"));
   rules.add(AllowListRule.ofAppContent(".*", "\bgithub\b"));
   rules.add(AllowListRule.ofAppContent(".*", "\bpython\b"));
+  rules.add(AllowListRule.ofAppContent(".*", "\bruby\b"));
   rules.add(AllowListRule.ofAppContent(".*", "\bdocumentation\b"));
   return rules;
 }
