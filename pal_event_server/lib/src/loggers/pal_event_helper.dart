@@ -70,8 +70,6 @@ Future<List<Event>> createLoggerPacoEvents(
 }
 
 const _participantId = 'participantId';
-const _responseName = 'name';
-const _responseAnswer = 'answer';
 
 Event createPacoEvent(Experiment experiment, String groupName) {
   var group;
@@ -86,8 +84,7 @@ Event createPacoEvent(Experiment experiment, String groupName) {
   event.responseTime = ZonedDateTime.now();
 
   event.responses = <String, dynamic>{
-    _responseName: _participantId,
-    _responseAnswer: '${experiment.participantId}',
+    _participantId : '${experiment.participantId}',
   };
 
   return event;
