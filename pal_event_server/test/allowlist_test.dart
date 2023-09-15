@@ -175,6 +175,29 @@ void main() {
       expect(resultResponses[appContentKey], equals('Google Docs'));
       expect(resultResponses[appsUsedRawKey], equals('Chrome:Google Docs'));
     });
+    test("wipeEvent scrubs matching data. Allowlist passes scrubbed value", () async {
+      var event = await createPacoEvent(createAppUsageExperiment(), 'APPUSAGE_DESKTOP');
+      event.responses.addAll({ appsUsedKey : 'Chrome', appContentKey : 'Google Docs - My design doc',
+        appsUsedRawKey : 'Chrome:Google Docs - My design doc'});
+
+      var allowlist = AllowList();
+      var rules = <AllowListRule>[];
+      allowlist.rules = rules;
+      rules.add(AllowListRule.ofAppUsed('Chrome'));
+      rules.add(AllowListRule.ofAppContent(".*", "Google Docs"));
+      allowlist.wipeDetailsOnEvent(event);
+
+      var resultResponses = event.responses;
+      expect(resultResponses[appsUsedKey], equals('Chrome'));
+      expect(resultResponses[appContentKey], equals('Google Docs'));
+      expect(resultResponses[appsUsedRawKey], equals('Chrome:Google Docs'));
+
+      allowlist.filter(event);
+
+      expect(resultResponses[appsUsedKey], equals('Chrome'));
+      expect(resultResponses[appContentKey], equals('Google Docs'));
+      expect(resultResponses[appsUsedRawKey], equals('Chrome:Google Docs'));
+    });
   });
 }
 

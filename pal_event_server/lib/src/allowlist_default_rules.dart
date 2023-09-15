@@ -16,6 +16,12 @@
 
 import 'allowlist.dart';
 
+final chatRegex = RegExp(r'\bchat\b', caseSensitive: false);
+final meetRegex = RegExp(r'\bmeet\b', caseSensitive: false);
+final mailRegex = RegExp(r'\bmail\b', caseSensitive: false);
+final calendarRegex = RegExp(r'\bcalendar\b', caseSensitive: false);
+final googleDocsRegex = RegExp(r'\bGoogle Docs\b', caseSensitive: false);
+
 AllowList createDefaultAllowList() {
   var list = AllowList();
   list.rules = createRules();
@@ -24,7 +30,7 @@ AllowList createDefaultAllowList() {
 
 List<AllowListRule> createRules() {
   var rules = <AllowListRule>[];
-  rules.add(AllowListRule.ofAppUsed('Chrome'));
+  rules.add(AllowListRule.ofAppUsed('Google-chrome'));
   rules.add(AllowListRule.ofAppUsed("Taqo"));
   rules.add(AllowListRule.ofAppUsed("Gnome terminal"));
   rules.add(AllowListRule.ofAppUsed("Terminal"));
@@ -45,22 +51,18 @@ List<AllowListRule> createRules() {
   rules.add(AllowListRule.ofAppUsed("Thunar"));
   rules.add(AllowListRule.ofAppUsed("org.gnome.Nautilus"));
   rules.add(AllowListRule.ofAppUsed("Firefox"));
+  rules.add(AllowListRule.ofAppUsed("Firefox-esr"));
   rules.add(AllowListRule.ofAppUsed("Safari"));
   rules.add(AllowListRule.ofAppUsed("Opera"));
   rules.add(AllowListRule.ofAppUsed("Brave"));
   rules.add(AllowListRule.ofAppContent("Terminal", ".*"));
   rules.add(AllowListRule.ofAppContent("Taqo", ".*"));
-  rules.add(AllowListRule.ofAppContent("Chrome", ".*search.*"));
-  rules.add(AllowListRule.ofAppContent("Chrome", "\bMail\b"));
-  rules.add(AllowListRule.ofAppContent("Chrome", "\bCalendar\b"));
-  rules.add(AllowListRule.ofAppContent("Chrome", "\bMeet\b"));
-  rules.add(AllowListRule.ofAppContent("Chrome", "\bChat\b"));
-  rules.add(AllowListRule.ofAppContent("Chrome", "\bGoogle Docs\b"));
-  rules.add(AllowListRule.ofAppContent("Firefox", "\bMail\b"));
-  rules.add(AllowListRule.ofAppContent("Firefox", "\bCalendar\b"));
-  rules.add(AllowListRule.ofAppContent("Firefox", "\bMeet\b"));
-  rules.add(AllowListRule.ofAppContent("Firefox", "\bChat\b"));
-  rules.add(AllowListRule.ofAppContent("Firefox", "\bGoogle Docs\b"));
+  rules.add(AllowListRule.ofAppContent(".*", ".*search.*"));
+  rules.add(AllowListRule.ofAppContent(".*", "Mail"));
+  rules.add(AllowListRule.ofAppContent(".*", "Calendar"));
+  rules.add(AllowListRule.ofAppContent(".*", "Meet"));
+  rules.add(AllowListRule.ofAppContent(".*", "Chat"));
+  rules.add(AllowListRule.ofAppContent(".*", "Google Docs"));
   rules.add(AllowListRule.ofAppContent("Alacritty", ".*"));
   rules.add(AllowListRule.ofAppContent("Gnome-terminal", ".*"));
   rules.add(AllowListRule.ofAppContent("Zutty", ".*"));
@@ -77,7 +79,7 @@ List<AllowListRule> createRules() {
   rules.add(AllowListRule.ofAppContent("jetbrains-studio", ".*"));
   rules.add(AllowListRule.ofAppContent("Thunar", ".*"));
   rules.add(AllowListRule.ofAppContent("org.gnome.Nautilus", ".*"));
-  rules.add(AllowListRule.ofAppContent(".*", "\bfuchsia\b.*"));
+  rules.add(AllowListRule.ofAppContent(".*", "fuchsia.*"));
   rules.add(AllowListRule.ofAppContent(".*", "\bdriver\b"));
   rules.add(AllowListRule.ofAppContent(".*", "\bandroid\b"));
   rules.add(AllowListRule.ofAppContent(".*", "\bandroid\b"));

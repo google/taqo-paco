@@ -20,6 +20,8 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:logging/logging.dart';
 
+import 'allowlist_default_rules.dart';
+
 const APPS_USED_RULE_TYPE = 'apps_used';
 const APP_CONTENT_RULE_TYPE = 'app_content';
 
@@ -30,24 +32,44 @@ class AllowListRule {
   RegExp _expression;
   String _appForContentRule;
 
+  RegExp _appForContentRuleExpression;
+
   AllowListRule(Map<String, String> map) {
     _type = map['type'];
     _expression = RegExp(map['expression'], caseSensitive: false);
     if (_type == APP_CONTENT_RULE_TYPE) {
       _appForContentRule = map['app'];
+      _appForContentRuleExpression = RegExp(_appForContentRule, caseSensitive: false);
     }
   }
   
-  bool matches(value) => _expression.hasMatch(value);
+  bool matches(appsUsedValue, appContentValue) {
+    switch (_type) {
+      case APPS_USED_RULE_TYPE:
+        return _expression.hasMatch(appsUsedValue);
+      case APP_CONTENT_RULE_TYPE:
+        return _appForContentRuleExpression.hasMatch(appsUsedValue) &&
+            _expression.hasMatch(appContentValue);
+      default:
+        false;
+    }
 
-  static AllowListRule ofAppUsed(String expression) {
-    return AllowListRule({"type": APPS_USED_RULE_TYPE, "expression": expression});
   }
 
-  static AllowListRule ofAppContent(String app, String expression) {
-    return AllowListRule({"type": APP_CONTENT_RULE_TYPE, "app": app, "expression": expression});
+    @override
+    String toString() {
+      return 'AllowListRule{_type: $_type, _expression: $_expression, _appForContentRule: $_appForContentRule}';
+    }
+
+    static AllowListRule ofAppUsed(String expression) {
+      return AllowListRule({"type": APPS_USED_RULE_TYPE, "expression": expression});
+    }
+
+    static AllowListRule ofAppContent(String app, String expression) {
+      return AllowListRule({"type": APP_CONTENT_RULE_TYPE, "app": app, "expression": expression});
+    }
   }
-}
+
 
 class AllowList {
   var _rules = <AllowListRule>[];
@@ -86,8 +108,9 @@ class AllowList {
     for (var appRule in _appRules) {
       if (event.responses.containsKey(appsUsedKey) &&
           event.responses[appsUsedKey] != null &&
-          appRule.matches(event.responses[appsUsedKey])) {
+          appRule.matches(event.responses[appsUsedKey], null)) {
         allowed = true;
+        _logger.info("AppRule that allowed is $appRule");
         break;
       }
     }
@@ -102,8 +125,10 @@ class AllowList {
       for (var appContentRule in _appContentRules) {
         if (event.responses.containsKey(appContentKey) &&
             event.responses[appContentKey] != null &&
-            appContentRule.matches(event.responses[appContentKey])) {
+            appContentRule.matches(event.responses[appsUsedKey],
+                event.responses[appContentKey])) {
           allowAppContents = true;
+          _logger.info("AppContentRule that allowed is $appContentRule");
           break;
         }
       }
@@ -131,12 +156,6 @@ class AllowList {
     responses[appContentKey] = appContentValueHash;
     responses[appsUsedRawKey] = appsUsedValueHash + ":" + appContentValueHash;
   }
-
-  final chatRegex = RegExp(r'\bchat\b', caseSensitive: false);
-  final meetRegex = RegExp(r'\bmeet\b', caseSensitive: false);
-  final mailRegex = RegExp(r'\bmail\b', caseSensitive: false);
-  final calendarRegex = RegExp(r'\bcalendar\b', caseSensitive: false);
-  final googleDocsRegex = RegExp(r'\bGoogle Docs\b', caseSensitive: false);
 
   void wipeDetailsOnEvent(Event event) {
     if (event.responses.containsKey(appContentKey)) {
