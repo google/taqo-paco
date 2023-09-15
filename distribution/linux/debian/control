@@ -8,7 +8,7 @@ Homepage: https://pacoapp.com/
 
 Package: taqosurvey
 Architecture: amd64
-Depends: libsqlite3-dev, libglib2.0-bin, ${shlibs:Depends}, ${misc:Depends}
+Depends: libsqlite3-dev, libglib2.0-bin, xprintidle, ${shlibs:Depends}, ${misc:Depends}
 Description: Taqo for Linux
  Taqo provides onboarding, notifications, surveys, and sensor data
  collection for UX/DX research.
