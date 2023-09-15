@@ -32,7 +32,7 @@ class AllowListRule {
 
   AllowListRule(Map<String, String> map) {
     _type = map['type'];
-    _expression = RegExp(map['expression']);
+    _expression = RegExp(map['expression'], caseSensitive: false);
     if (_type == APP_CONTENT_RULE_TYPE) {
       _appForContentRule = map['app'];
     }
