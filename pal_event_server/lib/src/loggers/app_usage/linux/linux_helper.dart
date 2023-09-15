@@ -20,9 +20,11 @@ import 'dart:isolate';
 
 import '../../pal_event_helper.dart';
 import '../app_logger.dart';
+import '../idle_time.dart';
 import 'xprop_util.dart' as xprop;
 
 String _prevAppAndWindowName;
+bool _prevIdleState = false;
 
 // Isolate entry point must be a top-level function (or static?)
 // Query xprop for the active window
@@ -34,9 +36,13 @@ void linuxAppLoggerIsolate(SendPort sendPort) {
         // Parse the window ID
         final windowId = xprop.parseWindowId(result.stdout);
         if (windowId != xprop.invalidWindowId) {
-          // Gets the active window name
-          Process.run(xprop.command, xprop.getAppArgs(windowId)).then((result) {
-            final currWindow = result.stdout;
+          // Gets the active window name and idle state
+          Future.wait([
+            Process.run(xprop.command, xprop.getAppArgs(windowId)),
+            isIdle()
+          ]).then((result) {
+            final currWindow = (result[0] as ProcessResult).stdout;
+            final idleState = result[1];
             final resultMap = xprop.buildResultMap(currWindow);
             String currApp = resultMap[appNameField];
             String currWindowName = resultMap[windowNameField];
@@ -46,23 +52,29 @@ void linuxAppLoggerIsolate(SendPort sendPort) {
             if (currWindowName == null) {
               currWindowName = "UNKNOWN";
             }
-            final currAppAndWindowName =
-                currApp + currWindowName;
+            final currAppAndWindowName = currApp + currWindowName;
 
-            if (currAppAndWindowName != _prevAppAndWindowName) {
+            if (currAppAndWindowName != _prevAppAndWindowName ||
+                idleState != _prevIdleState) {
               // Send APP_CLOSED
-              if (_prevAppAndWindowName != null &&
+              if (currAppAndWindowName != _prevAppAndWindowName &&
+                  _prevAppAndWindowName != null &&
                   _prevAppAndWindowName.isNotEmpty) {
                 sendPort.send(_prevAppAndWindowName);
               }
 
               _prevAppAndWindowName = currAppAndWindowName;
+              _prevIdleState = idleState;
 
               // Send PacoEvent && APP_USAGE
               if (resultMap != null) {
+                resultMap[isIdleField] = idleState;
                 sendPort.send(resultMap);
               }
             }
+          }).catchError((e, s) {
+            print('Exception details:\n $e');
+            print('Stack trace:\n $s');
           });
         }
       });

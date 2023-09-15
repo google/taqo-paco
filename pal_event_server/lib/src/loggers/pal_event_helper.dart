@@ -33,6 +33,7 @@ import 'loggers.dart';
 const appNameField = 'WM_CLASS';
 const windowNameField = '_NET_WM_NAME';
 const urlNameField = '_NET_URL_NAME';
+const isIdleField = 'isIdle';
 
 final _logger = Logger('PalEventHelper');
 
@@ -105,10 +106,10 @@ Future<Event> createLoggerStatusPacoEvent(Experiment experiment,
 }
 
 const appsUsedKey = 'apps_used';
-//@VisibleForTesting
 const appContentKey = 'app_content';
-//@VisibleForTesting
 const appsUsedRawKey = 'apps_used_raw';
+const _isIdleKey ='isIdle';
+
 
 Future<Event> createAppUsagePacoEvent(Experiment experiment, String groupName,
     Map<String, dynamic> response) async {
@@ -117,6 +118,7 @@ Future<Event> createAppUsagePacoEvent(Experiment experiment, String groupName,
     appsUsedKey: response[appNameField],
     appContentKey: response[windowNameField],
     appsUsedRawKey: '${response[appNameField]}:${response[windowNameField]}',
+    _isIdleKey: response[isIdleField],
   };
   event.responses.addAll(responses);
   return event;
