@@ -38,6 +38,8 @@ enum GroupTypeEnum {
   IDE_IDEA_USAGE,
 }
 
+const SYSTEM_GROUP_NAME = "SYSTEM";
+
 @JsonSerializable()
 class ExperimentGroup {
   static const MAX_DURATION_DAYS_FOR_LARGE_DATA_LOGGERS = 14;
