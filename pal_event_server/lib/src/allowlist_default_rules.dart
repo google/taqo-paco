@@ -31,6 +31,7 @@ AllowList createDefaultAllowList() {
 List<AllowListRule> createRules() {
   var rules = <AllowListRule>[];
   rules.add(AllowListRule.ofAppUsed('Google-chrome'));
+  rules.add(AllowListRule.ofAppUsed('Google Chrome'));
   rules.add(AllowListRule.ofAppUsed("Taqo"));
   rules.add(AllowListRule.ofAppUsed("Gnome terminal"));
   rules.add(AllowListRule.ofAppUsed("Terminal"));
