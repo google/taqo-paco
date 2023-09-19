@@ -30,7 +30,8 @@ class TaqoCli {
     } else {
       await joinPublicExperiment(response.experimentId, response.participantId);
       print('Joined experiment with ID ${response.experimentId}. '
-          'You may need this experiment ID when pausing/resuming/quiting the experiment.');
+          'If you will join multiple experiments, you may need this experiment '
+          'ID when pausing/resuming/quitting the experiment.');
     }
   }
 
