@@ -88,15 +88,24 @@ class AllowList {
   }
 
   List<Event> filterData(List<Event> events) {
-    for (var event in events) {
-      wipeDetailsOnEvent(event);
-      filter(event);
+    try {
+      for (var event in events) {
+            wipeDetailsOnEvent(event);
+            filter(event);
+          }
+    } catch (e) {
+      _logger.warning("Could not filter events", e);
     }
     return events;
   }
 
   filter(Event event) {
-    _logger.info("Event: ${event.toJson()}");
+    try {
+      _logger.info("Event: ${event.toJson()}");
+    } catch (e) {
+      _logger.warning("Cannot jsonify event", e);
+    }
+
     if (event.groupName != 'APPUSAGE_DESKTOP') {
       return event;
     }
