@@ -99,12 +99,14 @@ void main() async {
   // This also solves the issue with not having Pending (launch) Intents on Linux
   final activeNotification = await taqo_alarm.checkActiveNotification();
   final authState = await GoogleAuth().isAuthenticated;
-
+  final experimentService = await ExperimentService.getInstance();
+  final inExperimentsByInviteCode = experimentService.getExperimentsJoinedByInviteCode().isNotEmpty;
   // Add licenses manually for Taqo and Alerter. This help to add the licenses
   // those are not automatically fetched and added by showLicensePage method.
   await loadManualLicenses();
 
-  runApp(MyApp(activeNotification: activeNotification, authState: authState));
+  runApp(MyApp(activeNotification: activeNotification, authState: authState,
+      inExperimentsByInviteCode: inExperimentsByInviteCode));
 }
 
 /// Loads the manually listed licenses and adds those to the license registry.
@@ -144,8 +146,9 @@ class MyApp extends StatefulWidget {
 
   bool activeNotification;
   bool authState;
+  bool inExperimentsByInviteCode;
 
-  MyApp({this.activeNotification, this.authState});
+  MyApp({this.activeNotification, this.authState, this.inExperimentsByInviteCode});
 
   @override
   State<StatefulWidget> createState() => _MyAppState();
@@ -158,7 +161,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
-    if (widget.authState) {
+    if (widget.authState || widget.inExperimentsByInviteCode) {
       _initialRoute = RunningExperimentsPage.routeName;
     }
   }
