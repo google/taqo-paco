@@ -175,7 +175,7 @@ class AllowList {
         apps_used = event.responses[appsUsedKey] ?? "";
       }
       event.responses[appsUsedRawKey] =
-          apps_used + ':' + (event.responses[appContentKey] ?? "");
+          apps_used + ':' + event.responses[appContentKey];
     }
   }
 
