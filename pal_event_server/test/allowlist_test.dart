@@ -198,6 +198,25 @@ void main() {
       expect(resultResponses[appContentKey], equals('Google Docs'));
       expect(resultResponses[appsUsedRawKey], equals('Chrome:Google Docs'));
     });
+    test("wipeEvent handles null keys", () async {
+      var event = await createPacoEvent(createAppUsageExperiment(), 'APPUSAGE_DESKTOP');
+      event.responses.addAll({ appsUsedKey : 'Chrome', appContentKey: null,/* missing appContent on purpose */
+        appsUsedRawKey : 'Chrome:'});
+
+      var allowlist = AllowList();
+      allowlist.rules = <AllowListRule>[];
+      allowlist.wipeDetailsOnEvent(event);
+
+      var event2 = await createPacoEvent(createAppUsageExperiment(), 'APPUSAGE_DESKTOP');
+      event2.responses.addAll({ appsUsedKey : null, appContentKey: null,
+        appsUsedRawKey : null
+        });
+      allowlist.wipeDetailsOnEvent(event2);
+
+      var event3 = await createPacoEvent(createAppUsageExperiment(), 'APPUSAGE_DESKTOP');
+      event3.responses.addAll({});
+      allowlist.wipeDetailsOnEvent(event3);
+    });
   });
 }
 

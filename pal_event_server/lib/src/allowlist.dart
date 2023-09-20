@@ -155,7 +155,8 @@ class AllowList {
   }
 
   void wipeDetailsOnEvent(Event event) {
-    if (event.responses.containsKey(appContentKey)) {
+    if (event.responses.containsKey(appContentKey) &&
+    event.responses[appContentKey] != null) {
       var app_content = event.responses[appContentKey];
       if (chatRegex.hasMatch(app_content)) {
         event.responses[appContentKey] = 'Chat';
@@ -171,10 +172,10 @@ class AllowList {
     
       var apps_used = '';
       if (event.responses.containsKey(appsUsedKey)) {
-        apps_used = event.responses[appsUsedKey];
+        apps_used = event.responses[appsUsedKey] ?? "";
       }
       event.responses[appsUsedRawKey] =
-          apps_used + ':' + event.responses[appContentKey];
+          apps_used + ':' + (event.responses[appContentKey] ?? "");
     }
   }
 
