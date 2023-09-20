@@ -55,10 +55,10 @@ void openSurvey(id) {
 
 @visibleForTesting
 void listen(String event) {
-  _logger.info('Event:${event}');
+  //_logger.info('Event:${event}');
   final action = actionPattern.matchAsPrefix(event);
 
-  _logger.info('action:${action}');
+  //_logger.info('action:${action}');
 
   if (action != null && notifications.keys.isNotEmpty) {
     _logger.info('action: id: ${action[1]} action: ${action[2]}');
@@ -66,11 +66,11 @@ void listen(String event) {
       final notifId = int.tryParse(action[1]);
       if (notifId != null) {
         // Not super efficient, but fine for now
-        final id =
-            notifications.keys.firstWhere((k) => notifications[k] == notifId, orElse: () => null);
-	if (id != null) {
-	  openSurvey(id);
-	}
+        final id = notifications.keys
+            .firstWhere((k) => notifications[k] == notifId, orElse: () => null);
+        if (id != null) {
+          openSurvey(id);
+        }
       }
     }
   }
