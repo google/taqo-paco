@@ -295,6 +295,12 @@ class ExperimentService implements ExperimentServiceLite {
     }
     return experiment;
   }
+
+  List<Experiment> getExperimentsJoinedByInviteCode() {
+    Map<int,Experiment> experimentJoinedByInviteCode = Map.from(_joined);
+    experimentJoinedByInviteCode.removeWhere((key, value) => value.participantId == null);
+    return experimentJoinedByInviteCode.values.toList();
+  }
 }
 
 enum PacoEventType {
