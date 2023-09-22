@@ -131,7 +131,7 @@ class _SurveyPageState extends State<SurveyPage> {
     return children;
   }
 
-  ListView buildSurveyInputs(BuildContext context) {
+  Scrollbar buildSurveyInputs(BuildContext context) {
     var preambleChildren = <Widget>[
       buildPreambleTextWidget(),
       Divider(
@@ -141,10 +141,15 @@ class _SurveyPageState extends State<SurveyPage> {
     ];
     var inputChildren = _evaluateInputConditions(_experimentGroup.inputs);
     var allChildren = preambleChildren + inputChildren + fabBufferSpace();
-    return ListView(
+    var listView = ListView(
       padding: EdgeInsets.all(4.0),
       children: allChildren,
     );
+    return Scrollbar(
+      child: listView,
+      isAlwaysShown: true,
+    );
+    //return listView;
   }
 
   Widget buildWidgetForInput(Input2 input) {
