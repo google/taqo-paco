@@ -36,7 +36,7 @@ Map<String, dynamic> buildResultMap(dynamic result) {
 }
 
 const scriptArgs = [
-  "-e", r'global frontApp, frontAppName, windowTitle', //
+  "-e", r'global frontAppId, frontAppName, windowTitle', //
   "-e", r'set windowTitle to ""',
   "-e", r'tell application "System Events"',
   "-e", r'set frontAppId to (id of first application process whose frontmost is true)',
