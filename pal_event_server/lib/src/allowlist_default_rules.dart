@@ -32,7 +32,7 @@ List<AllowListRule> createRules() {
   var rules = <AllowListRule>[];
   rules.add(AllowListRule.ofAppUsed(r'Google-chrome'));
   rules.add(AllowListRule.ofAppUsed(r'Google Chrome'));
-  rules.add(AllowListRule.ofAppUsed(r'Chrome'));
+  rules.add(AllowListRule.ofAppUsed(r'Google Chat'));
   rules.add(AllowListRule.ofAppUsed(r'Taqo'));
   rules.add(AllowListRule.ofAppUsed(r'Gnome terminal'));
   rules.add(AllowListRule.ofAppUsed(r'Terminal'));
