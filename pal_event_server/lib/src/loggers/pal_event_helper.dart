@@ -70,6 +70,7 @@ Future<List<Event>> createLoggerPacoEvents(
 }
 
 const _participantId = 'participantId';
+const _timestamp = 'timestamp';
 
 Event createPacoEvent(Experiment experiment, String groupName) {
   var group;
@@ -84,7 +85,8 @@ Event createPacoEvent(Experiment experiment, String groupName) {
   event.responseTime = ZonedDateTime.now();
 
   event.responses = <String, dynamic>{
-    _participantId : '${experiment.participantId}',
+    _participantId: '${experiment.participantId}',
+    _timestamp: event.responseTime.toIso8601String(withColon: true)
   };
 
   return event;
@@ -106,7 +108,7 @@ Future<Event> createLoggerStatusPacoEvent(Experiment experiment,
 const appsUsedKey = 'apps_used';
 const appContentKey = 'app_content';
 const appsUsedRawKey = 'apps_used_raw';
-const _isIdleKey ='isIdle';
+const _isIdleKey = 'isIdle';
 
 final _allowList = createDefaultAllowList();
 

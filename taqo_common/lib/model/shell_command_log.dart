@@ -78,7 +78,7 @@ class ShellCommandEnd implements ShellCommandLog {
 }
 
 ZonedDateTime _zonedDateTimeFromString(String string) =>
-    ZonedDateTime.fromString(string);
+    ZonedDateTime.fromIso8601String(string);
 
 String _zonedDateTimeToString(ZonedDateTime zonedDateTime) =>
-    zonedDateTime.toString();
+    zonedDateTime.toIso8601String(withColon: true);
