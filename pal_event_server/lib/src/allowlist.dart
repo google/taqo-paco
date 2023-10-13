@@ -166,8 +166,14 @@ class AllowList {
         event.responses[appContentKey] = 'Mail';
       } else if (calendarRegex.hasMatch(app_content)) {
         event.responses[appContentKey] = 'Calendar';
+      } else if (slidesRegex.hasMatch(app_content)) {
+        event.responses[appContentKey] = 'Google Slides';
+      } else if (sheetsRegex.hasMatch(app_content)) {
+        event.responses[appContentKey] = 'Google Sheets';
       } else if (googleDocsRegex.hasMatch(app_content)) {
         event.responses[appContentKey] = 'Google Docs';
+      } else if (momaRegex.hasMatch(app_content)) {
+        event.responses[appContentKey] = 'Moma Search';
       }
     
       var apps_used = '';

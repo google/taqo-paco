@@ -20,7 +20,10 @@ final chatRegex = RegExp(r'\bchat\b', caseSensitive: false);
 final meetRegex = RegExp(r'\bmeet\b', caseSensitive: false);
 final mailRegex = RegExp(r'\bmail\b', caseSensitive: false);
 final calendarRegex = RegExp(r'\bcalendar\b', caseSensitive: false);
+final slidesRegex = RegExp(r'\bslides\b', caseSensitive: false);
+final sheetsRegex = RegExp(r'\bsheets\b', caseSensitive: false);
 final googleDocsRegex = RegExp(r'\bGoogle Docs\b', caseSensitive: false);
+final momaRegex = RegExp(r'\bMoma Search\b', caseSensitive: false);
 
 AllowList createDefaultAllowList() {
   var list = AllowList();
@@ -64,12 +67,14 @@ List<AllowListRule> createRules() {
   rules.add(AllowListRule.ofAppUsed(r'Brave'));
   rules.add(AllowListRule.ofAppContent(r'Terminal', r'.*'));
   rules.add(AllowListRule.ofAppContent(r'Taqo', r'.*'));
-  rules.add(AllowListRule.ofAppContent(r'.*', r'.*search.*'));
   rules.add(AllowListRule.ofAppContent(r'.*', 'Mail'));
-  rules.add(AllowListRule.ofAppContent(r'.*', 'Calendar'));
+  rules.add(AllowListRule.ofAppContent(r'.*', 'Google Calendar'));
   rules.add(AllowListRule.ofAppContent(r'.*', 'Meet'));
   rules.add(AllowListRule.ofAppContent(r'.*', 'Chat'));
   rules.add(AllowListRule.ofAppContent(r'.*', 'Google Docs'));
+  rules.add(AllowListRule.ofAppContent(r'.*', 'Google Slides'));
+  rules.add(AllowListRule.ofAppContent(r'.*', 'Google Sheets'));
+  rules.add(AllowListRule.ofAppContent(r'.*', 'Moma Search'));
   rules.add(AllowListRule.ofAppContent(r'Alacritty', r'.*'));
   rules.add(AllowListRule.ofAppContent(r'Gnome-terminal', r'.*'));
   rules.add(AllowListRule.ofAppContent(r'Zutty', r'.*'));
@@ -95,7 +100,6 @@ List<AllowListRule> createRules() {
   rules.add(AllowListRule.ofAppContent(r'.*', r'\blinux\b'));
   rules.add(AllowListRule.ofAppContent(r'.*', r'\bdriver\b'));
   rules.add(AllowListRule.ofAppContent(r'.*', r'\bdeveloper\b'));
-  rules.add(AllowListRule.ofAppContent(r'.*', r'\bandroid\b'));
   rules.add(AllowListRule.ofAppContent(r'.*', r'\bandroid\b'));
   rules.add(AllowListRule.ofAppContent(r'.*', r'\btest\b'));
   rules.add(AllowListRule.ofAppContent(r'.*', r'\berror\b'));
@@ -133,11 +137,16 @@ List<AllowListRule> createRules() {
   rules.add(AllowListRule.ofAppContent(r'.*', r'\bCider\b'));
   rules.add(AllowListRule.ofAppContent(r'.*', r'\bGerrit Code Review\b'));
   rules.add(AllowListRule.ofAppContent(r'.*', r'\bCritique\b'));
+  rules.add(AllowListRule.ofAppContent(r'.*', r'\bMonorail\b'));
+  rules.add(AllowListRule.ofAppContent(r'.*', r'\bgPaste\b'));
+  rules.add(AllowListRule.ofAppContent(r'.*', r'\bkeep-sorted\b'));
+  rules.add(AllowListRule.ofAppContent(r'.*', r'\bLUCI\b'));
+  rules.add(AllowListRule.ofAppContent(r'.*', r'\bYAQS\b'));
+  rules.add(AllowListRule.ofAppContent(r'.*', r'\bTaskFlow\b'));
   rules.add(AllowListRule.ofAppContent(r'.*', r'\bBuganizer\b'));
   rules.add(AllowListRule.ofAppContent(r'.*', r'\bYAQS eng\b'));
   rules.add(AllowListRule.ofAppContent(r'.*', r'\bColaboratory\b'));
   rules.add(AllowListRule.ofAppContent(r'.*', r'\bTaskFlow\b'));
-  rules.add(AllowListRule.ofAppContent(r'.*', r'\bEldar Assessment\b'));
   rules.add(AllowListRule.ofAppContent(r'.*', r'\bOKRs\b'));
   rules.add(AllowListRule.ofAppContent(r'.*', r'\b- Stack Overflow\b'));
   rules.add(AllowListRule.ofAppContent(r'.*', r'\bStack Exchange\b'));
@@ -156,5 +165,9 @@ List<AllowListRule> createRules() {
   rules.add(AllowListRule.ofAppContent(r'.*', r'\bpython\b'));
   rules.add(AllowListRule.ofAppContent(r'.*', r'\bruby\b'));
   rules.add(AllowListRule.ofAppContent(r'.*', r'\bdocumentation\b'));
+  rules.add(AllowListRule.ofAppContent(r'.*', r'\bruff\b'));
+  rules.add(AllowListRule.ofAppContent(r'.*', r'\bdjango\b'));
+  rules.add(AllowListRule.ofAppContent(r'.*', r'\bdocs.rs\b'));
+  rules.add(AllowListRule.ofAppContent(r'.*', r'\bGN Reference\b'));
   return rules;
 }
