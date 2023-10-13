@@ -67,8 +67,8 @@ List<AllowListRule> createRules() {
   rules.add(AllowListRule.ofAppUsed(r'Brave'));
   rules.add(AllowListRule.ofAppContent(r'Terminal', r'.*'));
   rules.add(AllowListRule.ofAppContent(r'Taqo', r'.*'));
-  rules.add(AllowListRule.ofAppContent(r'.*', 'Google.com - Mail'));
-  rules.add(AllowListRule.ofAppContent(r'.*', 'Google.com - Calendar'));
+  rules.add(AllowListRule.ofAppContent(r'.*', 'Mail'));
+  rules.add(AllowListRule.ofAppContent(r'.*', 'Calendar'));
   rules.add(AllowListRule.ofAppContent(r'.*', 'Meet'));
   rules.add(AllowListRule.ofAppContent(r'.*', 'Chat'));
   rules.add(AllowListRule.ofAppContent(r'.*', 'Google Docs'));
