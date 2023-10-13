@@ -18,7 +18,7 @@ import 'allowlist.dart';
 
 final chatRegex = RegExp(r'\bChat\b', caseSensitive: false);
 final meetRegex = RegExp(r'\bMeet\b', caseSensitive: false);
-final mailRegex = RegExp(r'\bGoogle.com - Mail\b', caseSensitive: false);
+final mailRegex = RegExp(r'\bGoogle.com Mail\b', caseSensitive: false);
 final calendarRegex = RegExp(r'\bGoogle.com - Calendar\b', caseSensitive: false);
 final slidesRegex = RegExp(r'\bGoogle Slides\b', caseSensitive: false);
 final sheetsRegex = RegExp(r'\bGoogle Sheets\b', caseSensitive: false);
