@@ -16,12 +16,12 @@
 
 import 'allowlist.dart';
 
-final chatRegex = RegExp(r'\bchat\b', caseSensitive: false);
-final meetRegex = RegExp(r'\bmeet\b', caseSensitive: false);
-final mailRegex = RegExp(r'\bmail\b', caseSensitive: false);
-final calendarRegex = RegExp(r'\bcalendar\b', caseSensitive: false);
-final slidesRegex = RegExp(r'\bslides\b', caseSensitive: false);
-final sheetsRegex = RegExp(r'\bsheets\b', caseSensitive: false);
+final chatRegex = RegExp(r'\bChat\b', caseSensitive: false);
+final meetRegex = RegExp(r'\bMeet\b', caseSensitive: false);
+final mailRegex = RegExp(r'\bGoogle.com - Mail\b', caseSensitive: false);
+final calendarRegex = RegExp(r'\bGoogle.com - Calendar\b', caseSensitive: false);
+final slidesRegex = RegExp(r'\bGoogle Slides\b', caseSensitive: false);
+final sheetsRegex = RegExp(r'\bGoogle Sheets\b', caseSensitive: false);
 final googleDocsRegex = RegExp(r'\bGoogle Docs\b', caseSensitive: false);
 final momaRegex = RegExp(r'\bMoma Search\b', caseSensitive: false);
 
@@ -67,8 +67,8 @@ List<AllowListRule> createRules() {
   rules.add(AllowListRule.ofAppUsed(r'Brave'));
   rules.add(AllowListRule.ofAppContent(r'Terminal', r'.*'));
   rules.add(AllowListRule.ofAppContent(r'Taqo', r'.*'));
-  rules.add(AllowListRule.ofAppContent(r'.*', 'Mail'));
-  rules.add(AllowListRule.ofAppContent(r'.*', 'Google Calendar'));
+  rules.add(AllowListRule.ofAppContent(r'.*', 'Google.com - Mail'));
+  rules.add(AllowListRule.ofAppContent(r'.*', 'Google.com - Calendar'));
   rules.add(AllowListRule.ofAppContent(r'.*', 'Meet'));
   rules.add(AllowListRule.ofAppContent(r'.*', 'Chat'));
   rules.add(AllowListRule.ofAppContent(r'.*', 'Google Docs'));
