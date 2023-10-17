@@ -162,6 +162,8 @@ class AllowList {
         event.responses[appContentKey] = 'Chat';
       } else if (meetRegex.hasMatch(app_content)) {
         event.responses[appContentKey] = 'Meet';
+      } else if (gmailRegex.hasMatch(app_content)) {
+        event.responses[appContentKey] = 'Gmail';
       } else if (mailRegex.hasMatch(app_content)) {
         event.responses[appContentKey] = 'Mail';
       } else if (calendarRegex.hasMatch(app_content)) {
