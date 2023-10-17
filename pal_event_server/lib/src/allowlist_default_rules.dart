@@ -18,6 +18,7 @@ import 'allowlist.dart';
 
 final chatRegex = RegExp(r'\bChat\b', caseSensitive: false);
 final meetRegex = RegExp(r'\bMeet\b', caseSensitive: false);
+final gmailRegex = RegExp(r'\bGmail\b', caseSensitive: false);
 final mailRegex = RegExp(r'\bGoogle.com Mail\b', caseSensitive: false);
 final calendarRegex = RegExp(r'\bGoogle.com - Calendar\b', caseSensitive: false);
 final slidesRegex = RegExp(r'\bGoogle Slides\b', caseSensitive: false);
@@ -68,6 +69,7 @@ List<AllowListRule> createRules() {
   rules.add(AllowListRule.ofAppContent(r'Terminal', r'.*'));
   rules.add(AllowListRule.ofAppContent(r'Taqo', r'.*'));
   rules.add(AllowListRule.ofAppContent(r'.*', 'Mail'));
+  rules.add(AllowListRule.ofAppContent(r'.*', 'Gmail'));
   rules.add(AllowListRule.ofAppContent(r'.*', 'Calendar'));
   rules.add(AllowListRule.ofAppContent(r'.*', 'Meet'));
   rules.add(AllowListRule.ofAppContent(r'.*', 'Chat'));
