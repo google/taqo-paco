@@ -68,7 +68,6 @@ Future<bool> processResponse(PacoResponse response, List<Event> events,
       _logger.warning(
           'Event upload result length differs from number of $eventType uploaded');
     }
-    _logger.info('Syncing $eventType complete.');
     return true;
   } else if (response.isFailure) {
     _logger.warning('Could not complete upload of $eventType'
