@@ -45,6 +45,7 @@ List<AllowListRule> createRules() {
   rules.add(AllowListRule.ofAppUsed(r'Zutty'));
   rules.add(AllowListRule.ofAppUsed(r'XTerm'));
   rules.add(AllowListRule.ofAppUsed(r'UXTerm'));
+  rules.add(AllowListRule.ofAppUsed(r'WezTerm'));
   rules.add(AllowListRule.ofAppUsed(r'URxvt'));
   rules.add(AllowListRule.ofAppUsed(r'iTerm2'));
   rules.add(AllowListRule.ofAppUsed(r'Emacs'));
