@@ -81,6 +81,7 @@ List<AllowListRule> createRules() {
   rules.add(AllowListRule.ofAppContent(r'Gnome-terminal', r'.*'));
   rules.add(AllowListRule.ofAppContent(r'Zutty', r'.*'));
   rules.add(AllowListRule.ofAppContent(r'XTerm', r'.*'));
+  rules.add(AllowListRule.ofAppContent(r'WezTerm', r'.*'));
   rules.add(AllowListRule.ofAppContent(r'UXTerm', r'.*'));
   rules.add(AllowListRule.ofAppContent(r'URxvt', r'.*'));
   rules.add(AllowListRule.ofAppContent(r'iTerm2', r'.*'));
