@@ -45,6 +45,7 @@ List<AllowListRule> createRules() {
   rules.add(AllowListRule.ofAppUsed(r'Zutty'));
   rules.add(AllowListRule.ofAppUsed(r'XTerm'));
   rules.add(AllowListRule.ofAppUsed(r'UXTerm'));
+  rules.add(AllowListRule.ofAppUsed(r'WezTerm'));
   rules.add(AllowListRule.ofAppUsed(r'URxvt'));
   rules.add(AllowListRule.ofAppUsed(r'iTerm2'));
   rules.add(AllowListRule.ofAppUsed(r'Emacs'));
@@ -81,6 +82,7 @@ List<AllowListRule> createRules() {
   rules.add(AllowListRule.ofAppContent(r'Gnome-terminal', r'.*'));
   rules.add(AllowListRule.ofAppContent(r'Zutty', r'.*'));
   rules.add(AllowListRule.ofAppContent(r'XTerm', r'.*'));
+  rules.add(AllowListRule.ofAppContent(r'WezTerm', r'.*'));
   rules.add(AllowListRule.ofAppContent(r'UXTerm', r'.*'));
   rules.add(AllowListRule.ofAppContent(r'URxvt', r'.*'));
   rules.add(AllowListRule.ofAppContent(r'iTerm2', r'.*'));
