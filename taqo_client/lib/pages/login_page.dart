@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
+import 'package:taqo_client/pages/local_experiment_open_page.dart';
 
 import '../providers/auth_provider.dart';
 import '../widgets/taqo_page.dart';
@@ -103,6 +104,17 @@ To get started, please either login with a Google account or enter an invitation
     );
   }
 
+  Widget buildLocalExperimentFileWidget(
+      BuildContext context) {
+    return buildButtonWidget(
+      context,
+          () {
+        Navigator.pushNamed(context, LocalExperimentOpenPage.routeName);
+      },
+      const Text('Enter Experiment File path'),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -124,6 +136,7 @@ To get started, please either login with a Google account or enter an invitation
             buildLogoutButtonWidget(
                 context, authProvider, authProvider.isAuthenticated),
             buildInvitationButtonWidget(context, authProvider.isAuthenticated),
+	     buildLocalExperimentFileWidget(context)
           ],
         ),
       ),

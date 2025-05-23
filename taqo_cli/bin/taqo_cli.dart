@@ -40,6 +40,12 @@ Future<void> main(List<String> arguments) async {
       await taqoCli.joinPublicExperiment(
           int.parse(arguments[1]), int.parse(arguments[2]));
       break;
+    case 'join-by-file':
+      if (arguments.length != 2) {
+        displayUsageAndExit(1);
+      }
+      await taqoCli.joinExperimentByFile(arguments[1]);
+      break;  
     case 'pause':
       await taqoCli.setExperimentsPausedStatus(arguments.sublist(1), true);
       break;
@@ -66,6 +72,7 @@ void displayUsageAndExit(int code) {
   final executable = Platform.script.pathSegments.last;
   stderr.write('''Usage:
 $executable join <invitation-code>      Join an experiment with invitation code
+$executable join-by-file filepath       Join an experiment in local file
 $executable pause [<experiment-ids>]    Pause specified or all experiments
 $executable resume [<experiment-ids>]   Resume specified or all experiments
 $executable stop [<experiment-ids>]     Stop specified or all experiments

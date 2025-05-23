@@ -32,6 +32,7 @@ import 'pages/experiment_detail_page.dart';
 import 'pages/find_experiments_page.dart';
 import 'pages/informed_consent_page.dart';
 import 'pages/invitation_entry_page.dart';
+import 'pages/local_experiment_open_page.dart';
 import 'pages/login_page.dart';
 import 'pages/post_join_instructions_page.dart';
 import 'pages/running_experiments_page.dart';
@@ -186,6 +187,7 @@ class _MyAppState extends State<MyApp> {
         InvitationEntryPage.routeName: (context) => InvitationEntryPage(),
         PostJoinInstructionsPage.routeName: (context) =>
             PostJoinInstructionsPage(),
+	LocalExperimentOpenPage.routeName: (context) => LocalExperimentOpenPage(),	    
       },
       // Here the route for SurveyPage is configured separately in onGenerateRoute(),
       // since we need to pass argument to this route before the page being built,

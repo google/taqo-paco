@@ -113,6 +113,20 @@ class ExperimentService implements ExperimentServiceLite {
     });
   }
 
+  Future<Experiment> getExperimentByFile(filepath) {
+    return File(filepath).readAsString().then((file) {
+      try {
+        var experimentJsonObj = jsonDecode(file).elementAt(0);
+        return _makeExperimentFromJson(experimentJsonObj);
+      } catch (e) {
+        stderr.writeln('Error opening experiment file: $e');
+        return null;
+      }
+    });
+    
+  }
+
+
   Event _createPacoEvent(Experiment experiment, PacoEventType eventType) {
     final event = Event();
     event.experimentId = experiment.id;

@@ -35,7 +35,23 @@ class TaqoCli {
     }
   }
 
-  Future<void> joinPublicExperiment(int experimentId, int participantId) async {
+  Future<void> joinExperimentByFile(String filepath) async {
+    final experimentService = await ExperimentService.getInstance();
+
+    var experiment =
+        await experimentService.getExperimentByFile(filepath);
+    if (experiment != null) {
+      experiment.participantId = 1;
+      experiment.anonymousPublic = true;
+      await experimentService.joinExperiment(experiment);
+    } else {
+      stderr.writeln(
+          'Error opening experiment in file: ${filepath}');
+      exit(1);
+    }
+  }
+
+    Future<void> joinPublicExperiment(int experimentId, int participantId) async {
     final experimentService = await ExperimentService.getInstance();
 
     var experiment =
